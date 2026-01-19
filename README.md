@@ -6,7 +6,7 @@
 ![Vite](https://img.shields.io/badge/Vite-B73BFE?style=flat&logo=vite&logoColor=FFD62E)
 ![PWA](https://img.shields.io/badge/PWA-Ready-blue)
 
-> **Plano** é um Progressive Web App (PWA) focado em organização política e interação social, permitindo que cidadãos criem, organizem e compartilhem suas estratégias de voto de forma simples e visual.
+> **Plano** é um Progressive Web App (PWA), permitindo que cidadãos criem, organizem e compartilhem suas estratégias de voto de forma simples e visual.
 
 ---
 
