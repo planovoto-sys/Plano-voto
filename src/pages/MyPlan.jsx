@@ -2,14 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { db, auth } from '../services/firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
-import Sidebar from '../components/Sidebar'; // <--- IMPORTADO
+import Sidebar from '../components/Sidebar'; 
 import './SelectState.css'; 
 import './MyPlan.css';
 
 export default function MyPlan() {
   const [strategy, setStrategy] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isMenuOpen, setIsMenuOpen] = useState(false); // <--- ESTADO DO MENU
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // Estado do menu
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,21 +26,27 @@ export default function MyPlan() {
     fetchUserData();
   }, []);
 
+  // --- FUNÇÃO DE COMPARTILHAMENTO ATUALIZADA ---
   const handleShare = () => {
-    const text = "Acabei de definir minha estratégia de voto no app Plano! Venha ver.";
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    const url = "plano-voto.vercel.app"; // Seu link oficial
+    
+    // Texto com quebra de linha (\n\n) e emoji
+    const finalText = `Confira meu plano de voto! 🇧🇷\n\nCrie o seu agora em: ${url}`;
+    
+    window.open(`https://wa.me/?text=${encodeURIComponent(finalText)}`, '_blank');
   };
+  // ---------------------------------------------
 
   if (loading) return <div className="page-container" style={{justifyContent:'center'}}>Carregando...</div>;
 
   return (
     <div className="page-container">
-      {/* MENU LATERAL */}
+      {/* Menu Lateral */}
       <Sidebar isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
 
       <header className="header">
         <h1 className="brand-small">plano</h1>
-        {/* BOTÃO QUE ABRE O MENU */}
+        {/* Ícone que abre o menu */}
         <div className="menu-icon" onClick={() => setIsMenuOpen(true)}>≡</div>
       </header>
 
