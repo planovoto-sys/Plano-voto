@@ -1,0 +1,37 @@
+/* Importando as variáveis e bases globais implicitamente */
+.strategy-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.strategy-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.strategy-input {
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #eee;
+  background-color: #f9f9f9;
+  font-size: 1rem;
+}
+
+.strategy-input:focus {
+  background-color: #fff;
+  border-color: #ccc;
+  outline: none;
+}
+
+.skip-link {
+  text-align: center;
+  text-decoration: underline;
+  cursor: pointer;
+  color: var(--secondary-color);
+  margin-top: 25px;
+  font-size: 0.95rem;
+  padding: 10px; /* Aumenta área de toque */
+}
