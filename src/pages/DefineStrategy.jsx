@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { db, auth } from '../services/firebaseConfig';
 import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
@@ -12,6 +12,10 @@ export default function DefineStrategy() {
   const [focusedIndex, setFocusedIndex] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  
+  // 1. Referência para controlar o timer do onBlur e evitar conflitos
+  const blurTimeoutRef = useRef(null);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -50,6 +54,9 @@ export default function DefineStrategy() {
     const newInputs = [...inputs];
     newInputs[index] = handle; 
     setInputs(newInputs);
+    
+    // Limpa o foco imediatamente ao selecionar
+    if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
     setFocusedIndex(null); 
   };
 
@@ -79,10 +86,9 @@ export default function DefineStrategy() {
     ).slice(0, 5); 
   };
 
-  // --- NOVA FUNÇÃO MÁGICA ---
-  // Se a foto falhar, troca por uma imagem gerada com as iniciais do nome
+  // Fallback de imagem (DiceBear)
   const handleImageError = (e, name) => {
-    e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff&size=128`;
+    e.target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`;
   };
 
   return (
@@ -103,31 +109,50 @@ export default function DefineStrategy() {
             <div 
               key={index} 
               className={`strategy-input-wrapper ${focusedIndex === index ? 'active' : ''}`}
+              // Z-Index garante que a lista apareça sobre os campos de baixo
+              style={{ zIndex: focusedIndex === index ? 50 : 1 }}
             >
               <input 
                 className="strategy-input"
                 placeholder={`${index + 1}º plano (@...)`}
                 value={val}
                 onChange={(e) => handleInputChange(index, e.target.value)}
-                onFocus={() => setFocusedIndex(index)}
-                onBlur={() => setTimeout(() => setFocusedIndex(null), 200)}
+                
+                // 2. Ao focar, cancelamos qualquer fechamento pendente de outro campo
+                onFocus={() => {
+                  if (blurTimeoutRef.current) {
+                    clearTimeout(blurTimeoutRef.current);
+                  }
+                  setFocusedIndex(index);
+                }}
+
+                // 3. Ao sair, agendamos o fechamento, guardando o ID no ref
+                onBlur={() => {
+                  blurTimeoutRef.current = setTimeout(() => {
+                    setFocusedIndex(null);
+                  }, 200);
+                }}
+                
+                autoComplete="off"
               />
 
               {focusedIndex === index && val.length > 1 && (
-                <div className="suggestions-box">
+                <div 
+                  className="suggestions-box"
+                  // Previne que o clique na barra de rolagem ou item feche o input
+                  onMouseDown={(e) => e.preventDefault()} 
+                >
                   {getFilteredUsers(val).map(user => (
                     <div 
                       key={user.id} 
                       className="suggestion-item"
                       onClick={() => handleSelectUser(index, user.handle)}
-                      onMouseDown={(e) => e.preventDefault()} 
                     >
-                      {/* IMAGEM COM PROTEÇÃO CONTRA ERRO */}
                       <img 
                         src={user.photo} 
                         alt={user.name} 
                         className="suggestion-avatar"
-                        onError={(e) => handleImageError(e, user.name)} // <--- AQUI ESTÁ A CORREÇÃO
+                        onError={(e) => handleImageError(e, user.name)}
                       />
                       <div className="suggestion-info">
                         <span className="suggestion-name">{user.name}</span>

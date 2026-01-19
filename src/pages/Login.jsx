@@ -1,18 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { auth, googleProvider, db } from '../services/firebaseConfig';
 import { signInWithPopup } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
+import HowItWorksModal from '../components/HowItWorksModal';
 import './Login.css';
 
 export default function Login() {
+  const navigate = useNavigate();
+  const [showModal, setShowModal] = useState(false);
+
   const handleGoogleLogin = async () => {
     try {
-      // --- A MUDANÇA É AQUI ---
-      // Isso força o Google a perguntar qual conta usar sempre
       googleProvider.setCustomParameters({
         prompt: 'select_account'
       });
-      // ------------------------
 
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
@@ -20,7 +22,19 @@ export default function Login() {
       const userRef = doc(db, "users", user.uid);
       const docSnap = await getDoc(userRef);
 
-      if (!docSnap.exists()) {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        const hasProfile = data.username && data.state;
+        const hasPlan = data.strategy && data.strategy.length > 0;
+
+        if (hasProfile && hasPlan) {
+          navigate('/meu-plano');
+        } else if (hasProfile) {
+          navigate('/estrategia');
+        } else {
+          navigate('/estado');
+        }
+      } else {
         await setDoc(userRef, {
           uid: user.uid,
           name: user.displayName,
@@ -31,10 +45,10 @@ export default function Login() {
           status: 'onboarding',
           created_at: new Date()
         });
+        navigate('/estado');
       }
     } catch (error) {
       console.error("Erro:", error);
-      // Ignora erro se o usuário fechou o popup sem escolher conta
       if (error.code !== 'auth/popup-closed-by-user') {
         alert("Erro no login: " + error.message);
       }
@@ -49,7 +63,18 @@ export default function Login() {
         Entrar com Google
       </button>
 
-      <p className="login-link">Como funciona</p>
+      <p 
+        className="login-link" 
+        onClick={() => setShowModal(true)}
+        style={{cursor: 'pointer'}}
+      >
+        Como funciona
+      </p>
+
+      <HowItWorksModal 
+        isOpen={showModal} 
+        onClose={() => setShowModal(false)} 
+      />
     </div>
   );
 }
