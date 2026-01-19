@@ -7,7 +7,7 @@ import Login from './pages/Login';
 import SelectState from './pages/SelectState';
 import DefineStrategy from './pages/DefineStrategy';
 import MyPlan from './pages/MyPlan';
-import Profile from './pages/Profile'; // <--- Import Novo
+import Profile from './pages/Profile'; 
 
 function App() {
   const [user, loading] = useAuthState(auth);

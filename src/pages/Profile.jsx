@@ -3,8 +3,9 @@ import { auth, db } from '../services/firebaseConfig';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
-import './SelectState.css'; // Reutiliza estilos globais
-import './Profile.css'; // Estilos específicos desta tela
+import Sidebar from '../components/Sidebar'; // <--- IMPORTADO
+import './SelectState.css';
+import './Profile.css';
 
 export default function Profile() {
   const [userData, setUserData] = useState({
@@ -15,9 +16,9 @@ export default function Profile() {
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // <--- ESTADO DO MENU
   const navigate = useNavigate();
 
-  // Carrega os dados ao abrir a tela
   useEffect(() => {
     const fetchProfile = async () => {
       if (auth.currentUser) {
@@ -52,7 +53,7 @@ export default function Profile() {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      navigate('/'); // Volta para o login
+      navigate('/');
     } catch (error) {
       console.error("Erro ao sair:", error);
     }
@@ -62,10 +63,14 @@ export default function Profile() {
 
   return (
     <div className="profile-container">
+      {/* MENU LATERAL */}
+      <Sidebar isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+
       <header className="profile-header">
+        {/* Mantive o botão voltar, mas adicionei o menu à direita */}
         <button onClick={() => navigate(-1)} className="back-btn">←</button>
         <h2 className="brand-small" style={{margin:0}}>meu perfil</h2>
-        <div style={{width: 24}}></div>
+        <div className="menu-icon" onClick={() => setIsMenuOpen(true)}>≡</div>
       </header>
 
       <div className="profile-avatar-section">
