@@ -1,1 +1,87 @@
-# Plano-voto
+# 🗳️ Plano — Estratégia de Voto Social
+
+![Status](https://img.shields.io/badge/Status-MVP%20Finalizado-success)
+![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB)
+![Firebase](https://img.shields.io/badge/Firebase-ffca28?style=flat&logo=firebase&logoColor=black)
+![Vite](https://img.shields.io/badge/Vite-B73BFE?style=flat&logo=vite&logoColor=FFD62E)
+![PWA](https://img.shields.io/badge/PWA-Ready-blue)
+
+> **Plano** é um Progressive Web App (PWA) focado em organização política e interação social, permitindo que cidadãos criem, organizem e compartilhem suas estratégias de voto de forma simples e visual.
+
+---
+
+## 📱 Sobre o Projeto
+
+Este projeto é um **MVP (Produto Mínimo Viável)** criado para validar o conceito de uma **carteira digital de voto**, onde o usuário pode estruturar sua estratégia eleitoral com base no seu estado e em candidatos previamente cadastrados.
+
+O desenvolvimento priorizou:
+- Performance (**Mobile First**)
+- Segurança (**Autenticação Google**)
+- Escalabilidade (**Firebase / NoSQL**)
+
+---
+
+## ✨ Funcionalidades
+
+- 🔐 Login social com Google (Firebase Auth)
+- ⚡ Banco de dados em tempo real (Cloud Firestore)
+- 🔍 Busca com autocomplete (500+ políticos e influenciadores)
+- 📍 Segmentação por estado (UF)
+- 💬 Compartilhamento do plano via WhatsApp
+- 👤 Edição de perfil (foto, nome e Instagram)
+- 📱 Suporte completo a PWA
+
+---
+
+## 🛠️ Tecnologias
+
+- **Frontend:** React.js  
+- **Build Tool:** Vite  
+- **Backend:** Firebase  
+  - Authentication  
+  - Cloud Firestore  
+- **Roteamento:** React Router Dom v6  
+- **Estilização:** CSS Modules  
+
+---
+
+## 📸 Screenshots
+
+| Login | Estado | Estratégia | Meu Plano |
+|:--:|:--:|:--:|:--:|
+| <img src="./assets/imagem01.jpeg" width="200" /> | <img src="./assets/imagem02.jpeg" width="200" /> | <img src="./assets/imagem03.jpeg" width="200" /> | <img src="./assets/imagem04.jpeg" width="200" /> |
+
+---
+
+## 📂 Estrutura do Projeto
+
+```bash
+src/
+├── assets/
+├── pages/
+│   ├── Login.jsx
+│   ├── SelectState.jsx
+│   ├── DefineStrategy.jsx
+│   ├── MyPlan.jsx
+│   └── Profile.jsx
+├── services/
+│   └── firebaseConfig.js
+├── utils/
+├── App.jsx
+└── main.jsx
+🚀 Como Executar
+Pré-requisitos
+Node.js v18+
+```
+
+👨‍💻 Autor
+Alexandre Hackbardt Bolsoni
+🎓 Tecnologia em Sistemas para Internet — IFES
+
+GitHub: https://github.com/AlexandreBolsoni
+
+LinkedIn: https://www.linkedin.com/in/alexandre-hackbardt-bolsoni/
+
+Email: plano.voto@gmail.com
+
+© 2026 Alexandre Hackbardt Bolsoni. Todos os direitos reservados.
