@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { db, auth } from '../services/firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
-import { useNavigate } from 'react-router-dom'; // Importado
+import { useNavigate } from 'react-router-dom';
+import Sidebar from '../components/Sidebar'; // <--- IMPORTADO
 import './SelectState.css'; 
 import './MyPlan.css';
 
 export default function MyPlan() {
   const [strategy, setStrategy] = useState([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate(); // Hook instanciado
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // <--- ESTADO DO MENU
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -33,10 +35,13 @@ export default function MyPlan() {
 
   return (
     <div className="page-container">
+      {/* MENU LATERAL */}
+      <Sidebar isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+
       <header className="header">
         <h1 className="brand-small">plano</h1>
-        {/* Menu Funcional */}
-        <div className="menu-icon" onClick={() => navigate('/perfil')}>≡</div>
+        {/* BOTÃO QUE ABRE O MENU */}
+        <div className="menu-icon" onClick={() => setIsMenuOpen(true)}>≡</div>
       </header>
 
       <main className="main-content">

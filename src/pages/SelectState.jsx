@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { auth, db } from '../services/firebaseConfig';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
+import Sidebar from '../components/Sidebar'; // <--- IMPORTADO
 import './SelectState.css';
 
 export default function SelectState() {
   const [uf, setUf] = useState('ES');
   const [instaHandle, setInstaHandle] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // <--- ESTADO DO MENU
   const navigate = useNavigate();
 
   const handleContinue = async () => {
@@ -37,10 +39,13 @@ export default function SelectState() {
 
   return (
     <div className="page-container">
+      {/* MENU LATERAL */}
+      <Sidebar isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+
       <header className="header">
         <span className="brand-small">plano</span>
-        {/* Menu Funcional */}
-        <div className="menu-icon" onClick={() => navigate('/perfil')}>≡</div>
+        {/* BOTÃO QUE ABRE O MENU */}
+        <div className="menu-icon" onClick={() => setIsMenuOpen(true)}>≡</div>
       </header>
 
       <main className="main-content">

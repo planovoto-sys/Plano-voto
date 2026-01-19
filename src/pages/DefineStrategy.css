@@ -35,3 +35,72 @@
   font-size: 0.95rem;
   padding: 10px; /* Aumenta área de toque */
 }
+/* ... estilos anteriores ... */
+
+.strategy-input-wrapper {
+  position: relative; /* Importante para a lista flutuar em relação a este input */
+  width: 100%;
+  z-index: 1; /* Garante ordem padrão */
+}
+
+/* Quando o input está focado, ele fica acima dos outros */
+.strategy-input-wrapper.active {
+  z-index: 10;
+}
+
+/* A Caixa de Sugestões Personalizada */
+.suggestions-box {
+  position: absolute;
+  top: 105%; /* Logo abaixo do input */
+  left: 0;
+  width: 100%;
+  max-height: 250px; /* Altura máxima com rolagem */
+  overflow-y: auto;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15); /* Sombra suave */
+  border: 1px solid #eee;
+  z-index: 20;
+}
+
+.suggestion-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid #f9f9f9;
+  transition: background 0.2s;
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.suggestion-item:hover {
+  background-color: #f0f4f8; /* Azulzinho claro ao passar o mouse */
+}
+
+.suggestion-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: #ddd;
+}
+
+.suggestion-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.suggestion-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.suggestion-handle {
+  font-size: 0.8rem;
+  color: #888;
+}
