@@ -49,7 +49,10 @@ O desenvolvimento priorizou:
 
 | Login | Estado | Estratégia | Meu Plano |
 |:--:|:--:|:--:|:--:|
-| <img src="./assets/imagem01.jpeg" width="200" /> | <img src="./assets/imagem02.jpeg" width="200" /> | <img src="./assets/imagem03.jpeg" width="200" /> | <img src="./assets/imagem04.jpeg" width="200" /> |
+| <img width="360" height="739" alt="Captura de tela 2026-01-19 155519" src="https://github.com/user-attachments/assets/46a17822-5895-4d22-a10c-82883caa6281" /> | <img width="361" height="738" alt="Captura de tela 2026-01-19 155536" src="https://github.com/user-attachments/assets/5b992ca7-9d23-4294-8c4c-7e2e817115fc" />| <img width="360" height="742" alt="Captura de tela 2026-01-19 155558" src="https://github.com/user-attachments/assets/e58a925e-7988-457a-8d69-c497c59d33b8" /> |<img width="361" height="740" alt="Captura de tela 2026-01-19 155652" src="https://github.com/user-attachments/assets/819f5aaa-ecb0-4fd9-b6b3-811ac7218538" />
+
+
+
 
 ---
 
