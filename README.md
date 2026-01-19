@@ -1,4 +1,4 @@
-# 🗳️ Plano — Estratégia de Voto Social
+# 🗳️ Plano 
 
 ![Status](https://img.shields.io/badge/Status-MVP%20Finalizado-success)
 ![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB)
