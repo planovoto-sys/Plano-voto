@@ -4,7 +4,8 @@
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100vh;
+  height: 100vh;        /* Fallback para navegadores antigos */
+  height: 100dvh;       /* CORREÇÃO: Altura dinâmica que respeita a barra do navegador */
   background-color: rgba(0, 0, 0, 0.6);
   z-index: 1000;
   display: flex;
@@ -26,15 +27,16 @@
   animation: slideIn 0.3s forwards;
 }
 
-/* --- AJUSTE 1: FOTO MAIS BAIXA --- */
+/* Cabeçalho */
 .sidebar-header {
-  /* Aumentei o topo de 30px para 60px para descer a foto */
-  padding: 60px 20px 30px 20px; 
+  /* Padding top maior para não bater na bateria/relógio do iPhone */
+  padding: 60px 20px 20px 20px; 
   border-bottom: 1px solid #f0f0f0;
   display: flex;
   align-items: center;
   gap: 15px;
   background-color: #fff;
+  flex-shrink: 0; /* Garante que o cabeçalho nunca encolha */
 }
 
 .avatar-container {
@@ -43,7 +45,7 @@
   border-radius: 50%;
   background-color: #eee;
   overflow: hidden;
-  flex-shrink: 0; /* Garante que a bolinha não amasse */
+  flex-shrink: 0;
 }
 
 .avatar-img {
@@ -70,9 +72,10 @@
 
 /* Lista de Links */
 .sidebar-menu {
-  flex: 1;
+  flex: 1; /* Ocupa todo o espaço disponível no meio */
   padding: 20px 0;
-  overflow-y: auto;
+  overflow-y: auto; /* Permite rolar se a lista for grande */
+  min-height: 0; /* Correção para flexbox no Firefox/Safari */
 }
 
 .menu-item {
@@ -99,11 +102,14 @@
   color: #777;
 }
 
-/* --- AJUSTE 2: BOTÃO SAIR MAIS ALTO --- */
+/* Rodapé (Botão Sair) */
 .sidebar-footer {
-  /* Aumentei embaixo para 50px para levantar o botão da borda */
-  padding: 20px 20px 50px 20px; 
+  /* Padding dinâmico que respeita a área segura do iPhone (notch inferior) */
+  padding: 20px;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom)); 
   border-top: 1px solid #f0f0f0;
+  background-color: #fff;
+  flex-shrink: 0; /* Garante que o rodapé nunca seja esmagado */
 }
 
 .logout-btn-menu {
