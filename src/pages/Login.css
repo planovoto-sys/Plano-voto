@@ -3,40 +3,58 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh; /* Ocupa a altura total da tela */
-  padding: 20px;
-  text-align: center;
+  height: 100vh;
+  padding: 30px;
+  background-color: #fff;
+  font-family: sans-serif;
 }
 
-.login-logo {
-  font-size: 3.5rem; /* Bem grande */
+.brand-large {
+  font-size: 3.5rem;
   font-weight: 800;
-  margin-bottom: 3rem;
-  letter-spacing: -2px; /* Estilo moderno */
+  color: #000;
+  letter-spacing: -1.5px;
+  margin-bottom: 5px;
 }
 
-.login-btn {
-  background-color: var(--primary-color);
-  color: white;
-  border: none;
-  border-radius: 50px;
-  padding: 18px 0; /* Botão alto, fácil de clicar */
-  width: 100%;
-  max-width: 320px; /* Não fica gigante em tablets */
-  font-size: 1.1rem;
+.brand-highlight {
+  background-color: #f0f0f0;
+  padding: 0 5px;
+  border-radius: 8px;
+}
+
+.login-subtitle {
+  color: #e0e0e0;
   font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15); /* Sombra suave */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
+  font-size: 1rem;
+  margin-bottom: 60px;
 }
 
-.login-link {
-  margin-top: 1.5rem;
-  color: var(--secondary-color);
-  text-decoration: underline;
-  font-size: 0.9rem;
+.breadcrumb {
+  color: #e0e0e0;
+  font-weight: 800;
+  font-size: 1.2rem;
+  margin-bottom: 60px;
+  letter-spacing: 1px;
+}
+
+.btn-start {
+  background-color: #d9d9d9;
+  color: #000;
+  font-weight: 700;
+  font-size: 1.1rem;
+  width: 100%;
+  max-width: 300px;
+  padding: 18px;
+  border: none;
+  border-radius: 12px;
   cursor: pointer;
+  margin-bottom: 20px;
+}
+
+.link-how {
+  color: #777;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 0.9rem;
 }
