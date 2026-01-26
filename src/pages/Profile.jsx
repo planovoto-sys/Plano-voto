@@ -1,9 +1,10 @@
+// src/pages/Profile.jsx (Versão Limpa)
 import React, { useEffect, useState } from 'react';
 import { auth, db } from '../services/firebaseConfig';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
-import Sidebar from '../components/Sidebar'; // <--- IMPORTADO
+import Sidebar from '../components/Sidebar'; 
 import './SelectState.css';
 import './Profile.css';
 
@@ -12,11 +13,13 @@ export default function Profile() {
     name: '',
     username: '',
     state: 'ES',
-    profile_image: ''
+    profile_image: '',
+    instagram_verified: false 
   });
+  
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false); // <--- ESTADO DO MENU
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -63,11 +66,9 @@ export default function Profile() {
 
   return (
     <div className="profile-container">
-      {/* MENU LATERAL */}
       <Sidebar isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
 
       <header className="profile-header">
-        {/* Mantive o botão voltar, mas adicionei o menu à direita */}
         <button onClick={() => navigate(-1)} className="back-btn">←</button>
         <h2 className="brand-small" style={{margin:0}}>meu perfil</h2>
         <div className="menu-icon" onClick={() => setIsMenuOpen(true)}>≡</div>
@@ -78,7 +79,14 @@ export default function Profile() {
           src={userData.profile_image || "https://via.placeholder.com/100"} 
           alt="Avatar" 
           className="profile-img"
+          // Borda verde se verificado
+          style={{ borderColor: userData.instagram_verified ? '#00e676' : '#fff' }}
         />
+        {userData.instagram_verified && (
+          <div style={{color:'#00e676', fontWeight:'800', fontSize:'0.9rem', marginTop: -10, marginBottom: 10}}>
+             ✓ Verificado
+          </div>
+        )}
         <span className="profile-email">{auth.currentUser?.email}</span>
       </div>
 
@@ -94,11 +102,14 @@ export default function Profile() {
 
         <div className="input-group">
           <label className="input-label">Instagram (@)</label>
-          <input 
-            className="input-field"
-            value={userData.username || ''}
-            onChange={(e) => setUserData({...userData, username: e.target.value})}
-          />
+            <input 
+              className="input-field"
+              value={userData.username || ''}
+              onChange={(e) => setUserData({...userData, username: e.target.value})}
+              disabled={userData.instagram_verified} 
+              placeholder="@seu.perfil"
+            />
+            {/* Removemos o botão e o input de código daqui */}
         </div>
 
         <div className="input-group">
