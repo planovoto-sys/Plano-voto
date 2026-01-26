@@ -1,106 +1,164 @@
-/* Importando as variáveis e bases globais implicitamente */
-.strategy-list {
+.page-container-white {
+  background-color: #fff;
+  min-height: 100vh;
+  padding: 20px;
+  font-family: sans-serif;
+  position: relative;
+}
+
+.header-clean {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.brand-medium {
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
+.brand-highlight-small {
+  background-color: #f0f0f0;
+  padding: 0 4px;
+  border-radius: 4px;
+}
+
+.header-info {
+  text-align: right;
+  font-size: 0.8rem;
+  color: #333;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  width: 100%;
+  margin-right: 10px;
 }
 
-.strategy-input-wrapper {
-  position: relative;
-  width: 100%;
+.followers-count {
+  color: #999;
+  font-size: 0.75rem;
 }
 
-.strategy-input {
-  width: 100%;
-  padding: 16px;
-  border-radius: 12px;
-  border: 1px solid #eee;
-  background-color: #f9f9f9;
-  font-size: 1rem;
-}
-
-.strategy-input:focus {
-  background-color: #fff;
-  border-color: #ccc;
-  outline: none;
-}
-
-.skip-link {
-  text-align: center;
-  text-decoration: underline;
+.menu-icon-clean {
+  font-size: 1.5rem;
   cursor: pointer;
-  color: var(--secondary-color);
-  margin-top: 25px;
+}
+
+.breadcrumb-active {
+  background-color: #f9f9f9;
+  /* Fundo bem sutil no breadcrumb */
+  border-radius: 20px;
+  /* Arredondado igual na imagem */
+  padding: 10px 0;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  font-weight: 800;
+  color: #d1d1d1;
+  margin-bottom: 40px;
+}
+
+.active-step {
+  color: #000;
+}
+
+.page-instruction {
+  text-align: center;
+  color: #666;
+  margin-bottom: 30px;
   font-size: 0.95rem;
-  padding: 10px; /* Aumenta área de toque */
 }
-/* ... estilos anteriores ... */
 
-.strategy-input-wrapper {
-  position: relative; /* Importante para a lista flutuar em relação a este input */
+.strategy-input-clean {
   width: 100%;
-  z-index: 1; /* Garante ordem padrão */
+  padding: 18px;
+  background-color: #eff0f2;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  text-align: center;
 }
 
-/* Quando o input está focado, ele fica acima dos outros */
-.strategy-input-wrapper.active {
-  z-index: 10;
+.strategy-input-wrapper-clean {
+  position: relative;
+  margin-bottom: 12px;
 }
 
-/* A Caixa de Sugestões Personalizada */
 .suggestions-box {
   position: absolute;
-  top: 105%; /* Logo abaixo do input */
+  top: 100%;
   left: 0;
-  width: 100%;
-  max-height: 250px; /* Altura máxima com rolagem */
-  overflow-y: auto;
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15); /* Sombra suave */
+  right: 0;
+  background: white;
   border: 1px solid #eee;
-  z-index: 20;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 100;
 }
 
 .suggestion-item {
+  padding: 10px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
+  gap: 10px;
+  border-bottom: 1px solid #f5f5f5;
   cursor: pointer;
-  border-bottom: 1px solid #f9f9f9;
-  transition: background 0.2s;
-}
-
-.suggestion-item:last-child {
-  border-bottom: none;
-}
-
-.suggestion-item:hover {
-  background-color: #f0f4f8; /* Azulzinho claro ao passar o mouse */
 }
 
 .suggestion-avatar {
-  width: 36px;
-  height: 36px;
+  width: 35px;
+  height: 35px;
   border-radius: 50%;
   object-fit: cover;
-  background-color: #ddd;
 }
 
 .suggestion-info {
   display: flex;
   flex-direction: column;
+  text-align: left;
 }
 
 .suggestion-name {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #333;
+  font-weight: bold;
+  font-size: 0.9rem;
 }
 
 .suggestion-handle {
   font-size: 0.8rem;
+  color: #666;
+}
+
+.or-divider {
+  text-align: center;
   color: #888;
+  margin: 20px 0;
+}
+
+.create-link {
+  text-align: center;
+  text-decoration: underline;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 30px;
+}
+
+.btn-continue {
+  width: 100%;
+  padding: 18px;
+  background-color: #d9d9d9;
+  border: none;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.help-link {
+  text-align: center;
+  text-decoration: underline;
+  color: #888;
+  margin-top: 20px;
+  font-size: 0.9rem;
 }

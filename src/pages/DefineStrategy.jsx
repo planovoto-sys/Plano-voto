@@ -1,47 +1,31 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { db, auth } from '../services/firebaseConfig';
-import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, getDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar'; 
-import './SelectState.css'; 
 import './DefineStrategy.css'; 
 
 export default function DefineStrategy() {
-  const [inputs, setInputs] = useState(['', '', '', '', '']); 
-  const [availableUsers, setAvailableUsers] = useState([]); 
+  const [inputs, setInputs] = useState(['', '', '']); // 3 slots
+  const [allPlans, setAllPlans] = useState([]); 
   const [focusedIndex, setFocusedIndex] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  
-  // 1. Referência para controlar o timer do onBlur e evitar conflitos
-  const blurTimeoutRef = useRef(null);
-
+  const [userHash, setUserHash] = useState('...');
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const usersRef = collection(db, "users");
-        const querySnapshot = await getDocs(usersRef);
-        
-        const usersData = querySnapshot.docs
-          .map(doc => {
-            const data = doc.data();
-            return {
-              id: doc.id,
-              handle: data.username, 
-              name: data.name || "Usuário",
-              photo: data.profile_image 
-            };
-          })
-          .filter(u => u.handle && u.id !== auth.currentUser?.uid);
-
-        setAvailableUsers(usersData);
-      } catch (error) {
-        console.error("Erro ao buscar usuários:", error);
+    const init = async () => {
+      // 1. Pega dados do usuário (hash)
+      if (auth.currentUser) {
+        const userSnap = await getDoc(doc(db, "users", auth.currentUser.uid));
+        if (userSnap.exists()) setUserHash(userSnap.data().my_hash || '#...');
       }
+      // 2. Pega planos
+      const snap = await getDocs(collection(db, "plans"));
+      setAllPlans(snap.docs.map(d => ({...d.data(), id: d.id})));
     };
-    fetchUsers();
+    init();
   }, []);
 
   const handleInputChange = (index, value) => {
@@ -50,13 +34,11 @@ export default function DefineStrategy() {
     setInputs(newInputs);
   };
 
-  const handleSelectUser = (index, handle) => {
+  const handleSelectPlan = (index, plan, type) => {
     const newInputs = [...inputs];
-    newInputs[index] = handle; 
+    // Salva o hash se buscou por #, senão salva o @
+    newInputs[index] = type === 'hash' ? plan.hash : plan.handle; 
     setInputs(newInputs);
-    
-    // Limpa o foco imediatamente ao selecionar
-    if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
     setFocusedIndex(null); 
   };
 
@@ -65,119 +47,81 @@ export default function DefineStrategy() {
     try {
       const userRef = doc(db, "users", auth.currentUser.uid);
       const finalStrategy = inputs.filter(item => item.trim() !== "");
-      
-      await updateDoc(userRef, {
-        strategy: finalStrategy,
-        status: 'locked'
-      });
+      await updateDoc(userRef, { strategy: finalStrategy });
       navigate('/meu-plano');
-    } catch (error) {
-      console.error("Erro:", error);
-    }
+    } catch (error) { console.error(error); }
     setLoading(false);
   };
 
-  const getFilteredUsers = (searchText) => {
-    if (!searchText || searchText.length < 2) return []; 
-    const lowerText = searchText.toLowerCase();
-    return availableUsers.filter(user => 
-      user.name.toLowerCase().includes(lowerText) || 
-      user.handle.toLowerCase().includes(lowerText)
-    ).slice(0, 5); 
-  };
-
-  // Fallback de imagem (DiceBear)
-  const handleImageError = (e, name) => {
-    e.target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`;
+  const getFilteredPlans = (text) => {
+    if (!text || text.length < 2) return [];
+    const lower = text.toLowerCase();
+    return allPlans.filter(p => 
+      p.handle.toLowerCase().includes(lower) || 
+      p.hash.toLowerCase().includes(lower) ||
+      p.name.toLowerCase().includes(lower)
+    ).slice(0, 5);
   };
 
   return (
-    <div className="page-container">
+    <div className="page-container-white">
       <Sidebar isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
 
-      <header className="header">
-        <h1 className="brand-small">plano</h1>
-        <div className="menu-icon" onClick={() => setIsMenuOpen(true)}>≡</div>
+      <header className="header-clean">
+        <h1 className="brand-medium">vote<span className="brand-highlight-small">list</span></h1>
+        <div className="header-info">
+          <span>{userHash} | <span style={{textDecoration:'underline'}}>informar</span></span>
+          <span className="followers-count">0 seguidores</span>
+        </div>
+        <div className="menu-icon-clean" onClick={() => setIsMenuOpen(true)}>≡</div>
       </header>
 
-      <main className="main-content">
-        <h2 className="page-title">estratégia</h2>
-        <p className="page-subtitle">Defina sua estratégia (informe até 5 planos)</p>
+      <div className="breadcrumb-active">
+        <span className="active-step">siga</span> &gt; <span className="inactive-step">vete</span> &gt; <span className="inactive-step">vote</span>
+      </div>
+
+      <main className="main-content-clean">
+        <p className="page-instruction">
+          Siga listas de voto de quem te representa<br/>
+          (use @ p/ perfis do Instagram ou # p/ listas)
+        </p>
 
         <div className="strategy-list">
           {inputs.map((val, index) => (
-            <div 
-              key={index} 
-              className={`strategy-input-wrapper ${focusedIndex === index ? 'active' : ''}`}
-              // Z-Index garante que a lista apareça sobre os campos de baixo
-              style={{ zIndex: focusedIndex === index ? 50 : 1 }}
-            >
+            <div key={index} className="strategy-input-wrapper-clean" style={{ zIndex: focusedIndex === index ? 50 : 1 }}>
               <input 
-                className="strategy-input"
-                placeholder={`${index + 1}º plano (@...)`}
+                className="strategy-input-clean"
+                placeholder={`Digite aqui o @ ou # da lista ${index + 1}`}
                 value={val}
                 onChange={(e) => handleInputChange(index, e.target.value)}
-                
-                // 2. Ao focar, cancelamos qualquer fechamento pendente de outro campo
-                onFocus={() => {
-                  if (blurTimeoutRef.current) {
-                    clearTimeout(blurTimeoutRef.current);
-                  }
-                  setFocusedIndex(index);
-                }}
-
-                // 3. Ao sair, agendamos o fechamento, guardando o ID no ref
-                onBlur={() => {
-                  blurTimeoutRef.current = setTimeout(() => {
-                    setFocusedIndex(null);
-                  }, 200);
-                }}
-                
-                autoComplete="off"
+                onFocus={() => setFocusedIndex(index)}
+                onBlur={() => setTimeout(() => setFocusedIndex(current => current === index ? null : current), 200)}
+                autoComplete="off" 
               />
-
               {focusedIndex === index && val.length > 1 && (
-                <div 
-                  className="suggestions-box"
-                  // Previne que o clique na barra de rolagem ou item feche o input
-                  onMouseDown={(e) => e.preventDefault()} 
-                >
-                  {getFilteredUsers(val).map(user => (
-                    <div 
-                      key={user.id} 
-                      className="suggestion-item"
-                      onClick={() => handleSelectUser(index, user.handle)}
-                    >
-                      <img 
-                        src={user.photo} 
-                        alt={user.name} 
-                        className="suggestion-avatar"
-                        onError={(e) => handleImageError(e, user.name)}
-                      />
+                <div className="suggestions-box" onMouseDown={(e) => e.preventDefault()}>
+                  {getFilteredPlans(val).map(plan => (
+                    <div key={plan.id} className="suggestion-item" onClick={() => handleSelectPlan(index, plan, val.includes('#') ? 'hash' : 'handle')}>
+                      <img src={plan.profile_image} className="suggestion-avatar" alt=""/>
                       <div className="suggestion-info">
-                        <span className="suggestion-name">{user.name}</span>
-                        <span className="suggestion-handle">{user.handle}</span>
+                        <span className="suggestion-name">{plan.name}</span>
+                        <span className="suggestion-handle">{plan.handle} | {plan.hash}</span>
                       </div>
                     </div>
                   ))}
-                  {getFilteredUsers(val).length === 0 && (
-                     <div style={{padding: 15, color: '#999', fontSize: '0.9rem', textAlign: 'center'}}>
-                       Nenhum resultado
-                     </div>
-                  )}
                 </div>
               )}
             </div>
           ))}
         </div>
 
-        <button className="action-btn" onClick={handleSave} disabled={loading}>
+        <p className="or-divider">ou</p>
+        <p className="create-link">Crie sua própria lista de voto</p>
+
+        <button className="btn-continue" onClick={handleSave} disabled={loading}>
           {loading ? "Salvando..." : "Continuar"}
         </button>
-        
-        <p onClick={() => navigate('/meu-plano')} className="skip-link">
-          ou crie seu próprio plano
-        </p>
+        <p className="help-link">Precisa de ajuda?</p>
       </main>
     </div>
   );
