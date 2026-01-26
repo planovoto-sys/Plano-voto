@@ -69,10 +69,7 @@ export default function DefineStrategy() {
 
       <header className="header-clean">
         <h1 className="brand-medium">vote<span className="brand-highlight-small">list</span></h1>
-<<<<<<< HEAD
         // Dentro do componente DefineStrategy
-=======
->>>>>>> feature/instagram-verificacao
         // ...
         <div className="header-info">
           <span
