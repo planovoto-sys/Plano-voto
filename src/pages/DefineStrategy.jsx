@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { db, auth } from '../services/firebaseConfig';
 import { collection, getDocs, doc, updateDoc, getDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
-import Sidebar from '../components/Sidebar'; 
-import './DefineStrategy.css'; 
+import Sidebar from '../components/Sidebar';
+import './DefineStrategy.css';
 
 export default function DefineStrategy() {
   const [inputs, setInputs] = useState(['', '', '']); // 3 slots
-  const [allPlans, setAllPlans] = useState([]); 
+  const [allPlans, setAllPlans] = useState([]);
   const [focusedIndex, setFocusedIndex] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -23,7 +23,7 @@ export default function DefineStrategy() {
       }
       // 2. Pega planos
       const snap = await getDocs(collection(db, "plans"));
-      setAllPlans(snap.docs.map(d => ({...d.data(), id: d.id})));
+      setAllPlans(snap.docs.map(d => ({ ...d.data(), id: d.id })));
     };
     init();
   }, []);
@@ -37,9 +37,9 @@ export default function DefineStrategy() {
   const handleSelectPlan = (index, plan, type) => {
     const newInputs = [...inputs];
     // Salva o hash se buscou por #, senão salva o @
-    newInputs[index] = type === 'hash' ? plan.hash : plan.handle; 
+    newInputs[index] = type === 'hash' ? plan.hash : plan.handle;
     setInputs(newInputs);
-    setFocusedIndex(null); 
+    setFocusedIndex(null);
   };
 
   const handleSave = async () => {
@@ -56,8 +56,8 @@ export default function DefineStrategy() {
   const getFilteredPlans = (text) => {
     if (!text || text.length < 2) return [];
     const lower = text.toLowerCase();
-    return allPlans.filter(p => 
-      p.handle.toLowerCase().includes(lower) || 
+    return allPlans.filter(p =>
+      p.handle.toLowerCase().includes(lower) ||
       p.hash.toLowerCase().includes(lower) ||
       p.name.toLowerCase().includes(lower)
     ).slice(0, 5);
@@ -69,11 +69,21 @@ export default function DefineStrategy() {
 
       <header className="header-clean">
         <h1 className="brand-medium">vote<span className="brand-highlight-small">list</span></h1>
+<<<<<<< HEAD
+        // Dentro do componente DefineStrategy
+=======
+>>>>>>> feature/instagram-verificacao
+        // ...
         <div className="header-info">
-          <span>{userHash} | <span style={{textDecoration:'underline'}}>informar</span></span>
+          <span
+            onClick={() => navigate('/verificar-instagram')}
+            style={{ cursor: 'pointer' }}
+          >
+            {userHash} | <span style={{ textDecoration: 'underline' }}>informar Instagram</span>
+          </span>
           <span className="followers-count">0 seguidores</span>
         </div>
-        <div className="menu-icon-clean" onClick={() => setIsMenuOpen(true)}>≡</div>
+// ...
       </header>
 
       <div className="breadcrumb-active">
@@ -82,27 +92,27 @@ export default function DefineStrategy() {
 
       <main className="main-content-clean">
         <p className="page-instruction">
-          Siga listas de voto de quem te representa<br/>
+          Siga listas de voto de quem te representa<br />
           (use @ p/ perfis do Instagram ou # p/ listas)
         </p>
 
         <div className="strategy-list">
           {inputs.map((val, index) => (
             <div key={index} className="strategy-input-wrapper-clean" style={{ zIndex: focusedIndex === index ? 50 : 1 }}>
-              <input 
+              <input
                 className="strategy-input-clean"
                 placeholder={`Digite aqui o @ ou # da lista ${index + 1}`}
                 value={val}
                 onChange={(e) => handleInputChange(index, e.target.value)}
                 onFocus={() => setFocusedIndex(index)}
                 onBlur={() => setTimeout(() => setFocusedIndex(current => current === index ? null : current), 200)}
-                autoComplete="off" 
+                autoComplete="off"
               />
               {focusedIndex === index && val.length > 1 && (
                 <div className="suggestions-box" onMouseDown={(e) => e.preventDefault()}>
                   {getFilteredPlans(val).map(plan => (
                     <div key={plan.id} className="suggestion-item" onClick={() => handleSelectPlan(index, plan, val.includes('#') ? 'hash' : 'handle')}>
-                      <img src={plan.profile_image} className="suggestion-avatar" alt=""/>
+                      <img src={plan.profile_image} className="suggestion-avatar" alt="" />
                       <div className="suggestion-info">
                         <span className="suggestion-name">{plan.name}</span>
                         <span className="suggestion-handle">{plan.handle} | {plan.hash}</span>

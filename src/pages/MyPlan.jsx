@@ -2,14 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { db, auth } from '../services/firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
-import Sidebar from '../components/Sidebar'; 
-import './MyPlan.css'; 
+import Sidebar from '../components/Sidebar';
+import './MyPlan.css';
 
 export default function MyPlan() {
   const [userHash, setUserHash] = useState('...');
   const [loading, setLoading] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  
+
   // Estados PWA
   const [showInstallModal, setShowInstallModal] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
@@ -74,28 +74,43 @@ export default function MyPlan() {
       <Sidebar isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
 
       <header className="header-clean">
-        <div style={{display:'flex', flexDirection:'column'}}>
-           <h1 className="brand-medium">vote<span className="brand-highlight-small">list</span></h1>
-           <div className="breadcrumb-mini">
-              <span className="step-done">siga</span> &gt; <span className="step-todo">vete</span> &gt; <span className="step-todo">vote</span>
-           </div>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <h1 className="brand-medium">vote<span className="brand-highlight-small">list</span></h1>
+          <div className="breadcrumb-mini">
+            <span className="step-done">siga</span> &gt; <span className="step-todo">vete</span> &gt; <span className="step-todo">vote</span>
+          </div>
         </div>
-        
+
+<<<<<<< HEAD
+=======
+       // Dentro do componente MyPlan
+        // ...
+>>>>>>> feature/instagram-verificacao
         <div className="header-info">
-          <span>{userHash} | <span style={{textDecoration:'underline'}}>informar</span></span>
+          {/* Adiciona o onClick e muda o cursor para pointer */}
+          <span
+            onClick={() => navigate('/verificar-instagram')}
+            style={{ cursor: 'pointer' }}
+          >
+            {userHash} | <span style={{ textDecoration: 'underline' }}>informar Instagram</span>
+          </span>
           <span className="followers-count">0 seguidores</span>
         </div>
+<<<<<<< HEAD
+=======
+// ...
         <div className="menu-icon-clean" onClick={() => setIsMenuOpen(true)}>≡</div>
+>>>>>>> feature/instagram-verificacao
       </header>
 
       <div className="progress-bar-container">
-        <div className="progress-bar-fill" style={{width: '33%'}}></div>
+        <div className="progress-bar-fill" style={{ width: '33%' }}></div>
       </div>
 
       <main className="main-content-centered">
         <h2 className="title-huge">seguindo...</h2>
         <p className="subtitle-success">
-          Etapa concluída com sucesso!<br/>
+          Etapa concluída com sucesso!<br />
           (a próxima etapa começará em breve)
         </p>
 
@@ -103,7 +118,7 @@ export default function MyPlan() {
           <p>
             Até lá, quanto mais pessoas seguirem seu @ ou #, mais fortes serão seus votos.
           </p>
-          <p style={{fontWeight: '800', margin: '20px 0'}}>
+          <p style={{ fontWeight: '800', margin: '20px 0' }}>
             Você tem até 20/08/26 para convidar o máximo de amigos que puder!
           </p>
           <p>Nos vemos em breve!</p>
@@ -128,19 +143,19 @@ export default function MyPlan() {
         <div className="pwa-overlay">
           <div className="pwa-card">
             <button className="pwa-close" onClick={() => setShowInstallModal(false)}>×</button>
-            
+
             <div className="pwa-icon">📲</div>
             <h3 className="pwa-title">Instalar App</h3>
-            
+
             <p className="pwa-text">
-              Identificamos que seu sistema é:<br/>
+              Identificamos que seu sistema é:<br />
               <strong>
                 {platform === 'ios' ? 'iOS (iPhone)' : platform === 'android' ? 'Android' : 'Computador'}
               </strong>
             </p>
 
             {/* LÓGICA DE EXIBIÇÃO POR PLATAFORMA */}
-            
+
             {/* ANDROID ou PC COM CHROME (Botão Nativo) */}
             {deferredPrompt && (
               <button className="pwa-btn-install" onClick={handleInstallClick}>
@@ -154,7 +169,7 @@ export default function MyPlan() {
                 <p>Para instalar no iPhone:</p>
                 <div className="ios-steps">
                   <div className="step-row">
-                    1. Toque em compartilhar <img src="https://img.icons8.com/ios/50/upload--v1.png" width="20" alt="share"/>
+                    1. Toque em compartilhar <img src="https://img.icons8.com/ios/50/upload--v1.png" width="20" alt="share" />
                   </div>
                   <div className="step-row">
                     2. Escolha <strong>"Adicionar à Tela de Início"</strong>
@@ -163,11 +178,11 @@ export default function MyPlan() {
                 <div className="ios-arrow-animation">⬇</div>
               </div>
             )}
-            
+
             {/* PC SEM SUPORTE DIRETO (Firefox/Safari Desktop) */}
             {platform === 'desktop' && !deferredPrompt && (
-              <p style={{fontSize: '0.85rem', color: '#666', marginTop: 10}}>
-                Para instalar, procure o ícone de instalação <br/>na barra de endereço do seu navegador.
+              <p style={{ fontSize: '0.85rem', color: '#666', marginTop: 10 }}>
+                Para instalar, procure o ícone de instalação <br />na barra de endereço do seu navegador.
               </p>
             )}
 
