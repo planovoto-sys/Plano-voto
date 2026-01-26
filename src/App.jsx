@@ -68,6 +68,9 @@ function App() {
         <Route path="/estado" element={user ? <SelectState /> : <Navigate to="/" />} />
         <Route path="/estrategia" element={user ? <DefineStrategy /> : <Navigate to="/" />} />
         <Route path="/meu-plano" element={user ? <MyPlan /> : <Navigate to="/" />} />
+        <Route path="/verificar-instagram" element={user ? <VerifyInstagram /> : <Navigate to="/" />} />
+        
+      
         
         {/* Rota do Perfil */}
         <Route path="/perfil" element={user ? <Profile /> : <Navigate to="/" />} />
