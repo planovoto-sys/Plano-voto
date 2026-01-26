@@ -6,9 +6,12 @@
   height: 100vh;
   padding: 30px;
   background-color: #fff;
-  font-family: sans-serif;
+  font-family: 'Inter', sans-serif;
+  position: relative;
+  /* Para o modal fixar corretamente */
 }
 
+/* ... Estilos anteriores (brand, subtitle, btn-start) ... */
 .brand-large {
   font-size: 3.5rem;
   font-weight: 800;
@@ -57,4 +60,99 @@
   text-decoration: underline;
   cursor: pointer;
   font-size: 0.9rem;
+}
+
+/* --- ESTILOS DO MODAL (NOVO) --- */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  /* Fundo escuro transparente */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-content {
+  background-color: white;
+  width: 100%;
+  max-width: 400px;
+  max-height: 90vh;
+  /* Altura máxima para não estourar a tela */
+  border-radius: 20px;
+  padding: 25px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Selo Verde (Fase 1) */
+.phase-badge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 40px;
+  height: 40px;
+  background-color: #76ff03;
+  /* Verde neon */
+  color: black;
+  font-weight: bold;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.modal-title {
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: 800;
+  margin-bottom: 15px;
+  color: #000;
+}
+
+.modal-scroll-text {
+  flex: 1;
+  overflow-y: auto;
+  /* Permite rolar o texto se for longo */
+  margin-bottom: 20px;
+  padding-right: 5px;
+  /* Espaço para scrollbar */
+  font-size: 0.85rem;
+  color: #444;
+  line-height: 1.4;
+  text-align: left;
+}
+
+.modal-scroll-text h3 {
+  font-size: 0.9rem;
+  font-weight: 800;
+  margin-top: 15px;
+  margin-bottom: 5px;
+  color: #000;
+}
+
+.modal-scroll-text p {
+  margin-bottom: 10px;
+}
+
+.btn-modal-back {
+  background-color: #d9d9d9;
+  color: #000;
+  font-weight: 700;
+  font-size: 1rem;
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
 }
