@@ -81,6 +81,11 @@ export default function MyPlan() {
           </div>
         </div>
 
+<<<<<<< HEAD
+=======
+       // Dentro do componente MyPlan
+        // ...
+>>>>>>> feature/instagram-verificacao
         <div className="header-info">
           {/* Adiciona o onClick e muda o cursor para pointer */}
           <span
@@ -91,6 +96,11 @@ export default function MyPlan() {
           </span>
           <span className="followers-count">0 seguidores</span>
         </div>
+<<<<<<< HEAD
+=======
+// ...
+        <div className="menu-icon-clean" onClick={() => setIsMenuOpen(true)}>≡</div>
+>>>>>>> feature/instagram-verificacao
       </header>
 
       <div className="progress-bar-container">
