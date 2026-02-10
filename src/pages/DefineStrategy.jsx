@@ -4,36 +4,33 @@ import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 import Sidebar from '../components/Sidebar';
+import PreferencesModal from '../components/PreferencesModal'; // <--- IMPORTAR
 import './DefineStrategy.css';
 
 export default function DefineStrategy() {
-  const { userData } = useUser(); // Dados vindos do Contexto
-  const [inputs, setInputs] = useState(['', '', '']); 
-  const [allPlans, setAllPlans] = useState([]); // Cache de busca
-  const [focusedIndex, setFocusedIndex] = useState(null);
+  const { userData } = useUser();
+  const [strategyInput, setStrategyInput] = useState(''); 
+  const [allPlans, setAllPlans] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [saving, setSaving] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  
+  // Estado para o Modal de Preferências
+  const [showPreferences, setShowPreferences] = useState(false); // <--- NOVO ESTADO
+
   const navigate = useNavigate();
 
-  // 1. Carrega dados iniciais
   useEffect(() => {
-    // Preenche inputs se já existir estratégia salva
-    if (userData?.strategy?.length) {
-      setInputs([
-        userData.strategy[0] || '',
-        userData.strategy[1] || '',
-        userData.strategy[2] || ''
-      ]);
+    if (userData?.strategy?.length > 0) {
+      setStrategyInput(userData.strategy[0]);
     }
-
-    // Busca lista de planos para autocomplete (Plans + Users)
     const fetchPlans = async () => {
+      // ... (código de busca de planos igual)
       try {
         const [plansSnap, usersSnap] = await Promise.all([
           getDocs(collection(db, "plans")),
           getDocs(collection(db, "users"))
         ]);
-
         const plans = plansSnap.docs.map(d => ({ ...d.data(), id: d.id, type: 'influencer' }));
         const users = usersSnap.docs.map(d => ({ 
             ...d.data(), 
@@ -42,42 +39,31 @@ export default function DefineStrategy() {
             hash: d.data().my_hash,
             type: 'user'
         }));
-
         setAllPlans([...plans, ...users]);
-      } catch (err) {
-        console.error("Erro ao buscar planos:", err);
-      }
+      } catch (err) { console.error(err); }
     };
     fetchPlans();
   }, [userData]);
 
   const handleSave = async () => {
     if (!auth.currentUser) return;
+    if (!strategyInput.trim()) {
+      alert("Por favor, preencha o campo antes de continuar.");
+      return;
+    }
     setSaving(true);
     try {
-      const finalStrategy = inputs.filter(item => item.trim() !== "");
+      const finalStrategy = [strategyInput.trim()];
       await updateDoc(doc(db, "users", auth.currentUser.uid), { strategy: finalStrategy });
       navigate('/meu-plano');
-    } catch (error) { 
-      alert("Erro ao salvar estratégia.");
-    } finally {
-      setSaving(false);
-    }
+    } catch (error) { alert("Erro ao salvar estratégia."); } 
+    finally { setSaving(false); }
   };
 
-
-
-  const handleInputChange = (index, val) => {
-    const newInputs = [...inputs];
-    newInputs[index] = val;
-    setInputs(newInputs);
-  };
-
-  const handleSelectPlan = (index, plan, type) => {
-    const newInputs = [...inputs];
-    newInputs[index] = type === 'hash' ? plan.hash : plan.handle;
-    setInputs(newInputs);
-    setFocusedIndex(null);
+  const handleSelectPlan = (plan, type) => {
+    const value = type === 'hash' ? plan.hash : plan.handle;
+    setStrategyInput(value);
+    setShowSuggestions(false);
   };
 
   const getFilteredPlans = (text) => {
@@ -93,6 +79,9 @@ export default function DefineStrategy() {
   return (
     <div className="page-container-white">
       <Sidebar isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+      
+      {/* Modal de Preferências sendo chamado aqui */}
+      <PreferencesModal isOpen={showPreferences} onClose={() => setShowPreferences(false)} />
 
       <header className="header-clean">
         <h1 className="brand-medium">vote<span className="brand-highlight-small">list</span></h1>
@@ -111,25 +100,24 @@ export default function DefineStrategy() {
 
       <main className="main-content-clean">
         <p className="page-instruction">
-          Siga listas de voto de quem te representa<br />
+          Siga uma lista de voto de quem te representa<br />
           (use @ p/ perfis do Instagram ou # p/ listas)
         </p>
 
         <div className="strategy-list">
-          {inputs.map((val, index) => (
-            <div key={index} className="strategy-input-wrapper-clean" style={{ zIndex: focusedIndex === index ? 50 : 1 }}>
+            <div className="strategy-input-wrapper-clean" style={{ zIndex: showSuggestions ? 50 : 1 }}>
               <input
                 className="strategy-input-clean"
-                placeholder={`Lista ${index + 1}`}
-                value={val}
-                onChange={(e) => handleInputChange(index, e.target.value)}
-                onFocus={() => setFocusedIndex(index)}
-                onBlur={() => setTimeout(() => setFocusedIndex(null), 200)}
+                placeholder="Digite aqui o @ ou #"
+                value={strategyInput}
+                onChange={(e) => setStrategyInput(e.target.value)}
+                onFocus={() => setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
               />
-              {focusedIndex === index && val.length > 1 && (
+              {showSuggestions && strategyInput.length > 1 && (
                 <div className="suggestions-box" onMouseDown={(e) => e.preventDefault()}>
-                  {getFilteredPlans(val).map(plan => (
-                    <div key={plan.id} className="suggestion-item" onClick={() => handleSelectPlan(index, plan, val.includes('#') ? 'hash' : 'handle')}>
+                  {getFilteredPlans(strategyInput).map(plan => (
+                    <div key={plan.id} className="suggestion-item" onClick={() => handleSelectPlan(plan, strategyInput.includes('#') ? 'hash' : 'handle')}>
                       <img src={plan.profile_image || "https://via.placeholder.com/40"} className="suggestion-avatar" alt="" />
                       <div className="suggestion-info">
                         <span className="suggestion-name">{plan.name}</span>
@@ -140,12 +128,19 @@ export default function DefineStrategy() {
                 </div>
               )}
             </div>
-          ))}
         </div>
+
+        <p className="or-divider">ou</p>
+        <p className="create-link">Crie sua própria lista de voto</p>
 
         <button className="btn-continue" onClick={handleSave} disabled={saving}>
           {saving ? "Salvando..." : "Continuar"}
         </button>
+
+        {/* --- LINK AGORA ABRE O MODAL --- */}
+        <p className="link-preferences" onClick={() => setShowPreferences(true)}>
+          Preferências
+        </p>
       </main>
     </div>
   );
