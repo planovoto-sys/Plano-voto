@@ -1,11 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { db, auth } from '../services/firebaseConfig';
+import { doc, updateDoc } from 'firebase/firestore';
+import { useUser } from '../contexts/UserContext';
 import './PreferencesModal.css';
 
 export default function PreferencesModal({ isOpen, onClose }) {
-  // Estado do botão deslizante (Começa desativado por padrão)
+  const { userData } = useUser();
+  // Inicia o estado com o valor que já está no banco de dados
   const [isRenovaActive, setIsRenovaActive] = useState(false);
 
+  // Sincroniza o estado local quando os dados do usuário carregam
+  useEffect(() => {
+    if (userData) {
+      setIsRenovaActive(userData.preferenciaRenova || false);
+    }
+  }, [userData]);
+
   if (!isOpen) return null;
+
+  const handleSave = async () => {
+    if (!auth.currentUser) return;
+    try {
+      const userRef = doc(db, "users", auth.currentUser.uid);
+      // Salva permanentemente no Firestore
+      await updateDoc(userRef, {
+        preferenciaRenova: isRenovaActive
+      });
+      onClose();
+    } catch (error) {
+      console.error("Erro ao salvar:", error);
+      alert("Erro ao salvar preferências.");
+    }
+  };
 
   return (
     <div className="modal-overlay">
@@ -16,20 +42,14 @@ export default function PreferencesModal({ isOpen, onClose }) {
         </div>
 
         <div className="modal-body">
-          {/* Seção do Plano B */}
           <h3 className="section-title">Siga um plano B (recomendado):</h3>
           
           <div className="toggle-card">
-            <span className="toggle-description">
-              Ative o plano de voto secundário (@renovabr)
-            </span>
-            
+            <span className="toggle-description">Ative o plano de voto secundário (@renovabr)</span>
             <div className="toggle-controls">
               <span className={`toggle-status ${isRenovaActive ? 'active' : ''}`}>
                 {isRenovaActive ? "ATIVO" : "DESATIVADO"}
               </span>
-              
-              {/* Botão Deslizante (Switch) */}
               <label className="switch">
                 <input 
                   type="checkbox" 
@@ -41,29 +61,13 @@ export default function PreferencesModal({ isOpen, onClose }) {
             </div>
           </div>
 
-          {/* Seção de Informações */}
           <div className="info-container">
             <h4 className="info-title">O que é o RenovaBR?</h4>
-            <p className="info-text">
-              É a maior escola de formação política do Brasil.<br/>
-              É uma escola pluripartidária, sem fins lucrativos,
-              que forma lideranças políticas e públicas para um
-              Brasil mais justo e menos desigual, e para uma
-              democracia mais participativa e informada ...
-            </p>
-            
-            <a 
-              href="https://renovabr.org" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="info-link"
-            >
-              Saiba mais em renovabr.org
-            </a>
+            <p className="info-text">É a maior escola de formação política do Brasil...</p>
           </div>
 
-          {/* Botão Salvar */}
-          <button className="btn-save" onClick={onClose}>
+          {/* Troquei o onClose pelo handleSave para gravar no banco */}
+          <button className="btn-save" onClick={handleSave}>
             Salvar
           </button>
         </div>
