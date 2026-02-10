@@ -141,3 +141,34 @@
   from { opacity: 0; }
   to { opacity: 1; }
 }
+/* ... Mantenha o CSS anterior ... */
+
+.menu-item {
+  /* Garante alinhamento vertical */
+  display: flex;
+  align-items: center;
+  gap: 12px; /* Espaço entre ícone e texto */
+  
+  padding: 15px 0;
+  font-size: 1rem;
+  color: #333;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.menu-item:hover {
+  color: #000;
+  font-weight: 600;
+}
+
+/* Classe para o container do SVG */
+.menu-icon-svg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666; /* Ícone cinza sutil */
+}
+
+.menu-item:hover .menu-icon-svg {
+  color: #000; /* Ícone fica preto no hover */
+}

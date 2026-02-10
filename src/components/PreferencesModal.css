@@ -1,0 +1,189 @@
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6); /* Um pouco mais escuro para foco */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal-content {
+  background: white;
+  padding: 30px 25px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 420px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+  animation: slideUp 0.3s ease-out;
+  position: relative;
+  font-family: sans-serif;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.modal-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin: 0;
+  color: #000;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  line-height: 1;
+  cursor: pointer;
+  color: #ccc;
+  transition: color 0.2s;
+}
+.close-btn:hover { color: #000; }
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- TÍTULO DA SEÇÃO --- */
+.section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 15px 0;
+}
+
+/* --- CARD DO TOGGLE --- */
+.toggle-card {
+  background-color: #f7f7f7;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.toggle-description {
+  font-size: 0.95rem;
+  color: #555;
+  font-weight: 500;
+}
+
+.toggle-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.toggle-status {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #999;
+  letter-spacing: 0.5px;
+}
+
+.toggle-status.active {
+  color: #000;
+}
+
+/* --- SWITCH (Botão Deslizante) --- */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 28px;
+}
+
+.switch input { 
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+input:checked + .slider {
+  background-color: #000; /* Preto quando ativo */
+}
+
+input:checked + .slider:before {
+  transform: translateX(22px);
+}
+
+/* Arredondado */
+.slider.round { border-radius: 34px; }
+.slider.round:before { border-radius: 50%; }
+
+/* --- ÁREA DE INFORMAÇÃO (RenovaBR) --- */
+.info-container {
+  margin-bottom: 30px;
+}
+
+.info-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #000;
+  margin: 0 0 10px 0;
+}
+
+.info-text {
+  font-size: 0.9rem;
+  color: #666;
+  line-height: 1.6;
+  margin: 0 0 15px 0;
+}
+
+.info-link {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #000;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* --- BOTÃO SALVAR --- */
+.btn-save {
+  width: 100%;
+  padding: 18px;
+  background-color: #000;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.btn-save:active {
+  transform: scale(0.98);
+}
+
+/* Animações do Modal */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }

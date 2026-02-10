@@ -1,164 +1,146 @@
+/* ... Mantenha o CSS anterior ... */
+
 .page-container-white {
   background-color: #fff;
   min-height: 100vh;
   padding: 20px;
   font-family: sans-serif;
-  position: relative;
 }
 
 .header-clean {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 20px;
 }
 
-.brand-medium {
-  font-size: 1.8rem;
-  font-weight: 800;
-  letter-spacing: -1px;
-}
+.brand-medium { font-size: 1.5rem; font-weight: 800; margin: 0; }
+.brand-highlight-small { background-color: #f0f0f0; padding: 0 4px; border-radius: 4px; }
 
-.brand-highlight-small {
-  background-color: #f0f0f0;
-  padding: 0 4px;
-  border-radius: 4px;
-}
-
-.header-info {
-  text-align: right;
-  font-size: 0.8rem;
-  color: #333;
-  display: flex;
-  flex-direction: column;
-  margin-right: 10px;
-}
-
-.followers-count {
-  color: #999;
-  font-size: 0.75rem;
-}
-
-.menu-icon-clean {
-  font-size: 1.5rem;
-  cursor: pointer;
-}
+.header-info { text-align: right; font-size: 0.8rem; color: #333; display: flex; flex-direction: column; margin-right: 10px; }
+.followers-count { color: #999; font-size: 0.75rem; }
+.menu-icon-clean { font-size: 1.5rem; cursor: pointer; }
 
 .breadcrumb-active {
-  background-color: #f9f9f9;
-  /* Fundo bem sutil no breadcrumb */
-  border-radius: 20px;
-  /* Arredondado igual na imagem */
-  padding: 10px 0;
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  font-weight: 800;
-  color: #d1d1d1;
+  font-size: 0.9rem;
+  color: #ccc;
+  font-weight: 700;
   margin-bottom: 40px;
 }
+.active-step { color: #000; border-bottom: 2px solid #000; padding-bottom: 2px; }
+.inactive-step { color: #ccc; }
 
-.active-step {
-  color: #000;
+.main-content-clean {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 400px;
+  margin: 0 auto;
+  text-align: center;
 }
 
 .page-instruction {
-  text-align: center;
-  color: #666;
+  font-size: 1rem;
+  color: #333;
   margin-bottom: 30px;
-  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.strategy-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.strategy-input-wrapper-clean {
+  position: relative;
+  width: 100%;
 }
 
 .strategy-input-clean {
   width: 100%;
   padding: 18px;
-  background-color: #eff0f2;
-  border: none;
   border-radius: 12px;
-  font-size: 0.95rem;
-  text-align: center;
+  border: 1px solid #e0e0e0;
+  background-color: #f9f9f9;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
 }
 
-.strategy-input-wrapper-clean {
-  position: relative;
-  margin-bottom: 12px;
+.strategy-input-clean:focus {
+  border-color: #000;
+  background-color: #fff;
 }
 
+/* Autocomplete */
 .suggestions-box {
   position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
+  top: 100%; left: 0; right: 0;
   background: white;
-  border: 1px solid #eee;
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  border: 1px solid #ddd;
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
   max-height: 200px;
   overflow-y: auto;
-  z-index: 100;
-}
-
-.suggestion-item {
-  padding: 10px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border-bottom: 1px solid #f5f5f5;
-  cursor: pointer;
-}
-
-.suggestion-avatar {
-  width: 35px;
-  height: 35px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.suggestion-info {
-  display: flex;
-  flex-direction: column;
+  margin-top: 5px;
   text-align: left;
 }
 
-.suggestion-name {
-  font-weight: bold;
+.suggestion-item {
+  padding: 10px 15px;
+  display: flex; align-items: center; gap: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+}
+.suggestion-item:hover { background-color: #f5f5f5; }
+.suggestion-avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
+.suggestion-info { display: flex; flex-direction: column; font-size: 0.85rem; }
+.suggestion-name { font-weight: 700; color: #333; }
+.suggestion-handle { color: #888; font-size: 0.75rem; }
+
+.or-divider {
+  color: #999;
+  margin: 15px 0;
   font-size: 0.9rem;
 }
 
-.suggestion-handle {
-  font-size: 0.8rem;
-  color: #666;
-}
-
-.or-divider {
-  text-align: center;
-  color: #888;
-  margin: 20px 0;
-}
-
 .create-link {
-  text-align: center;
+  color: #333;
   text-decoration: underline;
-  font-weight: 600;
-  cursor: pointer;
+  font-size: 0.9rem;
   margin-bottom: 30px;
+  cursor: pointer;
 }
 
 .btn-continue {
   width: 100%;
   padding: 18px;
-  background-color: #d9d9d9;
+  background-color: #000;
+  color: #fff;
   border: none;
   border-radius: 12px;
-  font-weight: 800;
+  font-weight: 700;
   font-size: 1.1rem;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.btn-continue:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* --- NOVO ESTILO DO LINK PREFERÊNCIAS --- */
+.link-preferences {
+  margin-top: 20px;
+  color: #888;
+  font-size: 0.9rem;
+  text-decoration: underline;
   cursor: pointer;
 }
 
-.help-link {
-  text-align: center;
-  text-decoration: underline;
-  color: #888;
-  margin-top: 20px;
-  font-size: 0.9rem;
+.link-preferences:hover {
+  color: #000;
 }
