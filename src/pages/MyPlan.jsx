@@ -59,14 +59,13 @@ export default function MyPlan() {
           </div>
         </div>
 
-       // Dentro do componente MyPlan
-        // ...
+
         <div className="header-info">
           <span onClick={() => navigate('/perfil')} style={{ cursor: 'pointer' }}>
             {userData?.my_hash || '...'} | <span style={{ textDecoration: 'underline' }}>informar</span>
           </span>
         </div>
-// ...
+
         <div className="menu-icon-clean" onClick={() => setIsMenuOpen(true)}>≡</div>
       </header>
 

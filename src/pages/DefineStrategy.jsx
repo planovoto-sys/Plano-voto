@@ -85,8 +85,7 @@ export default function DefineStrategy() {
 
       <header className="header-clean">
         <h1 className="brand-medium">vote<span className="brand-highlight-small">list</span></h1>
-        // Dentro do componente DefineStrategy
-        // ...
+       
         <div className="header-info">
           <span onClick={() => navigate('/perfil')} style={{ cursor: 'pointer' }}>
             {userData?.my_hash || '...'} | <span style={{ textDecoration: 'underline' }}>informar</span>
