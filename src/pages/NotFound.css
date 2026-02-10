@@ -1,0 +1,136 @@
+/* Herda o fundo branco do sistema */
+.centered-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  text-align: center;
+  font-family: sans-serif; /* Mesma fonte do App */
+}
+
+.not-found-header {
+  position: absolute;
+  top: 30px;
+}
+
+/* --- ANIMAÇÃO SVG --- */
+.animation-stage {
+  width: 150px;
+  height: 150px;
+  margin-bottom: 20px;
+}
+
+.vote-loader {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Estilos das linhas (Traço fino e elegante) */
+.box-shape, .box-flap, .paper-shape {
+  fill: #fff;
+  stroke: #1a1a1a;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.paper-lines {
+  stroke: #e0e0e0; /* Linhas cinza claro no papel */
+  stroke-width: 2;
+}
+
+/* Animação do Papel */
+.paper-group {
+  animation: insert-paper 3s ease-in-out infinite;
+}
+
+@keyframes insert-paper {
+  0% { transform: translateY(0); opacity: 0; }
+  20% { opacity: 1; }
+  40% { transform: translateY(25px); opacity: 1; } /* Entra na caixa */
+  45% { transform: translateY(25px); opacity: 0; } /* Some dentro */
+  100% { transform: translateY(25px); opacity: 0; }
+}
+
+/* Animação da Caixa (Tremendo "Não") */
+.box-shape, .box-flap {
+  transform-origin: center;
+  animation: shake-box 3s ease-in-out infinite;
+}
+
+@keyframes shake-box {
+  0%, 45% { transform: translateX(0); }
+  50% { transform: translateX(-2px) rotate(-2deg); }
+  55% { transform: translateX(2px) rotate(2deg); }
+  60% { transform: translateX(-2px) rotate(-2deg); }
+  65% { transform: translateX(2px) rotate(2deg); }
+  70% { transform: translateX(0); }
+  100% { transform: translateX(0); }
+}
+
+/* Símbolo de Erro (?) */
+.error-symbol {
+  font-family: sans-serif;
+  font-weight: 800;
+  font-size: 24px;
+  fill: #1a1a1a;
+  opacity: 0;
+  animation: show-error 3s ease-in-out infinite;
+}
+
+@keyframes show-error {
+  0%, 65% { opacity: 0; transform: translateY(0); }
+  70% { opacity: 1; transform: translateY(-10px); } /* Sobe flutuando */
+  90% { opacity: 1; transform: translateY(-15px); }
+  100% { opacity: 0; transform: translateY(-20px); }
+}
+
+/* --- TEXTOS (Tipografia do Sistema) --- */
+.text-content {
+  max-width: 400px;
+  padding: 0 20px;
+}
+
+.status-code {
+  font-size: 4rem;
+  font-weight: 900;
+  margin: 0;
+  color: #e0e0e0; /* Cinza bem claro para não brigar com o resto */
+  line-height: 1;
+}
+
+.status-message {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-top: -10px; /* Sobrepõe levemente o número grande */
+  margin-bottom: 15px;
+}
+
+.status-description {
+  color: #666;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 30px;
+}
+
+/* --- BOTÃO (Estilo Nativo) --- */
+.btn-clean-action {
+  background-color: #1a1a1a;
+  color: #fff;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 12px; /* Mesmo radius dos inputs do sistema */
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.2s;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.btn-clean-action:hover {
+  background-color: #333;
+  transform: translateY(-2px);
+}
