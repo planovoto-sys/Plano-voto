@@ -43,7 +43,7 @@ export default function MyPlan() {
   };
 
   const handleShare = () => {
-    const text = `Crie sua estratégia de voto no Votelist! 🇧🇷\n\nAcesse: plano-voto.vercel.app`;
+    const text = `Crie sua estratégia de voto no Votelist! 🇧🇷\n\nAcesse: https://plano-voto.vercel.app`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 
