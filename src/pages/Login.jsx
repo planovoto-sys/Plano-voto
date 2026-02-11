@@ -3,6 +3,7 @@ import { auth, googleProvider, db } from '../services/firebaseConfig';
 import { signInWithPopup } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import './Login.css';
+import HowItWorksModal from '../components/HowItWorksModal'; // Importar o modal
 
 export default function Login() {
   const [showModal, setShowModal] = useState(false);
@@ -46,21 +47,8 @@ export default function Login() {
 
       <p className="link-how" onClick={() => setShowModal(true)}>Como funciona</p>
 
-      {/* Modal Informativo */}
-      {showModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h2 className="modal-title">Como funciona</h2>
-            <div className="modal-scroll-text">
-              <p>Dos 156 milhões de eleitores brasileiros...</p>
-              <h3>O que é o votelist?</h3>
-              <p>Ferramenta para reduzir o desperdício de votos...</p>
-              {/* Conteúdo abreviado para brevidade */}
-            </div>
-            <button className="btn-modal-back" onClick={() => setShowModal(false)}>Voltar</button>
-          </div>
-        </div>
-      )}
+      {/* Modal de "Como Funciona" */}
+      <HowItWorksModal isOpen={showModal} onClose={() => setShowModal(false)} />
     </div>
   );
 }
