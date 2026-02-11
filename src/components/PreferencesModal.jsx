@@ -43,7 +43,7 @@ export default function PreferencesModal({ isOpen, onClose }) {
 
         <div className="modal-body">
           <h3 className="section-title">Siga um plano B (recomendado):</h3>
-          
+
           <div className="toggle-card">
             <span className="toggle-description">Ative o plano de voto secundário (@renovabr)</span>
             <div className="toggle-controls">
@@ -51,10 +51,10 @@ export default function PreferencesModal({ isOpen, onClose }) {
                 {isRenovaActive ? "ATIVO" : "DESATIVADO"}
               </span>
               <label className="switch">
-                <input 
-                  type="checkbox" 
-                  checked={isRenovaActive} 
-                  onChange={() => setIsRenovaActive(!isRenovaActive)} 
+                <input
+                  type="checkbox"
+                  checked={isRenovaActive}
+                  onChange={() => setIsRenovaActive(!isRenovaActive)}
                 />
                 <span className="slider round"></span>
               </label>
@@ -63,7 +63,11 @@ export default function PreferencesModal({ isOpen, onClose }) {
 
           <div className="info-container">
             <h4 className="info-title">O que é o RenovaBR?</h4>
-            <p className="info-text">É a maior escola de formação política do Brasil...</p>
+            <p className="info-text">É a maior escola de formação política do Brasil.
+              É uma escola pluripartidária, sem fins lucrativos,
+              que forma lideranças políticas e públicas para um
+              Brasil mais justo e menos desigual, e para uma
+              democracia mais participativa e informada ...</p>
           </div>
 
           {/* Troquei o onClose pelo handleSave para gravar no banco */}
