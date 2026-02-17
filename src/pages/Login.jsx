@@ -2,40 +2,19 @@ import React, { useState } from 'react';
 import { auth, googleProvider, db } from '../services/firebaseConfig';
 import { signInWithPopup } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
+import Xarrow, { useXarrow, Xwrapper } from 'react-xarrows';
 import './Login.css';
-
-// SVG das Setas desenhadas para coincidir com o layout da imagem
-const ArrowsDiagram = () => (
-  <svg className="arrows-layer" viewBox="0 0 320 200" fill="none">
-    <defs>
-      <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-        <polygon points="0 0, 10 3.5, 0 7" fill="#000" />
-      </marker>
-    </defs>
-    
-    {/* Seta 1: Siga (centro-esq) -> Planos (baixo-esq) */}
-    {/* Curva saindo de baixo do 'siga' e indo para a esquerda */}
-    <path d="M 60 115 Q 40 140 40 160" stroke="black" strokeWidth="1.5" markerEnd="url(#arrowhead)" />
-
-    {/* Seta 2: Vete (centro) -> Candidatos (topo-dir) */}
-    {/* Curva saindo de cima do 'vete' e indo para direita-cima */}
-    <path d="M 160 90 Q 180 60 200 45" stroke="black" strokeWidth="1.5" markerEnd="url(#arrowhead)" />
-
-    {/* Seta 3: Vote (centro-dir) -> Estratégia (baixo-dir) */}
-    {/* Curva saindo de baixo do 'vote' e indo para direita */}
-    <path d="M 260 115 Q 290 130 290 155" stroke="black" strokeWidth="1.5" markerEnd="url(#arrowhead)" />
-  </svg>
-);
 
 export default function Login() {
   const [showModal, setShowModal] = useState(false);
+  const updateXarrow = useXarrow();
 
   const handleLogin = async () => {
     try {
       googleProvider.setCustomParameters({ prompt: 'select_account' });
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
-      
+
       const userRef = doc(db, "users", user.uid);
       const docSnap = await getDoc(userRef);
 
@@ -46,7 +25,7 @@ export default function Login() {
           name: user.displayName,
           email: user.email,
           profile_image: user.photoURL,
-          my_hash: userHash, 
+          my_hash: userHash,
           strategy: [],
           created_at: new Date()
         });
@@ -57,63 +36,122 @@ export default function Login() {
   };
 
   return (
-    <div className="login-page">
+    <div className="login-page" onScroll={updateXarrow}>
       <div className="login-content">
-        
+
         {/* LOGO */}
         <h1 className="brand-logo">plano<span className="brand-bold">de</span>voto</h1>
 
-        {/* DIAGRAMA VISUAL (Fixo em 320px para não quebrar) */}
-        <div className="diagram-container">
-          {/* Camada de Setas (SVG Absoluto) */}
-          <ArrowsDiagram />
+        {/* DIAGRAMA COM SETAS (Xarrows) */}
+        <Xwrapper>
+          <div className="diagram-container-anchors">
 
-          {/* Texto Central */}
-          <div className="center-text">
-            <span>siga</span> <span className="light">&gt;</span> <span>vete</span> <span className="light">&gt;</span> <span>vote</span>
+            {/* TEXTO CENTRAL (Origens das Setas) */}
+            <div className="center-text-block">
+              <span id="anchor-siga">siga</span>
+              <span className="light">&gt;</span>
+              <span id="anchor-vete">vete</span>
+              <span className="light">&gt;</span>
+              <span id="anchor-vote">vote</span>
+            </div>
+
+            {/* BALÕES (Destinos das Setas) */}
+
+            {/* 1. Planos (Esquerda) */}
+            <div id="target-planos" className="bubble bubble-planos">
+              planos alinhados<br />(que te representam)
+            </div>
+
+            {/* 2. Candidatos (Direita Topo - Deslocado no CSS) */}
+            <div id="target-candidatos" className="bubble bubble-candidatos">
+              candidatos desalinhados<br />(que você não aprova)
+            </div>
+
+            {/* 3. Estratégia (Direita Baixo) */}
+            <div id="target-estrategia" className="bubble bubble-estrategia">
+              com<br />estratégia
+            </div>
+
+            {/* --- DESENHO DAS SETAS --- */}
+
+            {/* Seta 1: Siga -> Planos (Curva para baixo e esquerda) */}
+            <Xarrow
+              start="anchor-siga"
+              end="target-planos"
+              startAnchor="bottom"
+              endAnchor="top"
+              color="black"
+              strokeWidth={1.5}
+              headSize={4}
+              curveness={0.6}
+              zIndex={0}
+              animateDrawing={1.2}
+            />
+
+            {/* Seta 2: Vete -> Candidatos (Curva para cima e direita) */}
+            {/* Sai do TOPO e entra na LATERAL ESQUERDA para fazer o arco perfeito */}
+            <Xarrow
+              start="anchor-vete"
+              end="target-candidatos"
+              startAnchor="top"
+              endAnchor="left"
+              color="black"
+              strokeWidth={1.5}
+              headSize={4}
+              curveness={0.8}
+              zIndex={0}
+              animateDrawing={1.2}
+            />
+
+            {/* Seta 3: Vote -> Estratégia (Curva para baixo e direita) */}
+            <Xarrow
+              start="anchor-vote"
+              end="target-estrategia"
+              startAnchor="bottom"
+              endAnchor="top"
+              color="black"
+              strokeWidth={1.5}
+              headSize={4}
+              curveness={0.6}
+              zIndex={0}
+              animateDrawing={1.2}
+            />
+
           </div>
+        </Xwrapper>
 
-          {/* Balões de Texto (Posicionados Absolutamente) */}
-          <div className="bubble bubble-planos">
-            planos alinhados<br/>(que te representam)
-          </div>
-
-          <div className="bubble bubble-candidatos">
-            candidatos desalinhados<br/>(que você não aprova)
-          </div>
-
-          <div className="bubble bubble-estrategia">
-            com<br/>estratégia
-          </div>
-        </div>
-
-        {/* BOTÃO */}
+        {/* BOTÃO DE AÇÃO */}
         <button onClick={handleLogin} className="btn-comecar">
           Começar
         </button>
 
-        {/* LINK SAIBA MAIS */}
+        {/* LINK SAIBA MAIS (NEON) */}
         <p className="btn-saiba-mais" onClick={() => setShowModal(true)}>
           Saiba mais
         </p>
 
       </div>
 
-      {/* MODAL (Fora do fluxo principal para garantir z-index) */}
+      {/* MODAL DE CONTEÚDO */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal-card" onClick={e => e.stopPropagation()}>
+
             <div className="modal-header">
-              <h2>Plano de Voto</h2>
+            
               <button className="close-btn" onClick={() => setShowModal(false)}>×</button>
             </div>
-            
+
             <div className="modal-scroll-area">
-              <p className="doc-subtitle">Um protocolo de organização de preferências eleitorais individuais em coletivas</p>
-              
+
+              <div className="doc-header">
+                <h1 className="doc-title">Plano de Voto</h1>
+                <p className="doc-subtitle">Um protocolo de organização de preferências eleitorais individuais em coletivas</p>
+              </div>
+
               <div className="doc-section">
                 <h3>1. Propósito</h3>
-                <p>O <strong>Plano de Voto</strong> é um protocolo técnico para organizar preferências eleitorais individuais considerando seus efeitos coletivos. Ele não recomenda candidatos, não avalia conteúdo político e não prevê resultados eleitorais. Seu objetivo é tornar explícitas e operacionalizar regras de organização de preferências que hoje operam de forma informal.</p>
+                <p>O Plano de Voto é um protocolo técnico para organizar preferências eleitorais individuais considerando seus efeitos coletivos. Ele não recomenda candidatos, não avalia conteúdo político e não prevê resultados eleitorais. Seu objetivo é tornar explícitas e operacionalizar regras de organização de preferências que hoje operam de forma informal.</p>
               </div>
 
               <div className="doc-section">
@@ -128,25 +166,33 @@ export default function Login() {
 
               <div className="doc-section">
                 <h3>3. Tipos de usuários</h3>
+
                 <h4>3.1 Usuário Criador</h4>
-                <p>Responsável por criar seu plano de voto (público). Um plano contém:</p>
-                <ul>
-                  <li>lista ordenada de candidatos por cargo e unidade da federação;</li>
-                  <li>metas de voto por candidato.</li>
-                </ul>
-                <p>O criador não segue outros planos e pode editar seu plano apenas dentro do período autorizado.</p>
-                
+                <p>Responsável por criar seu plano de voto (público).</p>
+                <div className="highlight-box">
+                  <p><strong>Um plano contém:</strong></p>
+                  <ul>
+                    <li>Lista ordenada de candidatos por cargo e unidade da federação;</li>
+                    <li>Metas de voto por candidato.</li>
+                  </ul>
+                  <p><strong>O criador:</strong></p>
+                  <ul>
+                    <li>Não segue outros planos;</li>
+                    <li>Pode editar seu plano apenas dentro do período autorizado.</li>
+                  </ul>
+                </div>
+
                 <h4>3.2 Usuário Seguidor</h4>
                 <p>Responsável por gerar seu plano de voto (privado).</p>
                 <p><strong>Fluxo do seguidor:</strong></p>
                 <ul>
-                  <li><strong>Siga:</strong> seleciona o plano que deseja seguir (usando o @ do perfil do Instagram ou # do plano de voto);</li>
-                  <li><strong>Siga um plano B (opcional*):</strong> segue um plano secundário padronizado (@renovabr).</li>
-                  <li><strong>Vete:</strong> exclui candidatos indesejados;</li>
-                  <li><strong>Vete candidatos mal avaliados (opcional*):</strong> define a nota mínima (no Ranking dos Políticos).</li>
-                  <li><strong>Vote:</strong> recebe seu plano de voto (privado) com um candidato seguido e não vetado para cada cargo.</li>
+                  <li><strong>1. Siga:</strong> seleciona o plano que deseja seguir (usando o @ do perfil do Instagram ou # do plano de voto);</li>
+                  <li>1.1. <em>Siga um plano B (opcional*):</em> segue um plano secundário padronizado (@renovabr).</li>
+                  <li><strong>2. Vete:</strong> exclui candidatos indesejados;</li>
+                  <li>2.1. <em>Vete candidatos mal avaliados (opcional*):</em> define a nota mínima (no Ranking dos Políticos).</li>
+                  <li><strong>3. Vote:</strong> recebe seu plano de voto (privado) com um candidato seguido e não vetado para cada cargo.</li>
                 </ul>
-                <p className="note">* ativado por padrão.</p>
+                <span className="note">* ativado por padrão.</span>
               </div>
 
               <div className="doc-section">
@@ -162,7 +208,14 @@ export default function Login() {
               <div className="doc-section">
                 <h3>5. Vetos manuais e automáticos</h3>
                 <p>O usuário pode vetar manualmente qualquer candidato ou ativar um veto automático baseado no Ranking dos Políticos.</p>
-                <p><strong>Configuração:</strong> define-se a nota mínima aceitável (padrão: nota 7). A nota pode ser alterada livremente (inclusive para 0).</p>
+                <div className="highlight-box">
+                  <p><strong>Configuração do veto automático:</strong></p>
+                  <ul>
+                    <li>Define-se a nota mínima aceitável;</li>
+                    <li>Padrão do sistema: <strong>nota 7</strong>;</li>
+                    <li>A nota pode ser alterada livremente (inclusive para 0).</li>
+                  </ul>
+                </div>
               </div>
 
               <div className="doc-section">
@@ -177,21 +230,28 @@ export default function Login() {
 
               <div className="doc-section">
                 <h3>7. Ordem de processamento</h3>
-                <p>Os planos (privados) dos usuários seguidores são gerados por iterações sucessivas. Em cada iteração, percorrem-se os planos dos usuários por ordem de registro e cada plano recebe uma alocação. O processo continua até que todos os planos estejam completos.</p>
+                <p>Os planos (privados) dos usuários seguidores são gerados por iterações sucessivas.</p>
+                <ul>
+                  <li>Em cada iteração, percorrem-se os planos dos usuários por ordem de registro;</li>
+                  <li>Cada plano recebe uma alocação por iteração;</li>
+                  <li>O processo continua até que todos os planos estejam completos.</li>
+                </ul>
               </div>
 
               <div className="doc-section">
                 <h3>8. Linha do tempo oficial — Eleições 2026</h3>
-                <p><strong>Usuários Criadores:</strong></p>
+
+                <h4>Usuários Criadores</h4>
                 <ul>
-                  <li>15/08/26: data limite para criação de planos;</li>
-                  <li>16/08/26 a 20/09/26: período de edição de planos.</li>
+                  <li><strong>15/08/26:</strong> Data limite para criação de planos;</li>
+                  <li><strong>16/08/26 a 20/09/26:</strong> Período de edição de planos (cadastro de candidatos e metas).</li>
                 </ul>
-                <p><strong>Usuários Seguidores:</strong></p>
+
+                <h4>Usuários Seguidores</h4>
                 <ul>
-                  <li>25/09/26: data limite para seguir planos;</li>
-                  <li>20/09/26 a 25/09/26: período de vetos;</li>
-                  <li>26/09/26 a 04/10/26: período de acesso ao plano de voto gerado.</li>
+                  <li><strong>25/09/26:</strong> Data limite para seguir planos;</li>
+                  <li><strong>20/09/26 a 25/09/26:</strong> Período de vetos;</li>
+                  <li><strong>26/09/26 a 04/10/26:</strong> Período de acesso ao plano de voto gerado.</li>
                 </ul>
               </div>
 
@@ -199,6 +259,7 @@ export default function Login() {
                 <h3>9. Escopo e limites</h3>
                 <p>O plano de voto fornece uma infraestrutura de coordenação racional do voto, preservando a autonomia do eleitor.</p>
               </div>
+
             </div>
           </div>
         </div>
