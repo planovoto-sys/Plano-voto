@@ -1,158 +1,249 @@
-.login-container {
+/* Container Geral */
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #fff;
+  font-family: 'Inter', sans-serif;
+  overflow: hidden;
+}
+
+.login-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  height: 100vh;
-  padding: 30px;
-  background-color: #fff;
-  font-family: 'Inter', sans-serif;
-  position: relative;
-  /* Para o modal fixar corretamente */
-}
-
-/* ... Estilos anteriores (brand, subtitle, btn-start) ... */
-.brand-large {
-  font-size: 3.5rem;
-  font-weight: 800;
-  color: #000;
-  letter-spacing: -1.5px;
-  margin-bottom: 5px;
-}
-
-.brand-highlight {
-  background-color: #f0f0f0;
-  padding: 0 5px;
-  border-radius: 8px;
-}
-
-.login-subtitle {
-  color: #e0e0e0;
-  font-weight: 700;
-  font-size: 1rem;
-  margin-bottom: 60px;
-}
-
-.breadcrumb {
-  color: #e0e0e0;
-  font-weight: 800;
-  font-size: 1.2rem;
-  margin-bottom: 60px;
-  letter-spacing: 1px;
-}
-
-.btn-start {
-  background-color: #d9d9d9;
-  color: #000;
-  font-weight: 700;
-  font-size: 1.1rem;
   width: 100%;
-  max-width: 300px;
-  padding: 18px;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
+  max-width: 360px; /* Largura segura para mobile */
+  padding: 20px;
+}
+
+/* LOGO */
+.brand-logo {
+  font-size: 2.8rem;
+  font-weight: 700;
+  letter-spacing: -1.5px;
+  color: #000;
   margin-bottom: 20px;
+  text-align: center;
 }
 
-.link-how {
-  color: #777;
-  text-decoration: underline;
-  cursor: pointer;
-  font-size: 0.9rem;
+.brand-bold {
+  font-weight: 800;
 }
 
-/* --- ESTILOS DO MODAL (NOVO) --- */
+/* --- DIAGRAMA (LAYOUT FIXO) --- */
+.diagram-container {
+  position: relative;
+  width: 320px;
+  height: 240px; /* Altura exata para caber setas e textos */
+  margin-bottom: 40px;
+  /* background: rgba(0,0,0,0.02);  Para debug */
+}
 
-.modal-overlay {
-  position: fixed;
+/* Camada SVG (Setas) */
+.arrows-layer {
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  /* Fundo escuro transparente */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  padding: 20px;
+  pointer-events: none;
+  z-index: 1; /* Atrás dos textos */
 }
 
-.modal-content {
-  background-color: white;
-  width: 100%;
-  max-width: 400px;
-  max-height: 90vh;
-  /* Altura máxima para não estourar a tela */
-  border-radius: 20px;
-  padding: 25px;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-}
-
-/* Selo Verde (Fase 1) */
-.phase-badge {
+/* Texto Central: Siga > Vete > Vote */
+.center-text {
   position: absolute;
-  top: -10px;
-  right: -10px;
-  width: 40px;
-  height: 40px;
-  background-color: #76ff03;
-  /* Verde neon */
-  color: black;
-  font-weight: bold;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
-
-.modal-title {
+  top: 100px; /* Meio vertical do SVG */
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
   text-align: center;
-  font-size: 1.2rem;
+  font-size: 1.6rem;
   font-weight: 800;
-  margin-bottom: 15px;
-  color: #000;
+  color: #e0e0e0; /* Cinza bem claro */
+  z-index: 2;
+  white-space: nowrap;
 }
 
-.modal-scroll-text {
-  flex: 1;
-  overflow-y: auto;
-  /* Permite rolar o texto se for longo */
-  margin-bottom: 20px;
-  padding-right: 5px;
-  /* Espaço para scrollbar */
-  font-size: 0.85rem;
-  color: #444;
-  line-height: 1.4;
-  text-align: left;
+.light {
+  font-weight: 400;
+  margin: 0 2px;
 }
 
-.modal-scroll-text h3 {
-  font-size: 0.9rem;
-  font-weight: 800;
-  margin-top: 15px;
-  margin-bottom: 5px;
-  color: #000;
+/* Balões (Bubbles) */
+.bubble {
+  position: absolute;
+  background-color: #f2f4f6;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  color: #555;
+  text-align: center;
+  line-height: 1.25;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  z-index: 3;
 }
 
-.modal-scroll-text p {
-  margin-bottom: 10px;
+/* Posições Exatas baseadas no SVG e na imagem */
+
+/* 1. Candidatos (Topo Direita) */
+.bubble-candidatos {
+  top: 0px;
+  right: 0px;
+  max-width: 160px;
 }
 
-.btn-modal-back {
-  background-color: #d9d9d9;
+/* 2. Planos (Baixo Esquerda) */
+.bubble-planos {
+  bottom: 20px;
+  left: 0px;
+  max-width: 140px;
+}
+
+/* 3. Estratégia (Baixo Direita) */
+.bubble-estrategia {
+  bottom: 25px;
+  right: 10px;
+  max-width: 100px;
+}
+
+/* --- BOTÕES --- */
+.btn-comecar {
+  background-color: #d9d9d9; /* Cinza do mockup */
   color: #000;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 1.1rem;
   width: 100%;
-  padding: 15px;
+  padding: 16px;
   border: none;
   border-radius: 12px;
   cursor: pointer;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.btn-saiba-mais {
+  font-size: 0.9rem;
+  color: #888;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 10px 20px;
+  margin: 0;
+  /* Animação de piscar cinza suave sem mudar tamanho */
+  animation: blinkGray 2s infinite ease-in-out;
+}
+
+@keyframes blinkGray {
+  0%, 100% { color: #888; }
+  50% { color: #555; } /* Levemente mais escuro */
+}
+
+/* --- MODAL (Correção para aparecer sempre) --- */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9999; /* Z-index altíssimo para sobrepor tudo */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  backdrop-filter: blur(2px); /* Efeito opcional bonito */
+}
+
+.modal-card {
+  background-color: #fff;
+  width: 100%;
+  max-width: 450px;
+  height: 85vh; /* Ocupa boa parte da tela */
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  animation: slideUp 0.3s ease-out;
+}
+
+.modal-header {
+  padding: 15px 20px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 {
+  font-size: 1.1rem;
+  margin: 0;
+  font-weight: 700;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  line-height: 1;
+  color: #999;
+  cursor: pointer;
+  padding: 0 5px;
+}
+
+.modal-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  text-align: left;
+}
+
+/* Estilos do Texto do Documento */
+.doc-subtitle {
+  font-style: italic;
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 15px;
+}
+
+.doc-section {
+  margin-bottom: 25px;
+}
+
+.doc-section h3 {
+  font-size: 1rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+  color: #000;
+}
+
+.doc-section h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-top: 15px;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.doc-section p, .doc-section li {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #444;
+  margin-bottom: 8px;
+}
+
+.doc-section ul {
+  padding-left: 20px;
+  margin-bottom: 10px;
+}
+
+.note {
+  font-size: 0.8rem;
+  color: #888;
+  margin-top: -5px;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
