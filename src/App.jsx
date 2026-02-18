@@ -5,7 +5,7 @@ import { useUser } from './contexts/UserContext';
 import Login from './pages/Login';
 import Intro from './pages/Intro';
 import DefineStrategy from './pages/DefineStrategy';
-import MyPlan from './pages/MyPlan';
+
 import NotFound from './pages/NotFound';
 
 const LoadingScreen = () => (
@@ -18,7 +18,7 @@ function AuthRedirect() {
   const { userData } = useUser();
   if (!userData) return <Navigate to="/estrategia" />;
   const hasPlan = userData.strategy && userData.strategy.length > 0;
-  return <Navigate to={hasPlan ? "/meu-plano" : "/estrategia"} replace />;
+  return <Navigate to={hasPlan ? '/estrategia' : '/login'} replace />;
 }
 
 function App() {
@@ -32,7 +32,6 @@ function App() {
         <Route path="/" element={user ? <AuthRedirect /> : <Intro />} />
         <Route path="/login" element={!user ? <Login /> : <AuthRedirect />} />
         <Route path="/estrategia" element={user ? <DefineStrategy /> : <Navigate to="/login" />} />
-        <Route path="/meu-plano" element={user ? <MyPlan /> : <Navigate to="/login" />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

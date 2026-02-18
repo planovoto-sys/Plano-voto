@@ -1,70 +1,57 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from '../services/firebaseConfig';
-import { collection, getDocs, doc, updateDoc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 import Sidebar from '../components/Sidebar';
 import PreferencesModal from '../components/PreferencesModal';
+import SuccessModal from '../components/SuccessModal';
 import './DefineStrategy.css';
 
 export default function DefineStrategy() {
-  const { userData, setUserData } = useUser(); // Garantir que temos o setUserData para atualizar o contexto localmente se precisar
+  const { userData, setUserData } = useUser();
   const [strategyInput, setStrategyInput] = useState('');
   const [allPlans, setAllPlans] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [saving, setSaving] = useState(false);
   
-  // Controle do Menu e Modal
+  // Controle de Menu e Modais
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showPreferences, setShowPreferences] = useState(false);
+  
+  // --- NOVOS ESTADOS PARA O MODAL ---
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [modalDate, setModalDate] = useState(''); // Estado para guardar a data dinâmica
 
   const navigate = useNavigate();
 
-  // 1. GERAÇÃO AUTOMÁTICA DE HASH SE NÃO EXISTIR
+  // 1. GERAÇÃO DE HASH
   useEffect(() => {
     const checkAndGenerateHash = async () => {
       if (auth.currentUser && userData && !userData.my_hash) {
-        // Gera hash aleatório de 6 digitos (ex: #ab3f91)
         const newHash = '#' + Math.random().toString(36).substring(2, 8);
-        
         try {
-          const userRef = doc(db, "users", auth.currentUser.uid);
-          await updateDoc(userRef, { my_hash: newHash });
-          
-          // Atualiza o estado local para refletir na hora
-          if (setUserData) {
-            setUserData(prev => ({ ...prev, my_hash: newHash }));
-          }
-          console.log("Hash gerado automaticamente:", newHash);
-        } catch (error) {
-          console.error("Erro ao gerar hash:", error);
-        }
+          await updateDoc(doc(db, "users", auth.currentUser.uid), { my_hash: newHash });
+          if (setUserData) setUserData(prev => ({ ...prev, my_hash: newHash }));
+        } catch (error) { console.error("Erro hash:", error); }
       }
     };
-
     checkAndGenerateHash();
   }, [userData, setUserData]);
 
-  // 2. CARREGAR ESTRATÉGIA E PLANOS
+  // 2. CARREGAR DADOS
   useEffect(() => {
-    if (userData?.strategy?.length > 0) {
-      setStrategyInput(userData.strategy[0]);
-    }
-
+    if (userData?.strategy?.length > 0) setStrategyInput(userData.strategy[0]);
     const fetchPlans = async () => {
       try {
         const [plansSnap, usersSnap] = await Promise.all([
           getDocs(collection(db, "plans")),
           getDocs(collection(db, "users"))
         ]);
-        
         const plans = plansSnap.docs.map(d => ({ ...d.data(), id: d.id, type: 'influencer' }));
         const users = usersSnap.docs.map(d => ({ 
-            ...d.data(), 
-            id: d.id, 
-            handle: d.data().username || d.data().name, 
-            hash: d.data().my_hash,
-            type: 'user'
+            ...d.data(), id: d.id, handle: d.data().username || d.data().name, 
+            hash: d.data().my_hash, type: 'user'
         }));
         setAllPlans([...plans, ...users]);
       } catch (err) { console.error(err); }
@@ -72,6 +59,7 @@ export default function DefineStrategy() {
     fetchPlans();
   }, [userData]);
 
+  // --- FUNÇÃO DE SALVAR (BOTÃO CONTINUAR) ---
   const handleSave = async () => {
     if (!auth.currentUser) return;
     if (!strategyInput.trim()) {
@@ -82,9 +70,42 @@ export default function DefineStrategy() {
     try {
       const finalStrategy = [strategyInput.trim()];
       await updateDoc(doc(db, "users", auth.currentUser.uid), { strategy: finalStrategy });
-      navigate('/meu-plano');
-    } catch (error) { alert("Erro ao salvar estratégia."); } 
-    finally { setSaving(false); }
+      
+      setSaving(false);
+      
+      // Define a data específica deste fluxo e abre o modal
+      setModalDate('20/09/26');
+      setShowSuccessModal(true); 
+
+    } catch (error) { 
+      alert("Erro ao salvar estratégia."); 
+      setSaving(false);
+    } 
+  };
+
+  // --- NOVA FUNÇÃO: CRIAR PRÓPRIO PLANO ---
+  const handleCreatePlan = () => {
+    // Aqui você pode adicionar lógica extra se precisar salvar algo antes
+    // Por enquanto, apenas define a outra data e abre o modal
+    setModalDate('16/08/2026');
+    setShowSuccessModal(true);
+  };
+
+  const handleCloseSuccess = () => {
+    setShowSuccessModal(false);
+    navigate('/estrategia');
+  };
+
+  const handleInvite = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: 'Plano de Voto',
+        text: `Siga meu plano de voto: ${userData?.my_hash}`,
+        url: window.location.href
+      }).catch(console.error);
+    } else {
+      alert("Link copiado! (Simulação)");
+    }
   };
 
   const handleSelectPlan = (plan, type) => {
@@ -105,45 +126,39 @@ export default function DefineStrategy() {
 
   return (
     <div className="page-container-white">
-      {/* Menu Lateral e Modal */}
       <Sidebar isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
       <PreferencesModal isOpen={showPreferences} onClose={() => setShowPreferences(false)} />
 
-      {/* HEADER: Logo + Hash + Menu */}
+      {/* MODAL AGORA RECEBE A DATA DINÂMICA */}
+      <SuccessModal 
+        isOpen={showSuccessModal} 
+        onClose={handleCloseSuccess} 
+        date={modalDate} 
+        onInvite={handleInvite}
+      />
+
       <header className="header-clean">
         <h1 className="brand-logo-small">plano<span className="brand-bold">de</span>voto</h1>
-        
         <div className="header-actions">
-          {/* Exibe o Hash ou '...' carregando */}
-          <span className="user-hash-display">
-            {userData?.my_hash || '...'}
-          </span>
-          
-          {/* Menu Sanduíche */}
+          <span className="user-hash-display">{userData?.my_hash || '...'}</span>
           <button className="menu-btn" onClick={() => setIsMenuOpen(true)}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M4 6H20M4 12H20M4 18H20" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 6H20M4 12H20M4 18H20" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
           </button>
         </div>
       </header>
 
       <main className="main-content-clean">
-        
-        {/* NAV PILL: Siga / Vete / Vote */}
         <div className="nav-pill-container">
           <span className="nav-item active">siga</span>
           <span className="nav-item">vete</span>
           <span className="nav-item">vote</span>
         </div>
 
-        {/* INSTRUÇÃO */}
         <p className="page-instruction">
           Siga o plano de voto de quem te representa<br />
           (digite abaixo o @ do Instagram ou # do plano)
         </p>
 
-        {/* INPUT ESTILO CAIXA CINZA */}
         <div className="input-group-clean">
             <div className="input-wrapper-gray">
               <input
@@ -154,8 +169,6 @@ export default function DefineStrategy() {
                 onFocus={() => setShowSuggestions(true)}
                 onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
               />
-              
-              {/* Autocomplete Dropdown */}
               {showSuggestions && strategyInput.length > 1 && (
                 <div className="suggestions-box-gray" onMouseDown={(e) => e.preventDefault()}>
                   {getFilteredPlans(strategyInput).map(plan => (
@@ -173,18 +186,18 @@ export default function DefineStrategy() {
 
         <p className="or-divider">ou</p>
         
-        <p className="create-link">Crie seu próprio plano de voto</p>
+        {/* LINK AGORA TEM ONCLICK QUE ABRE O MODAL COM A NOVA DATA */}
+        <p className="create-link" onClick={handleCreatePlan}>
+          Crie seu próprio plano de voto
+        </p>
 
-        {/* BOTÃO CONTINUAR */}
         <button className="btn-continue-gray" onClick={handleSave} disabled={saving}>
           {saving ? "Salvando..." : "Continuar"}
         </button>
 
-        {/* LINK PREFERÊNCIAS */}
         <p className="link-preferences" onClick={() => setShowPreferences(true)}>
           Preferências
         </p>
-
       </main>
     </div>
   );
