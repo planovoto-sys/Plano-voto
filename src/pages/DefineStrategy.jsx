@@ -97,14 +97,48 @@ export default function DefineStrategy() {
   };
 
   const handleInvite = () => {
+    // Pega os dados do usuário do contexto ou usa valores padrão caso não tenha carregado
+    const nome = userData?.name || 'Usuário';
+    const arroba = userData?.username ? `${userData.username}` : '';
+    const hash = userData?.my_hash || '#000000';
+
+    // Monta o texto com as quebras de linha corretas
+    const shareText = `Em 2️⃣0️⃣2️⃣6️⃣ faça diferente:
+❌ Não vote no escuro 🙈
+❌ Não desperdice votos 🗑
+
+Com o PLANO DE VOTO:
+O voto é individual 👤
+A estratégia é coletiva 👤👤👤
+✅ Siga planos alinhados
+✅ Vete candidatos desalinhados
+✅ Vote com estratégia 
+
+Se não tiver um plano melhor, acesse:
+👉 planodevoto.app
+
+${nome}
+${arroba}
+${hash}`;
+
+    // Tenta usar o compartilhamento nativo do celular
     if (navigator.share) {
       navigator.share({
-        title: 'Plano de Voto',
-        text: `Siga meu plano de voto: ${userData?.my_hash}`,
-        url: window.location.href
-      }).catch(console.error);
+        text: shareText
+      }).catch((error) => console.error("Erro ao compartilhar:", error));
     } else {
-      alert("Link copiado! (Simulação)");
+      // Fallback para Desktop: Tenta abrir o WhatsApp Web ou copia para a área de transferência
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      
+      if (!isMobile) {
+        // Abre o WhatsApp Web já com o texto preenchido
+        const whatsappUrl = `https://web.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+        window.open(whatsappUrl, '_blank');
+      } else {
+        // Copia o texto (último recurso)
+        navigator.clipboard.writeText(shareText);
+        alert("Mensagem copiada para a área de transferência!");
+      }
     }
   };
 
