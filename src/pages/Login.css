@@ -1,158 +1,404 @@
-.login-container {
+/* =========================================
+   LOGIN.CSS - VERSÃO FINAL COMPLETA
+   ========================================= */
+
+/* Importando fonte Inter como fallback de qualidade */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+
+:root {
+  /* Tenta usar a fonte Aptos (nova padrão Microsoft), senão usa Inter */
+  --font-main: 'Aptos', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Paleta de Cores Clean */
+  --bg-color: #ffffff;
+  --text-primary: #000000;
+  --text-secondary: #555555;
+  --text-light-gray: #e0e0e0;
+  /* Cor do texto "siga > vete > vote" */
+  --bubble-bg: #f2f4f6;
+  /* Fundo dos balões */
+  --btn-bg: #d9d9d9;
+  /* Cinza do botão Começar */
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-main);
+  background-color: var(--bg-color);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- ESTRUTURA GERAL --- */
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  background-color: var(--bg-color);
+}
+
+.login-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  height: 100vh;
-  padding: 30px;
-  background-color: #fff;
-  font-family: 'Inter', sans-serif;
+  width: 100%;
+  max-width: 400px;
+  /* Largura segura para mobile e desktop */
+  padding: 20px;
   position: relative;
-  /* Para o modal fixar corretamente */
 }
 
-/* ... Estilos anteriores (brand, subtitle, btn-start) ... */
-.brand-large {
-  font-size: 3.5rem;
-  font-weight: 800;
-  color: #000;
-  letter-spacing: -1.5px;
-  margin-bottom: 5px;
-}
-
-.brand-highlight {
-  background-color: #f0f0f0;
-  padding: 0 5px;
-  border-radius: 8px;
-}
-
-.login-subtitle {
-  color: #e0e0e0;
+/* --- LOGO --- */
+.brand-logo {
+  font-size: 3rem;
   font-weight: 700;
-  font-size: 1rem;
-  margin-bottom: 60px;
+  letter-spacing: -2px;
+  color: var(--text-primary);
+  margin-bottom: 30px;
+  text-align: center;
+  line-height: 1;
 }
 
-.breadcrumb {
-  color: #e0e0e0;
+.brand-bold {
   font-weight: 800;
-  font-size: 1.2rem;
-  margin-bottom: 60px;
-  letter-spacing: 1px;
 }
 
-.btn-start {
-  background-color: #d9d9d9;
+/* --- ÁREA DO DIAGRAMA (ÂNCORAS PARA AS SETAS) --- */
+.diagram-container-anchors {
+  position: relative;
+  width: 100%;
+  height: 280px;
+  /* Altura fixa para garantir a geometria das setas */
+  margin-bottom: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* background: rgba(0,0,0,0.03);  // Debug: descomente para ver a área */
+}
+
+/* Texto Central: Siga > Vete > Vote */
+.center-text-block {
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: var(--text-light-gray);
+  text-align: center;
+  z-index: 5;
+  /* Fica atrás dos balões */
+  user-select: none;
+  margin-top: -10px;
+}
+
+.light {
+  font-weight: 400;
+  margin: 0 4px;
+  color: var(--text-light-gray);
+}
+
+/* --- BALÕES (BUBBLES) --- */
+.bubble {
+  position: absolute;
+  background-color: var(--bubble-bg);
+  padding: 10px 16px;
+  border-radius: 14px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.3;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+  z-index: 10;
+  font-weight: 600;
+
+  /* Animação de Entrada */
+  opacity: 0;
+  transform: translateY(15px);
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+/* POSICIONAMENTO ESTRATÉGICO DOS BALÕES */
+
+/* 1. Candidatos (Topo Direita) */
+/* Posicionado para a seta entrar pela lateral esquerda */
+.bubble-candidatos {
+  top: 15px;
+  right: -10px;
+  /* Deslocado para a direita para forçar a curva */
+  text-align: right;
+  max-width: 180px;
+  animation-delay: 1.0s;
+}
+
+/* 2. Planos (Baixo Esquerda) */
+.bubble-planos {
+  bottom: 25px;
+  left: 0px;
+  text-align: left;
+  max-width: 160px;
+  animation-delay: 0.5s;
+}
+
+/* 3. Estratégia (Baixo Direita) */
+.bubble-estrategia {
+  bottom: 35px;
+  right: 15px;
+  text-align: center;
+  max-width: 120px;
+  animation-delay: 1.5s;
+}
+
+/* --- BOTÕES --- */
+.btn-comecar {
+  background-color: var(--btn-bg);
   color: #000;
   font-weight: 700;
   font-size: 1.1rem;
   width: 100%;
-  max-width: 300px;
   padding: 18px;
   border: none;
-  border-radius: 12px;
+  border-radius: 16px;
   cursor: pointer;
   margin-bottom: 20px;
+  transition: transform 0.1s ease, background-color 0.2s;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
-.link-how {
-  color: #777;
-  text-decoration: underline;
+.btn-comecar:hover {
+  background-color: #cdcdcd;
+}
+
+.btn-comecar:active {
+  transform: scale(0.98);
+}
+
+/* BOTÃO SAIBA MAIS (NEON) */
+.btn-saiba-mais {
+  font-size: 0.95rem;
+  text-decoration: none;
   cursor: pointer;
-  font-size: 0.9rem;
+  margin-top: 5px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+
+  /* Animação Neon Pulsante */
+  animation: neonPulseGray 2s infinite ease-in-out;
 }
 
-/* --- ESTILOS DO MODAL (NOVO) --- */
+.btn-saiba-mais:hover {
+  animation: none;
+  /* Para ao passar o mouse */
+  color: #333;
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.15);
+  transform: scale(1.05);
+}
 
+/* --- MODAL --- */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  right: 0;
+  bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
-  /* Fundo escuro transparente */
+  z-index: 9999;
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
   padding: 20px;
+  backdrop-filter: blur(4px);
 }
 
-.modal-content {
-  background-color: white;
+.modal-card {
+  background-color: #fff;
   width: 100%;
-  max-width: 400px;
-  max-height: 90vh;
-  /* Altura máxima para não estourar a tela */
-  border-radius: 20px;
-  padding: 25px;
-  position: relative;
+  max-width: 500px;
+  height: 85vh;
+  border-radius: 24px;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  animation: slideUpModal 0.4s ease-out;
+  overflow: hidden;
 }
 
-/* Selo Verde (Fase 1) */
-.phase-badge {
-  position: absolute;
-  top: -10px;
-  right: -10px;
-  width: 40px;
-  height: 40px;
-  background-color: #76ff03;
-  /* Verde neon */
-  color: black;
-  font-weight: bold;
-  border-radius: 50%;
+.modal-header {
+  padding: 20px 25px;
+  border-bottom: 1px solid #f0f0f0;
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-.modal-title {
-  text-align: center;
-  font-size: 1.2rem;
+.modal-header h2 {
+  font-size: 1.1rem;
+  margin: 0;
   font-weight: 800;
-  margin-bottom: 15px;
+  color: #333;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  line-height: 1;
+  color: #aaa;
+  cursor: pointer;
+  padding: 0 5px;
+  transition: color 0.2s;
+}
+
+.close-btn:hover {
   color: #000;
 }
 
-.modal-scroll-text {
+.modal-scroll-area {
   flex: 1;
   overflow-y: auto;
-  /* Permite rolar o texto se for longo */
-  margin-bottom: 20px;
-  padding-right: 5px;
-  /* Espaço para scrollbar */
-  font-size: 0.85rem;
-  color: #444;
-  line-height: 1.4;
+  padding: 25px;
   text-align: left;
 }
 
-.modal-scroll-text h3 {
-  font-size: 0.9rem;
+/* --- TIPOGRAFIA DOCUMENTO (MODAL) --- */
+.doc-header {
+  margin-bottom: 25px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 15px;
+}
+
+.doc-title {
+  font-size: 1.4rem;
   font-weight: 800;
-  margin-top: 15px;
+  color: #000;
   margin-bottom: 5px;
-  color: #000;
+  letter-spacing: -0.5px;
 }
 
-.modal-scroll-text p {
-  margin-bottom: 10px;
+.doc-subtitle {
+  font-size: 0.95rem;
+  color: #666;
+  font-style: italic;
+  font-weight: 400;
 }
 
-.btn-modal-back {
-  background-color: #d9d9d9;
-  color: #000;
-  font-weight: 700;
+.doc-section {
+  margin-bottom: 30px;
+}
+
+.doc-section h3 {
   font-size: 1rem;
-  width: 100%;
+  font-weight: 800;
+  color: #111;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+  border-left: 3px solid #ddd;
+  padding-left: 10px;
+}
+
+.doc-section h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #333;
+  margin-top: 15px;
+  margin-bottom: 8px;
+}
+
+.doc-section p {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #444;
+  margin-bottom: 10px;
+  text-align: justify;
+}
+
+.doc-section ul {
+  list-style: none;
+  padding-left: 5px;
+  margin-bottom: 15px;
+}
+
+.doc-section li {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #555;
+  margin-bottom: 6px;
+  padding-left: 15px;
+  position: relative;
+}
+
+.doc-section li::before {
+  content: "•";
+  color: #999;
+  font-weight: bold;
+  position: absolute;
+  left: 0;
+}
+
+/* Caixa de Destaque */
+.highlight-box {
+  background-color: #f9f9f9;
+  border-radius: 8px;
   padding: 15px;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
+  border: 1px solid #eee;
+  margin: 10px 0;
+}
+
+.note {
+  font-size: 0.8rem;
+  color: #999;
+  margin-top: 5px;
+  display: block;
+}
+
+/* --- KEYFRAMES (ANIMAÇÕES) --- */
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUpModal {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes neonPulseGray {
+
+  0%,
+  100% {
+    color: #999;
+    /* Cinza Base */
+    text-shadow: 0 0 2px rgba(153, 153, 153, 0.1);
+  }
+
+  50% {
+    color: #666;
+    /* Mais escuro */
+    text-shadow: 0 0 10px rgba(102, 102, 102, 0.4);
+    /* Glow */
+  }
+}
+
+/* Responsividade Mobile */
+@media (max-height: 700px) {
+  .diagram-container-anchors {
+    height: 240px;
+  }
+
+  .brand-logo {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+  }
 }

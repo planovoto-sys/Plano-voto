@@ -40,7 +40,7 @@ export default function NotFound() {
                     Pode ser um link antigo ou uma área em desenvolvimento.
                 </p>
 
-                <button className="btn-clean-action" onClick={() => navigate('/meu-plano')}>
+                <button className="btn-clean-action" onClick={() => navigate('/estrategia')}>
                     Voltar para o Início
                 </button>
             </div>

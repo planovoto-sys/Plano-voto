@@ -6,10 +6,8 @@ import './PreferencesModal.css';
 
 export default function PreferencesModal({ isOpen, onClose }) {
   const { userData } = useUser();
-  // Inicia o estado com o valor que já está no banco de dados
   const [isRenovaActive, setIsRenovaActive] = useState(false);
 
-  // Sincroniza o estado local quando os dados do usuário carregam
   useEffect(() => {
     if (userData) {
       setIsRenovaActive(userData.preferenciaRenova || false);
@@ -22,24 +20,19 @@ export default function PreferencesModal({ isOpen, onClose }) {
     if (!auth.currentUser) return;
     try {
       const userRef = doc(db, "users", auth.currentUser.uid);
-      // Salva permanentemente no Firestore
       await updateDoc(userRef, {
         preferenciaRenova: isRenovaActive
       });
       onClose();
     } catch (error) {
       console.error("Erro ao salvar:", error);
-      alert("Erro ao salvar preferências.");
     }
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content">
-        <div className="modal-header">
-          <h2 className="modal-title">Preferências</h2>
-          <button className="close-btn" onClick={onClose}>×</button>
-        </div>
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <h2 className="modal-title">Preferências</h2>
 
         <div className="modal-body">
           <h3 className="section-title">Siga um plano B (recomendado):</h3>
@@ -75,6 +68,22 @@ export default function PreferencesModal({ isOpen, onClose }) {
             Salvar
           </button>
         </div>
+
+        <div className="info-area">
+          <h4 className="info-title">O que é o RenovaBR?</h4>
+          <p className="info-text">
+            É a maior escola de formação política do Brasil. É uma escola pluripartidária, 
+            sem fins lucrativos, que forma lideranças políticas e públicas para um Brasil 
+            mais justo e menos desigual...
+          </p>
+          <div className="info-link">
+            Saiba mais em <strong>renovabr.org</strong>
+          </div>
+        </div>
+
+        <button className="btn-save" onClick={handleSave}>
+          Salvar
+        </button>
       </div>
     </div>
   );

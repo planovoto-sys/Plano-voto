@@ -1,4 +1,8 @@
-/* Fundo escuro atrás do menu */
+/* =========================================
+   SIDEBAR & PWA MODAL - ESTILO CLEAN/CINZA
+   ========================================= */
+
+/* --- OVERLAY DO MENU (Fundo escuro suave) --- */
 .sidebar-overlay {
   position: fixed;
   top: 0;
@@ -12,19 +16,21 @@
   justify-content: flex-end;
   opacity: 0;
   animation: fadeIn 0.3s forwards;
+  backdrop-filter: blur(2px); /* Desfoque sutil no fundo */
 }
 
-/* O Menu deslizante (Gaveta) */
+/* --- GAVETA DO MENU (Slide) --- */
 .sidebar-drawer {
-  width: 75%;
-  max-width: 300px;
+  width: 80%;
+  max-width: 320px;
   height: 100%;
-  background-color: white;
+  background-color: #ffffff;
   display: flex;
   flex-direction: column;
-  box-shadow: -4px 0 15px rgba(0,0,0,0.1);
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.05);
   transform: translateX(100%);
   animation: slideIn 0.3s forwards;
+  font-family: 'Inter', sans-serif; /* Garante a fonte padrão */
 }
 
 /* Cabeçalho */
@@ -33,6 +39,12 @@
   padding: 60px 20px 20px 20px; 
   border-bottom: 1px solid #f0f0f0;
   display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.profile-main {
+  display: flex;
   align-items: center;
   gap: 15px;
   background-color: #fff;
@@ -40,10 +52,10 @@
 }
 
 .avatar-container {
-  width: 50px;
-  height: 50px;
+  width: 55px;
+  height: 55px;
   border-radius: 50%;
-  background-color: #eee;
+  background-color: #e0e0e0;
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -54,23 +66,45 @@
   object-fit: cover;
 }
 
-.user-info h3 {
-  font-size: 1rem;
+.user-details h3 {
+  font-size: 1.1rem;
   font-weight: 700;
+  color: #222; /* Cinza escuro, não preto */
   margin: 0;
-  color: #333;
 }
 
-.user-info p {
+.user-id-hash {
   font-size: 0.85rem;
   color: #888;
   margin: 2px 0 0 0;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  font-family: monospace; /* Estilo técnico para o hash */
+  letter-spacing: 0.5px;
 }
 
-/* Lista de Links */
+/* Linha "@ informar" (Inativo) */
+.informar-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: #bbb;
+  margin-top: 4px;
+  cursor: not-allowed;
+  font-weight: 500;
+}
+
+/* Seguidores */
+.followers-count {
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: 500;
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* --- BLOCO 2 & 3: MENUS --- */
 .sidebar-menu {
   flex: 1; /* Ocupa todo o espaço disponível no meio */
   padding: 20px 0;
@@ -79,27 +113,37 @@
 }
 
 .menu-item {
-  padding: 15px 24px;
+  padding: 12px 24px;
   display: flex;
   align-items: center;
-  gap: 16px;
-  color: #555;
+  justify-content: space-between;
   font-size: 1rem;
-  font-weight: 500;
+  color: #444; /* Texto cinza escuro */
   cursor: pointer;
   transition: all 0.2s;
+  font-weight: 500;
+}
+
+.menu-item-content {
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
 .menu-item:hover {
-  background-color: #f9f9f9;
-  color: #000;
+  background-color: #f7f7f7;
+  color: #111;
 }
 
-.menu-icon {
-  width: 24px;
-  font-size: 1.2rem;
-  text-align: center;
+.menu-icon-svg {
   color: #777;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+
+.menu-item:hover .menu-icon-svg {
+  color: #333;
 }
 
 /* Rodapé (Botão Sair) */
@@ -114,24 +158,181 @@
 
 .logout-btn-menu {
   width: 100%;
-  padding: 12px;
+  padding: 14px;
   border-radius: 12px;
   border: none;
-  background-color: #ffebee;
-  color: #d32f2f;
+  background-color: #f5f5f5; /* Cinza claro */
+  color: #555;
   font-weight: 600;
+  font-size: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.logout-btn-menu:hover {
+  background-color: #eee;
+  color: #222;
 }
 
 .close-area {
   flex: 1;
 }
 
-/* Animações */
+/* =========================================
+   MODAL DE INSTALAÇÃO (PWA)
+   ========================================= */
+
+.pwa-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(255, 255, 255, 0.6); /* Fundo claro translúcido */
+  backdrop-filter: blur(8px); /* Blur forte estilo iOS */
+  z-index: 2000; /* Acima do menu lateral */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.pwa-card {
+  background: white;
+  width: 100%;
+  max-width: 360px;
+  border-radius: 24px;
+  padding: 30px 24px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1); /* Sombra suave e moderna */
+  border: 1px solid #f0f0f0;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); /* Curva suave */
+  font-family: 'Inter', sans-serif;
+}
+
+/* Botão Fechar (X) */
+.pwa-close {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  color: #ccc;
+  cursor: pointer;
+  line-height: 1;
+  padding: 5px;
+  transition: color 0.2s;
+}
+.pwa-close:hover {
+  color: #333;
+}
+
+/* Ícone Principal (Celular) */
+.pwa-icon-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: #f9f9f9; /* Círculo de fundo bem claro */
+  margin-bottom: 20px;
+}
+
+.pwa-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin: 0 0 10px 0;
+  color: #222;
+}
+
+.pwa-text {
+  color: #666;
+  font-size: 0.95rem;
+  margin-bottom: 25px;
+  line-height: 1.5;
+}
+
+/* Botão de Instalação (Estilo Cinza Sólido - Igual ao "DefineStrategy") */
+.pwa-btn-install {
+  width: 100%;
+  padding: 16px;
+  background-color: #d9d9d9; /* Cinza médio solicitado */
+  color: #000; /* Texto preto para contraste */
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  transition: background-color 0.2s;
+}
+
+.pwa-btn-install:hover {
+  background-color: #ccc;
+}
+
+.pwa-btn-install:active {
+  transform: scale(0.98);
+}
+
+/* Instruções Manuais (iOS/Android fallback) */
+.manual-steps {
+  background-color: #fcfcfc; /* Quase branco */
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid #f0f0f0;
+  text-align: left;
+}
+
+.step-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+  color: #444;
+  line-height: 1.4;
+}
+
+.step-row:last-child {
+  margin-bottom: 0;
+}
+
+/* Bolinha do número (Cinza minimalista) */
+.step-number {
+  background-color: #e0e0e0;
+  color: #333;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Seta animada (iOS) */
+.ios-arrow-animation {
+  text-align: center;
+  margin-top: 20px;
+  color: #007aff; /* Azul iOS */
+  display: flex;
+  justify-content: center;
+  animation: bounce 2s infinite;
+}
+
+/* --- ANIMAÇÕES --- */
 @keyframes slideIn {
   from { transform: translateX(100%); }
   to { transform: translateX(0); }
@@ -141,34 +342,14 @@
   from { opacity: 0; }
   to { opacity: 1; }
 }
-/* ... Mantenha o CSS anterior ... */
 
-.menu-item {
-  /* Garante alinhamento vertical */
-  display: flex;
-  align-items: center;
-  gap: 12px; /* Espaço entre ícone e texto */
-  
-  padding: 15px 0;
-  font-size: 1rem;
-  color: #333;
-  cursor: pointer;
-  transition: color 0.2s;
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
-.menu-item:hover {
-  color: #000;
-  font-weight: 600;
-}
-
-/* Classe para o container do SVG */
-.menu-icon-svg {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #666; /* Ícone cinza sutil */
-}
-
-.menu-item:hover .menu-icon-svg {
-  color: #000; /* Ícone fica preto no hover */
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-6px); }
+  60% { transform: translateY(-3px); }
 }
