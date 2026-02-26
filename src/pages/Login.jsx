@@ -4,7 +4,7 @@ import { signInWithPopup } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import Xarrow, { useXarrow, Xwrapper } from 'react-xarrows';
 import './Login.css';
-import HowItWorksModal from '../components/HowItWorksModal'; // Importar o modal
+
 
 export default function Login() {
   const [showModal, setShowModal] = useState(false);
@@ -133,8 +133,7 @@ export default function Login() {
 
       </div>
 
-      {/* Modal de "Como Funciona" */}
-      <HowItWorksModal isOpen={showModal} onClose={() => setShowModal(false)} />
+      
     </div>
   );
 }
