@@ -4,28 +4,45 @@ import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 import Sidebar from '../components/Sidebar';
-import PreferencesModal from '../components/PreferencesModal'; // <--- IMPORTAR
+import PreferencesModal from '../components/PreferencesModal';
+import SuccessModal from '../components/SuccessModal';
 import './DefineStrategy.css';
 
 export default function DefineStrategy() {
-  const { userData } = useUser();
-  const [strategyInput, setStrategyInput] = useState(''); 
+  const { userData, setUserData } = useUser();
+  const [strategyInput, setStrategyInput] = useState('');
   const [allPlans, setAllPlans] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   
-  // Estado para o Modal de Preferências
-  const [showPreferences, setShowPreferences] = useState(false); // <--- NOVO ESTADO
+  // Controle de Menu e Modais
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showPreferences, setShowPreferences] = useState(false);
+  
+  // --- NOVOS ESTADOS PARA O MODAL ---
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [modalDate, setModalDate] = useState(''); // Estado para guardar a data dinâmica
 
   const navigate = useNavigate();
 
+  // 1. GERAÇÃO DE HASH
   useEffect(() => {
-    if (userData?.strategy?.length > 0) {
-      setStrategyInput(userData.strategy[0]);
-    }
+    const checkAndGenerateHash = async () => {
+      if (auth.currentUser && userData && !userData.my_hash) {
+        const newHash = '#' + Math.random().toString(36).substring(2, 8);
+        try {
+          await updateDoc(doc(db, "users", auth.currentUser.uid), { my_hash: newHash });
+          if (setUserData) setUserData(prev => ({ ...prev, my_hash: newHash }));
+        } catch (error) { console.error("Erro hash:", error); }
+      }
+    };
+    checkAndGenerateHash();
+  }, [userData, setUserData]);
+
+  // 2. CARREGAR DADOS
+  useEffect(() => {
+    if (userData?.strategy?.length > 0) setStrategyInput(userData.strategy[0]);
     const fetchPlans = async () => {
-      // ... (código de busca de planos igual)
       try {
         const [plansSnap, usersSnap] = await Promise.all([
           getDocs(collection(db, "plans")),
@@ -33,11 +50,8 @@ export default function DefineStrategy() {
         ]);
         const plans = plansSnap.docs.map(d => ({ ...d.data(), id: d.id, type: 'influencer' }));
         const users = usersSnap.docs.map(d => ({ 
-            ...d.data(), 
-            id: d.id, 
-            handle: d.data().username || d.data().name, 
-            hash: d.data().my_hash,
-            type: 'user'
+            ...d.data(), id: d.id, handle: d.data().username || d.data().name, 
+            hash: d.data().my_hash, type: 'user'
         }));
         setAllPlans([...plans, ...users]);
       } catch (err) { console.error(err); }
@@ -45,6 +59,7 @@ export default function DefineStrategy() {
     fetchPlans();
   }, [userData]);
 
+  // --- FUNÇÃO DE SALVAR (BOTÃO CONTINUAR) ---
   const handleSave = async () => {
     if (!auth.currentUser) return;
     if (!strategyInput.trim()) {
@@ -55,9 +70,76 @@ export default function DefineStrategy() {
     try {
       const finalStrategy = [strategyInput.trim()];
       await updateDoc(doc(db, "users", auth.currentUser.uid), { strategy: finalStrategy });
-      navigate('/meu-plano');
-    } catch (error) { alert("Erro ao salvar estratégia."); } 
-    finally { setSaving(false); }
+      
+      setSaving(false);
+      
+      // Define a data específica deste fluxo e abre o modal
+      setModalDate('20/09/26');
+      setShowSuccessModal(true); 
+
+    } catch (error) { 
+      alert("Erro ao salvar estratégia."); 
+      setSaving(false);
+    } 
+  };
+
+  // --- NOVA FUNÇÃO: CRIAR PRÓPRIO PLANO ---
+  const handleCreatePlan = () => {
+    // Aqui você pode adicionar lógica extra se precisar salvar algo antes
+    // Por enquanto, apenas define a outra data e abre o modal
+    setModalDate('16/08/2026');
+    setShowSuccessModal(true);
+  };
+
+  const handleCloseSuccess = () => {
+    setShowSuccessModal(false);
+    navigate('/estrategia');
+  };
+
+  const handleInvite = () => {
+    // Pega os dados do usuário do contexto ou usa valores padrão caso não tenha carregado
+    const nome = userData?.name || 'Usuário';
+    const arroba = userData?.username ? `${userData.username}` : '';
+    const hash = userData?.my_hash || '#000000';
+
+    // Monta o texto com as quebras de linha corretas
+    const shareText = `Em 2️⃣0️⃣2️⃣6️⃣ faça diferente:
+❌ Não vote no escuro 🙈
+❌ Não desperdice votos 🗑
+
+Com o PLANO DE VOTO:
+O voto é individual 👤
+A estratégia é coletiva 👤👤👤
+✅ Siga planos alinhados
+✅ Vete candidatos desalinhados
+✅ Vote com estratégia 
+
+Se não tiver um plano melhor, acesse:
+👉 planodevoto.app
+
+${nome}
+${arroba}
+${hash}`;
+
+    // Tenta usar o compartilhamento nativo do celular
+    if (navigator.share) {
+      navigator.share({
+        text: shareText
+      }).catch((error) => console.error("Erro ao compartilhar:", error));
+    } else {
+      // Fallback para Desktop: Tenta abrir o WhatsApp Web ou copia para a área de transferência
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      
+      if (!isMobile) {
+        // Abre o WhatsApp Web já com o texto preenchido
+        const whatsappUrl = `https://web.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+        window.open(whatsappUrl, '_blank');
+      } else {
+        // Copia o texto (último recurso)
+        navigator.clipboard.writeText(shareText);
+        alert("Mensagem copiada para a área de transferência!");
+      }
+    }
   };
 
   const handleSelectPlan = (plan, type) => {
@@ -79,49 +161,55 @@ export default function DefineStrategy() {
   return (
     <div className="page-container-white">
       <Sidebar isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
-      
-      {/* Modal de Preferências sendo chamado aqui */}
       <PreferencesModal isOpen={showPreferences} onClose={() => setShowPreferences(false)} />
 
+      {/* MODAL AGORA RECEBE A DATA DINÂMICA */}
+      <SuccessModal 
+        isOpen={showSuccessModal} 
+        onClose={handleCloseSuccess} 
+        date={modalDate} 
+        onInvite={handleInvite}
+      />
+
       <header className="header-clean">
-        <h1 className="brand-medium">vote<span className="brand-highlight-small">list</span></h1>
-        <div className="header-info">
-          <span onClick={() => navigate('/perfil')} style={{ cursor: 'pointer' }}>
-            {userData?.my_hash || '...'} | <span style={{ textDecoration: 'underline' }}>informar</span>
-          </span>
-          <span className="followers-count">0 seguidores</span>
+        <h1 className="brand-logo-small">plano<span className="brand-bold">de</span>voto</h1>
+        <div className="header-actions">
+          <span className="user-hash-display">{userData?.my_hash || '...'}</span>
+          <button className="menu-btn" onClick={() => setIsMenuOpen(true)}>
+             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 6H20M4 12H20M4 18H20" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          </button>
         </div>
-        <div className="menu-icon-clean" onClick={() => setIsMenuOpen(true)}>≡</div>
       </header>
 
-      <div className="breadcrumb-active">
-        <span className="active-step">siga</span> &gt; <span className="inactive-step">vete</span> &gt; <span className="inactive-step">vote</span>
-      </div>
-
       <main className="main-content-clean">
+        <div className="nav-pill-container">
+          <span className="nav-item active">siga</span>
+          <span className="nav-item">vete</span>
+          <span className="nav-item">vote</span>
+        </div>
+
         <p className="page-instruction">
-          Siga uma lista de voto de quem te representa<br />
-          (use @ p/ perfis do Instagram ou # p/ listas)
+          Siga o plano de voto de quem te representa<br />
+          (digite abaixo o @ do Instagram ou # do plano)
         </p>
 
-        <div className="strategy-list">
-            <div className="strategy-input-wrapper-clean" style={{ zIndex: showSuggestions ? 50 : 1 }}>
+        <div className="input-group-clean">
+            <div className="input-wrapper-gray">
               <input
-                className="strategy-input-clean"
-                placeholder="Digite aqui o @ ou #"
+                className="input-gray"
+                placeholder="Digite aqui..."
                 value={strategyInput}
                 onChange={(e) => setStrategyInput(e.target.value)}
                 onFocus={() => setShowSuggestions(true)}
                 onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
               />
               {showSuggestions && strategyInput.length > 1 && (
-                <div className="suggestions-box" onMouseDown={(e) => e.preventDefault()}>
+                <div className="suggestions-box-gray" onMouseDown={(e) => e.preventDefault()}>
                   {getFilteredPlans(strategyInput).map(plan => (
                     <div key={plan.id} className="suggestion-item" onClick={() => handleSelectPlan(plan, strategyInput.includes('#') ? 'hash' : 'handle')}>
-                      <img src={plan.profile_image || "https://via.placeholder.com/40"} className="suggestion-avatar" alt="" />
                       <div className="suggestion-info">
                         <span className="suggestion-name">{plan.name}</span>
-                        <span className="suggestion-handle">{plan.handle} | {plan.hash}</span>
+                        <span className="suggestion-handle">{plan.hash}</span>
                       </div>
                     </div>
                   ))}
@@ -131,13 +219,16 @@ export default function DefineStrategy() {
         </div>
 
         <p className="or-divider">ou</p>
-        <p className="create-link">Crie sua própria lista de voto</p>
+        
+        {/* LINK AGORA TEM ONCLICK QUE ABRE O MODAL COM A NOVA DATA */}
+        <p className="create-link" onClick={handleCreatePlan}>
+          Crie seu próprio plano de voto
+        </p>
 
-        <button className="btn-continue" onClick={handleSave} disabled={saving}>
+        <button className="btn-continue-gray" onClick={handleSave} disabled={saving}>
           {saving ? "Salvando..." : "Continuar"}
         </button>
 
-        {/* --- LINK AGORA ABRE O MODAL --- */}
         <p className="link-preferences" onClick={() => setShowPreferences(true)}>
           Preferências
         </p>
