@@ -19,8 +19,7 @@ export default function DefineStrategy() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showPreferences, setShowPreferences] = useState(false);
   
-  // Estado para o Modal de Preferências
-  const [showPreferences, setShowPreferences] = useState(false); 
+ 
 
   const navigate = useNavigate();
 
