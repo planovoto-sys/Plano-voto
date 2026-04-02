@@ -3,7 +3,10 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useUser } from './contexts/UserContext'; 
 
-// ... os seus outros imports (Intro, Login, DefineStrategy, NotFound, etc.)
+import Intro from './pages/Intro';
+import Login from './pages/Login';
+import DefineStrategy from './pages/DefineStrategy';
+import NotFound from './pages/NotFound';
 
 function App() {
   const { user, loading } = useUser();
