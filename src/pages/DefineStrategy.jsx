@@ -22,6 +22,7 @@ export default function DefineStrategy() {
   const [modalDate, setModalDate] = useState(''); // Corrigido: declaração do estado
   
  
+  // --- FIM DOS ESTADOS CORRIGIDOS ---
   const navigate = useNavigate();
 
   // 1. GERAÇÃO DE HASH
