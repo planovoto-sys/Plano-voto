@@ -21,6 +21,8 @@ export default function DefineStrategy() {
   const [showSuccessModal, setShowSuccessModal] = useState(false); // Corrigido: declaração do estado
   const [modalDate, setModalDate] = useState(''); // Corrigido: declaração do estado
   
+ 
+  // --- FIM DOS ESTADOS CORRIGIDOS ---
   const navigate = useNavigate();
 
   // 1. GERAÇÃO DE HASH
@@ -140,15 +142,13 @@ export default function DefineStrategy() {
       />
 
       <header className="header-clean">
-        <h1 className="brand-logo-small">plano<span className="brand-bold">de</span>voto</h1>
+        <h1 className="brand-medium">vote<span className="brand-highlight-small">list</span></h1>
        
-        <div className="header-actions">
-          <span className="user-hash-display" onClick={() => navigate('/perfil')} style={{ cursor: 'pointer' }}>
-            {userData?.my_hash || '...'}
+        <div className="header-info">
+          <span onClick={() => navigate('/perfil')} style={{ cursor: 'pointer' }}>
+            {userData?.my_hash || '...'} | <span style={{ textDecoration: 'underline' }}>informar</span>
           </span>
-          <button className="menu-btn" onClick={() => setIsMenuOpen(true)}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-          </button>
+          <span className="followers-count">0 seguidores</span>
         </div>
       </header>
 

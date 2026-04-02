@@ -8,8 +8,9 @@
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.4); /* Escurecimento suave */
+  height: 100vh;        /* Fallback para navegadores antigos */
+  height: 100dvh;       /* CORREÇÃO: Altura dinâmica que respeita a barra do navegador */
+  background-color: rgba(0, 0, 0, 0.6);
   z-index: 1000;
   display: flex;
   justify-content: flex-end;
@@ -32,10 +33,10 @@
   font-family: 'Inter', sans-serif; /* Garante a fonte padrão */
 }
 
-/* --- BLOCO 1: PERFIL --- */
-.sidebar-profile-block {
-  padding: 50px 24px 25px 24px;
-  background-color: #fcfcfc; /* Cinza quase branco */
+/* Cabeçalho */
+.sidebar-header {
+  /* Padding top maior para não bater na bateria/relógio do iPhone */
+  padding: 60px 20px 20px 20px; 
   border-bottom: 1px solid #f0f0f0;
   display: flex;
   flex-direction: column;
@@ -46,6 +47,8 @@
   display: flex;
   align-items: center;
   gap: 15px;
+  background-color: #fff;
+  flex-shrink: 0; /* Garante que o cabeçalho nunca encolha */
 }
 
 .avatar-container {
@@ -55,8 +58,6 @@
   background-color: #e0e0e0;
   overflow: hidden;
   flex-shrink: 0;
-  border: 2px solid #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .avatar-img {
@@ -105,23 +106,10 @@
 
 /* --- BLOCO 2 & 3: MENUS --- */
 .sidebar-menu {
-  flex: 1;
+  flex: 1; /* Ocupa todo o espaço disponível no meio */
   padding: 20px 0;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 5px; /* Espaço entre itens */
-}
-
-.menu-block-label {
-  padding: 0 24px;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  color: #aaa;
-  font-weight: 700;
-  letter-spacing: 0.8px;
-  margin-top: 15px;
-  margin-bottom: 8px;
+  overflow-y: auto; /* Permite rolar se a lista for grande */
+  min-height: 0; /* Correção para flexbox no Firefox/Safari */
 }
 
 .menu-item {
@@ -158,46 +146,14 @@
   color: #333;
 }
 
-/* Item Especial: Azul (Tour) */
-.item-blue {
-  color: #007bff;
-  font-weight: 600;
-}
-.item-blue .menu-icon-svg {
-  color: #007bff;
-}
-.item-blue:hover {
-  background-color: #f0f7ff; /* Azul bem claro no hover */
-  color: #0056b3;
-}
-
-/* Item Inativo (Cadeado) */
-.item-locked {
-  color: #ccc;
-  cursor: not-allowed;
-  background-color: transparent !important;
-}
-.item-locked .menu-icon-svg {
-  color: #ddd;
-}
-.lock-indicator {
-  color: #ddd;
-  display: flex;
-  align-items: center;
-}
-
-/* Divisor */
-.menu-divider {
-  height: 1px;
-  background-color: #f0f0f0;
-  margin: 15px 24px;
-}
-
-/* --- BLOCO 4: RODAPÉ (Sair) --- */
+/* Rodapé (Botão Sair) */
 .sidebar-footer {
-  padding: 20px 24px 40px 24px;
+  /* Padding dinâmico que respeita a área segura do iPhone (notch inferior) */
+  padding: 20px;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom)); 
   border-top: 1px solid #f0f0f0;
   background-color: #fff;
+  flex-shrink: 0; /* Garante que o rodapé nunca seja esmagado */
 }
 
 .logout-btn-menu {
