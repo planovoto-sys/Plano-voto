@@ -1,6 +1,10 @@
 // src/App.jsx
 import React from 'react';
-// ... outros imports
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+// Adicione a linha abaixo para importar o useUser!
+import { useUser } from './contexts/UserContext'; 
+
+// ... (seus outros imports: Intro, Login, DefineStrategy, NotFound, LoadingScreen, etc.)
 
 function App() {
   const { user, loading } = useUser();
@@ -8,7 +12,7 @@ function App() {
   if (loading) return <LoadingScreen />;
 
   return (
-    <BrowserRouter basename="/Plano-voto">
+    <BrowserRouter basename="/">
       <Routes>
         <Route path="/" element={!user ? <Intro /> : <Navigate to="/estrategia" replace />} />
         <Route path="/login" element={!user ? <Login /> : <Navigate to="/estrategia" replace />} />
@@ -19,4 +23,4 @@ function App() {
   );
 }
 
-export default App; 
+export default App;
