@@ -19,7 +19,9 @@ export default function DefineStrategy() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showPreferences, setShowPreferences] = useState(false);
   
- 
+  // ESTADOS ADICIONADOS PARA CORRIGIR O ERRO:
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [modalDate, setModalDate] = useState('');
 
   const navigate = useNavigate();
 
