@@ -1,15 +1,15 @@
 // src/App.jsx
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-// Adicione a linha abaixo para importar o useUser!
 import { useUser } from './contexts/UserContext'; 
 
-// ... (seus outros imports: Intro, Login, DefineStrategy, NotFound, LoadingScreen, etc.)
+// ... os seus outros imports (Intro, Login, DefineStrategy, NotFound, etc.)
 
 function App() {
   const { user, loading } = useUser();
 
-  if (loading) return <LoadingScreen />;
+  // A linha alterada está aqui:
+  if (loading) return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>A carregar...</div>;
 
   return (
     <BrowserRouter basename="/">
