@@ -15,13 +15,13 @@ export default function DefineStrategy() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [saving, setSaving] = useState(false);
   
-  // Controle de Menu e Modais
+  // --- ESTADOS CORRIGIDOS ---
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showPreferences, setShowPreferences] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false); // Corrigido: declaração do estado
+  const [modalDate, setModalDate] = useState(''); // Corrigido: declaração do estado
   
- const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [modalDate, setModalDate] = useState('');
-
+ 
   const navigate = useNavigate();
 
   // 1. GERAÇÃO DE HASH
@@ -58,7 +58,7 @@ export default function DefineStrategy() {
     fetchPlans();
   }, [userData]);
 
-  // --- FUNÇÃO DE SALVAR (BOTÃO CONTINUAR) ---
+  // --- FUNÇÃO DE SALVAR ---
   const handleSave = async () => {
     if (!auth.currentUser) return;
     if (!strategyInput.trim()) {
@@ -71,8 +71,6 @@ export default function DefineStrategy() {
       await updateDoc(doc(db, "users", auth.currentUser.uid), { strategy: finalStrategy });
       
       setSaving(false);
-      
-      // Define a data específica deste fluxo e abre o modal
       setModalDate('20/09/26');
       setShowSuccessModal(true); 
 
@@ -82,10 +80,7 @@ export default function DefineStrategy() {
     } 
   };
 
-  // --- NOVA FUNÇÃO: CRIAR PRÓPRIO PLANO ---
   const handleCreatePlan = () => {
-    // Aqui você pode adicionar lógica extra se precisar salvar algo antes
-    // Por enquanto, apenas define a outra data e abre o modal
     setModalDate('16/08/2026');
     setShowSuccessModal(true);
   };
@@ -96,45 +91,20 @@ export default function DefineStrategy() {
   };
 
   const handleInvite = () => {
-    // Pega os dados do usuário do contexto ou usa valores padrão caso não tenha carregado
     const nome = userData?.name || 'Usuário';
     const arroba = userData?.username ? `${userData.username}` : '';
     const hash = userData?.my_hash || '#000000';
 
-    // Monta o texto com as quebras de linha corretas
-    const shareText = `Em 2️⃣0️⃣2️⃣6️⃣ faça diferente:
-❌ Não vote no escuro 🙈
-❌ Não desperdice votos 🗑
+    const shareText = `Em 2️⃣0️⃣2️⃣6️⃣ faça diferente:\n❌ Não vote no escuro 🙈\n❌ Não desperdice votos 🗑\n\nCom o PLANO DE VOTO:\nO voto é individual 👤\nA estratégia é coletiva 👤👤👤\n✅ Siga planos alinhados\n✅ Vete candidatos desalinhados\n✅ Vote com estratégia \n\nSe não tiver um plano melhor, acesse:\n👉 planodevoto.app\n\n${nome}\n${arroba}\n${hash}`;
 
-Com o PLANO DE VOTO:
-O voto é individual 👤
-A estratégia é coletiva 👤👤👤
-✅ Siga planos alinhados
-✅ Vete candidatos desalinhados
-✅ Vote com estratégia 
-
-Se não tiver um plano melhor, acesse:
-👉 planodevoto.app
-
-${nome}
-${arroba}
-${hash}`;
-
-    // Tenta usar o compartilhamento nativo do celular
     if (navigator.share) {
-      navigator.share({
-        text: shareText
-      }).catch((error) => console.error("Erro ao compartilhar:", error));
+      navigator.share({ text: shareText }).catch((error) => console.error("Erro ao compartilhar:", error));
     } else {
-      // Fallback para Desktop: Tenta abrir o WhatsApp Web ou copia para a área de transferência
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      
       if (!isMobile) {
-        // Abre o WhatsApp Web já com o texto preenchido
         const whatsappUrl = `https://web.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
         window.open(whatsappUrl, '_blank');
       } else {
-        // Copia o texto (último recurso)
         navigator.clipboard.writeText(shareText);
         alert("Mensagem copiada para a área de transferência!");
       }
@@ -142,7 +112,7 @@ ${hash}`;
   };
 
   const handleSelectPlan = (plan, type) => {
-    const value = type === 'hash' ? plan.hash : plan.handle;
+    const value = type === 'hash' ? plan.hash : (plan.handle || plan.username);
     setStrategyInput(value);
     setShowSuggestions(false);
   };
@@ -153,7 +123,8 @@ ${hash}`;
     return allPlans.filter(p => 
         (p.handle && p.handle.toLowerCase().includes(lower)) || 
         (p.hash && p.hash.toLowerCase().includes(lower)) ||
-        (p.name && p.name.toLowerCase().includes(lower))
+        (p.name && p.name.toLowerCase().includes(lower)) ||
+        (p.username && p.username.toLowerCase().includes(lower))
     ).slice(0, 5);
   };
 
@@ -162,7 +133,6 @@ ${hash}`;
       <Sidebar isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
       <PreferencesModal isOpen={showPreferences} onClose={() => setShowPreferences(false)} />
 
-      {/* MODAL AGORA RECEBE A DATA DINÂMICA */}
       <SuccessModal 
         isOpen={showSuccessModal} 
         onClose={handleCloseSuccess} 
@@ -201,16 +171,13 @@ ${hash}`;
                 value={strategyInput}
                 onChange={(e) => setStrategyInput(e.target.value)}
                 onFocus={() => setShowSuggestions(true)}
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
               />
               {showSuggestions && strategyInput.length > 1 && (
-                <div className="suggestions-box-gray" onMouseDown={(e) => e.preventDefault()}>
+                <div className="suggestions-box-gray">
                   {getFilteredPlans(strategyInput).map(plan => (
                     <div key={plan.id} className="suggestion-item" onClick={() => handleSelectPlan(plan, strategyInput.includes('#') ? 'hash' : 'handle')}>
-                      <div className="suggestion-info">
                         <span className="suggestion-name">{plan.name}</span>
-                        <span className="suggestion-handle">{plan.hash}</span>
-                      </div>
+                        <span className="suggestion-handle">{plan.hash || plan.handle || plan.username}</span>
                     </div>
                   ))}
                 </div>
@@ -220,7 +187,6 @@ ${hash}`;
 
         <p className="or-divider">ou</p>
         
-        {/* LINK AGORA TEM ONCLICK QUE ABRE O MODAL COM A NOVA DATA */}
         <p className="create-link" onClick={handleCreatePlan}>
           Crie seu próprio plano de voto
         </p>
