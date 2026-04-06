@@ -1,7 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
+
 :root {
-  --font-family: 'Aptos', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif;
-  --primary-color: #212121;
-  --bg-color: #ffffff;
+  /* Paleta extraída da imagem */
+  --bg-yellow: #f5eea9;      /* Fundo principal amarelo claro */
+  --card-yellow: #f0dd62;    /* Amarelo mais forte do card central */
+  --primary-green: #61905d;  /* Verde da faixa e botão */
+  --text-dark: #333333;      /* Cor do texto principal */
+  --text-light: #ffffff;
+  
+  --font-family: 'Inter', sans-serif;
 }
 
 * {
@@ -13,36 +20,90 @@
 
 body {
   font-family: var(--font-family);
-  background-color: var(--bg-color);
-  width: 100%;
+  background-color: var(--bg-yellow);
+  color: var(--text-dark);
   min-height: 100vh;
-  color: var(--primary-color);
+  display: flex;
+  justify-content: center;
+}
+
+#root {
+  width: 100%;
+  max-width: 450px; /* Mantém o aspecto de celular no desktop */
+  min-height: 100vh;
+  background-color: var(--bg-yellow);
+  position: relative;
   overflow-x: hidden;
+  box-shadow: 0 0 20px rgba(0,0,0,0.1); /* Sombra suave para visualização no PC */
 }
 
-/* Inputs e Botões herdam a fonte */
-input, button, textarea, select {
+/* Utilitários globais */
+.btn-green {
+  background-color: var(--primary-green);
+  color: var(--bg-yellow);
+  border: none;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.btn-green:active {
+  transform: scale(0.98);
+}@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
+
+:root {
+  /* Paleta extraída da imagem */
+  --bg-yellow: #f5eea9;      /* Fundo principal amarelo claro */
+  --card-yellow: #f0dd62;    /* Amarelo mais forte do card central */
+  --primary-green: #61905d;  /* Verde da faixa e botão */
+  --text-dark: #333333;      /* Cor do texto principal */
+  --text-light: #ffffff;
+  
+  --font-family: 'Inter', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
   font-family: var(--font-family);
+  background-color: var(--bg-yellow);
+  color: var(--text-dark);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
 }
 
-/* Scrollbar Minimalista Global */
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: #f1f1f1; }
-::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #bbb; }
+#root {
+  width: 100%;
+  max-width: 450px; /* Mantém o aspecto de celular no desktop */
+  min-height: 100vh;
+  background-color: var(--bg-yellow);
+  position: relative;
+  overflow-x: hidden;
+  box-shadow: 0 0 20px rgba(0,0,0,0.1); /* Sombra suave para visualização no PC */
+}
 
-/* --- MODO COMPUTADOR --- */
-@media (min-width: 1024px) {
-  body {
-    background-color: #fff; /* Fundo limpo */
-    display: block;
-    padding: 0;
-  }
+/* Utilitários globais */
+.btn-green {
+  background-color: var(--primary-green);
+  color: var(--bg-yellow);
+  border: none;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
 
-  #root {
-    width: 100%;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
+.btn-green:active {
+  transform: scale(0.98);
 }
