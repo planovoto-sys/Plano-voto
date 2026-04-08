@@ -1,3 +1,4 @@
+/* Container Base */
 .custom-selector-container {
   width: 100%;
   display: flex;
@@ -5,112 +6,176 @@
   position: relative;
 }
 
-/* O Card visível principal */
+/* Card Principal (Gatilho) */
 .state-card-display {
   background-color: var(--card-yellow);
   width: 100%;
   aspect-ratio: 1 / 1;
-  max-width: 300px;
+  max-width: 250px;
   border-radius: 12px;
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-  transition: transform 0.1s;
-  position: relative;
-}
-
-.state-card-display:active {
-  transform: scale(0.98);
 }
 
 .state-text-big {
-  font-size: 5rem;
+  font-size: 5.5rem;
   font-weight: 900;
-  color: #4a4a4a; /* Cinza escuro da imagem */
+  color: var(--text-dark);
+}
+
+/* === MODAL E BOTTOM SHEET === */
+
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-color: rgba(0,0,0,0.7);
+  z-index: 1000;
+  display: flex;
+  justify-content: flex-end;
+  flex-direction: column;
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.modal-overlay.closing {
+  animation: fadeOut 0.3s ease-in forwards;
+}
+
+.bottom-sheet {
+  background-color: #ffffff;
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-width: 450px;
+  margin: 0 auto;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 -5px 25px rgba(0,0,0,0.2);
+  overflow: hidden;
+  animation: slideUp 0.3s ease-out forwards;
+}
+
+.bottom-sheet.closing {
+  animation: slideDown 0.3s ease-in forwards;
+}
+
+/* === CABEÇALHO === */
+
+.sheet-header {
+  background-color: var(--primary-green);
+  color: #ffffff;
+  padding: 15px 20px;
+  text-align: center;
+  position: relative;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.sheet-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.close-icon-btn {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 1.5rem;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+/* === LISTA E ITENS === */
+
+.sheet-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 0;
+}
+
+.sheet-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
+  padding: 15px 20px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid #f2f2f2;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.sheet-item:last-child {
+  border-bottom: none;
+}
+
+.sheet-item:hover {
+  background-color: #f9f9f9;
+}
+
+.sheet-item.active {
+  background-color: var(--bg-yellow);
+}
+
+/* Avatar e Textos */
+.state-avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background-color: #e0e0e0;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1rem;
   user-select: none;
 }
 
-.dropdown-arrow {
-  position: absolute;
-  bottom: 15px;
-  right: 15px;
-  font-size: 0.8rem;
-  color: #4a4a4a;
-  opacity: 0.5;
-  transition: transform 0.2s;
-}
-
-.dropdown-arrow.open {
-  transform: rotate(180deg);
-}
-
-/* Modal Overlay (Fundo escuro) */
-.state-modal-overlay {
-  position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background-color: rgba(0,0,0,0.5);
-  z-index: 1000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-}
-
-/* Conteúdo do Modal */
-.state-modal-content {
-  background-color: var(--bg-yellow);
-  padding: 25px;
-  border-radius: 16px;
-  width: 100%;
-  max-width: 400px;
-  max-height: 80vh;
-  overflow-y: auto;
-  text-align: center;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-}
-
-.state-modal-content h3 {
-  margin-bottom: 20px;
-  color: var(--primary-green);
-  font-weight: 800;
-}
-
-/* Grid de Estados */
-.state-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.state-option {
-  background-color: white;
-  border: 2px solid transparent;
-  padding: 15px 5px;
-  border-radius: 8px;
-  font-weight: 800;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.state-option:hover {
-  background-color: #f0f0f0;
-}
-
-.state-option.active {
+.sheet-item.active .state-avatar {
   background-color: var(--primary-green);
-  color: white;
-  border-color: var(--primary-green);
+  color: #ffffff;
 }
 
-.btn-close-modal {
-  background-color: #ccc;
-  color: #333;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
+.state-full-name {
+  flex: 1;
+  text-align: left;
   font-weight: 600;
-  cursor: pointer;
+  font-size: 1.1rem;
+  color: var(--text-dark);
+}
+
+.sheet-item.active .state-full-name {
+  color: var(--primary-green);
+  font-weight: 700;
+}
+
+/* === ANIMAÇÕES === */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { transform: translateY(0); }
+  to { transform: translateY(100%); }
 }

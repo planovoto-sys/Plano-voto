@@ -1,0 +1,237 @@
+.escolher-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: var(--bg-yellow);
+}
+
+.top-pills {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding: 15px;
+}
+
+.pill {
+    background-color: #ffffff;
+    color: #a0a0a0;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    border: 1px solid #e0e0e0;
+}
+
+.pill.active {
+    background-color: #fdf001;
+    color: var(--text-dark);
+    border: 1px solid #dcd101;
+}
+
+.green-banner-selection {
+    background-color: var(--primary-green);
+    color: var(--bg-yellow);
+    text-align: center;
+    padding: 30px 20px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.green-banner-selection h2 {
+    font-weight: 900;
+    font-size: 1.5rem;
+    line-height: 1.2;
+    margin-bottom: 10px;
+}
+
+.triangle-down {
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-top: 15px solid var(--primary-green);
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    z-index: 1;
+    transform: translateX(-50%);
+}
+
+.btn-visualizar-todos {
+    background-color: #ffffff;
+    color: var(--primary-green);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: 800;
+    font-size: 0.75rem;
+    margin-top: 15px;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-visualizar-todos.active-btn {
+    background-color: var(--bg-yellow);
+    color: var(--text-dark);
+}
+
+/* --- Ajuste de Espaçamento Lateral (Padding Lateral) --- */
+.candidatos-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 25px 20px 20px 20px;
+    /* 20px afasta os cards das bordas laterais do ecrã */
+}
+
+/* --- Layout do Card Estreito --- */
+.candidato-card {
+    margin-bottom: 10px;
+    /* Aumentei o espaço vertical entre eles */
+    border-radius: 12px;
+    /* Bordas arredondadas já que não tocam mais as laterais */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
+    /* Sombra suave */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 20px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+/* Cores das Camadas */
+.candidato-card.layer-1 {
+    background-color: #eaf1fa;
+}
+
+/* Azul sutil */
+.candidato-card.layer-2 {
+    background-color: #ffffff;
+}
+
+/* Branco */
+.candidato-card.layer-3 {
+    background-color: #ffffff;
+}
+
+/* Branco */
+
+/* Estado Selecionado */
+.candidato-card.selected {
+    filter: brightness(0.95);
+    border-left: 6px solid var(--primary-green);
+    padding-left: 14px;
+    /* Ajustado para compensar a borda grossa */
+}
+
+.cand-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.cand-name {
+    font-weight: 900;
+    font-size: 1.05rem;
+    color: #1a1a1a;
+}
+
+.cand-party {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #666666;
+    text-transform: uppercase;
+}
+
+/* Gráfico Circular */
+.cand-chart {
+    width: 58px;
+    height: 58px;
+}
+
+.circular-chart {
+    display: block;
+}
+
+.circle-bg {
+    fill: none;
+    stroke: rgba(0, 0, 0, 0.08);
+    stroke-width: 3.5;
+}
+
+.circle {
+    fill: none;
+    stroke: var(--primary-green);
+    stroke-width: 3.5;
+    stroke-linecap: round;
+}
+
+.percentage {
+    fill: #1a1a1a;
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-anchor: middle;
+}
+
+/* Navegação Base */
+.navigation-footer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3px;
+    padding-top: 10px;
+}
+
+.nav-btn {
+    background-color: var(--primary-green);
+    border: none;
+    height: 85px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+
+.nav-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.nav-btn.btn-confirm:not(:disabled) {
+    background-color: #00bb58;
+}
+
+.arrow-left,
+.arrow-right {
+    border: solid var(--bg-yellow);
+    border-width: 0 7px 7px 0;
+    padding: 9px;
+}
+
+.arrow-left {
+    transform: rotate(135deg);
+}
+
+.arrow-right {
+    transform: rotate(-45deg);
+}
+
+.no-data {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-weight: 900;
+    color: var(--primary-green);
+    background-color: var(--bg-yellow);
+}

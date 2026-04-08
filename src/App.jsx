@@ -1,24 +1,34 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useUser } from './contexts/UserContext'; 
-
-import Login from './pages/login';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Login from './pages/Login';
 import Home from './pages/home';
+import EscolherCandidato from './pages/EscolherCandidato'; // Importe a nova página
+import { UserProvider, useUser } from './contexts/UserContext';
+
+function PrivateRoute({ children }) {
+  const { user, loading } = useUser();
+  if (loading) return <div>Carregando...</div>;
+  return user ? children : <Navigate to="/" />;
+}
 
 function App() {
-  const { user, loading } = useUser();
-
-  if (loading) return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Carregando...</div>;
-
   return (
-    <BrowserRouter basename="/">
-      <Routes>
-        <Route path="/" element={!user ? <Login /> : <Navigate to="/home" replace />} />
-        <Route path="/home" element={user ? <Home /> : <Navigate to="/" replace />} />
-        {/* Futura rota: <Route path="/escolher-candidatos" element={...} /> */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+    <UserProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/home" element={
+            <PrivateRoute>
+              <Home />
+            </PrivateRoute>
+          } />
+          <Route path="/escolher-deputado-federal" element={
+            <PrivateRoute>
+              <EscolherCandidato />
+            </PrivateRoute>
+          } />
+        </Routes>
+      </Router>
+    </UserProvider>
   );
 }
 
