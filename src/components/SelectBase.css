@@ -1,4 +1,4 @@
-.escolher-container {
+.select-base-container {
     display: flex;
     flex-direction: column;
     height: 100vh;
@@ -45,6 +45,7 @@
     font-size: 1.5rem;
     line-height: 1.2;
     margin-bottom: 10px;
+    text-transform: uppercase;
 }
 
 .triangle-down {
@@ -73,27 +74,29 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.btn-visualizar-todos.active-btn {
-    background-color: var(--bg-yellow);
-    color: var(--text-dark);
+.list-wrapper {
+    flex: 1;
+    padding: 25px 20px 20px 20px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
-/* --- Ajuste de Espaçamento Lateral (Padding Lateral) --- */
-.candidatos-list {
+.list-scroll-box {
+    background-color: var(--card-yellow);
+    border-radius: 12px;
     flex: 1;
     overflow-y: auto;
-    padding: 25px 20px 20px 20px;
-    /* 20px afasta os cards das bordas laterais do ecrã */
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-/* --- Layout do Card Estreito --- */
-.candidato-card {
-    margin-bottom: 10px;
-    /* Aumentei o espaço vertical entre eles */
-    border-radius: 12px;
-    /* Bordas arredondadas já que não tocam mais as laterais */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
-    /* Sombra suave */
+/* --- CARD PADRÃO COM A COR UNIFICADA --- */
+.base-card {
+    background-color: #f8e464;
+    margin: 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -102,31 +105,15 @@
     transition: background-color 0.2s;
 }
 
-/* Cores das Camadas */
-.candidato-card.layer-1 {
-    background-color: #eaf1fa;
+.base-card:last-child {
+    border-bottom: none;
 }
 
-/* Azul sutil */
-.candidato-card.layer-2 {
-    background-color: #ffffff;
+.base-card.selected {
+    background-color: #b3a53e !important;
 }
 
-/* Branco */
-.candidato-card.layer-3 {
-    background-color: #ffffff;
-}
-
-/* Branco */
-
-/* Estado Selecionado */
-.candidato-card.selected {
-    filter: brightness(0.95);
-    border-left: 6px solid var(--primary-green);
-    padding-left: 14px;
-    /* Ajustado para compensar a borda grossa */
-}
-
+/* INJEÇÕES: Candidatos */
 .cand-info {
     display: flex;
     flex-direction: column;
@@ -146,7 +133,6 @@
     text-transform: uppercase;
 }
 
-/* Gráfico Circular */
 .cand-chart {
     width: 58px;
     height: 58px;
@@ -176,7 +162,35 @@
     text-anchor: middle;
 }
 
-/* Navegação Base */
+/* INJEÇÕES: Estados */
+.state-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background-color: #e0e0e0;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 1rem;
+}
+
+.base-card.selected .state-avatar {
+    background-color: var(--primary-green);
+    color: var(--bg-yellow);
+}
+
+.state-full-name {
+    flex: 1;
+    text-align: left;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--text-dark);
+    margin-left: 15px;
+}
+
+/* Footer */
 .navigation-footer {
     display: grid;
     grid-template-columns: 1fr 1fr;
