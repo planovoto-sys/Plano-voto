@@ -1,0 +1,99 @@
+.hamburger-menu {
+    position: absolute;
+    top: 35px;
+    left: 20px;
+    z-index: 100;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.bar {
+    width: 25px;
+    height: 3px;
+    background-color: var(--bg-yellow); /* Amarelo para aparecer no banner verde */
+    border-radius: 2px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.5);
+    z-index: 998;
+}
+
+.sidebar-container {
+    position: fixed;
+    top: 0;
+    left: -280px;
+    width: 280px;
+    height: 100vh;
+    background-color: var(--bg-yellow);
+    z-index: 999;
+    transition: left 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    padding: 30px 20px;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+}
+
+.sidebar-container.open {
+    left: 0;
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 40px;
+}
+
+.sidebar-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 2px solid var(--primary-green);
+}
+
+.sidebar-username {
+    display: block;
+    font-weight: 900;
+    color: var(--text-dark);
+}
+
+.sidebar-user-email {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.sidebar-nav button {
+    background: none;
+    border: none;
+    text-align: left;
+    font-weight: 800;
+    font-size: 1rem;
+    color: var(--primary-green);
+    cursor: pointer;
+    padding: 10px 0;
+}
+
+.sidebar-divider {
+    height: 1px;
+    background: #ddd;
+    margin: 10px 0;
+}
+
+.btn-logout {
+    color: #ff4d4d !important;
+}

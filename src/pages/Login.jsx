@@ -3,9 +3,9 @@ import { auth, googleProvider, db } from '../services/firebaseConfig';
 import { signInWithPopup } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
-import './Login.css'; // Criaremos este arquivo logo abaixo
+import './Login.css';
 
-  function Login() {
+function Login() {
   const navigate = useNavigate();
 
   const handleGoogleLogin = async () => {
@@ -13,25 +13,34 @@ import './Login.css'; // Criaremos este arquivo logo abaixo
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
 
-      // Verifica se o usuário já existe no banco
       const userRef = doc(db, "users", user.uid);
       const docSnap = await getDoc(userRef);
 
       if (!docSnap.exists()) {
-        // Cria um novo usuário na coleção "users"
         await setDoc(userRef, {
           uid: user.uid,
           name: user.displayName,
           email: user.email,
           profile_image: user.photoURL,
-          estado: null, // Ainda não escolheu o estado
+          estado: null,
           candidatos_escolhidos: null,
           created_at: new Date()
         });
+        navigate('/home'); 
+      } else {
+        const data = docSnap.data();
+        
+        // Redirecionamento Inteligente de Retorno
+        if (data.candidatos_escolhidos?.senadores && data.candidatos_escolhidos.senadores.length === 2) {
+          navigate('/finalizacao'); // Já escolheu os 2 senadores
+        } else if (data.candidatos_escolhidos?.deputado_federal) {
+          navigate('/escolher-senadores'); // Já escolheu deputado, falta senador
+        } else if (data.estado) {
+          navigate('/escolher-deputado-federal'); // Já escolheu estado, falta deputado
+        } else {
+          navigate('/home'); // Não escolheu nada ainda
+        }
       }
-      
-      // Vai para a tela inicial (seleção de estado)
-      navigate('/home'); 
 
     } catch (error) {
       console.error("Erro ao fazer login:", error);

@@ -249,3 +249,91 @@
     color: var(--primary-green);
     background-color: var(--bg-yellow);
 }
+/* Adicione isso ao final do seu SelectBase.css atual */
+
+/* --- ESTILOS DO MODAL DE SUBSTITUIÇÃO --- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(3px); /* Efeito de desfoque elegante no fundo */
+}
+
+.modal-content {
+  background-color: var(--bg-yellow);
+  width: 85%;
+  max-width: 400px;
+  border-radius: 16px;
+  padding: 25px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.modal-title {
+  color: var(--primary-green);
+  font-weight: 900;
+  font-size: 1.3rem;
+  margin: 0;
+}
+
+.modal-text {
+  color: var(--text-dark);
+  font-weight: 600;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.modal-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.btn-modal-substituir {
+  background-color: #ffffff;
+  border: 2px solid var(--primary-green);
+  color: var(--primary-green);
+  padding: 12px 15px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.btn-modal-substituir strong {
+  font-weight: 900;
+  color: var(--text-dark);
+}
+
+.btn-modal-substituir:active {
+  background-color: var(--primary-green);
+  color: #ffffff;
+}
+
+.btn-modal-substituir:active strong {
+  color: #ffffff;
+}
+
+.btn-modal-cancelar {
+  background-color: transparent;
+  border: none;
+  color: #888;
+  font-weight: 800;
+  margin-top: 5px;
+  padding: 10px;
+  cursor: pointer;
+  text-decoration: underline;
+}

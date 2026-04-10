@@ -4,6 +4,7 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { useUser } from '../contexts/UserContext';
 import { useNavigate } from 'react-router-dom';
 import SelectBase from '../components/SelectBase';
+import Sidebar from '../components/Sidebar';
 
 const ESTADOS_BR = [
   { id: "AC", Nome: "Acre" }, { id: "AL", Nome: "Alagoas" }, { id: "AP", Nome: "Amapá" },
@@ -22,7 +23,6 @@ export default function Home() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  // Pega o estado salvo anteriormente para deixar o card pré-selecionado
   const selecaoInicial = useMemo(() => {
     return userData?.estado ? ESTADOS_BR.filter(e => e.id === userData.estado) : [];
   }, [userData]);
@@ -30,38 +30,34 @@ export default function Home() {
   const handleConfirmar = async (selecionados) => {
     if (!user || selecionados.length === 0) return;
     setLoading(true);
-    
     try {
-      const userRef = doc(db, "users", user.uid);
-      await updateDoc(userRef, {
-        estado: selecionados[0].id // Grava a Sigla/ID do estado
-      });
+      await updateDoc(doc(db, "users", user.uid), { estado: selecionados[0].id });
       navigate('/escolher-deputado-federal'); 
     } catch (error) {
-      console.error("Erro ao salvar estado:", error);
-      alert("Erro ao salvar. Tente novamente.");
+      console.error(error);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <SelectBase
-      titulo={<>SELECIONE<br/>SEU ESTADO</>}
-      dados={ESTADOS_BR}
-      limiteSelecao={1}
-      selecaoInicial={selecaoInicial}
-      mostrarFiltros={false} // Não queremos pills de "Novatos" para estados
-      mostrarBotaoTodos={false}
-      carregando={userLoading || loading}
-      onVoltar={() => navigate('/')}
-      onConfirmar={handleConfirmar}
-      renderItem={(estado) => (
-        <>
-          <div className="state-avatar">{estado.id}</div>
-          <span className="state-full-name">{estado.Nome}</span>
-        </>
-      )}
-    />
+    <>
+      <Sidebar />
+      <SelectBase
+        titulo={<>SELECIONE<br/>SEU ESTADO</>}
+        dados={ESTADOS_BR}
+        limiteSelecao={1}
+        selecaoInicial={selecaoInicial}
+        carregando={userLoading || loading}
+        onVoltar={() => navigate('/')}
+        onConfirmar={handleConfirmar}
+        renderItem={(estado) => (
+          <>
+            <div className="state-avatar">{estado.id}</div>
+            <span className="state-full-name">{estado.Nome}</span>
+          </>
+        )}
+      />
+    </>
   );
 }

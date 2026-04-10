@@ -5,8 +5,8 @@ export default function SelectBase({
   titulo,
   dados,
   limiteSelecao = 1,
-  selecaoInicial = [], // Permite carregar itens já salvos do Firebase
-  mostrarFiltros = false, // Habilita/Desabilita as "pills" (mulheres, todos...)
+  selecaoInicial = [],
+  mostrarFiltros = false,
   mostrarBotaoTodos = false,
   textoBotaoTodos = "",
   onToggleTodos,
@@ -17,8 +17,8 @@ export default function SelectBase({
   mensagemVazio = "Nenhum dado encontrado."
 }) {
   const [selecionados, setSelecionados] = useState([]);
+  const [substituicaoPendente, setSubstituicaoPendente] = useState(null);
 
-  // Quando a tela carrega, seleciona visualmente os que já estão salvos no perfil
   useEffect(() => {
     if (selecaoInicial.length > 0 && selecionados.length === 0) {
       setSelecionados(selecaoInicial);
@@ -36,9 +36,15 @@ export default function SelectBase({
       } else if (selecionados.length < limiteSelecao) {
         setSelecionados([...selecionados, item]); 
       } else {
-        alert(`Você só pode selecionar até ${limiteSelecao} opções.`);
+        setSubstituicaoPendente(item);
       }
     }
+  };
+
+  const confirmarSubstituicao = (itemAntigo) => {
+    const novaSelecao = selecionados.filter((s) => s.id !== itemAntigo.id);
+    setSelecionados([...novaSelecao, substituicaoPendente]);
+    setSubstituicaoPendente(null);
   };
 
   if (carregando) {
@@ -47,7 +53,6 @@ export default function SelectBase({
 
   return (
     <div className="select-base-container">
-      {/* Pills de filtro só aparecem se solicitado */}
       {mostrarFiltros && (
         <div className="top-pills">
           <span className="pill">mulheres</span>
@@ -94,11 +99,42 @@ export default function SelectBase({
         <button 
           className="nav-btn btn-confirm" 
           onClick={() => onConfirmar(selecionados)} 
-          disabled={selecionados.length === 0}
+          // CORREÇÃO AQUI: Exige a quantidade exata para prosseguir
+          disabled={selecionados.length !== limiteSelecao}
         >
           <div className="arrow-right"></div>
         </button>
       </div>
+
+      {substituicaoPendente && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3 className="modal-title">LIMITE ATINGIDO</h3>
+            <p className="modal-text">
+              Você já selecionou {limiteSelecao} opções. Deseja remover qual candidato para adicionar <strong>{substituicaoPendente.Nome}</strong>?
+            </p>
+            
+            <div className="modal-options-list">
+              {selecionados.map((sel) => (
+                <button 
+                  key={sel.id} 
+                  className="btn-modal-substituir"
+                  onClick={() => confirmarSubstituicao(sel)}
+                >
+                  Substituir <strong>{sel.Nome}</strong>
+                </button>
+              ))}
+            </div>
+
+            <button 
+              className="btn-modal-cancelar" 
+              onClick={() => setSubstituicaoPendente(null)}
+            >
+              CANCELAR
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

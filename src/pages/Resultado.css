@@ -1,0 +1,197 @@
+.resultado-main-container {
+    background-color: var(--bg-yellow);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ================= BANNER ================= */
+.result-green-banner {
+    position: relative;
+    text-align: center;
+    padding: 40px 10px;
+    color: var(--bg-yellow);
+    overflow: hidden; /* evita vazamento */
+}
+
+
+.slant-bg {
+    position: absolute;
+    width: 120%;
+    height: 100%;
+    background: var(--primary-green);
+    top: 0;
+    left: -10%;
+    transform-origin: top left;
+    z-index: 1;
+}
+
+.banner-text {
+    position: relative;
+    z-index: 2;
+}
+
+.banner-text h2 {
+    font-size: 2.5rem;
+    font-weight: 900;
+    margin: 0;
+}
+
+/* Triângulo */
+.triangle-down-classic {
+    width: 0;
+    height: 0;
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-top: 20px solid var(--primary-green);
+    margin: 0 auto;
+    position: absolute;
+    bottom: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+}
+
+/* ================= CARD ================= */
+.velocimetro-card {
+    background: var(--card-yellow);
+    margin: 20px;
+    border-radius: 20px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Gauge */
+.velocimetro-gauge {
+    position: relative;
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+    margin-bottom: 80px; /* reduzido pra não exagerar */
+}
+
+/* Número do gauge */
+.gauge-score {
+    position: absolute;
+    bottom: -60px; /* menos agressivo */
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+}
+
+.gauge-score span {
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #666;
+}
+
+.gauge-score strong {
+    display: block;
+    font-size: 3rem;
+    font-weight: 900;
+    color: #000;
+    line-height: 1;
+}
+/* ================= LISTA DE CANDIDATOS ================= */
+.lista-selecionados-container {
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+}
+
+.card-resultado-candidato {
+    background-color: var(--card-yellow);
+    border-radius: 15px;
+    padding: 18px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+/* O segredo do alinhamento vertical está aqui: flex-direction: column */
+.cand-info-texto {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    flex: 1;
+}
+
+/* Estilização individual de cada linha */
+.res-cargo {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #666;
+    letter-spacing: 0.5px;
+}
+
+.res-numero {
+    font-size: 1.5rem; /* Número bem grande e em destaque */
+    font-weight: 900;
+    color: #333;
+    margin: 2px 0; /* Espaço para respirar em cima e embaixo */
+    line-height: 1;
+}
+
+.res-nome {
+    font-weight: 900;
+
+    color: #222;
+    line-height: 1.1;
+}
+
+.res-partido {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #666;
+    margin-top: 2px;
+}
+
+.cand-chart {
+    width: 65px; 
+    height: 65px;
+    flex-shrink: 0; 
+    margin-left: 15px;
+}
+
+/* ================= FOOTER ================= */
+.resultado-footer-acoes {
+    display: flex;
+    gap: 8px;
+    padding: 20px;
+    margin-top: auto;
+}
+
+
+.btn-nav-texto, .btn-share {
+    flex: 1; 
+    height: 55px; 
+    background: var(--primary-green);
+    color: var(--bg-yellow);
+    border: none;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: 900;
+    transition: transform 0.1s;
+    padding: 0 2px; 
+}
+
+.btn-nav-texto:active, .btn-share:active {
+    transform: scale(0.95);
+}
+
+
+.btn-nav-texto {
+    font-size: 0.8rem;
+}
+
+.btn-share {
+    font-size: 0.75rem; 
+}
