@@ -41,14 +41,17 @@ export default function Resultado() {
 
                 snap.forEach(doc => {
                     const d = doc.data();
-                    const nota = d["Nota candidato"] || d["Nota partido"] || 0;
+                    
+                    // Lógica para manter o velocímetro funcionando corretamente
+                    const notaParaMedia = d["Nota candidato"] || d["Nota partido"] || 0;
                     const porcentagem = ((d.votos_recebidos || 0) / MEDIA_TESTE) * 100;
 
-                    soma += nota;
+                    soma += notaParaMedia;
                     lista.push({
                         id: doc.id,
                         ...d,
-                        notaCalculada: nota,
+                        notaCandidato: d["Nota candidato"] || 0,
+                        notaPartido: d["Nota partido"] || 0,
                         porcentagemCalculada: Math.min(porcentagem, 100).toFixed(0)
                     });
                 });
@@ -129,20 +132,34 @@ export default function Resultado() {
             <div className="lista-selecionados-container">
                 {candidatosCompletos.map((cand) => (
                     <div key={cand.id} className="card-resultado-candidato">
-                        <div className="cand-info-texto">
-                            <span className="res-cargo">{cand.Cargo?.toUpperCase()}</span>
-                            <span className="res-numero">{cand.Numero || "0000"}</span>
-                            <span className="res-nome">{cand.Nome?.toUpperCase()}</span>
-                            <div style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
-                                <span className="res-partido">{cand.Partido}</span>
-                                <span style={{fontSize: '0.7rem', fontWeight: 'bold', color: '#888'}}>NOTA: {cand.notaCalculada}</span>
+                        <div className="cand-info-texto" style={{ flex: 1 }}>
+                            {/* Mantive o cargo e número em cima, pois já fazia parte do seu layout */}
+                            <div style={{ marginBottom: '6px' }}>
+                                <span className="res-cargo">{cand.Cargo?.toUpperCase()}</span>
+                                <span className="res-numero" style={{ marginLeft: '8px', fontWeight: 'bold' }}>{cand.Numero || "0000"}</span>
+                            </div>
+                            
+                            {/* LINHA 1: NOME E NOTA CANDIDATO */}
+                            <div className="cand-row">
+                                <span className="res-nome" style={{ fontWeight: '900' }}>{cand.Nome?.toUpperCase()}</span>
+                                <span className="cand-badge"> {cand.notaCandidato}</span>
+                            </div>
+
+                            {/* LINHA 2: PARTIDO E NOTA PARTIDO */}
+                            <div className="cand-row" style={{ marginTop: '4px', opacity: 0.9 }}>
+                                <span className="res-partido" style={{ fontSize: '0.85rem', fontWeight: '700', color: '#666' }}>
+                                    PARTIDO: {cand.Partido}
+                                </span>
+                                <span className="cand-badge party-badge"> {cand.notaPartido}</span>
                             </div>
                         </div>
-                        <div className="cand-chart">
+
+                        {/* GRÁFICO CIRCULAR DE VOTOS */}
+                        <div className="cand-chart" style={{ width: '58px', height: '58px', marginLeft: '15px' }}>
                             <svg viewBox="0 0 36 36" className="circular-chart">
-                                <path className="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                <path className="circle" strokeDasharray={`${cand.porcentagemCalculada}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                <text x="18" y="20.35" className="percentage">{cand.porcentagemCalculada}%</text>
+                                <path className="circle-bg" fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth="3.5" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                <path className="circle" fill="none" stroke="var(--primary-green, #4CAF50)" strokeWidth="3.5" strokeLinecap="round" strokeDasharray={`${cand.porcentagemCalculada}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                <text x="18" y="20.35" fill="#1a1a1a" fontSize="0.65rem" fontWeight="800" textAnchor="middle">{cand.porcentagemCalculada}%</text>
                             </svg>
                         </div>
                     </div>
@@ -157,8 +174,6 @@ export default function Resultado() {
                 <button className="btn-share" onClick={() => alert("Link copiado!")}>
                     COMPARTILHAR
                 </button>
-                
-                
             </footer>
         </div>
     );

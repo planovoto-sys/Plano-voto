@@ -1,41 +1,65 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useUser } from '../contexts/UserContext';
 import { db } from '../services/firebaseConfig';
 import { doc, updateDoc } from 'firebase/firestore';
-import { useUser } from '../contexts/UserContext';
-import { useNavigate } from 'react-router-dom';
 import SelectBase from '../components/SelectBase';
 import Sidebar from '../components/Sidebar';
 
-const ESTADOS_BR = [
-  { id: "AC", Nome: "Acre" }, { id: "AL", Nome: "Alagoas" }, { id: "AP", Nome: "Amapá" },
-  { id: "AM", Nome: "Amazonas" }, { id: "BA", Nome: "Bahia" }, { id: "CE", Nome: "Ceará" },
-  { id: "DF", Nome: "Distrito Federal" }, { id: "ES", Nome: "Espírito Santo" }, { id: "GO", Nome: "Goiás" },
-  { id: "MA", Nome: "Maranhão" }, { id: "MT", Nome: "Mato Grosso" }, { id: "MS", Nome: "Mato Grosso do Sul" },
-  { id: "MG", Nome: "Minas Gerais" }, { id: "PA", Nome: "Pará" }, { id: "PB", Nome: "Paraíba" },
-  { id: "PR", Nome: "Paraná" }, { id: "PE", Nome: "Pernambuco" }, { id: "PI", Nome: "Piauí" },
-  { id: "RJ", Nome: "Rio de Janeiro" }, { id: "RN", Nome: "Rio Grande do Norte" }, { id: "RS", Nome: "Rio Grande do Sul" },
-  { id: "RO", Nome: "Rondônia" }, { id: "RR", Nome: "Roraima" }, { id: "SC", Nome: "Santa Catarina" },
-  { id: "SP", Nome: "São Paulo" }, { id: "SE", Nome: "Sergipe" }, { id: "TO", Nome: "Tocantins" }
+// Uma lista fixa padrão de estados (pode adaptar com a sua se ela vier do banco)
+const LISTA_ESTADOS = [
+  { id: 'AC', nome: 'Acre', sigla: 'AC' },
+  { id: 'AL', nome: 'Alagoas', sigla: 'AL' },
+  { id: 'AP', nome: 'Amapá', sigla: 'AP' },
+  { id: 'AM', nome: 'Amazonas', sigla: 'AM' },
+  { id: 'BA', nome: 'Bahia', sigla: 'BA' },
+  { id: 'CE', nome: 'Ceará', sigla: 'CE' },
+  { id: 'DF', nome: 'Distrito Federal', sigla: 'DF' },
+  { id: 'ES', nome: 'Espírito Santo', sigla: 'ES' },
+  { id: 'GO', nome: 'Goiás', sigla: 'GO' },
+  { id: 'MA', nome: 'Maranhão', sigla: 'MA' },
+  { id: 'MT', nome: 'Mato Grosso', sigla: 'MT' },
+  { id: 'MS', nome: 'Mato Grosso do Sul', sigla: 'MS' },
+  { id: 'MG', nome: 'Minas Gerais', sigla: 'MG' },
+  { id: 'PA', nome: 'Pará', sigla: 'PA' },
+  { id: 'PB', nome: 'Paraíba', sigla: 'PB' },
+  { id: 'PR', nome: 'Paraná', sigla: 'PR' },
+  { id: 'PE', nome: 'Pernambuco', sigla: 'PE' },
+  { id: 'PI', nome: 'Piauí', sigla: 'PI' },
+  { id: 'RJ', nome: 'Rio de Janeiro', sigla: 'RJ' },
+  { id: 'RN', nome: 'Rio Grande do Norte', sigla: 'RN' },
+  { id: 'RS', nome: 'Rio Grande do Sul', sigla: 'RS' },
+  { id: 'RO', nome: 'Rondônia', sigla: 'RO' },
+  { id: 'RR', nome: 'Roraima', sigla: 'RR' },
+  { id: 'SC', nome: 'Santa Catarina', sigla: 'SC' },
+  { id: 'SP', nome: 'São Paulo', sigla: 'SP' },
+  { id: 'SE', nome: 'Sergipe', sigla: 'SE' },
+  { id: 'TO', nome: 'Tocantins', sigla: 'TO' }
 ];
 
 export default function Home() {
   const { user, userData, loading: userLoading } = useUser();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  
+  // Controle da Aba na Home
+  const [abaAtiva, setAbaAtiva] = useState('geral');
 
-  const selecaoInicial = useMemo(() => {
-    return userData?.estado ? ESTADOS_BR.filter(e => e.id === userData.estado) : [];
-  }, [userData]);
+  // Verifica se o usuário já tem um estado salvo para ser a seleção inicial
+  const selecaoInicial = userData?.estado 
+    ? LISTA_ESTADOS.filter(estado => estado.sigla === userData.estado)
+    : [];
 
   const handleConfirmar = async (selecionados) => {
-    if (!user || selecionados.length === 0) return;
+    if (selecionados.length === 0) return;
     setLoading(true);
     try {
-      await updateDoc(doc(db, "users", user.uid), { estado: selecionados[0].id });
-      navigate('/escolher-deputado-federal'); 
-    } catch (error) {
-      console.error(error);
-    } finally {
+      const estadoEscolhido = selecionados[0].sigla;
+      const userRef = doc(db, "users", user.uid);
+      await updateDoc(userRef, { estado: estadoEscolhido });
+      navigate('/escolher-deputado-federal'); // Avança para a próxima tela
+    } catch (e) {
+      console.error("Erro ao salvar estado: ", e);
       setLoading(false);
     }
   };
@@ -44,17 +68,21 @@ export default function Home() {
     <>
       <Sidebar />
       <SelectBase
-        titulo={<>SELECIONE<br/>SEU ESTADO</>}
-        dados={ESTADOS_BR}
-        limiteSelecao={1}
+        abas={['mulheres', 'geral', 'partidos']}
+        abaAtiva={abaAtiva}
+        setAbaAtiva={setAbaAtiva}
+        titulo="SELECIONE SEU ESTADO"
+        dados={LISTA_ESTADOS}
+        limiteSelecao={1} // Seleciona apenas 1 estado
         selecaoInicial={selecaoInicial}
         carregando={userLoading || loading}
-        onVoltar={() => navigate('/')}
+        mostrarBotaoTodos={false} // Não precisa do botão de "Visualizar todos"
         onConfirmar={handleConfirmar}
+        onVoltar={() => navigate(-1)} // Volta para tela anterior (login ou intro)
         renderItem={(estado) => (
           <>
-            <div className="state-avatar">{estado.id}</div>
-            <span className="state-full-name">{estado.Nome}</span>
+            <div className="state-avatar">{estado.sigla}</div>
+            <div className="state-full-name">{estado.nome.toUpperCase()}</div>
           </>
         )}
       />

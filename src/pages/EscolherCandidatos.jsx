@@ -11,9 +11,13 @@ const MEDIA_TESTE = 4;
 export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota, chaveBanco }) {
   const { user, userData, loading: userLoading } = useUser();
   const navigate = useNavigate();
+  
   const [todosCandidatos, setTodosCandidatos] = useState([]);
   const [mostrarTodos, setMostrarTodos] = useState(false);
   const [loading, setLoading] = useState(true);
+  
+  // Controle da Aba Ativa (nav pills)
+  const [abaAtiva, setAbaAtiva] = useState('geral');
 
   const selecaoInicial = useMemo(() => {
     const salvo = userData?.candidatos_escolhidos?.[chaveBanco];
@@ -34,12 +38,12 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
           const ufLimpa = data.Estado ? data.Estado.replace(/[\s\u00A0]+/g, '') : "SP";
           const porcentagem = ((data.votos_recebidos || 0) / MEDIA_TESTE) * 100;
 
-          // CORREÇÃO: Capturando a nota (se não tiver a do candidato, usa do partido)
-          const nota = data["Nota candidato"] || data["Nota partido"] || 0;
-
           return {
-            id: doc.id, ...data, ufLimpa,
-            notaExibicao: nota,
+            id: doc.id,
+            ...data,
+            ufLimpa,
+            notaCandidato: data["Nota candidato"] || 0,
+            notaPartido: data["Nota partido"] || 0,
             porcentagemCalculada: Math.min(porcentagem, 100).toFixed(0)
           };
         });
@@ -54,11 +58,27 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
     fetchDados();
   }, [cargo]);
 
+  // Filtra por Estado se necessário
   const candidatosFiltrados = useMemo(() => {
     if (!userData?.estado) return [];
     const meuEstadoLimpo = userData.estado.replace(/[\s\u00A0]+/g, '');
     return todosCandidatos.filter(cand => cand.ufLimpa === meuEstadoLimpo);
   }, [todosCandidatos, userData?.estado]);
+
+  // Aplica o filtro de Mulheres / Partidos / Geral
+  const listaExibida = useMemo(() => {
+    let base = mostrarTodos ? todosCandidatos : candidatosFiltrados;
+
+    if (abaAtiva === 'mulheres') {
+      // Ajuste "Feminino" ou "F" conforme escrito no seu Firebase
+      base = base.filter(cand => cand.Genero === 'Feminino' || cand.Sexo === 'F' || cand.Genero === 'F');
+    } else if (abaAtiva === 'partidos') {
+      // Ordena por partido
+      base = [...base].sort((a, b) => (a.Partido || '').localeCompare(b.Partido || ''));
+    }
+
+    return base;
+  }, [mostrarTodos, todosCandidatos, candidatosFiltrados, abaAtiva]);
 
   const handleConfirmar = async (selecionados) => {
     setLoading(true);
@@ -67,7 +87,7 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
       const candidatosParaRemover = selecaoInicial.filter(v => !selecionados.some(n => n.id === v.id));
       const candidatosParaAdicionar = selecionados.filter(n => !selecaoInicial.some(v => v.id === n.id));
 
-      const valorParaSalvar = limite === 1 ? selecionados[0].Nome : selecionados.map(s => s.Nome);
+      const valorParaSalvar = limite === 1 ? (selecionados[0]?.Nome || "") : selecionados.map(s => s.Nome);
 
       await updateDoc(userRef, { [`candidatos_escolhidos.${chaveBanco}`]: valorParaSalvar });
 
@@ -85,12 +105,13 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
     }
   };
 
-  const listaExibida = mostrarTodos ? todosCandidatos : candidatosFiltrados;
-
   return (
     <>
       <Sidebar />
       <SelectBase
+        abas={['mulheres', 'geral', 'partidos']}
+        abaAtiva={abaAtiva}
+        setAbaAtiva={setAbaAtiva}
         titulo={titulo}
         dados={listaExibida}
         limiteSelecao={limite}
@@ -110,21 +131,20 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
         renderItem={(cand) => (
           <>
             <div className="cand-info">
-              <span className="cand-name">{cand.Nome.toUpperCase()}</span>
-              <div style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
-                <span className="cand-party">PARTIDO {cand.Partido}</span>
-                <span style={{
-                  background: 'var(--primary-green)', 
-                  color: 'var(--bg-yellow)', 
-                  padding: '2px 6px', 
-                  borderRadius: '5px', 
-                  fontSize: '0.7rem', 
-                  fontWeight: 'bold'
-                }}>
-                  NOTA: {cand.notaExibicao}
-                </span>
+              {/* LINHA 1: NOME E NOTA CANDIDATO */}
+              <div className="cand-row">
+                <span className="cand-name">{cand.Nome.toUpperCase()}</span>
+                <span className="cand-badge">NOTA CAND: {cand.notaCandidato}</span>
+              </div>
+
+              {/* LINHA 2: PARTIDO E NOTA PARTIDO */}
+              <div className="cand-row">
+                <span className="cand-party">PARTIDO: {cand.Partido}</span>
+                <span className="cand-badge party-badge">NOTA PARTIDO: {cand.notaPartido}</span>
               </div>
             </div>
+
+            {/* GRÁFICO DE PORCENTAGEM */}
             <div className="cand-chart">
               <svg viewBox="0 0 36 36" className="circular-chart">
                 <path className="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />

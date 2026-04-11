@@ -4,137 +4,117 @@ import './SelectBase.css';
 export default function SelectBase({
   titulo,
   dados,
-  limiteSelecao = 1,
+  limiteSelecao,
   selecaoInicial = [],
-  mostrarFiltros = false,
-  mostrarBotaoTodos = false,
-  textoBotaoTodos = "",
+  carregando,
+  mostrarBotaoTodos,
+  textoBotaoTodos,
   onToggleTodos,
-  renderItem, 
   onConfirmar,
   onVoltar,
-  carregando = false,
-  mensagemVazio = "Nenhum dado encontrado."
+  renderItem,
+  // Props para a barra de navegação superior
+  abas = [],
+  abaAtiva = '',
+  setAbaAtiva = () => {}
 }) {
-  const [selecionados, setSelecionados] = useState([]);
-  const [substituicaoPendente, setSubstituicaoPendente] = useState(null);
+  const [selecionados, setSelecionados] = useState(selecaoInicial);
 
   useEffect(() => {
-    if (selecaoInicial.length > 0 && selecionados.length === 0) {
-      setSelecionados(selecaoInicial);
-    }
+    setSelecionados(selecaoInicial);
   }, [selecaoInicial]);
 
   const handleSelect = (item) => {
-    const isSelected = selecionados.some((s) => s.id === item.id);
-
-    if (isSelected) {
-      setSelecionados(selecionados.filter((s) => s.id !== item.id));
-    } else {
-      if (limiteSelecao === 1) {
-        setSelecionados([item]); 
-      } else if (selecionados.length < limiteSelecao) {
-        setSelecionados([...selecionados, item]); 
-      } else {
-        setSubstituicaoPendente(item);
+    setSelecionados((prev) => {
+      const jaSelecionado = prev.find((v) => v.id === item.id);
+      if (jaSelecionado) {
+        return prev.filter((v) => v.id !== item.id);
       }
+      if (prev.length < limiteSelecao) {
+        return [...prev, item];
+      }
+      // Se já atingiu o limite e o limite é 1, apenas substitui
+      if (limiteSelecao === 1) {
+        return [item];
+      }
+      return prev; // Ignora se o limite já foi atingido
+    });
+  };
+
+  const handleConfirmar = () => {
+    if (onConfirmar) {
+      onConfirmar(selecionados);
     }
   };
 
-  const confirmarSubstituicao = (itemAntigo) => {
-    const novaSelecao = selecionados.filter((s) => s.id !== itemAntigo.id);
-    setSelecionados([...novaSelecao, substituicaoPendente]);
-    setSubstituicaoPendente(null);
-  };
-
-  if (carregando) {
-    return <div className="loading">Carregando...</div>;
-  }
+  if (carregando) return <div className="loading">CARREGANDO...</div>;
 
   return (
     <div className="select-base-container">
-      {mostrarFiltros && (
-        <div className="top-pills">
-          <span className="pill">mulheres</span>
-          <span className="pill active">todos</span>
-          <span className="pill">novatos</span>
+      
+      {/* BARRA SUPERIOR (PILLS) - Só aparece se a tela passar a prop "abas" */}
+      {abas.length > 0 && (
+        <div className="header-nav-container">
+          <div className="pills-wrapper">
+            {abas.map((aba) => (
+              <button
+                key={aba}
+                className={`pill-nav ${abaAtiva === aba ? 'active' : ''}`}
+                onClick={() => setAbaAtiva(aba)}
+              >
+                {aba}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
+      {/* BANNER VERDE */}
       <div className="green-banner-selection">
         <h2>{titulo}</h2>
-        <div className="triangle-down"></div>
         {mostrarBotaoTodos && (
           <button className="btn-visualizar-todos" onClick={onToggleTodos}>
             {textoBotaoTodos}
           </button>
         )}
+        <div className="triangle-down"></div>
       </div>
 
+      {/* LISTA */}
       <div className="list-wrapper">
         <div className="list-scroll-box">
           {dados.length > 0 ? (
             dados.map((item) => {
-              const isSelected = selecionados.some((s) => s.id === item.id);
+              const isSelected = selecionados.some((v) => v.id === item.id);
               return (
-                <div 
-                  key={item.id} 
+                <div
+                  key={item.id}
                   className={`base-card ${isSelected ? 'selected' : ''}`}
                   onClick={() => handleSelect(item)}
                 >
-                  {renderItem(item)}
+                  {renderItem(item, isSelected)}
                 </div>
               );
             })
           ) : (
-            <div className="no-data">{mensagemVazio}</div>
+            <div className="no-data">Nenhum dado encontrado para sua seleção.</div>
           )}
         </div>
       </div>
 
-      <div className="navigation-footer">
-        <button className="nav-btn" onClick={onVoltar}>
-          <div className="arrow-left"></div>
+      {/* RODAPÉ DE NAVEGAÇÃO */}
+      <footer className="navigation-footer">
+        <button className="nav-btn btn-voltar" onClick={onVoltar}>
+          <i className="arrow-left"></i>
         </button>
-        <button 
-          className="nav-btn btn-confirm" 
-          onClick={() => onConfirmar(selecionados)} 
-          // CORREÇÃO AQUI: Exige a quantidade exata para prosseguir
-          disabled={selecionados.length !== limiteSelecao}
+        <button
+          className="nav-btn btn-confirm"
+          onClick={handleConfirmar}
+          disabled={selecionados.length === 0}
         >
-          <div className="arrow-right"></div>
+          <i className="arrow-right"></i>
         </button>
-      </div>
-
-      {substituicaoPendente && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3 className="modal-title">LIMITE ATINGIDO</h3>
-            <p className="modal-text">
-              Você já selecionou {limiteSelecao} opções. Deseja remover qual candidato para adicionar <strong>{substituicaoPendente.Nome}</strong>?
-            </p>
-            
-            <div className="modal-options-list">
-              {selecionados.map((sel) => (
-                <button 
-                  key={sel.id} 
-                  className="btn-modal-substituir"
-                  onClick={() => confirmarSubstituicao(sel)}
-                >
-                  Substituir <strong>{sel.Nome}</strong>
-                </button>
-              ))}
-            </div>
-
-            <button 
-              className="btn-modal-cancelar" 
-              onClick={() => setSubstituicaoPendente(null)}
-            >
-              CANCELAR
-            </button>
-          </div>
-        </div>
-      )}
+      </footer>
     </div>
   );
 }
