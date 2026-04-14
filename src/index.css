@@ -50,9 +50,12 @@ body {
   transition: transform 0.1s;
 }
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
+
 .btn-green:active {
   transform: scale(0.98);
-}@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
+}
+
 
 :root {
   /* Paleta extraída da imagem */

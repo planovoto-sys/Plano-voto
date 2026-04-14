@@ -1,8 +1,8 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useUser } from './contexts/UserContext';
-import Login from './pages/login';
-import Home from './pages/home';
+import Login from './pages/Login';
+import Home from './pages/Home';
 import EscolherCandidatos from './pages/EscolherCandidatos';
 import Resultado from './pages/Resultado';
 
