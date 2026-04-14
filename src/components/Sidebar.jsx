@@ -6,7 +6,8 @@ import './Sidebar.css';
 
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
-  const { userData, user } = useUser();
+  // Importamos o filtroAtivo do UserContext para saber o tema atual
+  const { userData, user, filtroAtivo } = useUser();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -14,9 +15,12 @@ export default function Sidebar() {
     navigate('/');
   };
 
+  // Define a classe dinâmica baseada no filtro ativo
+  const themeClass = `theme-${filtroAtivo || 'geral'}`;
+
   return (
     <>
-      <div className="hamburger-menu" onClick={() => setIsOpen(true)}>
+      <div className={`hamburger-menu ${themeClass}`} onClick={() => setIsOpen(true)}>
         <div className="bar"></div>
         <div className="bar"></div>
         <div className="bar"></div>
@@ -24,7 +28,7 @@ export default function Sidebar() {
 
       {isOpen && <div className="sidebar-overlay" onClick={() => setIsOpen(false)}></div>}
 
-      <div className={`sidebar-container ${isOpen ? 'open' : ''}`}>
+      <div className={`sidebar-container ${isOpen ? 'open' : ''} ${themeClass}`}>
         <div className="sidebar-header">
           {userData?.profile_image && (
             <img src={userData.profile_image} alt="Perfil" className="sidebar-avatar" />

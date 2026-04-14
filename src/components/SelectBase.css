@@ -33,13 +33,14 @@
     display: flex;
     justify-content: center;
     background-color: var(--bg-yellow);
-    padding-top: 25px; 
+    padding-top: 25px;
     padding-bottom: 15px;
 }
 
 .pills-wrapper {
     display: inline-flex;
-    background-color: #f8e464; /* Amarelo card */
+    background-color: #f8e464;
+    /* Amarelo card */
     border-radius: 30px;
     padding: 4px;
     gap: 2px;
@@ -61,7 +62,7 @@
 .pill-nav.active {
     background-color: var(--primary-green, #4CAF50);
     color: #ffffff;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 }
 
 /* ==========================================================================
@@ -116,7 +117,8 @@
    4. CARDS DE LISTAGEM (BASE)
    ========================================================================== */
 .base-card {
-    background-color: #f8e464; /* Amarelo card */
+    background-color: #f8e464;
+    /* Amarelo card mantido conforme padronização */
     margin: 0;
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     display: flex;
@@ -239,6 +241,14 @@
     margin-left: 15px;
 }
 
+.state-centered-name {
+    font-weight: 900;
+    font-size: 1.2rem;
+    text-align: center;
+    width: 100%;
+    color: var(--text-dark, #1a1a1a);
+}
+
 /* ==========================================================================
    7. FOOTER E NAVEGAÇÃO
    ========================================================================== */
@@ -302,4 +312,218 @@
     font-weight: 900;
     color: var(--primary-green, #4CAF50);
     background-color: var(--bg-yellow, #fdf001);
+}
+
+/* ==========================================================================
+   9. TEMA: MULHERES (Filtro Ativo)
+   ========================================================================== */
+.select-base-container.theme-mulheres {
+    background-color: #B3262E;
+}
+
+.select-base-container.theme-mulheres .header-nav-container {
+    background-color: #B3262E;
+}
+
+.select-base-container.theme-mulheres .pills-wrapper {
+    background-color: #8E1F24;
+}
+
+.select-base-container.theme-mulheres .pill-nav {
+    color: #FFFFFF;
+}
+
+.select-base-container.theme-mulheres .pill-nav.active {
+    background-color: #F5E65A;
+    color: #8E1F24;
+}
+
+.select-base-container.theme-mulheres .green-banner-selection {
+    background-color: #8E1F24;
+    color: #F5E65A;
+}
+
+.select-base-container.theme-mulheres .triangle-down {
+    border-top-color: #8E1F24;
+}
+
+.select-base-container.theme-mulheres .btn-visualizar-todos {
+    color: #8E1F24;
+    background-color: #F5E65A;
+}
+
+.select-base-container.theme-mulheres .list-scroll-box {
+    background-color: transparent;
+    box-shadow: none;
+}
+
+.select-base-container.theme-mulheres .base-card {
+    background-color: #8E1F24;
+    border-bottom: 1px solid #A52A2F;
+}
+
+.select-base-container.theme-mulheres .base-card.selected {
+    background-color: #B85A5A !important;
+}
+
+.select-base-container.theme-mulheres .state-centered-name,
+.select-base-container.theme-mulheres .state-full-name,
+.select-base-container.theme-mulheres .cand-name,
+.select-base-container.theme-mulheres .no-data {
+    color: #FFFFFF;
+}
+
+.select-base-container.theme-mulheres .cand-party,
+.select-base-container.theme-mulheres .res-cargo {
+    color: #F5E65A;
+}
+
+.select-base-container.theme-mulheres .cand-badge {
+    background-color: #F5E65A;
+    color: #8E1F24;
+}
+
+.select-base-container.theme-mulheres .circle {
+    stroke: #F5E65A;
+}
+
+.select-base-container.theme-mulheres .circle-bg {
+    stroke: rgba(255, 255, 255, 0.2);
+}
+
+.select-base-container.theme-mulheres .percentage {
+    fill: #FFFFFF;
+}
+
+.select-base-container.theme-mulheres .state-avatar {
+    background-color: #B3262E;
+    color: #FFFFFF;
+}
+
+.select-base-container.theme-mulheres .base-card.selected .state-avatar {
+    background-color: #F5E65A;
+    color: #8E1F24;
+}
+
+.select-base-container.theme-mulheres .nav-btn {
+    background-color: #8E1F24;
+}
+
+.select-base-container.theme-mulheres .nav-btn.btn-confirm:not(:disabled) {
+    background-color: #A52A2F;
+}
+
+.select-base-container.theme-mulheres .arrow-left,
+.select-base-container.theme-mulheres .arrow-right {
+    border-color: #F2D94E;
+}
+/* ==========================================================================
+   10. TEMA: PARTIDOS (Filtro Ativo)
+   ========================================================================== */
+.select-base-container.theme-partidos {
+    background-color: #455A8C;
+}
+
+.select-base-container.theme-partidos .header-nav-container {
+    background-color: #455A8C;
+}
+
+/* Base escura do banner e pills */
+.select-base-container.theme-partidos .pills-wrapper {
+    background-color: #3F4F7A;
+}
+
+.select-base-container.theme-partidos .pill-nav {
+    color: #FFFFFF;
+}
+
+.select-base-container.theme-partidos .pill-nav.active {
+    background-color: #F5E65A;
+    color: #3F4F7A;
+}
+
+.select-base-container.theme-partidos .green-banner-selection {
+    background-color: #3F4F7A;
+    color: #F5E65A; 
+}
+
+.select-base-container.theme-partidos .triangle-down {
+    border-top-color: #3F4F7A;
+}
+
+.select-base-container.theme-partidos .btn-visualizar-todos {
+    color: #3F4F7A;
+    background-color: #F5E65A;
+}
+
+/* Área da Lista de Cards */
+.select-base-container.theme-partidos .list-scroll-box {
+    background-color: transparent; 
+    box-shadow: none;
+}
+
+.select-base-container.theme-partidos .base-card {
+    background-color: #4A5568;
+    border-bottom: 1px solid #3F4F7A;
+}
+
+/* Hover/Seleção de Card (Ex: AM na imagem) */
+.select-base-container.theme-partidos .base-card.selected {
+    background-color: #A0A4AE !important;
+}
+
+/* Textos dentro do Card */
+.select-base-container.theme-partidos .state-centered-name,
+.select-base-container.theme-partidos .state-full-name,
+.select-base-container.theme-partidos .cand-name,
+.select-base-container.theme-partidos .no-data {
+    color: #FFFFFF;
+}
+
+.select-base-container.theme-partidos .cand-party,
+.select-base-container.theme-partidos .res-cargo {
+    color: #F5E65A; 
+}
+
+/* Ajustes dos componentes de Candidatos */
+.select-base-container.theme-partidos .cand-badge {
+    background-color: #F5E65A;
+    color: #4A5568;
+}
+
+.select-base-container.theme-partidos .circle {
+    stroke: #F5E65A;
+}
+
+.select-base-container.theme-partidos .circle-bg {
+    stroke: rgba(255, 255, 255, 0.25); /* Overlay/transparência */
+}
+
+.select-base-container.theme-partidos .percentage {
+    fill: #FFFFFF;
+}
+
+/* Ajustes visuais para o estado (bolinha, caso usada em outras telas) */
+.select-base-container.theme-partidos .state-avatar {
+    background-color: #455A8C;
+    color: #FFFFFF;
+}
+
+.select-base-container.theme-partidos .base-card.selected .state-avatar {
+    background-color: #F5E65A;
+    color: #4A5568;
+}
+
+/* Rodapé de Navegação */
+.select-base-container.theme-partidos .nav-btn {
+    background-color: #4A5568;
+}
+
+.select-base-container.theme-partidos .nav-btn.btn-confirm:not(:disabled) {
+    background-color: #5A6B9A; /* Azul levemente mais claro para dar destaque no botão ativo */
+}
+
+.select-base-container.theme-partidos .arrow-left,
+.select-base-container.theme-partidos .arrow-right {
+    border-color: #F2D94E;
 }

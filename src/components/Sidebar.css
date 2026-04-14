@@ -97,3 +97,65 @@
 .btn-logout {
     color: #ff4d4d !important;
 }
+
+/* ==========================================================================
+   TEMA: MULHERES
+   ========================================================================== */
+.hamburger-menu.theme-mulheres .bar {
+    background-color: #F5E65A; /* Amarelo de destaque */
+}
+
+.sidebar-container.theme-mulheres {
+    background-color: #B3262E; /* Vermelho principal */
+}
+
+.sidebar-container.theme-mulheres .sidebar-avatar {
+    border-color: #F5E65A;
+}
+
+.sidebar-container.theme-mulheres .sidebar-username {
+    color: #FFFFFF;
+}
+
+.sidebar-container.theme-mulheres .sidebar-user-email {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.sidebar-container.theme-mulheres .sidebar-nav button {
+    color: #F5E65A; /* Botões de navegação no amarelo de destaque */
+}
+
+.sidebar-container.theme-mulheres .sidebar-divider {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* ==========================================================================
+   TEMA: PARTIDOS
+   ========================================================================== */
+.hamburger-menu.theme-partidos .bar {
+    background-color: #F5E65A; /* Amarelo de destaque */
+}
+
+.sidebar-container.theme-partidos {
+    background-color: #455A8C; /* Azul principal */
+}
+
+.sidebar-container.theme-partidos .sidebar-avatar {
+    border-color: #F5E65A;
+}
+
+.sidebar-container.theme-partidos .sidebar-username {
+    color: #FFFFFF;
+}
+
+.sidebar-container.theme-partidos .sidebar-user-email {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.sidebar-container.theme-partidos .sidebar-nav button {
+    color: #F5E65A; /* Botões de navegação no amarelo de destaque */
+}
+
+.sidebar-container.theme-partidos .sidebar-divider {
+    background: rgba(255, 255, 255, 0.25);
+}

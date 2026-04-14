@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 import { db } from '../services/firebaseConfig';
@@ -6,7 +6,6 @@ import { doc, updateDoc } from 'firebase/firestore';
 import SelectBase from '../components/SelectBase';
 import Sidebar from '../components/Sidebar';
 
-// Uma lista fixa padrão de estados (pode adaptar com a sua se ela vier do banco)
 const LISTA_ESTADOS = [
   { id: 'AC', nome: 'Acre', sigla: 'AC' },
   { id: 'AL', nome: 'Alagoas', sigla: 'AL' },
@@ -38,14 +37,11 @@ const LISTA_ESTADOS = [
 ];
 
 export default function Home() {
-  const { user, userData, loading: userLoading } = useUser();
+  // Pegando filtroAtivo e setFiltroAtivo do contexto global
+  const { user, userData, loading: userLoading, filtroAtivo, setFiltroAtivo } = useUser();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  
-  // Controle da Aba na Home
-  const [abaAtiva, setAbaAtiva] = useState('geral');
 
-  // Verifica se o usuário já tem um estado salvo para ser a seleção inicial
   const selecaoInicial = userData?.estado 
     ? LISTA_ESTADOS.filter(estado => estado.sigla === userData.estado)
     : [];
@@ -57,7 +53,7 @@ export default function Home() {
       const estadoEscolhido = selecionados[0].sigla;
       const userRef = doc(db, "users", user.uid);
       await updateDoc(userRef, { estado: estadoEscolhido });
-      navigate('/escolher-deputado-federal'); // Avança para a próxima tela
+      navigate('/escolher-deputado-federal');
     } catch (e) {
       console.error("Erro ao salvar estado: ", e);
       setLoading(false);
@@ -69,21 +65,20 @@ export default function Home() {
       <Sidebar />
       <SelectBase
         abas={['mulheres', 'geral', 'partidos']}
-        abaAtiva={abaAtiva}
-        setAbaAtiva={setAbaAtiva}
+        abaAtiva={filtroAtivo} // Usa o global
+        setAbaAtiva={setFiltroAtivo} // Altera o global
         titulo="SELECIONE SEU ESTADO"
         dados={LISTA_ESTADOS}
-        limiteSelecao={1} // Seleciona apenas 1 estado
+        limiteSelecao={1}
         selecaoInicial={selecaoInicial}
         carregando={userLoading || loading}
-        mostrarBotaoTodos={false} // Não precisa do botão de "Visualizar todos"
+        mostrarBotaoTodos={false}
         onConfirmar={handleConfirmar}
-        onVoltar={() => navigate(-1)} // Volta para tela anterior (login ou intro)
+        onVoltar={() => navigate(-1)}
         renderItem={(estado) => (
-          <>
-            <div className="state-avatar">{estado.sigla}</div>
-            <div className="state-full-name">{estado.nome.toUpperCase()}</div>
-          </>
+          <div className="state-centered-name">
+            {estado.sigla}
+          </div>
         )}
       />
     </>

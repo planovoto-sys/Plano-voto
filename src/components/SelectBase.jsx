@@ -50,7 +50,7 @@ export default function SelectBase({
   if (carregando) return <div className="loading">CARREGANDO...</div>;
 
   return (
-    <div className="select-base-container">
+    <div className={`select-base-container theme-${abaAtiva || 'geral'}`}>
       
       {/* BARRA SUPERIOR (PILLS) - Só aparece se a tela passar a prop "abas" */}
       {abas.length > 0 && (
@@ -69,7 +69,7 @@ export default function SelectBase({
         </div>
       )}
 
-      {/* BANNER VERDE */}
+      {/* BANNER PRINCIPAL */}
       <div className="green-banner-selection">
         <h2>{titulo}</h2>
         {mostrarBotaoTodos && (
@@ -97,7 +97,7 @@ export default function SelectBase({
               );
             })
           ) : (
-            <div className="no-data">Nenhum dado encontrado para sua seleção.</div>
+            <div className="no-data">Nenhum dado encontrado para a sua seleção.</div>
           )}
         </div>
       </div>

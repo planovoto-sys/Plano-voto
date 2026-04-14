@@ -9,15 +9,13 @@ import Sidebar from '../components/Sidebar';
 const MEDIA_TESTE = 4;
 
 export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota, chaveBanco }) {
-  const { user, userData, loading: userLoading } = useUser();
+  // Pegando filtroAtivo e setFiltroAtivo do contexto global
+  const { user, userData, loading: userLoading, filtroAtivo, setFiltroAtivo } = useUser();
   const navigate = useNavigate();
   
   const [todosCandidatos, setTodosCandidatos] = useState([]);
   const [mostrarTodos, setMostrarTodos] = useState(false);
   const [loading, setLoading] = useState(true);
-  
-  // Controle da Aba Ativa (nav pills)
-  const [abaAtiva, setAbaAtiva] = useState('geral');
 
   const selecaoInicial = useMemo(() => {
     const salvo = userData?.candidatos_escolhidos?.[chaveBanco];
@@ -58,27 +56,24 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
     fetchDados();
   }, [cargo]);
 
-  // Filtra por Estado se necessário
   const candidatosFiltrados = useMemo(() => {
     if (!userData?.estado) return [];
     const meuEstadoLimpo = userData.estado.replace(/[\s\u00A0]+/g, '');
     return todosCandidatos.filter(cand => cand.ufLimpa === meuEstadoLimpo);
   }, [todosCandidatos, userData?.estado]);
 
-  // Aplica o filtro de Mulheres / Partidos / Geral
   const listaExibida = useMemo(() => {
     let base = mostrarTodos ? todosCandidatos : candidatosFiltrados;
 
-    if (abaAtiva === 'mulheres') {
-      // Ajuste "Feminino" ou "F" conforme escrito no seu Firebase
+    // Agora usa filtroAtivo do contexto
+    if (filtroAtivo === 'mulheres') {
       base = base.filter(cand => cand.Genero === 'Feminino' || cand.Sexo === 'F' || cand.Genero === 'F');
-    } else if (abaAtiva === 'partidos') {
-      // Ordena por partido
+    } else if (filtroAtivo === 'partidos') {
       base = [...base].sort((a, b) => (a.Partido || '').localeCompare(b.Partido || ''));
     }
 
     return base;
-  }, [mostrarTodos, todosCandidatos, candidatosFiltrados, abaAtiva]);
+  }, [mostrarTodos, todosCandidatos, candidatosFiltrados, filtroAtivo]);
 
   const handleConfirmar = async (selecionados) => {
     setLoading(true);
@@ -110,8 +105,8 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
       <Sidebar />
       <SelectBase
         abas={['mulheres', 'geral', 'partidos']}
-        abaAtiva={abaAtiva}
-        setAbaAtiva={setAbaAtiva}
+        abaAtiva={filtroAtivo} // Usa o global
+        setAbaAtiva={setFiltroAtivo} // Altera o global
         titulo={titulo}
         dados={listaExibida}
         limiteSelecao={limite}
@@ -131,20 +126,15 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
         renderItem={(cand) => (
           <>
             <div className="cand-info">
-              {/* LINHA 1: NOME E NOTA CANDIDATO */}
               <div className="cand-row">
                 <span className="cand-name">{cand.Nome.toUpperCase()}</span>
-                <span className="cand-badge">NOTA CAND: {cand.notaCandidato}</span>
+                <span className="cand-badge"> {cand.notaCandidato}</span>
               </div>
-
-              {/* LINHA 2: PARTIDO E NOTA PARTIDO */}
               <div className="cand-row">
-                <span className="cand-party">PARTIDO: {cand.Partido}</span>
-                <span className="cand-badge party-badge">NOTA PARTIDO: {cand.notaPartido}</span>
+                <span className="cand-party"> {cand.Partido}</span>
+                <span className="cand-badge party-badge"> {cand.notaPartido}</span>
               </div>
             </div>
-
-            {/* GRÁFICO DE PORCENTAGEM */}
             <div className="cand-chart">
               <svg viewBox="0 0 36 36" className="circular-chart">
                 <path className="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
