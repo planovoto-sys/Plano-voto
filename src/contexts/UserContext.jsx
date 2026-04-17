@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, db } from '../services/firebaseConfig';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 
 const UserContext = createContext();
 
@@ -11,8 +11,6 @@ export const UserProvider = ({ children }) => {
   const [user, authLoading] = useAuthState(auth);
   const [userData, setUserData] = useState(null);
   const [dataLoading, setDataLoading] = useState(true);
-  
-  // NOVO: Estado global para o filtro de abas
   const [filtroAtivo, setFiltroAtivo] = useState('geral');
 
   useEffect(() => {
@@ -23,7 +21,32 @@ export const UserProvider = ({ children }) => {
     }
 
     if (user) {
-      const unsub = onSnapshot(doc(db, "users", user.uid), (doc) => {
+      const userRef = doc(db, "users", user.uid);
+
+      // Função que verifica e cria o usuário no Firestore se ele não existir
+      const checkAndCreateUser = async () => {
+        try {
+          const docSnap = await getDoc(userRef);
+          if (!docSnap.exists()) {
+            await setDoc(userRef, {
+              uid: user.uid,
+              name: user.displayName,
+              email: user.email,
+              profile_image: user.photoURL,
+              estado: null,
+              candidatos_escolhidos: null,
+              created_at: serverTimestamp()
+            });
+          }
+        } catch (error) {
+          console.error("Erro ao criar usuário:", error);
+        }
+      };
+
+      checkAndCreateUser();
+
+      // Mantém o listener dos dados em tempo real
+      const unsub = onSnapshot(userRef, (doc) => {
         if (doc.exists()) {
           setUserData(doc.data());
         }
@@ -42,8 +65,8 @@ export const UserProvider = ({ children }) => {
       user, 
       userData, 
       loading: authLoading || dataLoading,
-      filtroAtivo,      // Exportando o estado
-      setFiltroAtivo    // Exportando o setter
+      filtroAtivo,
+      setFiltroAtivo 
     }}>
       {children}
     </UserContext.Provider>

@@ -1,0 +1,91 @@
+/* ==========================================================================
+   MODAL OVERLAY & CONTAINER
+   ========================================================================== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.65);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    padding: 20px;
+    backdrop-filter: blur(3px); /* Efeito de desfoque no fundo */
+}
+
+.modal-container {
+    background-color: var(--bg-yellow, #f5eea9);
+    width: 100%;
+    max-width: 340px;
+    border-radius: 16px;
+    padding: 25px 20px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   TEXTOS
+   ========================================================================== */
+.modal-title {
+    font-weight: 900;
+    font-size: 1.25rem;
+    color: var(--text-dark, #333);
+    margin-bottom: 12px;
+}
+
+.modal-message {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #555;
+    line-height: 1.4;
+    margin-bottom: 25px;
+}
+
+/* ==========================================================================
+   BOTÕES DE AÇÃO
+   ========================================================================== */
+.modal-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-modal {
+    flex: 1;
+    padding: 14px 10px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: transform 0.1s;
+}
+
+.btn-modal:active {
+    transform: scale(0.96);
+}
+
+.btn-cancelar {
+    background-color: #e0e0e0;
+    color: #555;
+}
+
+/* Tipos de Confirmação */
+.btn-confirmar.aviso {
+    background-color: var(--primary-green, #4CAF50);
+    color: #fff;
+}
+
+.btn-confirmar.perigo {
+    background-color: #d32f2f; /* Vermelho para ações destrutivas */
+    color: #fff;
+}

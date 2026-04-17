@@ -4,19 +4,22 @@ import './SelectBase.css';
 export default function SelectBase({
   titulo,
   dados,
+  dadosBusca = [],
+  buscaNaPrincipal = false, // NOVO
+  buscaVazia = false,       // NOVO
   limiteSelecao,
   selecaoInicial = [],
   carregando,
-  mostrarBotaoTodos,
-  textoBotaoTodos,
-  onToggleTodos,
+  abas = [],
+  abaAtiva = '',
+  setAbaAtiva = () => {},
+  mostrarBusca = false,
+  valorBusca = '',
+  onChangeBusca = () => {},
   onConfirmar,
   onVoltar,
   renderItem,
-  // Props para a barra de navegação superior
-  abas = [],
-  abaAtiva = '',
-  setAbaAtiva = () => {}
+  onLimiteAtingido
 }) {
   const [selecionados, setSelecionados] = useState(selecaoInicial);
 
@@ -25,43 +28,40 @@ export default function SelectBase({
   }, [selecaoInicial]);
 
   const handleSelect = (item) => {
-    setSelecionados((prev) => {
-      const jaSelecionado = prev.find((v) => v.id === item.id);
-      if (jaSelecionado) {
-        return prev.filter((v) => v.id !== item.id);
-      }
-      if (prev.length < limiteSelecao) {
-        return [...prev, item];
-      }
-      // Se já atingiu o limite e o limite é 1, apenas substitui
-      if (limiteSelecao === 1) {
-        return [item];
-      }
-      return prev; // Ignora se o limite já foi atingido
-    });
+    const jaSelecionado = selecionados.find((v) => v.id === item.id);
+    if (jaSelecionado) {
+      setSelecionados(selecionados.filter((v) => v.id !== item.id));
+      return;
+    }
+    if (limiteSelecao === 1) {
+      setSelecionados([item]);
+      return;
+    }
+    if (selecionados.length >= limiteSelecao) {
+      if (onLimiteAtingido) onLimiteAtingido(item);
+      return;
+    }
+    setSelecionados([...selecionados, item]);
   };
 
   const handleConfirmar = () => {
-    if (onConfirmar) {
-      onConfirmar(selecionados);
-    }
+    if (onConfirmar) onConfirmar(selecionados);
   };
 
   if (carregando) return <div className="loading">CARREGANDO...</div>;
 
   return (
-    <div className={`select-base-container theme-${abaAtiva || 'geral'}`}>
-      
-      {/* BARRA SUPERIOR (PILLS) - Só aparece se a tela passar a prop "abas" */}
+    <div className="select-base-container">
+      <div className="green-banner-selection">
+        <h2>{titulo}</h2>
+        <div className="triangle-down"></div>
+      </div>
+
       {abas.length > 0 && (
-        <div className="header-nav-container">
-          <div className="pills-wrapper">
+        <div className="tabs-toggle-container">
+          <div className="tabs-toggle">
             {abas.map((aba) => (
-              <button
-                key={aba}
-                className={`pill-nav ${abaAtiva === aba ? 'active' : ''}`}
-                onClick={() => setAbaAtiva(aba)}
-              >
+              <button key={aba} className={`tab-toggle-btn ${abaAtiva === aba ? 'active' : ''}`} onClick={() => setAbaAtiva(aba)}>
                 {aba}
               </button>
             ))}
@@ -69,51 +69,88 @@ export default function SelectBase({
         </div>
       )}
 
-      {/* BANNER PRINCIPAL */}
-      <div className="green-banner-selection">
-        <h2>{titulo}</h2>
-        {mostrarBotaoTodos && (
-          <button className="btn-visualizar-todos" onClick={onToggleTodos}>
-            {textoBotaoTodos}
-          </button>
-        )}
-        <div className="triangle-down"></div>
-      </div>
-
-      {/* LISTA */}
       <div className="list-wrapper">
         <div className="list-scroll-box">
+          
+          {/* LISTA PRINCIPAL (TOP 4) */}
           {dados.length > 0 ? (
             dados.map((item) => {
               const isSelected = selecionados.some((v) => v.id === item.id);
               return (
-                <div
-                  key={item.id}
-                  className={`base-card ${isSelected ? 'selected' : ''}`}
-                  onClick={() => handleSelect(item)}
-                >
+                <div key={item.id} className={`base-card ${isSelected ? 'selected' : ''}`} onClick={() => handleSelect(item)}>
                   {renderItem(item, isSelected)}
                 </div>
               );
             })
           ) : (
-            <div className="no-data">Nenhum dado encontrado para a sua seleção.</div>
+            <div className="no-data">Nenhum candidato na lista.</div>
           )}
+
+          {/* BARRA DE PESQUISA E RESULTADOS */}
+          {mostrarBusca && (
+            <div className="search-container">
+              <div className="search-input-box">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Pesquisar outro candidato"
+                  value={valorBusca}
+                  onChange={(e) => onChangeBusca(e.target.value)}
+                />
+              </div>
+
+              {/* CONTAINER DE RESULTADOS DE BUSCA */}
+              {valorBusca.trim().length > 0 && (
+                <div className="search-results-wrapper">
+                  <div className="search-results-title">Resultados da Pesquisa:</div>
+
+                  {buscaVazia ? (
+                    <div className="no-data-search">Não encontramos este Candidato.</div>
+                  ) : (
+                    <>
+                      {/* Caso o candidato procurado seja exatamente o que já está no Top 4 */}
+                      {buscaNaPrincipal && dadosBusca.length === 0 && (
+                        <div className="no-data-search">Este candidato já está exibido na lista acima.</div>
+                      )}
+
+                      {/* Caso hajam candidatos para mostrar que não estão no Top 4 */}
+                      {dadosBusca.length > 0 && (
+                        <>
+                          {buscaNaPrincipal && (
+                            <div className="search-info-msg">
+                              * Alguns resultados já estão exibidos na lista acima.
+                            </div>
+                          )}
+                          {dadosBusca.map((item) => {
+                            const isSelected = selecionados.some((v) => v.id === item.id);
+                            return (
+                              <div
+                                key={item.id}
+                                className={`base-card search-result-card ${isSelected ? 'selected' : ''}`}
+                                onClick={() => handleSelect(item)}
+                              >
+                                {renderItem(item, isSelected)}
+                              </div>
+                            );
+                          })}
+                        </>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          
         </div>
       </div>
 
-      {/* RODAPÉ DE NAVEGAÇÃO */}
       <footer className="navigation-footer">
-        <button className="nav-btn btn-voltar" onClick={onVoltar}>
-          <i className="arrow-left"></i>
-        </button>
-        <button
-          className="nav-btn btn-confirm"
-          onClick={handleConfirmar}
-          disabled={selecionados.length === 0}
-        >
-          <i className="arrow-right"></i>
-        </button>
+        <button className="nav-btn" onClick={onVoltar}><i className="arrow-left"></i></button>
+        <button className="nav-btn" onClick={handleConfirmar}><i className="arrow-right"></i></button>
       </footer>
     </div>
   );

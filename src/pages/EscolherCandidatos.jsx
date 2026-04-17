@@ -5,146 +5,197 @@ import { useUser } from '../contexts/UserContext';
 import { useNavigate } from 'react-router-dom';
 import SelectBase from '../components/SelectBase';
 import Sidebar from '../components/Sidebar';
+import ConfirmModal from '../components/ConfirmModal';
 
 const MEDIA_TESTE = 4;
 
 export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota, chaveBanco }) {
-  // Pegando filtroAtivo e setFiltroAtivo do contexto global
   const { user, userData, loading: userLoading, filtroAtivo, setFiltroAtivo } = useUser();
   const navigate = useNavigate();
   
   const [todosCandidatos, setTodosCandidatos] = useState([]);
-  const [mostrarTodos, setMostrarTodos] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [busca, setBusca] = useState('');
+  
+  const [selecionadosNaTela, setSelecionadosNaTela] = useState([]);
 
-  const selecaoInicial = useMemo(() => {
-    const salvo = userData?.candidatos_escolhidos?.[chaveBanco];
-    if (!salvo) return [];
-    const nomesArray = Array.isArray(salvo) ? salvo : [salvo];
-    return todosCandidatos.filter(cand => nomesArray.includes(cand.Nome));
-  }, [userData, chaveBanco, todosCandidatos]);
+  const [modalAviso, setModalAviso] = useState({ aberto: false, mensagem: '' });
+  const [modalTroca, setModalTroca] = useState({ aberto: false, novoCandidato: null });
 
   useEffect(() => {
+    if (!['manter', 'mudar'].includes(filtroAtivo)) {
+       setFiltroAtivo('manter');
+    }
+
     const fetchDados = async () => {
       setLoading(true);
       try {
         const qTodos = query(collection(db, "candidatos"), where("Cargo", "==", cargo));
         const snapTodos = await getDocs(qTodos);
-
-        const listaProcessada = snapTodos.docs.map(doc => {
-          const data = doc.data();
-          const ufLimpa = data.Estado ? data.Estado.replace(/[\s\u00A0]+/g, '') : "SP";
-          const porcentagem = ((data.votos_recebidos || 0) / MEDIA_TESTE) * 100;
-
+        const lista = snapTodos.docs.map(doc => {
+          const d = doc.data();
+          const votos = d.votos_recebidos || 0;
           return {
             id: doc.id,
-            ...data,
-            ufLimpa,
-            notaCandidato: data["Nota candidato"] || 0,
-            notaPartido: data["Nota partido"] || 0,
-            porcentagemCalculada: Math.min(porcentagem, 100).toFixed(0)
+            ...d,
+            ufLimpa: d.Estado ? d.Estado.replace(/[\s\u00A0]+/g, '') : "SP",
+            notaFinal: parseFloat(d["Nota candidato"] || d["Nota partido"] || 0),
+            porcentagemCalculada: Math.min((votos / MEDIA_TESTE) * 100, 100).toFixed(0)
           };
         });
-
-        setTodosCandidatos(listaProcessada);
-      } catch (error) {
-        console.error("Erro ao carregar candidatos:", error);
-      } finally {
-        setLoading(false);
+        setTodosCandidatos(lista);
+      } catch (e) { 
+        console.error(e); 
+      } finally { 
+        setLoading(false); 
       }
     };
     fetchDados();
-  }, [cargo]);
+  }, [cargo, filtroAtivo, setFiltroAtivo]);
 
-  const candidatosFiltrados = useMemo(() => {
-    if (!userData?.estado) return [];
-    const meuEstadoLimpo = userData.estado.replace(/[\s\u00A0]+/g, '');
-    return todosCandidatos.filter(cand => cand.ufLimpa === meuEstadoLimpo);
-  }, [todosCandidatos, userData?.estado]);
+  useEffect(() => {
+    if (userData?.candidatos_escolhidos?.[chaveBanco] && todosCandidatos.length > 0) {
+      const salvo = userData.candidatos_escolhidos[chaveBanco];
+      const nomesArray = Array.isArray(salvo) ? salvo : [salvo];
+      setSelecionadosNaTela(todosCandidatos.filter(c => nomesArray.includes(c.Nome)));
+    }
+  }, [userData, todosCandidatos, chaveBanco]);
 
+  const candidatosComRank = useMemo(() => {
+    const meuEstado = userData?.estado?.replace(/[\s\u00A0]+/g, '') || "SP";
+    let filtrados = todosCandidatos.filter(c => c.ufLimpa === meuEstado);
+    filtrados.sort((a, b) => b.notaFinal - a.notaFinal);
+    return filtrados.map((c, i) => ({ ...c, rank: i + 1 }));
+  }, [todosCandidatos, userData]);
+
+  // 1. LISTA PRINCIPAL (Top 4)
   const listaExibida = useMemo(() => {
-    let base = mostrarTodos ? todosCandidatos : candidatosFiltrados;
+    if (filtroAtivo === 'mudar') return []; 
+    return candidatosComRank.filter(c => parseInt(c.porcentagemCalculada) < 100).slice(0, 4);
+  }, [candidatosComRank, filtroAtivo]);
 
-    // Agora usa filtroAtivo do contexto
-    if (filtroAtivo === 'mulheres') {
-      base = base.filter(cand => cand.Genero === 'Feminino' || cand.Sexo === 'F' || cand.Genero === 'F');
-    } else if (filtroAtivo === 'partidos') {
-      base = [...base].sort((a, b) => (a.Partido || '').localeCompare(b.Partido || ''));
+  // 2. LÓGICA INTELIGENTE DE BUSCA (Verifica se está na principal ou se não existe)
+  const { listaBusca, buscaNaPrincipal, buscaVazia } = useMemo(() => {
+    if (!busca.trim() || filtroAtivo === 'mudar') {
+      return { listaBusca: [], buscaNaPrincipal: false, buscaVazia: false };
     }
 
-    return base;
-  }, [mostrarTodos, todosCandidatos, candidatosFiltrados, filtroAtivo]);
+    const textoBusca = busca.toLowerCase();
+    const matches = candidatosComRank.filter(c => c.Nome.toLowerCase().includes(textoBusca));
 
-  const handleConfirmar = async (selecionados) => {
+    // Não achou ninguém com esse nome
+    if (matches.length === 0) {
+      return { listaBusca: [], buscaNaPrincipal: false, buscaVazia: true };
+    }
+
+    // Separa quem já está exibido no Top 4 de quem não está
+    const idsPrincipal = listaExibida.map(c => c.id);
+    const naPrincipal = matches.filter(c => idsPrincipal.includes(c.id));
+    const foraPrincipal = matches.filter(c => !idsPrincipal.includes(c.id));
+
+    return {
+      listaBusca: foraPrincipal,
+      buscaNaPrincipal: naPrincipal.length > 0,
+      buscaVazia: false
+    };
+  }, [candidatosComRank, busca, filtroAtivo, listaExibida]);
+
+  const handleConfirmarFinal = async (listaFinalDaTela) => {
+    if (listaFinalDaTela.length < limite) {
+      const msg = cargo === "Senador" 
+        ? "Tem de selecionar 2 Senadores para continuar." 
+        : "Tem de selecionar pelo menos 1 Deputado Federal para continuar.";
+      setModalAviso({ aberto: true, mensagem: msg });
+      return;
+    }
+
     setLoading(true);
     try {
       const userRef = doc(db, "users", user.uid);
-      const candidatosParaRemover = selecaoInicial.filter(v => !selecionados.some(n => n.id === v.id));
-      const candidatosParaAdicionar = selecionados.filter(n => !selecaoInicial.some(v => v.id === n.id));
+      const salvoNoBanco = userData?.candidatos_escolhidos?.[chaveBanco];
+      const nomesNoBanco = salvoNoBanco ? (Array.isArray(salvoNoBanco) ? salvoNoBanco : [salvoNoBanco]) : [];
+      const nomesFinais = listaFinalDaTela.map(c => c.Nome);
 
-      const valorParaSalvar = limite === 1 ? (selecionados[0]?.Nome || "") : selecionados.map(s => s.Nome);
+      const paraAdicionar = listaFinalDaTela.filter(c => !nomesNoBanco.includes(c.Nome));
+      const paraRemover = todosCandidatos.filter(c => nomesNoBanco.filter(nome => !nomesFinais.includes(nome)).includes(c.Nome));
 
+      const valorParaSalvar = limite === 1 ? nomesFinais[0] : nomesFinais;
       await updateDoc(userRef, { [`candidatos_escolhidos.${chaveBanco}`]: valorParaSalvar });
 
-      for (const cand of candidatosParaRemover) {
-        await updateDoc(doc(db, "candidatos", cand.id), { votos_recebidos: increment(-1) });
-      }
-      for (const cand of candidatosParaAdicionar) {
-        await updateDoc(doc(db, "candidatos", cand.id), { votos_recebidos: increment(1) });
-      }
+      for (const c of paraAdicionar) await updateDoc(doc(db, "candidatos", c.id), { votos_recebidos: increment(1) });
+      for (const c of paraRemover) await updateDoc(doc(db, "candidatos", c.id), { votos_recebidos: increment(-1) });
 
       navigate(proximaRota);
-    } catch (e) {
-      console.error(e);
-      setLoading(false);
+    } catch (e) { 
+      console.error(e); 
+      setLoading(false); 
     }
+  };
+
+  const abrirModalTroca = (candidatoClicado) => {
+    setModalTroca({ aberto: true, novoCandidato: candidatoClicado });
+  };
+
+  const executarTroca = (candidatoParaRemover) => {
+    const novaLista = selecionadosNaTela.filter(c => c.id !== candidatoParaRemover.id);
+    setSelecionadosNaTela([...novaLista, modalTroca.novoCandidato]);
+    setModalTroca({ aberto: false, novoCandidato: null });
   };
 
   return (
     <>
       <Sidebar />
       <SelectBase
-        abas={['mulheres', 'geral', 'partidos']}
-        abaAtiva={filtroAtivo} // Usa o global
-        setAbaAtiva={setFiltroAtivo} // Altera o global
         titulo={titulo}
         dados={listaExibida}
+        dadosBusca={listaBusca} // Resultados da busca (sem duplicar com a principal)
+        buscaNaPrincipal={buscaNaPrincipal} // Flag: diz se encontrou na lista acima
+        buscaVazia={buscaVazia} // Flag: diz se não encontrou nada
         limiteSelecao={limite}
-        selecaoInicial={selecaoInicial}
+        selecaoInicial={selecionadosNaTela}
         carregando={userLoading || loading}
-        mostrarBotaoTodos={true}
-        textoBotaoTodos={mostrarTodos ? 'VER APENAS O MEU ESTADO' : 'VISUALIZAR TODOS OS CANDIDATOS'}
-        onToggleTodos={() => setMostrarTodos(!mostrarTodos)}
-        onConfirmar={handleConfirmar}
-        onVoltar={() => {
-          if (cargo === "Senador") {
-            navigate('/escolher-deputado-federal');
-          } else {
-            navigate('/home');
-          }
-        }}
+        abas={['manter', 'mudar']}
+        abaAtiva={filtroAtivo}
+        setAbaAtiva={setFiltroAtivo}
+        mostrarBusca={filtroAtivo === 'manter'}
+        valorBusca={busca}
+        onChangeBusca={setBusca}
+        onLimiteAtingido={abrirModalTroca}
+        onConfirmar={handleConfirmarFinal}
+        onVoltar={() => navigate(cargo === "Senador" ? '/escolher-deputado-federal' : '/home')}
         renderItem={(cand) => (
-          <>
-            <div className="cand-info">
-              <div className="cand-row">
-                <span className="cand-name">{cand.Nome.toUpperCase()}</span>
-                <span className="cand-badge"> {cand.notaCandidato}</span>
-              </div>
-              <div className="cand-row">
-                <span className="cand-party"> {cand.Partido}</span>
-                <span className="cand-badge party-badge"> {cand.notaPartido}</span>
+          <div className="cand-item-layout">
+            <div className="cand-data-left">
+              <div className="cand-name">{cand.Nome.toUpperCase()}</div>
+              <div className="cand-party">{cand.Partido}</div>
+            </div>
+            <div className="cand-rank-score-middle">
+              <div className="badge-rank">{cand.rank}º</div>
+              <div className={`badge-score ${cand.notaFinal >= 6 ? 'score-green' : 'score-red'}`}>
+                {cand.notaFinal.toFixed(2).replace('.', ',')}
               </div>
             </div>
-            <div className="cand-chart">
+            <div className="cand-divider-vertical"></div>
+            <div className="cand-chart-right">
               <svg viewBox="0 0 36 36" className="circular-chart">
                 <path className="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                 <path className="circle" strokeDasharray={`${cand.porcentagemCalculada}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                 <text x="18" y="20.35" className="percentage">{cand.porcentagemCalculada}%</text>
               </svg>
             </div>
-          </>
+          </div>
         )}
       />
+
+      {/* Modais omitidos para poupar espaço (são idênticos aos anteriores) */}
+      <ConfirmModal isOpen={modalAviso.aberto} titulo="OPS!" mensagem={modalAviso.mensagem} textoConfirmar="OK, ENTENDI" mostrarCancelar={false} onConfirm={() => setModalAviso({ aberto: false, mensagem: '' })} />
+      <ConfirmModal isOpen={modalTroca.aberto} titulo="LIMITE ATINGIDO" mensagem={`Apenas pode selecionar ${limite} candidatos. Qual destes deseja trocar por ${modalTroca.novoCandidato?.Nome}?`} onCancel={() => setModalTroca({ aberto: false, novoCandidato: null })}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '15px' }}>
+          {selecionadosNaTela.map(cand => (
+            <button key={cand.id} className="btn-modal btn-confirmar aviso" onClick={() => executarTroca(cand)} style={{ fontSize: '0.85rem', padding: '15px' }}>TROCAR: {cand.Nome}</button>
+          ))}
+        </div>
+      </ConfirmModal>
     </>
   );
 }
