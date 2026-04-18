@@ -163,28 +163,38 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
         onLimiteAtingido={abrirModalTroca}
         onConfirmar={handleConfirmarFinal}
         onVoltar={() => navigate(cargo === "Senador" ? '/escolher-deputado-federal' : '/home')}
-        renderItem={(cand) => (
-          <div className="cand-item-layout">
-            <div className="cand-data-left">
-              <div className="cand-name">{cand.Nome.toUpperCase()}</div>
-              <div className="cand-party">{cand.Partido}</div>
-            </div>
-            <div className="cand-rank-score-middle">
-              <div className="badge-rank">{cand.rank}º</div>
-              <div className={`badge-score ${cand.notaFinal >= 6 ? 'score-green' : 'score-red'}`}>
-                {cand.notaFinal.toFixed(2).replace('.', ',')}
+      renderItem={(cand) => {
+          // Lógica de cores da nota
+          let corNota = 'score-neutral';
+          if (cand.notaFinal < 6) corNota = 'score-red';
+          else if (cand.notaFinal >= 7) corNota = 'score-green';
+
+          return (
+            <div className="cand-item-layout">
+              <div className="cand-data-left">
+                <div className="cand-name">{cand.Nome.toUpperCase()}</div>
+                <div className="cand-party">{cand.Partido}</div>
+              </div>
+              <div className="cand-rank-score-middle">
+                <div className="badge-rank">{cand.rank}º</div>
+                
+                {/* Aplica a cor calculada aqui */}
+                <div className={`badge-score ${corNota}`}>
+                  {cand.notaFinal.toFixed(2).replace('.', ',')}
+                </div>
+
+              </div>
+              <div className="cand-divider-vertical"></div>
+              <div className="cand-chart-right">
+                <svg viewBox="0 0 36 36" className="circular-chart">
+                  <path className="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                  <path className="circle" strokeDasharray={`${cand.porcentagemCalculada}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                  <text x="18" y="20.35" className="percentage">{cand.porcentagemCalculada}%</text>
+                </svg>
               </div>
             </div>
-            <div className="cand-divider-vertical"></div>
-            <div className="cand-chart-right">
-              <svg viewBox="0 0 36 36" className="circular-chart">
-                <path className="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                <path className="circle" strokeDasharray={`${cand.porcentagemCalculada}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                <text x="18" y="20.35" className="percentage">{cand.porcentagemCalculada}%</text>
-              </svg>
-            </div>
-          </div>
-        )}
+          );
+        }}
       />
 
       {/* Modais omitidos para poupar espaço (são idênticos aos anteriores) */}

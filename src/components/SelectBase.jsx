@@ -5,8 +5,8 @@ export default function SelectBase({
   titulo,
   dados,
   dadosBusca = [],
-  buscaNaPrincipal = false, // NOVO
-  buscaVazia = false,       // NOVO
+  buscaNaPrincipal = false,
+  buscaVazia = false,
   limiteSelecao,
   selecaoInicial = [],
   carregando,
@@ -48,12 +48,18 @@ export default function SelectBase({
     if (onConfirmar) onConfirmar(selecionados);
   };
 
+  // Separa o título (Ex: "SELECIONE 1 DEPUTADO FEDERAL" -> "SELECIONE" e "1 DEPUTADO FEDERAL")
+  const partesTitulo = titulo ? titulo.split(' ') : [''];
+  const tituloPrincipal = partesTitulo[0];
+  const subTitulo = partesTitulo.slice(1).join(' ');
+
   if (carregando) return <div className="loading">CARREGANDO...</div>;
 
   return (
     <div className="select-base-container">
       <div className="green-banner-selection">
-        <h2>{titulo}</h2>
+        <h2>{tituloPrincipal}</h2>
+        {subTitulo && <h3>{subTitulo}</h3>}
         <div className="triangle-down"></div>
       </div>
 
@@ -72,7 +78,6 @@ export default function SelectBase({
       <div className="list-wrapper">
         <div className="list-scroll-box">
           
-          {/* LISTA PRINCIPAL (TOP 4) */}
           {dados.length > 0 ? (
             dados.map((item) => {
               const isSelected = selecionados.some((v) => v.id === item.id);
@@ -86,7 +91,6 @@ export default function SelectBase({
             <div className="no-data">Nenhum candidato na lista.</div>
           )}
 
-          {/* BARRA DE PESQUISA E RESULTADOS */}
           {mostrarBusca && (
             <div className="search-container">
               <div className="search-input-box">
@@ -102,7 +106,6 @@ export default function SelectBase({
                 />
               </div>
 
-              {/* CONTAINER DE RESULTADOS DE BUSCA */}
               {valorBusca.trim().length > 0 && (
                 <div className="search-results-wrapper">
                   <div className="search-results-title">Resultados da Pesquisa:</div>
@@ -111,12 +114,10 @@ export default function SelectBase({
                     <div className="no-data-search">Não encontramos este Candidato.</div>
                   ) : (
                     <>
-                      {/* Caso o candidato procurado seja exatamente o que já está no Top 4 */}
                       {buscaNaPrincipal && dadosBusca.length === 0 && (
                         <div className="no-data-search">Este candidato já está exibido na lista acima.</div>
                       )}
 
-                      {/* Caso hajam candidatos para mostrar que não estão no Top 4 */}
                       {dadosBusca.length > 0 && (
                         <>
                           {buscaNaPrincipal && (

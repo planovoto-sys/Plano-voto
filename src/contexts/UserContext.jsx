@@ -4,7 +4,6 @@ import { auth, db } from '../services/firebaseConfig';
 import { doc, onSnapshot, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 
 const UserContext = createContext();
-
 export const useUser = () => useContext(UserContext);
 
 export const UserProvider = ({ children }) => {
