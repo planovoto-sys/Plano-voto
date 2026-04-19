@@ -48,15 +48,17 @@ export default function SelectBase({
     if (onConfirmar) onConfirmar(selecionados);
   };
 
-  // Separa o título (Ex: "SELECIONE 1 DEPUTADO FEDERAL" -> "SELECIONE" e "1 DEPUTADO FEDERAL")
+  if (carregando) return <div className="loading">CARREGANDO...</div>;
+
   const partesTitulo = titulo ? titulo.split(' ') : [''];
   const tituloPrincipal = partesTitulo[0];
   const subTitulo = partesTitulo.slice(1).join(' ');
 
-  if (carregando) return <div className="loading">CARREGANDO...</div>;
+  // Define a classe do tema dinamicamente
+  const themeClass = abaAtiva === 'mudar' ? 'theme-mudar' : 'theme-manter';
 
   return (
-    <div className="select-base-container">
+    <div className={`select-base-container ${themeClass}`}>
       <div className="green-banner-selection">
         <h2>{tituloPrincipal}</h2>
         {subTitulo && <h3>{subTitulo}</h3>}

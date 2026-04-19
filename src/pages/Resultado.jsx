@@ -8,7 +8,6 @@ import Sidebar from '../components/Sidebar';
 
 const MEDIA_TESTE = 4;
 
-// Ícone de Compartilhar (SVG direto)
 const ShareIcon = () => (
   <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#f8e464" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="18" cy="5" r="3"></circle>
@@ -19,31 +18,33 @@ const ShareIcon = () => (
   </svg>
 );
 
-const Gauge = ({ value }) => {
+const Gauge = ({ value, tema }) => {
     const normalizedValue = Math.min(Math.max(value, 0), 10);
     const percent = normalizedValue / 10;
-    
-    // O ângulo final: -90 (Esquerda/0%), 0 (Centro/50%), 90 (Direita/100%)
     const targetAngle = (percent * 180) - 90;
-
-    // Começa na posição zero (totalmente à esquerda)
     const [currentAngle, setCurrentAngle] = useState(-90);
 
-    // Dispara a animação logo após o componente renderizar para sincronizar com o Recharts
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setCurrentAngle(targetAngle);
-        }, 50);
+        const timer = setTimeout(() => setCurrentAngle(targetAngle), 50);
         return () => clearTimeout(timer);
     }, [targetAngle]);
     
-    const data = [
-        { value: 1, color: '#ff3b3b' },
-        { value: 1, color: '#ff9800' },
-        { value: 1, color: '#ffeb3b' },
-        { value: 1, color: '#8bc34a' },
-        { value: 1, color: '#4caf50' },
-    ];
+    // Degradê Dinâmico baseado no tema (Azul ou Clássico)
+    const data = tema === 'mudar' 
+        ? [
+            { value: 1, color: '#C5D6EA' },
+            { value: 1, color: '#9BB8D9' },
+            { value: 1, color: '#729BC8' },
+            { value: 1, color: '#487DB6' },
+            { value: 1, color: '#3B5B8B' },
+          ]
+        : [
+            { value: 1, color: '#ff3b3b' },
+            { value: 1, color: '#ff9800' },
+            { value: 1, color: '#ffeb3b' },
+            { value: 1, color: '#8bc34a' },
+            { value: 1, color: '#4caf50' },
+          ];
 
     return (
         <div className="gauge-container">
@@ -59,8 +60,8 @@ const Gauge = ({ value }) => {
                     dataKey="value"
                     stroke="none"
                     isAnimationActive={true}
-                    animationDuration={1500} // Força duração cravada de 1.5s
-                    animationEasing="ease"   // Mesma curva de transição
+                    animationDuration={1500} 
+                    animationEasing="ease"   
                 >
                     {data.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
@@ -68,17 +69,12 @@ const Gauge = ({ value }) => {
                 </Pie>
             </PieChart>
 
-            {/* Agulha sincronizada */}
             <svg className="gauge-needle-svg" viewBox="0 0 320 320">
-                <g 
-                    className="gauge-needle-group" 
-                    style={{ transform: `rotate(${currentAngle}deg)` }}
-                >
+                <g className="gauge-needle-group" style={{ transform: `rotate(${currentAngle}deg)` }}>
                     <polygon points="148,20 172,20 160,60" fill="#111" />
                 </g>
             </svg>
 
-            {/* Texto Central da Nota */}
             <div className="gauge-text-wrapper">
                 <div className="gauge-text-label">NOTA</div>
                 <div className="gauge-text-value">
@@ -90,7 +86,7 @@ const Gauge = ({ value }) => {
 };
 
 export default function Resultado() {
-    const { userData, loading: userLoading } = useUser();
+    const { userData, loading: userLoading, filtroAtivo } = useUser();
     const navigate = useNavigate();
 
     const [candidatosCompletos, setCandidatosCompletos] = useState([]);
@@ -131,6 +127,7 @@ export default function Resultado() {
                     lista.push({
                         id: doc.id,
                         ...d,
+                        ClassificacaoOficial: d["Classificação"] || d["Classificacao"] || 0,
                         notaFinal: notaFinal,
                         porcentagemCalculada: Math.min(porcentagem, 100).toFixed(0)
                     });
@@ -152,30 +149,19 @@ export default function Resultado() {
 
     if (loading) return <div className="loading">CARREGANDO...</div>;
 
-    // Configuração Dinâmica baseada na média
     let config = {};
     if (media >= 7) {
-        config = {
-            titulo: "GOLAÇO!!!",
-            subtitulo: "SEU VOTO MELHORA O CONGRESSO",
-            pergunta: "QUE TAL COMPARTILHAR ANTES DE CONTINUAR?"
-        };
+        config = { titulo: "GOLAÇO!!!", subtitulo: "SEU VOTO MELHORA O CONGRESSO", pergunta: "QUE TAL COMPARTILHAR ANTES DE CONTINUAR?" };
     } else if (media >= 6) {
-        config = {
-            titulo: "NA TRAVE!!!",
-            subtitulo: "SEU VOTO NÃO MELHORA O CONGRESSO",
-            pergunta: "QUE TAL SELECIONAR CANDIDATOS MELHORES?"
-        };
+        config = { titulo: "NA TRAVE!!!", subtitulo: "SEU VOTO NÃO MELHORA O CONGRESSO", pergunta: "QUE TAL SELECIONAR CANDIDATOS MELHORES?" };
     } else {
-        config = {
-            titulo: "BOLA FORA!!!",
-            subtitulo: "SEU VOTO PIORA O CONGRESSO",
-            pergunta: "QUE TAL SELECIONAR CANDIDATOS MELHORES?"
-        };
+        config = { titulo: "BOLA FORA!!!", subtitulo: "SEU VOTO PIORA O CONGRESSO", pergunta: "QUE TAL SELECIONAR CANDIDATOS MELHORES?" };
     }
 
+    const themeClass = filtroAtivo === 'mudar' ? 'theme-mudar' : 'theme-manter';
+
     return (
-        <div className="select-base-container resultado-scrollable">
+        <div className={`select-base-container resultado-scrollable ${themeClass}`}>
             <Sidebar />
 
             <div className="green-banner-selection banner-resultado">
@@ -190,7 +176,7 @@ export default function Resultado() {
             </div>
 
             <div className="gauge-wrapper-margin">
-                <Gauge value={media} />
+                <Gauge value={media} tema={filtroAtivo} />
             </div>
 
             <div className="list-wrapper resultado-list-wrapper">
@@ -216,7 +202,7 @@ export default function Resultado() {
                                     </div>
                                     
                                     <div className="cand-rank-score-middle">
-                                        <div className="badge-rank">-º</div>
+                                        <div className="badge-rank">{cand.ClassificacaoOficial}º</div>
                                         <div className={`badge-score ${corNota}`}>
                                             {cand.notaFinal.toFixed(2).replace('.', ',')}
                                         </div>

@@ -1,11 +1,12 @@
-/* 
+/* ==========================================================================
    1. LAYOUT PRINCIPAL E CONTAINERS
-    */
+   ========================================================================== */
 .select-base-container {
     display: flex;
     flex-direction: column;
     height: 100vh;
     background-color: var(--bg-yellow);
+    transition: background-color 0.3s ease;
 }
 
 .list-wrapper {
@@ -25,18 +26,19 @@
     padding-bottom: 20px;
 }
 
-/* 
+/* ==========================================================================
    2. BANNER VERDE E TÍTULOS
-    */
+   ========================================================================== */
 .green-banner-selection {
     background-color: var(--primary-green, #4CAF50);
-    color: #f8e464; /* Amarelo clarinho da imagem */
+    color: #f8e464;
     text-align: center;
     padding: 30px 20px;
     position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .green-banner-selection h2 {
@@ -68,11 +70,12 @@
     left: 50%;
     z-index: 1;
     transform: translateX(-50%);
+    transition: border-top-color 0.3s ease;
 }
 
-/* 
+/* ==========================================================================
    3. ABAS (TOGGLE MANTER/MUDAR)
-    */
+   ========================================================================== */
 .tabs-toggle-container {
     display: flex;
     justify-content: center;
@@ -87,6 +90,7 @@
     width: 100%;
     max-width: 320px;
     overflow: hidden;
+    transition: background-color 0.3s ease;
 }
 
 .tab-toggle-btn {
@@ -110,26 +114,28 @@
     color: #555;
 }
 
-/* 
-   4. CARDS DE CANDIDATOS
-    */
+/* ==========================================================================
+   4. CARDS DE CANDIDATOS E NOTAS
+   ========================================================================== */
 .base-card {
-    background-color: #f8e464; /* Cor unificada */
+    background-color: #f8e464;
     margin: 0;
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     display: flex;
     padding: 18px 20px;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color 0.3s ease;
 }
 
-.base-card:first-child { border-top-left-radius: 12px; border-top-right-radius: 12px; }
+.base-card:first-child {
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
 
 .base-card.selected {
-    background-color: #d1c045 !important; /* Destaque na seleção */
+    background-color: #d1c045 !important;
 }
 
-/* Layout Interno do Card */
 .cand-item-layout {
     display: flex;
     width: 100%;
@@ -144,10 +150,19 @@
     gap: 4px;
 }
 
-.cand-name { font-weight: 900; font-size: 1rem; color: #1a1a1a; }
-.cand-party { font-weight: 600; font-size: 0.75rem; color: #666; text-transform: uppercase; }
+.cand-name {
+    font-weight: 900;
+    font-size: 1rem;
+    color: #1a1a1a;
+}
 
-/* Ranking e Notas */
+.cand-party {
+    font-weight: 600;
+    font-size: 0.75rem;
+    color: #666;
+    text-transform: uppercase;
+}
+
 .cand-rank-score-middle {
     display: flex;
     flex-direction: column;
@@ -156,17 +171,7 @@
     align-items: center;
 }
 
-.badge-rank {
-    padding: 2px 10px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: 800;
-    color: #333;
-    min-width: 45px;
-    text-align: center;
-    background-color: #a3d78c;
-}
-
+.badge-rank,
 .badge-score {
     padding: 2px 10px;
     border-radius: 12px;
@@ -176,28 +181,67 @@
     text-align: center;
 }
 
-/* Cores Dinâmicas da Nota */
-.score-green { background-color: #a3d78c; color: #333; }
-.score-red { background-color: #e57373; color: #fff; }
-.score-neutral { background-color: #e0e0e0; color: #333; }
+.badge-rank {
+    background-color: #a3d78c;
+    color: #333;
+}
 
-/* Divisória e Gráfico */
+.score-green {
+    background-color: #a3d78c;
+    color: #333;
+}
+
+.score-red {
+    background-color: #e57373;
+    color: #fff;
+}
+
+.score-neutral {
+    background-color: #e0e0e0;
+    color: #333;
+}
+
 .cand-divider-vertical {
     width: 1px;
     height: 45px;
-    background-color: rgba(0,0,0,0.1);
+    background-color: rgba(0, 0, 0, 0.1);
     margin-right: 15px;
 }
 
-.cand-chart-right { width: 55px; height: 55px; flex-shrink: 0; }
-.circular-chart { display: block; }
-.circle-bg { fill: none; stroke: rgba(0, 0, 0, 0.08); stroke-width: 3.5; }
-.circle { fill: none; stroke: var(--primary-green, #4CAF50); stroke-width: 3.5; stroke-linecap: round; }
-.percentage { fill: #1a1a1a; font-size: 0.65rem; font-weight: 800; text-anchor: middle; }
+.cand-chart-right {
+    width: 55px;
+    height: 55px;
+    flex-shrink: 0;
+}
 
-/* 
+.circular-chart {
+    display: block;
+}
+
+.circle-bg {
+    fill: none;
+    stroke: rgba(0, 0, 0, 0.08);
+    stroke-width: 3.5;
+}
+
+.circle {
+    fill: none;
+    stroke: var(--primary-green, #4CAF50);
+    stroke-width: 3.5;
+    stroke-linecap: round;
+    transition: stroke 0.3s ease;
+}
+
+.percentage {
+    fill: #1a1a1a;
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-anchor: middle;
+}
+
+/* ==========================================================================
    5. PESQUISA E CONTAINER DE RESULTADOS
-    */
+   ========================================================================== */
 .search-container {
     padding: 0;
     margin-top: 20px;
@@ -211,6 +255,7 @@
     border-radius: 12px;
     padding: 15px 20px;
     gap: 15px;
+    transition: background-color 0.3s ease;
 }
 
 .search-input-box input {
@@ -229,12 +274,13 @@
 
 .search-results-wrapper {
     margin-top: 15px;
-    background-color: #e5d14e; 
+    background-color: #e5d14e;
     border-radius: 12px;
     padding: 6px;
-    box-shadow: inset 0 2px 6px rgba(0,0,0,0.06);
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.06);
     display: flex;
     flex-direction: column;
+    transition: background-color 0.3s ease;
 }
 
 .search-results-title {
@@ -247,11 +293,11 @@
 }
 
 .search-results-wrapper .search-result-card {
-    border-radius: 8px !important; 
+    border-radius: 8px !important;
     margin-bottom: 6px;
     border: none;
-    background-color: #f8e464; 
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    background-color: #f8e464;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .search-results-wrapper .search-result-card:last-child {
@@ -279,15 +325,16 @@
     text-align: center;
 }
 
-/* 
-   6. FOOTER DE NAVEGAÇÃO BIPARTIDO E BOTÕES
-    */
+/* ==========================================================================
+   6. FOOTER DE NAVEGAÇÃO BIPARTIDO
+   ========================================================================== */
 .navigation-footer {
     display: flex;
     background-color: var(--primary-green);
     margin: 20px;
     border-radius: 12px;
-    overflow: hidden; 
+    overflow: hidden;
+    transition: background-color 0.3s ease;
 }
 
 .nav-btn {
@@ -299,52 +346,59 @@
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color 0.2s ease;
 }
 
-/* Linha fina dividindo os botões */
 .nav-btn:first-child {
-    border-right: 1px solid rgba(248, 228, 100, 0.4); 
+    border-right: 1px solid rgba(248, 228, 100, 0.4);
 }
 
-.nav-btn:not(:disabled):hover { background-color: #558352; }
+.nav-btn:not(:disabled):hover {
+    background-color: #558352;
+}
 
 .nav-btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
 }
 
-/* Setas grossas e amarelas */
-.arrow-left, .arrow-right {
-    border: solid #f8e464; 
-    border-width: 0 6px 6px 0; 
+.arrow-left,
+.arrow-right {
+    border: solid #f8e464;
+    border-width: 0 6px 6px 0;
     display: inline-block;
     padding: 10px;
     border-radius: 2px;
+    transition: border-color 0.3s ease;
 }
 
-.arrow-left { transform: rotate(135deg); }
-.arrow-right { transform: rotate(-45deg); }
-
-/* 
-   7. UTILITÁRIOS
-    */
-.no-data { 
-    text-align: center; 
-    padding: 40px; 
-    color: #666; 
-    font-weight: 700; 
-    font-size: 1rem; 
+.arrow-left {
+    transform: rotate(135deg);
 }
 
-.loading { 
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-    height: 100vh; 
-    font-weight: 900; 
-    color: var(--primary-green); 
-    background-color: var(--bg-yellow); 
+.arrow-right {
+    transform: rotate(-45deg);
+}
+
+/* ==========================================================================
+   7. UTILITÁRIOS E CLASSES DE TELA DE RESULTADO
+   ========================================================================== */
+.no-data {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-weight: 900;
+    color: var(--primary-green);
+    background-color: var(--bg-yellow);
 }
 
 .state-centered-name {
@@ -355,9 +409,6 @@
     color: var(--text-dark, #1a1a1a);
 }
 
-/* ==========================================================================
-   11. CLASSES EXCLUSIVAS DA TELA DE RESULTADO
-   ========================================================================== */
 .resultado-scrollable {
     overflow-y: auto;
 }
@@ -386,7 +437,8 @@
     font-size: 0.85rem;
     color: #555;
     text-transform: uppercase;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .gauge-wrapper-margin {
@@ -414,7 +466,6 @@
 
 .gauge-needle-group {
     transform-origin: 160px 150px;
-    /* Animação cravada em 1.5s para bater perfeito com o Recharts */
     transition: transform 1.5s ease;
 }
 
@@ -485,4 +536,78 @@
 
 .resultado-nav-footer {
     margin: 0 20px 20px 20px;
+}
+
+/* ==========================================================================
+   8. TEMA "MUDAR" (PALETA AZUL)
+   ========================================================================== */
+.select-base-container.theme-mudar {
+    background-color: #EBF1F8;
+}
+
+.select-base-container.theme-mudar .green-banner-selection,
+.select-base-container.theme-mudar .nav-btn {
+    background-color: #3B5B8B;
+    color: #EBF1F8;
+}
+
+.select-base-container.theme-mudar .green-banner-selection h2,
+.select-base-container.theme-mudar .green-banner-selection h3 {
+    color: #EBF1F8;
+}
+
+.select-base-container.theme-mudar .triangle-down {
+    border-top-color: #3B5B8B;
+}
+
+.select-base-container.theme-mudar .tabs-toggle {
+    background-color: #D6E2F2;
+}
+
+.select-base-container.theme-mudar .tab-toggle-btn.active {
+    background-color: #3B5B8B;
+    color: #ffffff;
+}
+
+.select-base-container.theme-mudar .base-card,
+.select-base-container.theme-mudar .search-input-box {
+    background-color: #D6E2F2;
+}
+
+.select-base-container.theme-mudar .base-card.selected {
+    background-color: #A6C2E6 !important;
+}
+
+.select-base-container.theme-mudar .search-results-wrapper {
+    background-color: #BBD0E8;
+}
+
+.select-base-container.theme-mudar .search-results-wrapper .search-result-card {
+    background-color: #D6E2F2;
+}
+
+.select-base-container.theme-mudar .nav-btn:not(:disabled):hover {
+    background-color: #2E486F;
+}
+
+.select-base-container.theme-mudar .nav-btn:first-child {
+    border-right: 1px solid rgba(214, 226, 242, 0.3);
+}
+
+.select-base-container.theme-mudar .arrow-left,
+.select-base-container.theme-mudar .arrow-right {
+    border-color: #D6E2F2;
+}
+
+.select-base-container.theme-mudar .circle {
+    stroke: #3B5B8B;
+}
+
+.select-base-container.theme-mudar .resultado-subtitle {
+    background-color: #D6E2F2;
+    color: #2E486F;
+}
+
+.select-base-container.theme-mudar .nav-btn svg {
+    stroke: #D6E2F2;
 }

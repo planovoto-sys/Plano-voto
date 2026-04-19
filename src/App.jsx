@@ -9,8 +9,6 @@ import Resultado from './pages/Resultado';
 function App() {
   const { user, loading } = useUser();
 
-  // A lógica de carregamento agora está dentro do retorno (renderização condicional)
-  // Isso evita a quebra das regras dos Hooks do React.
   return (
     <BrowserRouter>
       {loading ? (
