@@ -10,7 +10,9 @@ export const UserProvider = ({ children }) => {
   const [user, authLoading] = useAuthState(auth);
   const [userData, setUserData] = useState(null);
   const [dataLoading, setDataLoading] = useState(true);
-  const [filtroAtivo, setFiltroAtivo] = useState('geral');
+  
+  // ATUALIZADO: O filtro inicial agora é 'reeleger'
+  const [filtroAtivo, setFiltroAtivo] = useState('reeleger');
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -22,7 +24,6 @@ export const UserProvider = ({ children }) => {
     if (user) {
       const userRef = doc(db, "users", user.uid);
 
-      // Função que verifica e cria o usuário no Firestore se ele não existir
       const checkAndCreateUser = async () => {
         try {
           const docSnap = await getDoc(userRef);
@@ -44,7 +45,6 @@ export const UserProvider = ({ children }) => {
 
       checkAndCreateUser();
 
-      // Mantém o listener dos dados em tempo real
       const unsub = onSnapshot(userRef, (doc) => {
         if (doc.exists()) {
           setUserData(doc.data());

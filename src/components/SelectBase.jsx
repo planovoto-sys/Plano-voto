@@ -19,7 +19,8 @@ export default function SelectBase({
   onConfirmar,
   onVoltar,
   renderItem,
-  onLimiteAtingido
+  onLimiteAtingido,
+  onHelpClick // Prop para abrir o Tour
 }) {
   const [selecionados, setSelecionados] = useState(selecaoInicial);
 
@@ -48,14 +49,21 @@ export default function SelectBase({
     if (onConfirmar) onConfirmar(selecionados);
   };
 
+  // FUNÇÃO NOVA: Anima o botão e depois dispara o evento para abrir o modal
+  const handleHelpPress = (e) => {
+      const btn = e.currentTarget;
+      btn.classList.add('pulse-anim');
+      setTimeout(() => btn.classList.remove('pulse-anim'), 400); // Remove a classe após animação
+      if (onHelpClick) onHelpClick();
+  };
+
   if (carregando) return <div className="loading">CARREGANDO...</div>;
 
   const partesTitulo = titulo ? titulo.split(' ') : [''];
   const tituloPrincipal = partesTitulo[0];
   const subTitulo = partesTitulo.slice(1).join(' ');
 
-  // Define a classe do tema dinamicamente
-  const themeClass = abaAtiva === 'mudar' ? 'theme-mudar' : 'theme-manter';
+  const themeClass = abaAtiva === 'renovar' ? 'theme-renovar' : 'theme-reeleger';
 
   return (
     <div className={`select-base-container ${themeClass}`}>
@@ -63,13 +71,26 @@ export default function SelectBase({
         <h2>{tituloPrincipal}</h2>
         {subTitulo && <h3>{subTitulo}</h3>}
         <div className="triangle-down"></div>
+        
+        {/* BOTÃO DÚVIDAS ATUALIZADO */}
+        {onHelpClick && (
+            <button className="btn-help-floating" onClick={handleHelpPress}>
+                <div className="help-icon">?</div>
+                <span>Dúvidas</span>
+            </button>
+        )}
       </div>
 
       {abas.length > 0 && (
         <div className="tabs-toggle-container">
           <div className="tabs-toggle">
             {abas.map((aba) => (
-              <button key={aba} className={`tab-toggle-btn ${abaAtiva === aba ? 'active' : ''}`} onClick={() => setAbaAtiva(aba)}>
+              <button 
+                key={aba} 
+                id={`tour-${aba}`} 
+                className={`tab-toggle-btn ${abaAtiva === aba ? 'active' : ''}`} 
+                onClick={() => setAbaAtiva(aba)}
+              >
                 {aba}
               </button>
             ))}
@@ -78,13 +99,13 @@ export default function SelectBase({
       )}
 
       <div className="list-wrapper">
-        <div className="list-scroll-box">
+        <div className="list-scroll-box" id="tour-lista">
           
           {dados.length > 0 ? (
             dados.map((item) => {
               const isSelected = selecionados.some((v) => v.id === item.id);
               return (
-                <div key={item.id} className={`base-card ${isSelected ? 'selected' : ''}`} onClick={() => handleSelect(item)}>
+                <div key={item.id} className={`base-card ${item.cardColorClass || 'card-yellow'} ${isSelected ? 'selected' : ''}`} onClick={() => handleSelect(item)}>
                   {renderItem(item, isSelected)}
                 </div>
               );
@@ -94,7 +115,7 @@ export default function SelectBase({
           )}
 
           {mostrarBusca && (
-            <div className="search-container">
+            <div className="search-container" id="tour-busca">
               <div className="search-input-box">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="11" cy="11" r="8"></circle>
@@ -111,30 +132,18 @@ export default function SelectBase({
               {valorBusca.trim().length > 0 && (
                 <div className="search-results-wrapper">
                   <div className="search-results-title">Resultados da Pesquisa:</div>
-
                   {buscaVazia ? (
                     <div className="no-data-search">Não encontramos este Candidato.</div>
                   ) : (
                     <>
-                      {buscaNaPrincipal && dadosBusca.length === 0 && (
-                        <div className="no-data-search">Este candidato já está exibido na lista acima.</div>
-                      )}
-
+                      {buscaNaPrincipal && dadosBusca.length === 0 && <div className="no-data-search">Este candidato já está exibido na lista acima.</div>}
                       {dadosBusca.length > 0 && (
                         <>
-                          {buscaNaPrincipal && (
-                            <div className="search-info-msg">
-                              * Alguns resultados já estão exibidos na lista acima.
-                            </div>
-                          )}
+                          {buscaNaPrincipal && <div className="search-info-msg">* Alguns resultados já estão exibidos na lista acima.</div>}
                           {dadosBusca.map((item) => {
                             const isSelected = selecionados.some((v) => v.id === item.id);
                             return (
-                              <div
-                                key={item.id}
-                                className={`base-card search-result-card ${isSelected ? 'selected' : ''}`}
-                                onClick={() => handleSelect(item)}
-                              >
+                              <div key={item.id} className={`base-card search-result-card ${item.cardColorClass || 'card-yellow'} ${isSelected ? 'selected' : ''}`} onClick={() => handleSelect(item)}>
                                 {renderItem(item, isSelected)}
                               </div>
                             );

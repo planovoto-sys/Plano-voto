@@ -5,6 +5,7 @@ import { useUser } from '../contexts/UserContext';
 import { useNavigate } from 'react-router-dom';
 import { PieChart, Pie, Cell } from 'recharts';
 import Sidebar from '../components/Sidebar';
+import TourModal from '../components/TourModal'; 
 
 const MEDIA_TESTE = 4;
 
@@ -29,8 +30,7 @@ const Gauge = ({ value, tema }) => {
         return () => clearTimeout(timer);
     }, [targetAngle]);
     
-    // Degradê Dinâmico baseado no tema (Azul ou Clássico)
-    const data = tema === 'mudar' 
+    const data = tema === 'renovar' 
         ? [
             { value: 1, color: '#C5D6EA' },
             { value: 1, color: '#9BB8D9' },
@@ -47,7 +47,7 @@ const Gauge = ({ value, tema }) => {
           ];
 
     return (
-        <div className="gauge-container">
+        <div className="gauge-container" id="tour-gauge">
             <PieChart width={320} height={320}>
                 <Pie
                     data={data}
@@ -92,6 +92,21 @@ export default function Resultado() {
     const [candidatosCompletos, setCandidatosCompletos] = useState([]);
     const [media, setMedia] = useState(0);
     const [loading, setLoading] = useState(true);
+    
+    const [isTourOpen, setIsTourOpen] = useState(false); 
+
+    const tourSteps = [
+        { target: '#tour-gauge', title: 'Termômetro de Qualidade', content: 'Mede a qualidade do seu voto com base nas notas dos candidatos escolhidos. <br/><br/><b>Acima de 7 = Golaço!</b><br/>Abaixo de 7 = Precisa melhorar.' },
+        { target: '#tour-lista-resultado', title: 'Seus Escolhidos', content: 'Aqui estão os candidatos que você selecionou para Deputado Federal e Senadores.' },
+        { target: '#tour-footer-resultado', title: 'Mudar ou Compartilhar', content: 'Se a nota não estiver boa, você pode <b>MUDAR</b> seus candidatos. Se estiver ótima, <b>COMPARTILHE</b> com seus amigos!' }
+    ];
+
+    const handleHelpPress = (e) => {
+        const btn = e.currentTarget;
+        btn.classList.add('pulse-anim');
+        setTimeout(() => btn.classList.remove('pulse-anim'), 400); 
+        setIsTourOpen(true);
+    };
 
     useEffect(() => {
         if (userLoading || !userData) return;
@@ -118,17 +133,32 @@ export default function Resultado() {
 
                 snap.forEach(doc => {
                     const d = doc.data();
-                    const notaFinal = parseFloat(d["Nota candidato"] || d["Nota partido"] || 0);
+                    
+                    const valCand = d["Nota candidato"];
+                    const valPart = d["Nota partido"];
+                    const isNotaValida = (val) => val !== undefined && val !== null && val !== "" && val !== "-";
+                    
+                    let notaFinal = 0;
+                    if (isNotaValida(valCand) && Number(valCand) !== 0) notaFinal = parseFloat(valCand);
+                    else if (isNotaValida(valPart)) notaFinal = parseFloat(valPart);
+
                     const votos = d.votos_recebidos || 0;
                     const porcentagem = (votos / MEDIA_TESTE) * 100;
 
                     soma += notaFinal;
+                    
+                    let cardColorClass = 'card-yellow';
+                    if (notaFinal < 6) cardColorClass = 'card-red';
+                    else if (notaFinal >= 7) cardColorClass = 'card-green';
+
+                    const classificacaoOriginal = d["Classificação"] || d["Classificacao"] || "-";
 
                     lista.push({
                         id: doc.id,
                         ...d,
-                        ClassificacaoOficial: d["Classificação"] || d["Classificacao"] || 0,
+                        ClassificacaoOficial: classificacaoOriginal,
                         notaFinal: notaFinal,
+                        cardColorClass: cardColorClass,
                         porcentagemCalculada: Math.min(porcentagem, 100).toFixed(0)
                     });
                 });
@@ -158,15 +188,22 @@ export default function Resultado() {
         config = { titulo: "BOLA FORA!!!", subtitulo: "SEU VOTO PIORA O CONGRESSO", pergunta: "QUE TAL SELECIONAR CANDIDATOS MELHORES?" };
     }
 
-    const themeClass = filtroAtivo === 'mudar' ? 'theme-mudar' : 'theme-manter';
+    const themeClass = filtroAtivo === 'renovar' ? 'theme-renovar' : 'theme-reeleger';
 
     return (
         <div className={`select-base-container resultado-scrollable ${themeClass}`}>
             <Sidebar />
+            <TourModal steps={tourSteps} isOpen={isTourOpen} onClose={() => setIsTourOpen(false)} />
 
             <div className="green-banner-selection banner-resultado">
                 <h2>{config.titulo}</h2>
                 <div className="triangle-down"></div>
+                
+                {/* BOTÃO DÚVIDAS NO RESULTADO COM A ANIMAÇÃO */}
+                <button className="btn-help-floating" onClick={handleHelpPress}>
+                    <div className="help-icon">?</div>
+                    <span>Dúvidas</span>
+                </button>
             </div>
 
             <div className="resultado-subtitle-wrapper">
@@ -180,14 +217,10 @@ export default function Resultado() {
             </div>
 
             <div className="list-wrapper resultado-list-wrapper">
-                <div className="list-scroll-box resultado-scroll-box">
+                <div className="list-scroll-box resultado-scroll-box" id="tour-lista-resultado">
                     {candidatosCompletos.map((cand) => {
-                        let corNota = 'score-neutral';
-                        if (cand.notaFinal < 6) corNota = 'score-red';
-                        else if (cand.notaFinal >= 7) corNota = 'score-green';
-
                         return (
-                            <div className="base-card" key={cand.id}>
+                            <div className={`base-card ${cand.cardColorClass}`} key={cand.id}>
                                 <div className="cand-item-layout">
                                     <div className="cand-data-left">
                                         <div className="res-card-cargo">
@@ -202,8 +235,10 @@ export default function Resultado() {
                                     </div>
                                     
                                     <div className="cand-rank-score-middle">
-                                        <div className="badge-rank">{cand.ClassificacaoOficial}º</div>
-                                        <div className={`badge-score ${corNota}`}>
+                                        <div className="badge-rank">
+                                            {cand.ClassificacaoOficial === "-" ? "-" : `${cand.ClassificacaoOficial}º`}
+                                        </div>
+                                        <div className="badge-score">
                                             {cand.notaFinal.toFixed(2).replace('.', ',')}
                                         </div>
                                     </div>
@@ -224,7 +259,7 @@ export default function Resultado() {
                 </div>
             </div>
 
-            <div className="resultado-footer-wrapper">
+            <div className="resultado-footer-wrapper" id="tour-footer-resultado">
                 <div className="resultado-footer-pergunta">
                     {config.pergunta}
                 </div>

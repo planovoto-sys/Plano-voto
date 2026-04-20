@@ -1,11 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
 
 :root {
-  /* Paleta extraída da imagem */
-  --bg-yellow: #f5eea9;      /* Fundo principal amarelo claro */
-  --card-yellow: #f0dd62;    /* Amarelo mais forte do card central */
-  --primary-green: #61905d;  /* Verde da faixa e botão */
-  --text-dark: #333333;      /* Cor do texto principal */
+  /* Paleta principal */
+  --bg-yellow: #f5eea9;      
+  --card-yellow: #f0dd62;    
+  --primary-green: #61905d;  
+  --text-dark: #333333;      
   --text-light: #ffffff;
   
   --font-family: 'Inter', sans-serif;
@@ -20,7 +20,7 @@
 
 body {
   font-family: var(--font-family);
-  background-color: var(--bg-yellow);
+  background-color: #dfd89c; /* Fundo externo escurecido para telas grandes */
   color: var(--text-dark);
   min-height: 100vh;
   display: flex;
@@ -29,12 +29,41 @@ body {
 
 #root {
   width: 100%;
-  max-width: 450px; /* Mantém o aspecto de celular no desktop */
+  max-width: 450px; /* Mantém proporção mobile no PC */
   min-height: 100vh;
   background-color: var(--bg-yellow);
   position: relative;
-  overflow-x: hidden;
-  box-shadow: 0 0 20px rgba(0,0,0,0.1); /* Sombra suave para visualização no PC */
+  overflow: hidden; /* Essencial para cortar as listras no limite da tela */
+  box-shadow: 0 0 30px rgba(0,0,0,0.15); 
+}
+
+/* ==========================================================================
+   LISTRAS DIAGONAIS GLOBAIS (Canto Inferior Direito)
+   ========================================================================== */
+#root::before {
+    content: "";
+    position: absolute;
+    background-color: var(--primary-green);
+    width: 250px;
+    height: 12px; /* Reduzido (era 25px) */
+    transform: rotate(-45deg);
+    bottom: 25px; /* Empurrado mais para baixo */
+    right: -80px; /* Empurrado mais para a direita */
+    z-index: 0;
+    pointer-events: none;
+}
+
+#root::after {
+    content: "";
+    position: absolute;
+    background-color: #f8e464; /* Amarelo vivo */
+    width: 250px;
+    height: 12px; /* Reduzido (era 25px) */
+    transform: rotate(-45deg);
+    bottom: 8px;  /* Empurrado mais para baixo */
+    right: -95px; /* Empurrado mais para a direita */
+    z-index: 0;
+    pointer-events: none;
 }
 
 /* Utilitários globais */
@@ -48,63 +77,8 @@ body {
   letter-spacing: 1px;
   cursor: pointer;
   transition: transform 0.1s;
-}
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
-
-.btn-green:active {
-  transform: scale(0.98);
-}
-
-
-:root {
-  /* Paleta extraída da imagem */
-  --bg-yellow: #f5eea9;      /* Fundo principal amarelo claro */
-  --card-yellow: #f0dd62;    /* Amarelo mais forte do card central */
-  --primary-green: #61905d;  /* Verde da faixa e botão */
-  --text-dark: #333333;      /* Cor do texto principal */
-  --text-light: #ffffff;
-  
-  --font-family: 'Inter', sans-serif;
-}
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  -webkit-tap-highlight-color: transparent;
-}
-
-body {
-  font-family: var(--font-family);
-  background-color: var(--bg-yellow);
-  color: var(--text-dark);
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-}
-
-#root {
-  width: 100%;
-  max-width: 450px; /* Mantém o aspecto de celular no desktop */
-  min-height: 100vh;
-  background-color: var(--bg-yellow);
   position: relative;
-  overflow-x: hidden;
-  box-shadow: 0 0 20px rgba(0,0,0,0.1); /* Sombra suave para visualização no PC */
-}
-
-/* Utilitários globais */
-.btn-green {
-  background-color: var(--primary-green);
-  color: var(--bg-yellow);
-  border: none;
-  border-radius: 12px;
-  font-weight: 800;
-  font-size: 1.2rem;
-  letter-spacing: 1px;
-  cursor: pointer;
-  transition: transform 0.1s;
+  z-index: 2; /* Garante que os botões fiquem acima das listras */
 }
 
 .btn-green:active {
