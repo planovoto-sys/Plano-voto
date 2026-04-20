@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ConfirmModal from './ConfirmModal';
 import './SelectBase.css';
 
 export default function SelectBase({
@@ -7,59 +8,120 @@ export default function SelectBase({
   limiteSelecao,
   selecaoInicial = [],
   carregando,
-  mostrarBotaoTodos,
-  textoBotaoTodos,
-  onToggleTodos,
+  abas = [],
+  abaAtiva = '',
+  setAbaAtiva = () => {},
+  mostrarBusca = false,
+  valorBusca = '',
+  onChangeBusca = () => {},
+  textoBuscaFixo = null,
   onConfirmar,
   onVoltar,
   renderItem,
-  // Props para a barra de navegação superior
-  abas = [],
-  abaAtiva = '',
-  setAbaAtiva = () => {}
+  onLimiteAtingido,
+  onHelpClick
 }) {
   const [selecionados, setSelecionados] = useState(selecaoInicial);
+  // Novo estado para controlar o aviso de nota baixa
+  const [modalMalAvaliado, setModalMalAvaliado] = useState({ aberto: false, item: null });
 
   useEffect(() => {
     setSelecionados(selecaoInicial);
   }, [selecaoInicial]);
 
   const handleSelect = (item) => {
-    setSelecionados((prev) => {
-      const jaSelecionado = prev.find((v) => v.id === item.id);
-      if (jaSelecionado) {
-        return prev.filter((v) => v.id !== item.id);
-      }
-      if (prev.length < limiteSelecao) {
-        return [...prev, item];
-      }
-      // Se já atingiu o limite e o limite é 1, apenas substitui
-      if (limiteSelecao === 1) {
-        return [item];
-      }
-      return prev; // Ignora se o limite já foi atingido
-    });
+    const jaSelecionado = selecionados.find((v) => v.id === item.id);
+    if (jaSelecionado) {
+      setSelecionados(selecionados.filter((v) => v.id !== item.id));
+      return;
+    }
+
+    // Interceta a seleção se a nota final do candidato for menor que 7
+    if (item.notaFinal !== undefined && item.notaFinal < 7) {
+        setModalMalAvaliado({ aberto: true, item });
+        return;
+    }
+
+    efetivarSelecao(item);
+  };
+
+  // Função isolada para concluir a adição à lista
+  const efetivarSelecao = (item) => {
+    if (limiteSelecao === 1) {
+      setSelecionados([item]);
+      return;
+    }
+    if (selecionados.length >= limiteSelecao) {
+      if (onLimiteAtingido) onLimiteAtingido(item);
+      return;
+    }
+    setSelecionados([...selecionados, item]);
   };
 
   const handleConfirmar = () => {
-    if (onConfirmar) {
-      onConfirmar(selecionados);
-    }
+    if (onConfirmar) onConfirmar(selecionados);
+  };
+
+  const handleHelpPress = (e) => {
+      const btn = e.currentTarget;
+      btn.classList.add('pulse-anim');
+      setTimeout(() => btn.classList.remove('pulse-anim'), 400); 
+      if (onHelpClick) onHelpClick();
   };
 
   if (carregando) return <div className="loading">CARREGANDO...</div>;
 
+  const partesTitulo = titulo ? titulo.split(' ') : [''];
+  const tituloPrincipal = partesTitulo[0];
+  const subTitulo = partesTitulo.slice(1).join(' ');
+
+  const themeClass = abaAtiva === 'renovar' ? 'theme-renovar' : 'theme-reeleger';
+
   return (
-    <div className={`select-base-container theme-${abaAtiva || 'geral'}`}>
-      
-      {/* BARRA SUPERIOR (PILLS) - Só aparece se a tela passar a prop "abas" */}
+    <div className={`select-base-container ${themeClass}`}>
+      <div className="top-nav-bar">
+        <div className="nav-spacer"></div>
+
+        {mostrarBusca && (
+          <div className="top-search-wrapper">
+            <input
+              id="tour-busca"
+              type="text"
+              placeholder="Pesquisar"
+              value={textoBuscaFixo !== null ? textoBuscaFixo : valorBusca}
+              onChange={(e) => onChangeBusca(e.target.value)}
+              disabled={textoBuscaFixo !== null}
+            />
+          </div>
+        )}
+
+        <div className="nav-action-right">
+          {onHelpClick && (
+            <button className="btn-help-icon" onClick={handleHelpPress} id="tour-help">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                 <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                 <line x1="12" y1="8" x2="12" y2="8"></line>
+                 <line x1="12" y1="12" x2="12" y2="16"></line>
+              </svg>
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="green-banner-selection">
+        <h2>{tituloPrincipal}</h2>
+        {subTitulo && <h3>{subTitulo}</h3>}
+        <div className="triangle-down"></div>
+      </div>
+
       {abas.length > 0 && (
-        <div className="header-nav-container">
-          <div className="pills-wrapper">
+        <div className="tabs-toggle-container">
+          <div className="tabs-toggle">
             {abas.map((aba) => (
-              <button
-                key={aba}
-                className={`pill-nav ${abaAtiva === aba ? 'active' : ''}`}
+              <button 
+                key={aba} 
+                id={`tour-${aba}`} 
+                className={`tab-toggle-btn ${abaAtiva === aba ? 'active' : ''}`} 
                 onClick={() => setAbaAtiva(aba)}
               >
                 {aba}
@@ -69,52 +131,51 @@ export default function SelectBase({
         </div>
       )}
 
-      {/* BANNER PRINCIPAL */}
-      <div className="green-banner-selection">
-        <h2>{titulo}</h2>
-        {mostrarBotaoTodos && (
-          <button className="btn-visualizar-todos" onClick={onToggleTodos}>
-            {textoBotaoTodos}
-          </button>
-        )}
-        <div className="triangle-down"></div>
-      </div>
-
-      {/* LISTA */}
       <div className="list-wrapper">
-        <div className="list-scroll-box">
+        <div className="list-scroll-box" id="tour-lista">
           {dados.length > 0 ? (
             dados.map((item) => {
               const isSelected = selecionados.some((v) => v.id === item.id);
               return (
-                <div
-                  key={item.id}
-                  className={`base-card ${isSelected ? 'selected' : ''}`}
-                  onClick={() => handleSelect(item)}
-                >
+                <div key={item.id} className={`base-card ${item.cardColorClass || 'card-yellow'} ${isSelected ? 'selected' : ''}`} onClick={() => handleSelect(item)}>
                   {renderItem(item, isSelected)}
                 </div>
               );
             })
           ) : (
-            <div className="no-data">Nenhum dado encontrado para a sua seleção.</div>
+            <div className="no-data">Nenhum resultado encontrado.</div>
           )}
         </div>
       </div>
 
-      {/* RODAPÉ DE NAVEGAÇÃO */}
       <footer className="navigation-footer">
-        <button className="nav-btn btn-voltar" onClick={onVoltar}>
-          <i className="arrow-left"></i>
-        </button>
-        <button
-          className="nav-btn btn-confirm"
-          onClick={handleConfirmar}
-          disabled={selecionados.length === 0}
-        >
-          <i className="arrow-right"></i>
-        </button>
+        <button className="nav-btn" onClick={onVoltar}><i className="arrow-left"></i></button>
+        <button className="nav-btn" onClick={handleConfirmar}><i className="arrow-right"></i></button>
       </footer>
+
+      {/* Modal de Alerta: Candidato Mal Avaliado */}
+      <ConfirmModal
+          isOpen={modalMalAvaliado.aberto}
+          titulo="ATENÇÃO"
+          mensagem={
+              modalMalAvaliado.item?.temNotaCandidato
+              ? "Você selecionou um candidato mal avaliado. Que tal selecionar um candidato melhor avaliado?"
+              : "Você selecionou um candidato de um partido mal avaliado. Que tal selecionar um candidato de um partido melhor avaliado?"
+          }
+          textoConfirmar="SIM"
+          textoCancelar="NÃO"
+          tipo="aviso"
+          onConfirm={() => {
+              // Utilizador escolheu "SIM", vai escolher outro -> Fecha modal sem guardar a seleção
+              setModalMalAvaliado({ aberto: false, item: null });
+          }}
+          onCancel={() => {
+              // Utilizador escolheu "NÃO", não quer trocar -> Efetiva o candidato ruim
+              const itemToSelect = modalMalAvaliado.item;
+              setModalMalAvaliado({ aberto: false, item: null });
+              efetivarSelecao(itemToSelect); 
+          }}
+      />
     </div>
   );
 }

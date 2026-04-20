@@ -5,146 +5,211 @@ import { useUser } from '../contexts/UserContext';
 import { useNavigate } from 'react-router-dom';
 import SelectBase from '../components/SelectBase';
 import Sidebar from '../components/Sidebar';
+import ConfirmModal from '../components/ConfirmModal';
+import TourModal from '../components/TourModal'; 
 
 const MEDIA_TESTE = 4;
 
 export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota, chaveBanco }) {
-  // Pegando filtroAtivo e setFiltroAtivo do contexto global
   const { user, userData, loading: userLoading, filtroAtivo, setFiltroAtivo } = useUser();
   const navigate = useNavigate();
   
   const [todosCandidatos, setTodosCandidatos] = useState([]);
-  const [mostrarTodos, setMostrarTodos] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [busca, setBusca] = useState('');
+  const [selecionadosNaTela, setSelecionadosNaTela] = useState([]);
 
-  const selecaoInicial = useMemo(() => {
-    const salvo = userData?.candidatos_escolhidos?.[chaveBanco];
-    if (!salvo) return [];
-    const nomesArray = Array.isArray(salvo) ? salvo : [salvo];
-    return todosCandidatos.filter(cand => nomesArray.includes(cand.Nome));
-  }, [userData, chaveBanco, todosCandidatos]);
+  const [modalAviso, setModalAviso] = useState({ aberto: false, mensagem: '' });
+  const [modalTroca, setModalTroca] = useState({ aberto: false, novoCandidato: null });
+  const [isTourOpen, setIsTourOpen] = useState(false);
+
+  // Textos atualizados conforme o documento de requisitos
+  const tourSteps = [
+    { target: '#tour-busca', title: 'PESQUISA', content: 'Pesquisa candidatos por nome ou partido.' },
+    { target: '#tour-reeleger', title: 'REELEGER', content: 'Mostra candidatos que atuaram como deputado federal ou senador na última legislatura.<br/><br/><b>Obs.:</b> a classificação considera a nota do candidato no Ranking dos Políticos.' },
+    { target: '#tour-renovar', title: 'RENOVAR', content: 'Mostra candidatos que não atuaram como deputado federal ou senador na última legislatura.<br/><br/><b>Obs.:</b> a classificação considera a nota do partido no Ranking dos Políticos.' },
+    { target: '#tour-lista', title: 'LISTA', content: 'Mostra os candidatos a serem selecionados.<br/><br/><b>Obs.:</b> ordenados da maior para menor nota no Ranking dos Políticos (nota &ge;7,00 em verde e nota &lt;7,00 em vermelho).' },
+    { target: '.tour-grafico', title: 'CHANCE', content: 'Mostra as chances do candidato se eleger.<br/><br/><b>Obs.:</b> compara a intenção de voto no meuvoto.org com a média de votos dos eleitos nas eleições passadas.' }
+  ];
 
   useEffect(() => {
+    if (!['reeleger', 'renovar'].includes(filtroAtivo)) {
+       setFiltroAtivo('reeleger');
+    }
+
     const fetchDados = async () => {
       setLoading(true);
       try {
         const qTodos = query(collection(db, "candidatos"), where("Cargo", "==", cargo));
         const snapTodos = await getDocs(qTodos);
+        const lista = snapTodos.docs.map(doc => {
+          const d = doc.data();
+          const votos = d.votos_recebidos || 0;
+          
+          const valCand = d["Nota candidato"];
+          const valPart = d["Nota partido"];
+          const isNotaValida = (val) => val !== undefined && val !== null && val !== "" && val !== "-";
+          const temNotaCandidato = isNotaValida(valCand) && Number(valCand) !== 0;
+          
+          let notaFinal = 0;
+          if (temNotaCandidato) notaFinal = parseFloat(valCand);
+          else if (isNotaValida(valPart)) notaFinal = parseFloat(valPart);
+          
+          let cardColorClass = 'card-yellow';
+          if (notaFinal < 6) cardColorClass = 'card-red';
+          else if (notaFinal >= 7) cardColorClass = 'card-green';
 
-        const listaProcessada = snapTodos.docs.map(doc => {
-          const data = doc.data();
-          const ufLimpa = data.Estado ? data.Estado.replace(/[\s\u00A0]+/g, '') : "SP";
-          const porcentagem = ((data.votos_recebidos || 0) / MEDIA_TESTE) * 100;
+          const classificacaoOriginal = d["Classificação"] || d["Classificacao"] || "-";
+          const classificacaoNum = classificacaoOriginal === "-" ? 999999 : Number(classificacaoOriginal);
+          const ufLimpa = d.Estado ? d.Estado.replace(/[\s\u00A0]+/g, '') : "TODOS";
 
           return {
             id: doc.id,
-            ...data,
-            ufLimpa,
-            notaCandidato: data["Nota candidato"] || 0,
-            notaPartido: data["Nota partido"] || 0,
-            porcentagemCalculada: Math.min(porcentagem, 100).toFixed(0)
+            ...d, 
+            ClassificacaoOficial: classificacaoOriginal, 
+            classificacaoNum: classificacaoNum, 
+            ufLimpa: ufLimpa,
+            temNotaCandidato: temNotaCandidato,
+            notaFinal: notaFinal,
+            cardColorClass: cardColorClass,
+            porcentagemCalculada: Math.min((votos / MEDIA_TESTE) * 100, 100).toFixed(0)
           };
         });
-
-        setTodosCandidatos(listaProcessada);
-      } catch (error) {
-        console.error("Erro ao carregar candidatos:", error);
-      } finally {
-        setLoading(false);
+        setTodosCandidatos(lista);
+      } catch (e) { 
+        console.error(e); 
+      } finally { 
+        setLoading(false); 
       }
     };
     fetchDados();
-  }, [cargo]);
+  }, [cargo, filtroAtivo, setFiltroAtivo]);
+
+  useEffect(() => {
+    if (userData?.candidatos_escolhidos?.[chaveBanco] && todosCandidatos.length > 0) {
+      const salvo = userData.candidatos_escolhidos[chaveBanco];
+      const nomesArray = Array.isArray(salvo) ? salvo : [salvo];
+      setSelecionadosNaTela(todosCandidatos.filter(c => nomesArray.includes(c.Nome)));
+    }
+  }, [userData, todosCandidatos, chaveBanco]);
 
   const candidatosFiltrados = useMemo(() => {
-    if (!userData?.estado) return [];
-    const meuEstadoLimpo = userData.estado.replace(/[\s\u00A0]+/g, '');
-    return todosCandidatos.filter(cand => cand.ufLimpa === meuEstadoLimpo);
-  }, [todosCandidatos, userData?.estado]);
+    const meuEstado = userData?.estado?.replace(/[\s\u00A0]+/g, '') || "SP";
+    let filtrados = todosCandidatos.filter(c => c.ufLimpa === meuEstado || c.ufLimpa === "TODOS");
+    
+    if (filtroAtivo === 'renovar') {
+      filtrados.sort((a, b) => b.notaFinal - a.notaFinal);
+    } else {
+      filtrados.sort((a, b) => a.classificacaoNum - b.classificacaoNum);
+    }
+    return filtrados;
+  }, [todosCandidatos, userData, filtroAtivo]);
 
   const listaExibida = useMemo(() => {
-    let base = mostrarTodos ? todosCandidatos : candidatosFiltrados;
+    let disponiveis = candidatosFiltrados.filter(c => parseInt(c.porcentagemCalculada) < 100);
+    
+    if (filtroAtivo === 'renovar') disponiveis = disponiveis.filter(c => !c.temNotaCandidato);
+    else disponiveis = disponiveis.filter(c => c.temNotaCandidato);
 
-    // Agora usa filtroAtivo do contexto
-    if (filtroAtivo === 'mulheres') {
-      base = base.filter(cand => cand.Genero === 'Feminino' || cand.Sexo === 'F' || cand.Genero === 'F');
-    } else if (filtroAtivo === 'partidos') {
-      base = [...base].sort((a, b) => (a.Partido || '').localeCompare(b.Partido || ''));
+    if (busca.trim()) {
+        const textoBusca = busca.toLowerCase();
+        disponiveis = disponiveis.filter(c => {
+            const nome = (c.Nome || '').toLowerCase();
+            const partido = (c.Partido || '').toLowerCase();
+            return nome.includes(textoBusca) || partido.includes(textoBusca);
+        });
     }
 
-    return base;
-  }, [mostrarTodos, todosCandidatos, candidatosFiltrados, filtroAtivo]);
+    return disponiveis;
+  }, [candidatosFiltrados, filtroAtivo, busca]);
 
-  const handleConfirmar = async (selecionados) => {
+  const handleConfirmarFinal = async (listaFinalDaTela) => {
+    if (listaFinalDaTela.length < limite) {
+      setModalAviso({ aberto: true, mensagem: cargo === "Senador" ? "Tem de selecionar 2 Senadores." : "Tem de selecionar pelo menos 1 Deputado Federal." });
+      return;
+    }
     setLoading(true);
     try {
       const userRef = doc(db, "users", user.uid);
-      const candidatosParaRemover = selecaoInicial.filter(v => !selecionados.some(n => n.id === v.id));
-      const candidatosParaAdicionar = selecionados.filter(n => !selecaoInicial.some(v => v.id === n.id));
+      const salvoNoBanco = userData?.candidatos_escolhidos?.[chaveBanco];
+      const nomesNoBanco = salvoNoBanco ? (Array.isArray(salvoNoBanco) ? salvoNoBanco : [salvoNoBanco]) : [];
+      const nomesFinais = listaFinalDaTela.map(c => c.Nome);
+      const paraAdicionar = listaFinalDaTela.filter(c => !nomesNoBanco.includes(c.Nome));
+      const paraRemover = todosCandidatos.filter(c => nomesNoBanco.filter(nome => !nomesFinais.includes(nome)).includes(c.Nome));
 
-      const valorParaSalvar = limite === 1 ? (selecionados[0]?.Nome || "") : selecionados.map(s => s.Nome);
-
+      const valorParaSalvar = limite === 1 ? nomesFinais[0] : nomesFinais;
       await updateDoc(userRef, { [`candidatos_escolhidos.${chaveBanco}`]: valorParaSalvar });
 
-      for (const cand of candidatosParaRemover) {
-        await updateDoc(doc(db, "candidatos", cand.id), { votos_recebidos: increment(-1) });
-      }
-      for (const cand of candidatosParaAdicionar) {
-        await updateDoc(doc(db, "candidatos", cand.id), { votos_recebidos: increment(1) });
-      }
+      for (const c of paraAdicionar) await updateDoc(doc(db, "candidatos", c.id), { votos_recebidos: increment(1) });
+      for (const c of paraRemover) await updateDoc(doc(db, "candidatos", c.id), { votos_recebidos: increment(-1) });
 
       navigate(proximaRota);
-    } catch (e) {
-      console.error(e);
-      setLoading(false);
-    }
+    } catch (e) { console.error(e); setLoading(false); }
+  };
+
+  const executarTroca = (candidatoParaRemover) => {
+    const novaLista = selecionadosNaTela.filter(c => c.id !== candidatoParaRemover.id);
+    setSelecionadosNaTela([...novaLista, modalTroca.novoCandidato]);
+    setModalTroca({ aberto: false, novoCandidato: null });
   };
 
   return (
     <>
       <Sidebar />
+      <TourModal steps={tourSteps} isOpen={isTourOpen} onClose={() => setIsTourOpen(false)} />
+      
       <SelectBase
-        abas={['mulheres', 'geral', 'partidos']}
-        abaAtiva={filtroAtivo} // Usa o global
-        setAbaAtiva={setFiltroAtivo} // Altera o global
         titulo={titulo}
         dados={listaExibida}
         limiteSelecao={limite}
-        selecaoInicial={selecaoInicial}
+        selecaoInicial={selecionadosNaTela}
         carregando={userLoading || loading}
-        mostrarBotaoTodos={true}
-        textoBotaoTodos={mostrarTodos ? 'VER APENAS O MEU ESTADO' : 'VISUALIZAR TODOS OS CANDIDATOS'}
-        onToggleTodos={() => setMostrarTodos(!mostrarTodos)}
-        onConfirmar={handleConfirmar}
-        onVoltar={() => {
-          if (cargo === "Senador") {
-            navigate('/escolher-deputado-federal');
-          } else {
-            navigate('/home');
-          }
-        }}
+        abas={['reeleger', 'renovar']}
+        abaAtiva={filtroAtivo}
+        setAbaAtiva={setFiltroAtivo}
+        mostrarBusca={true}
+        valorBusca={busca}
+        onChangeBusca={setBusca}
+        onHelpClick={() => setIsTourOpen(true)}
+        onLimiteAtingido={(c) => setModalTroca({ aberto: true, novoCandidato: c })}
+        onConfirmar={handleConfirmarFinal}
+        onVoltar={() => navigate(cargo === "Senador" ? '/escolher-deputado-federal' : '/home')}
         renderItem={(cand) => (
-          <>
-            <div className="cand-info">
-              <div className="cand-row">
-                <span className="cand-name">{cand.Nome.toUpperCase()}</span>
-                <span className="cand-badge"> {cand.notaCandidato}</span>
+          <div className="cand-item-layout">
+            <div className="cand-data-left">
+              <div className="cand-name">{cand.Nome.toUpperCase()}</div>
+              <div className="cand-party">{cand.Partido}</div>
+            </div>
+            <div className="cand-rank-score-middle">
+              <div className="badge-rank">
+                {cand.ClassificacaoOficial === "-" ? "-" : `${cand.ClassificacaoOficial}º`}
               </div>
-              <div className="cand-row">
-                <span className="cand-party"> {cand.Partido}</span>
-                <span className="cand-badge party-badge"> {cand.notaPartido}</span>
+              <div className="badge-score">
+                {cand.notaFinal.toFixed(2).replace('.', ',')}
               </div>
             </div>
-            <div className="cand-chart">
+            <div className="cand-divider-vertical"></div>
+            <div className="cand-chart-right tour-grafico">
               <svg viewBox="0 0 36 36" className="circular-chart">
                 <path className="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                 <path className="circle" strokeDasharray={`${cand.porcentagemCalculada}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                 <text x="18" y="20.35" className="percentage">{cand.porcentagemCalculada}%</text>
               </svg>
             </div>
-          </>
+          </div>
         )}
       />
+
+      <ConfirmModal isOpen={modalAviso.aberto} titulo="OPS!" mensagem={modalAviso.mensagem} textoConfirmar="OK, ENTENDI" mostrarCancelar={false} onConfirm={() => setModalAviso({ aberto: false, mensagem: '' })} />
+      <ConfirmModal isOpen={modalTroca.aberto} titulo="LIMITE ATINGIDO" mensagem={`Apenas pode selecionar ${limite} candidatos. Qual destes deseja trocar por ${modalTroca.novoCandidato?.Nome}?`} onCancel={() => setModalTroca({ aberto: false, novoCandidato: null })}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '15px' }}>
+          {selecionadosNaTela.map(cand => (
+            <button key={cand.id} className="btn-modal btn-confirmar aviso" onClick={() => executarTroca(cand)} style={{ fontSize: '0.85rem', padding: '15px' }}>
+              TROCAR: {cand.Nome}
+            </button>
+          ))}
+        </div>
+      </ConfirmModal>
     </>
   );
 }

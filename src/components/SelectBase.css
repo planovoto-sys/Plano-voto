@@ -1,190 +1,362 @@
-/* ==========================================================================
-   1. LAYOUT PRINCIPAL E CONTAINERS
-   ========================================================================== */
+/* 1. LAYOUT PRINCIPAL E CONTAINERS */
 .select-base-container {
     display: flex;
     flex-direction: column;
     height: 100vh;
-    background-color: var(--bg-yellow);
+    background-color: transparent;
+    transition: background-color 0.3s ease;
+}
+
+.top-nav-bar,
+.green-banner-selection,
+.tabs-toggle-container,
+.list-wrapper,
+.resultado-subtitle-wrapper,
+.gauge-wrapper-margin,
+.resultado-footer-wrapper,
+.navigation-footer {
+    position: relative;
+    z-index: 2;
 }
 
 .list-wrapper {
     flex: 1;
-    padding: 25px 20px 20px 20px;
+    padding: 10px 20px 0px 20px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-}
-
-.list-scroll-box {
-    background-color: var(--card-yellow);
-    border-radius: 12px;
-    flex: 1;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-/* ==========================================================================
-   2. NOVA BARRA DE NAVEGAÇÃO SUPERIOR (PILLS)
-   ========================================================================== */
-.header-nav-container {
-    display: flex;
     justify-content: center;
-    background-color: var(--bg-yellow);
-    padding-top: 25px;
-    padding-bottom: 15px;
+    /* Centraliza verticalmente a lista no espaço vazio */
 }
 
-.pills-wrapper {
-    display: inline-flex;
-    background-color: #f8e464;
-    /* Amarelo card */
-    border-radius: 30px;
-    padding: 4px;
-    gap: 2px;
+/* 2. TOP NAV BAR (Pesquisa, Menu e Informações) */
+.top-nav-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 20px;
+    min-height: 70px;
 }
 
-.pill-nav {
+.nav-spacer {
+    width: 30px;
+}
+
+.top-search-wrapper {
+    flex: 1;
+    margin: 0 15px;
+}
+
+.top-search-wrapper input {
+    width: 100%;
+    background-color: rgba(248, 228, 100, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 20px;
+    padding: 10px 15px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #555;
+    text-align: center;
+    outline: none;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.top-search-wrapper input:disabled {
+    background-color: transparent;
+    opacity: 0.8;
+}
+
+.top-search-wrapper input::placeholder {
+    color: #888;
+}
+
+.btn-help-icon {
     background: transparent;
     border: none;
-    padding: 8px 20px;
-    border-radius: 25px;
-    font-weight: 800;
-    color: #555;
-    font-size: 0.85rem;
+    color: var(--primary-green);
     cursor: pointer;
-    text-transform: lowercase;
-    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+    outline: none;
 }
 
-.pill-nav.active {
-    background-color: var(--primary-green, #4CAF50);
-    color: #ffffff;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+.btn-help-icon.pulse-anim {
+    animation: pulseHelpBtn 0.4s ease forwards;
 }
 
-/* ==========================================================================
-   3. BANNER VERDE E BOTÃO DE VISUALIZAR TODOS
-   ========================================================================== */
+@keyframes pulseHelpBtn {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.15);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* 3. BANNER VERDE E TÍTULOS */
 .green-banner-selection {
     background-color: var(--primary-green, #4CAF50);
-    color: var(--bg-yellow, #fdf001);
+    color: #f5eea9;
     text-align: center;
-    padding: 30px 20px;
-    position: relative;
+    padding: 20px 20px 25px 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .green-banner-selection h2 {
     font-weight: 900;
-    font-size: 1.5rem;
-    line-height: 1.2;
-    margin-bottom: 10px;
+    font-size: 1.7rem;
+    line-height: 1.1;
+    letter-spacing: 1.5px;
     text-transform: uppercase;
+    margin: 0;
+}
+
+.green-banner-selection h3 {
+    font-weight: 800;
+    font-size: 1.15rem;
+    line-height: 1.2;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 5px;
 }
 
 .triangle-down {
     width: 0;
     height: 0;
-    border-left: 15px solid transparent;
-    border-right: 15px solid transparent;
-    border-top: 15px solid var(--primary-green, #4CAF50);
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-top: 20px solid var(--primary-green, #4CAF50);
     position: absolute;
-    bottom: -15px;
+    bottom: -18px;
     left: 50%;
     z-index: 1;
     transform: translateX(-50%);
+    transition: border-top-color 0.3s ease;
 }
 
-.btn-visualizar-todos {
-    background-color: #ffffff;
-    color: var(--primary-green, #4CAF50);
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    font-weight: 800;
-    font-size: 0.75rem;
-    margin-top: 15px;
-    cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-/* ==========================================================================
-   4. CARDS DE LISTAGEM (BASE)
-   ========================================================================== */
-.base-card {
-    background-color: #f8e464;
-    /* Amarelo card mantido conforme padronização */
-    margin: 0;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+/* 4. ABAS (TOGGLE) */
+.tabs-toggle-container {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 18px 20px;
+    justify-content: center;
+    margin: 25px 0 10px 0;
+    padding: 0 20px;
+}
+
+.tabs-toggle {
+    display: flex;
+    background-color: #f8e464;
+    border-radius: 30px;
+    width: 100%;
+    max-width: 320px;
+    overflow: hidden;
+    transition: background-color 0.3s ease;
+}
+
+.tab-toggle-btn {
+    flex: 1;
+    padding: 10px 0;
+    border: none;
+    font-weight: 900;
+    font-size: 0.9rem;
     cursor: pointer;
-    transition: background-color 0.2s;
+    text-transform: lowercase;
+    transition: 0.3s ease;
+}
+
+.tab-toggle-btn.active {
+    background-color: var(--primary-green);
+    color: #fff;
+}
+
+.tab-toggle-btn:not(.active) {
+    background-color: transparent;
+    color: #555;
+}
+
+/* 5. CARDS DE CANDIDATOS E ESTADOS (EFEITO VITRAL LÍQUIDO) */
+.list-scroll-box {
+    border-radius: 16px;
+    max-height: 320px;
+    /* Reduzido para encaixar perfeitamente os cards achatados (5x 64px) */
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    margin: auto 0;
+    /* Garante que fica centralizado */
+    /* Fundo da lista semitransparente para dar efeito vidro */
+    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    overflow-x: hidden;
+}
+
+.list-scroll-box::-webkit-scrollbar {
+    width: 4px;
+}
+
+.list-scroll-box::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+.base-card {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    height: 64px;
+    /* Card mais achatado e elegante */
+    min-height: 64px;
+    box-sizing: border-box;
+}
+
+.base-card:first-child {
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
 }
 
 .base-card:last-child {
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
     border-bottom: none;
 }
 
-.base-card.selected {
-    background-color: #b3a53e !important;
+/* AMARELO (VITRAL) - Aplicado também na Home e notas medianas */
+.base-card.card-yellow {
+    background-color: rgba(248, 228, 100, 0.85);
+    border-bottom: 1px solid rgba(224, 206, 90, 0.4);
 }
 
-/* ==========================================================================
-   5. COMPONENTES: CANDIDATOS E NOTAS
-   ========================================================================== */
-.cand-info {
+.base-card.card-yellow.selected {
+    background-color: rgba(209, 192, 69, 0.95) !important;
+}
+
+.base-card.card-yellow .badge-rank {
+    background-color: #a3d78c;
+    color: #333;
+}
+
+.base-card.card-yellow .badge-score {
+    background-color: #e0e0e0;
+    color: #333;
+}
+
+.base-card.card-yellow .circle {
+    stroke: var(--primary-green, #4CAF50);
+}
+
+/* VERDE (VITRAL) - Notas Acima de 7 */
+.base-card.card-green {
+    background-color: rgba(216, 238, 179, 0.85);
+    border-bottom: 1px solid rgba(196, 217, 161, 0.4);
+}
+
+.base-card.card-green.selected {
+    background-color: rgba(196, 217, 161, 0.95) !important;
+}
+
+.base-card.card-green .badge-rank,
+.base-card.card-green .badge-score {
+    background-color: #a3d78c;
+    color: #333;
+}
+
+.base-card.card-green .circle {
+    stroke: #4CAF50;
+}
+
+/* VERMELHO/LARANJA (VITRAL) - Notas Abaixo de 6 */
+.base-card.card-red {
+    background-color: rgba(250, 199, 154, 0.85);
+    border-bottom: 1px solid rgba(230, 180, 135, 0.4);
+}
+
+.base-card.card-red.selected {
+    background-color: rgba(230, 180, 135, 0.95) !important;
+}
+
+.base-card.card-red .badge-rank,
+.base-card.card-red .badge-score {
+    background-color: #ff8a65;
+    color: #333;
+}
+
+.base-card.card-red .circle {
+    stroke: #ff5252;
+}
+
+/* LAYOUT INTERNO DOS CARDS */
+.cand-item-layout {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.cand-data-left {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    flex: 1;
-}
-
-.cand-row {
-    display: flex;
-    align-items: center;
+    gap: 4px;
 }
 
 .cand-name {
     font-weight: 900;
-    font-size: 1.05rem;
+    font-size: 0.9rem;
     color: #1a1a1a;
 }
 
 .cand-party {
-    font-weight: 700;
-    font-size: 0.85rem;
-    color: #666666;
+    font-weight: 600;
+    font-size: 0.75rem;
+    color: #666;
     text-transform: uppercase;
 }
 
-.cand-badge {
-    background-color: var(--primary-green, #4CAF50);
-    color: var(--bg-yellow, #fdf001);
-    padding: 3px 8px;
-    border-radius: 5px;
-    font-size: 0.65rem;
+.cand-rank-score-middle {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-right: 15px;
+    align-items: center;
+}
+
+.badge-rank,
+.badge-score {
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
     font-weight: 800;
-    margin-left: 10px;
-    white-space: nowrap;
+    min-width: 45px;
+    text-align: center;
 }
 
-.cand-badge.party-badge {
-    background-color: #555555;
-    color: #ffffff;
+.cand-divider-vertical {
+    width: 1px;
+    height: 35px;
+    background-color: rgba(0, 0, 0, 0.1);
+    margin-right: 15px;
 }
 
-.cand-chart {
-    width: 58px;
-    height: 58px;
-    margin-left: 15px;
+.cand-chart-right {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
 }
 
 .circular-chart {
@@ -199,9 +371,9 @@
 
 .circle {
     fill: none;
-    stroke: var(--primary-green, #4CAF50);
     stroke-width: 3.5;
     stroke-linecap: round;
+    transition: stroke 0.3s ease;
 }
 
 .percentage {
@@ -211,62 +383,34 @@
     text-anchor: middle;
 }
 
-/* ==========================================================================
-   6. COMPONENTES: ESTADOS
-   ========================================================================== */
-.state-avatar {
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    background-color: #e0e0e0;
-    color: #666;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 900;
-    font-size: 1rem;
-}
-
-.base-card.selected .state-avatar {
-    background-color: var(--primary-green, #4CAF50);
-    color: var(--bg-yellow, #fdf001);
-}
-
-.state-full-name {
-    flex: 1;
-    text-align: left;
-    font-weight: 600;
-    font-size: 1.1rem;
-    color: var(--text-dark, #1a1a1a);
-    margin-left: 15px;
-}
-
-.state-centered-name {
-    font-weight: 900;
-    font-size: 1.2rem;
-    text-align: center;
-    width: 100%;
-    color: var(--text-dark, #1a1a1a);
-}
-
-/* ==========================================================================
-   7. FOOTER E NAVEGAÇÃO
-   ========================================================================== */
+/* 6. FOOTER DE NAVEGAÇÃO BIPARTIDO */
 .navigation-footer {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 3px;
-    padding-top: 10px;
+    display: flex;
+    background-color: var(--primary-green);
+    margin: 0 20px 60px 20px;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: background-color 0.3s ease;
 }
 
 .nav-btn {
-    background-color: var(--primary-green, #4CAF50);
+    flex: 1;
+    background-color: var(--primary-green);
     border: none;
-    height: 85px;
+    height: 70px;
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.nav-btn:first-child {
+    border-right: 1px solid rgba(248, 228, 100, 0.4);
+}
+
+.nav-btn:not(:disabled):hover {
+    background-color: #558352;
 }
 
 .nav-btn:disabled {
@@ -274,15 +418,14 @@
     cursor: not-allowed;
 }
 
-.nav-btn.btn-confirm:not(:disabled) {
-    background-color: #00bb58;
-}
-
 .arrow-left,
 .arrow-right {
-    border: solid var(--bg-yellow, #fdf001);
-    border-width: 0 7px 7px 0;
-    padding: 9px;
+    border: solid #f5eea9;
+    border-width: 0 6px 6px 0;
+    display: inline-block;
+    padding: 10px;
+    border-radius: 2px;
+    transition: border-color 0.3s ease;
 }
 
 .arrow-left {
@@ -293,15 +436,13 @@
     transform: rotate(-45deg);
 }
 
-/* ==========================================================================
-   8. UTILITÁRIOS
-   ========================================================================== */
+/* 7. UTILITÁRIOS E CLASSES DA TELA DE RESULTADO */
 .no-data {
     text-align: center;
     padding: 40px;
     color: #666;
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 0.9rem;
 }
 
 .loading {
@@ -310,220 +451,280 @@
     align-items: center;
     height: 100vh;
     font-weight: 900;
-    color: var(--primary-green, #4CAF50);
-    background-color: var(--bg-yellow, #fdf001);
+    color: var(--primary-green);
+    background-color: var(--bg-yellow);
+    position: relative;
+    z-index: 10;
 }
 
-/* ==========================================================================
-   9. TEMA: MULHERES (Filtro Ativo)
-   ========================================================================== */
-.select-base-container.theme-mulheres {
-    background-color: #B3262E;
+.state-centered-name {
+    font-weight: 900;
+    font-size: 1rem;
+    text-align: center;
+    width: 100%;
+    color: var(--text-dark, #1a1a1a);
 }
 
-.select-base-container.theme-mulheres .header-nav-container {
-    background-color: #B3262E;
+.resultado-scrollable {
+    overflow-y: auto;
 }
 
-.select-base-container.theme-mulheres .pills-wrapper {
-    background-color: #8E1F24;
+.banner-resultado {
+    padding-bottom: 30px;
 }
 
-.select-base-container.theme-mulheres .pill-nav {
-    color: #FFFFFF;
+.banner-resultado h2 {
+    font-size: 2.5rem;
+    letter-spacing: 3px;
 }
 
-.select-base-container.theme-mulheres .pill-nav.active {
-    background-color: #F5E65A;
-    color: #8E1F24;
+.resultado-subtitle-wrapper {
+    text-align: center;
+    margin-top: 35px;
+    padding: 0 20px;
 }
 
-.select-base-container.theme-mulheres .green-banner-selection {
-    background-color: #8E1F24;
-    color: #F5E65A;
+.resultado-subtitle {
+    background-color: #f0dd62;
+    border-radius: 30px;
+    padding: 12px 25px;
+    display: inline-block;
+    font-weight: 900;
+    font-size: 0.85rem;
+    color: #555;
+    text-transform: uppercase;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
-.select-base-container.theme-mulheres .triangle-down {
-    border-top-color: #8E1F24;
+.gauge-wrapper-margin {
+    margin-top: 20px;
 }
 
-.select-base-container.theme-mulheres .btn-visualizar-todos {
-    color: #8E1F24;
-    background-color: #F5E65A;
+.gauge-container {
+    position: relative;
+    width: 100%;
+    height: 170px;
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
 }
 
-.select-base-container.theme-mulheres .list-scroll-box {
-    background-color: transparent;
+.gauge-needle-svg {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+    width: 320px;
+    height: 320px;
+}
+
+.gauge-needle-group {
+    transform-origin: 160px 150px;
+    transition: transform 1.5s ease;
+}
+
+.gauge-text-wrapper {
+    position: absolute;
+    top: 75px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+}
+
+.gauge-text-label {
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: #000;
+    line-height: 1;
+}
+
+.gauge-text-value {
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: #000;
+    line-height: 1;
+    margin-top: 4px;
+}
+
+.resultado-list-wrapper {
+    flex: none;
+    padding-bottom: 10px;
+    margin-top: -10px;
+}
+
+.resultado-scroll-box {
+    overflow: visible;
+    background: transparent;
+    backdrop-filter: none;
+    border: none;
     box-shadow: none;
 }
 
-.select-base-container.theme-mulheres .base-card {
-    background-color: #8E1F24;
-    border-bottom: 1px solid #A52A2F;
+.res-card-cargo {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #666;
+    text-transform: uppercase;
 }
 
-.select-base-container.theme-mulheres .base-card.selected {
-    background-color: #B85A5A !important;
+.res-card-numero {
+    font-size: 1rem;
+    font-weight: 900;
+    margin-top: 2px;
+    color: #1a1a1a;
 }
 
-.select-base-container.theme-mulheres .state-centered-name,
-.select-base-container.theme-mulheres .state-full-name,
-.select-base-container.theme-mulheres .cand-name,
-.select-base-container.theme-mulheres .no-data {
-    color: #FFFFFF;
+.res-card-nome {
+    margin-top: -2px;
 }
 
-.select-base-container.theme-mulheres .cand-party,
-.select-base-container.theme-mulheres .res-cargo {
-    color: #F5E65A;
+.resultado-footer-wrapper {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
-.select-base-container.theme-mulheres .cand-badge {
-    background-color: #F5E65A;
-    color: #8E1F24;
+.resultado-footer-pergunta {
+    text-align: center;
+    font-weight: 800;
+    font-size: 0.85rem;
+    color: #555;
 }
 
-.select-base-container.theme-mulheres .circle {
-    stroke: #F5E65A;
+/* Mantém o botão sincronizado com o ecrã anterior */
+.resultado-nav-footer {
+    margin: 0 20px 60px 20px;
 }
 
-.select-base-container.theme-mulheres .circle-bg {
+/* 8. TEMA "RENOVAR" (Efeito Vitral Escuro) */
+.select-base-container.theme-renovar {
+    background-color: #2A3B5D;
+}
+
+.select-base-container.theme-renovar .list-scroll-box {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.select-base-container.theme-renovar .green-banner-selection,
+.select-base-container.theme-renovar .nav-btn {
+    background-color: #1F2C47;
+    color: #ffffff;
+}
+
+.select-base-container.theme-renovar .green-banner-selection h2,
+.select-base-container.theme-renovar .green-banner-selection h3 {
+    color: #ffffff;
+}
+
+.select-base-container.theme-renovar .triangle-down {
+    border-top-color: #1F2C47;
+}
+
+.select-base-container.theme-renovar .tabs-toggle {
+    background-color: #ffffff;
+}
+
+.select-base-container.theme-renovar .tab-toggle-btn.active {
+    background-color: #2A3B5D;
+    color: #ffffff;
+}
+
+.select-base-container.theme-renovar .tab-toggle-btn:not(.active) {
+    color: #2A3B5D;
+}
+
+.select-base-container.theme-renovar .btn-help-icon {
+    color: #ffffff;
+}
+
+.select-base-container.theme-renovar .top-search-wrapper input {
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #2A3B5D;
+}
+
+/* Transparências no Tema Renovar */
+.select-base-container.theme-renovar .base-card.card-yellow {
+    background-color: rgba(161, 184, 95, 0.8);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.select-base-container.theme-renovar .base-card.card-yellow.selected {
+    background-color: rgba(161, 184, 95, 1) !important;
+}
+
+.select-base-container.theme-renovar .base-card.card-green {
+    background-color: rgba(92, 164, 108, 0.8);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.select-base-container.theme-renovar .base-card.card-green.selected {
+    background-color: rgba(92, 164, 108, 1) !important;
+}
+
+.select-base-container.theme-renovar .base-card.card-red {
+    background-color: rgba(220, 100, 100, 0.8);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.select-base-container.theme-renovar .base-card.card-red.selected {
+    background-color: rgba(220, 100, 100, 1) !important;
+}
+
+.select-base-container.theme-renovar .cand-name,
+.select-base-container.theme-renovar .res-card-numero,
+.select-base-container.theme-renovar .res-card-nome {
+    color: #ffffff;
+}
+
+.select-base-container.theme-renovar .cand-party,
+.select-base-container.theme-renovar .res-card-cargo {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.select-base-container.theme-renovar .percentage {
+    fill: #ffffff;
+}
+
+.select-base-container.theme-renovar .circle {
+    stroke: #ffffff;
+}
+
+.select-base-container.theme-renovar .circle-bg {
     stroke: rgba(255, 255, 255, 0.2);
 }
 
-.select-base-container.theme-mulheres .percentage {
-    fill: #FFFFFF;
+.select-base-container.theme-renovar .badge-rank,
+.select-base-container.theme-renovar .badge-score {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
 }
 
-.select-base-container.theme-mulheres .state-avatar {
-    background-color: #B3262E;
-    color: #FFFFFF;
+.select-base-container.theme-renovar .nav-btn:not(:disabled):hover {
+    background-color: #1A243B;
 }
 
-.select-base-container.theme-mulheres .base-card.selected .state-avatar {
-    background-color: #F5E65A;
-    color: #8E1F24;
+.select-base-container.theme-renovar .nav-btn:first-child {
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.select-base-container.theme-mulheres .nav-btn {
-    background-color: #8E1F24;
+.select-base-container.theme-renovar .arrow-left,
+.select-base-container.theme-renovar .arrow-right {
+    border-color: #ffffff;
 }
 
-.select-base-container.theme-mulheres .nav-btn.btn-confirm:not(:disabled) {
-    background-color: #A52A2F;
+.select-base-container.theme-renovar .resultado-subtitle {
+    background-color: #ffffff;
+    color: #2A3B5D;
 }
 
-.select-base-container.theme-mulheres .arrow-left,
-.select-base-container.theme-mulheres .arrow-right {
-    border-color: #F2D94E;
-}
-/* ==========================================================================
-   10. TEMA: PARTIDOS (Filtro Ativo)
-   ========================================================================== */
-.select-base-container.theme-partidos {
-    background-color: #455A8C;
+.select-base-container.theme-renovar .resultado-footer-pergunta {
+    color: #ffffff;
 }
 
-.select-base-container.theme-partidos .header-nav-container {
-    background-color: #455A8C;
-}
-
-/* Base escura do banner e pills */
-.select-base-container.theme-partidos .pills-wrapper {
-    background-color: #3F4F7A;
-}
-
-.select-base-container.theme-partidos .pill-nav {
-    color: #FFFFFF;
-}
-
-.select-base-container.theme-partidos .pill-nav.active {
-    background-color: #F5E65A;
-    color: #3F4F7A;
-}
-
-.select-base-container.theme-partidos .green-banner-selection {
-    background-color: #3F4F7A;
-    color: #F5E65A; 
-}
-
-.select-base-container.theme-partidos .triangle-down {
-    border-top-color: #3F4F7A;
-}
-
-.select-base-container.theme-partidos .btn-visualizar-todos {
-    color: #3F4F7A;
-    background-color: #F5E65A;
-}
-
-/* Área da Lista de Cards */
-.select-base-container.theme-partidos .list-scroll-box {
-    background-color: transparent; 
-    box-shadow: none;
-}
-
-.select-base-container.theme-partidos .base-card {
-    background-color: #4A5568;
-    border-bottom: 1px solid #3F4F7A;
-}
-
-/* Hover/Seleção de Card (Ex: AM na imagem) */
-.select-base-container.theme-partidos .base-card.selected {
-    background-color: #A0A4AE !important;
-}
-
-/* Textos dentro do Card */
-.select-base-container.theme-partidos .state-centered-name,
-.select-base-container.theme-partidos .state-full-name,
-.select-base-container.theme-partidos .cand-name,
-.select-base-container.theme-partidos .no-data {
-    color: #FFFFFF;
-}
-
-.select-base-container.theme-partidos .cand-party,
-.select-base-container.theme-partidos .res-cargo {
-    color: #F5E65A; 
-}
-
-/* Ajustes dos componentes de Candidatos */
-.select-base-container.theme-partidos .cand-badge {
-    background-color: #F5E65A;
-    color: #4A5568;
-}
-
-.select-base-container.theme-partidos .circle {
-    stroke: #F5E65A;
-}
-
-.select-base-container.theme-partidos .circle-bg {
-    stroke: rgba(255, 255, 255, 0.25); /* Overlay/transparência */
-}
-
-.select-base-container.theme-partidos .percentage {
-    fill: #FFFFFF;
-}
-
-/* Ajustes visuais para o estado (bolinha, caso usada em outras telas) */
-.select-base-container.theme-partidos .state-avatar {
-    background-color: #455A8C;
-    color: #FFFFFF;
-}
-
-.select-base-container.theme-partidos .base-card.selected .state-avatar {
-    background-color: #F5E65A;
-    color: #4A5568;
-}
-
-/* Rodapé de Navegação */
-.select-base-container.theme-partidos .nav-btn {
-    background-color: #4A5568;
-}
-
-.select-base-container.theme-partidos .nav-btn.btn-confirm:not(:disabled) {
-    background-color: #5A6B9A; /* Azul levemente mais claro para dar destaque no botão ativo */
-}
-
-.select-base-container.theme-partidos .arrow-left,
-.select-base-container.theme-partidos .arrow-right {
-    border-color: #F2D94E;
+.select-base-container.theme-renovar .nav-btn svg {
+    stroke: #ffffff;
 }

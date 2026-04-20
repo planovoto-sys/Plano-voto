@@ -5,73 +5,108 @@ import { useUser } from '../contexts/UserContext';
 import { useNavigate } from 'react-router-dom';
 import { PieChart, Pie, Cell } from 'recharts';
 import Sidebar from '../components/Sidebar';
-import './Resultado.css';
+import TourModal from '../components/TourModal'; 
 
-const MEDIA_TESTE = 3;
+const MEDIA_TESTE = 4;
 
-const Gauge = ({ value }) => {
-    // Garante que o percentual fique entre 0 e 1
-    const percent = Math.min(Math.max(value, 0), 1);
+const ShareIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#f5eea9" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="18" cy="5" r="3"></circle>
+    <circle cx="6" cy="12" r="3"></circle>
+    <circle cx="18" cy="19" r="3"></circle>
+    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+  </svg>
+);
+
+const Gauge = ({ value, tema }) => {
+    const normalizedValue = Math.min(Math.max(value, 0), 10);
+    const percent = normalizedValue / 10;
+    const targetAngle = (percent * 180) - 90;
+    const [currentAngle, setCurrentAngle] = useState(-90);
+
+    useEffect(() => {
+        const timer = setTimeout(() => setCurrentAngle(targetAngle), 50);
+        return () => clearTimeout(timer);
+    }, [targetAngle]);
     
-    // Rotação da agulha:
-    // -90 graus = aponta para a esquerda (0%)
-    //   0 graus = aponta para cima (50%)
-    // +90 graus = aponta para a direita (100%)
-    const angle = (percent * 180) - 90;
+    const data = tema === 'renovar' 
+        ? [
+            { value: 1, color: '#C5D6EA' },
+            { value: 1, color: '#9BB8D9' },
+            { value: 1, color: '#729BC8' },
+            { value: 1, color: '#487DB6' },
+            { value: 1, color: '#3B5B8B' },
+          ]
+        : [
+            { value: 1, color: '#ff3b3b' },
+            { value: 1, color: '#ff9800' },
+            { value: 1, color: '#ffeb3b' },
+            { value: 1, color: '#8bc34a' },
+            { value: 1, color: '#4caf50' },
+          ];
 
     return (
-        <div style={{ width: "100%", maxWidth: "300px", margin: "0 auto" }}>
-            <svg viewBox="0 0 200 120" width="100%" height="100%">
-                
-                {/* VERMELHO */}
-                <path
-                    d="M20 100 A80 80 0 0 1 70 30"
-                    stroke="#FF3B3B"
-                    strokeWidth="20"
-                    fill="none"
-                    strokeLinecap="round"
-                />
-
-                {/* AMARELO */}
-                <path
-                    d="M70 30 A80 80 0 0 1 130 30"
-                    stroke="#F5E400"
-                    strokeWidth="20"
-                    fill="none"
-                    strokeLinecap="round"
-                />
-
-                {/* VERDE */}
-                <path
-                    d="M130 30 A80 80 0 0 1 180 100"
-                    stroke="#4CAF50"
-                    strokeWidth="20"
-                    fill="none"
-                    strokeLinecap="round"
-                />
-
-                {/* PONTEIRO NATIVO EM SVG */}
-                {/* O eixo de rotação é fixado no centro geométrico do arco (100, 100) */}
-                <g 
-                    transform={`rotate(${angle}, 100, 100)`} 
-                    style={{ transition: "transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)" }}
+        <div className="gauge-container" id="tour-gauge">
+            <PieChart width={320} height={320}>
+                <Pie
+                    data={data}
+                    cx={160}
+                    cy={150}
+                    startAngle={180}
+                    endAngle={0}
+                    innerRadius={90}
+                    outerRadius={130}
+                    dataKey="value"
+                    stroke="none"
+                    isAnimationActive={true}
+                    animationDuration={1500} 
+                    animationEasing="ease"   
                 >
-                    {/* Corpo da Agulha */}
-                    <polygon points="96,100 104,100 100,25" fill="#222" />
-                    {/* Base redonda (o "parafuso" do meio) */}
-                    <circle cx="100" cy="100" r="8" fill="#222" />
+                    {data.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                </Pie>
+            </PieChart>
+
+            <svg className="gauge-needle-svg" viewBox="0 0 320 320">
+                <g className="gauge-needle-group" style={{ transform: `rotate(${currentAngle}deg)`, transition: 'transform 1.5s ease' }}>
+                    <polygon points="148,20 172,20 160,60" fill="#111" />
                 </g>
             </svg>
+
+            <div className="gauge-text-wrapper">
+                <div className="gauge-text-label">NOTA</div>
+                <div className="gauge-text-value">
+                    {normalizedValue.toFixed(2).replace('.', ',')}
+                </div>
+            </div>
         </div>
     );
 };
+
 export default function Resultado() {
-    const { userData, loading: userLoading } = useUser();
+    const { userData, loading: userLoading, filtroAtivo } = useUser();
     const navigate = useNavigate();
 
     const [candidatosCompletos, setCandidatosCompletos] = useState([]);
     const [media, setMedia] = useState(0);
     const [loading, setLoading] = useState(true);
+    
+    const [isTourOpen, setIsTourOpen] = useState(false); 
+
+    // Textos atualizados conforme o documento de requisitos
+    const tourSteps = [
+        { target: '#tour-gauge', title: 'NOTA', content: 'Mostra a nota do seu voto.<br/><br/><b>Obs.:</b> considera a média das notas dos candidatos selecionados.' },
+        { target: '#tour-lista-resultado', title: 'LISTA', content: 'Mostra os candidatos selecionados, sua classificação/nota no Ranking dos Políticos e chances de se eleger.<br/><br/><b>Obs.:</b> compara a intenção de voto no meuvoto.org com a média de votos dos eleitos nas eleições passadas.' }
+    ];
+
+    const handleHelpPress = (e) => {
+        const btn = e.currentTarget;
+        btn.classList.add('pulse-anim');
+        setTimeout(() => btn.classList.remove('pulse-anim'), 400); 
+        setIsTourOpen(true);
+    };
 
     useEffect(() => {
         if (userLoading || !userData) return;
@@ -98,23 +133,40 @@ export default function Resultado() {
 
                 snap.forEach(doc => {
                     const d = doc.data();
+                    
+                    const valCand = d["Nota candidato"];
+                    const valPart = d["Nota partido"];
+                    const isNotaValida = (val) => val !== undefined && val !== null && val !== "" && val !== "-";
+                    
+                    let notaFinal = 0;
+                    if (isNotaValida(valCand) && Number(valCand) !== 0) notaFinal = parseFloat(valCand);
+                    else if (isNotaValida(valPart)) notaFinal = parseFloat(valPart);
 
-                    const notaParaMedia = d["Nota candidato"] || d["Nota partido"] || 0;
-                    const porcentagem = ((d.votos_recebidos || 0) / MEDIA_TESTE) * 100;
+                    const votos = d.votos_recebidos || 0;
+                    const porcentagem = (votos / MEDIA_TESTE) * 100;
 
-                    soma += notaParaMedia;
+                    soma += notaFinal;
+                    
+                    let cardColorClass = 'card-yellow';
+                    if (notaFinal < 6) cardColorClass = 'card-red';
+                    else if (notaFinal >= 7) cardColorClass = 'card-green';
+
+                    const classificacaoOriginal = d["Classificação"] || d["Classificacao"] || "-";
 
                     lista.push({
                         id: doc.id,
                         ...d,
-                        notaCandidato: d["Nota candidato"] || 0,
-                        notaPartido: d["Nota partido"] || 0,
+                        ClassificacaoOficial: classificacaoOriginal,
+                        notaFinal: notaFinal,
+                        cardColorClass: cardColorClass,
                         porcentagemCalculada: Math.min(porcentagem, 100).toFixed(0)
                     });
                 });
 
-                setMedia(nomes.length > 0 ? soma / 3 : 0);
+                setMedia(nomes.length > 0 ? soma / nomes.length : 0);
+                lista.sort((a, b) => a.Cargo.localeCompare(b.Cargo));
                 setCandidatosCompletos(lista);
+                
             } catch (error) {
                 console.error("Erro ao carregar dados:", error);
             } finally {
@@ -128,112 +180,112 @@ export default function Resultado() {
     if (loading) return <div className="loading">CARREGANDO...</div>;
 
     let config = {};
-
     if (media >= 7) {
-        config = {
-            classe: "boa",
-            titulo: "GOLAÇO!!!",
-            subtitulo: "SEU VOTO MELHORA O CONGRESSO",
-            pergunta: "QUE TAL COMPARTILHAR ANTES DE CONTINUAR?"
-        };
-    } else if (media >= 4) {
-        config = {
-            classe: "neutra",
-            titulo: "NA TRAVE!!!",
-            subtitulo: "SEU VOTO NÃO MELHORA O CONGRESSO",
-            pergunta: "QUE TAL SELECIONAR CANDIDATOS MELHORES?"
-        };
+        config = { titulo: "GOLAÇO!!!", subtitulo: "SEU VOTO MELHORA O CONGRESSO", pergunta: "QUE TAL COMPARTILHAR ANTES DE CONTINUAR?" };
+    } else if (media >= 6) {
+        config = { titulo: "NA TRAVE!!!", subtitulo: "SEU VOTO NÃO MELHORA O CONGRESSO", pergunta: "QUE TAL SELECIONAR CANDIDATOS MELHORES?" };
     } else {
-        config = {
-            classe: "ruim",
-            titulo: "BOLA FORA!!!",
-            subtitulo: "SEU VOTO PIORA O CONGRESSO",
-            pergunta: "QUE TAL SELECIONAR CANDIDATOS MELHORES?"
-        };
+        config = { titulo: "BOLA FORA!!!", subtitulo: "SEU VOTO PIORA O CONGRESSO", pergunta: "QUE TAL SELECIONAR CANDIDATOS MELHORES?" };
     }
 
+    const themeClass = filtroAtivo === 'renovar' ? 'theme-renovar' : 'theme-reeleger';
+
     return (
-        <div className={`resultado-main-container theme-${config.classe}`}>
+        <div className={`select-base-container resultado-scrollable ${themeClass}`}>
             <Sidebar />
+            <TourModal steps={tourSteps} isOpen={isTourOpen} onClose={() => setIsTourOpen(false)} />
 
-            <div className="result-green-banner">
-                <div className="slant-bg"></div>
-                <div className="banner-text">
-                    <h2>{config.titulo}</h2>
-                    <p>{config.subtitulo}</p>
+            <div className="top-nav-bar">
+              <div className="nav-spacer"></div>
+              <div className="top-search-wrapper">
+                <input type="text" value="plano-voto.vercel.app" disabled={true} />
+              </div>
+              <div className="nav-action-right">
+                  <button className="btn-help-icon" onClick={handleHelpPress}>
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                       <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                       <line x1="12" y1="8" x2="12" y2="8"></line>
+                       <line x1="12" y1="12" x2="12" y2="16"></line>
+                    </svg>
+                  </button>
+              </div>
+            </div>
+
+            <div className="green-banner-selection banner-resultado">
+                <h2>{config.titulo}</h2>
+                <div className="triangle-down"></div>
+            </div>
+
+            <div className="resultado-subtitle-wrapper">
+                <div className="resultado-subtitle">
+                    {config.subtitulo}
                 </div>
-                <div className="triangle-down-classic"></div>
             </div>
 
-            <div className="velocimetro-card">
-                <div className="velocimetro-gauge">
+            <div className="gauge-wrapper-margin">
+                <Gauge value={media} tema={filtroAtivo} />
+            </div>
 
-                    {/* 🔥 NOVO GAUGE */}
-                    <Gauge value={media / 10} />
+            <div className="list-wrapper resultado-list-wrapper">
+                <div className="list-scroll-box resultado-scroll-box" id="tour-lista-resultado">
+                    {candidatosCompletos.map((cand) => {
+                        return (
+                            <div className={`base-card ${cand.cardColorClass}`} key={cand.id}>
+                                <div className="cand-item-layout">
+                                    <div className="cand-data-left">
+                                        <div className="res-card-cargo">
+                                            {cand.Cargo} | {cand.Partido}
+                                        </div>
+                                        <div className="res-card-numero">
+                                            {cand.Numero || '0000'}
+                                        </div>
+                                        <div className="cand-name res-card-nome">
+                                            {cand.Nome.toUpperCase()}
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="cand-rank-score-middle">
+                                        <div className="badge-rank">
+                                            {cand.ClassificacaoOficial === "-" ? "-" : `${cand.ClassificacaoOficial}º`}
+                                        </div>
+                                        <div className="badge-score">
+                                            {cand.notaFinal.toFixed(2).replace('.', ',')}
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="cand-divider-vertical"></div>
+                                    
+                                    <div className="cand-chart-right">
+                                        <svg viewBox="0 0 36 36" className="circular-chart">
+                                            <path className="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                            <path className="circle" strokeDasharray={`${cand.porcentagemCalculada}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                            <text x="18" y="20.35" className="percentage">{cand.porcentagemCalculada}%</text>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
 
-                    <div className="gauge-score">
-                        <span>NOTA</span>
-                        <strong>{media.toFixed(2).replace('.', ',')}</strong>
-                    </div>
+            <div className="resultado-footer-wrapper" id="tour-footer-resultado">
+                <div className="resultado-footer-pergunta">
+                    {config.pergunta}
                 </div>
 
-                <p className="pergunta">{config.pergunta}</p>
+                <footer className="navigation-footer resultado-nav-footer">
+                    <button className="nav-btn" onClick={() => navigate(-1)} style={{ borderRight: media >= 7 ? '1px solid rgba(248, 228, 100, 0.4)' : 'none' }}>
+                        <i className="arrow-left"></i>
+                    </button>
+                    
+                    {media >= 7 && (
+                        <button className="nav-btn" onClick={() => alert("Link copiado para a área de transferência!")}>
+                            <ShareIcon />
+                        </button>
+                    )}
+                </footer>
             </div>
-
-            <div className="lista-selecionados-container">
-                {candidatosCompletos.map((cand) => (
-                    <div key={cand.id} className="card-resultado-candidato">
-                        <div className="cand-info-texto" style={{ flex: 1 }}>
-                            
-                            <div style={{ marginBottom: '6px' }}>
-                                <span className="res-cargo">{cand.Cargo?.toUpperCase()}</span>
-                                <span className="res-numero" style={{ marginLeft: '8px', fontWeight: 'bold' }}>
-                                    {cand.Numero || "0000"}
-                                </span>
-                            </div>
-
-                            <div className="cand-row">
-                                <span className="res-nome" style={{ fontWeight: '900' }}>
-                                    {cand.Nome?.toUpperCase()}
-                                </span>
-                                <span className="cand-badge"> {cand.notaCandidato}</span>
-                            </div>
-
-                            <div className="cand-row" style={{ marginTop: '4px', opacity: 0.9 }}>
-                                <span className="res-partido" style={{ fontSize: '0.85rem', fontWeight: '700', color: '#666' }}>
-                                    PARTIDO: {cand.Partido}
-                                </span>
-                                <span className="cand-badge party-badge"> {cand.notaPartido}</span>
-                            </div>
-                        </div>
-
-                        <div className="cand-chart" style={{ width: '58px', height: '58px', marginLeft: '15px' }}>
-                            <svg viewBox="0 0 36 36" className="circular-chart">
-                                <path className="circle-bg" fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth="3.5"
-                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                <path className="circle" fill="none" stroke="var(--primary-green, #4CAF50)"
-                                    strokeWidth="3.5" strokeLinecap="round"
-                                    strokeDasharray={`${cand.porcentagemCalculada}, 100`}
-                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                <text x="18" y="20.35" fill="#1a1a1a" fontSize="0.65rem"
-                                    fontWeight="800" textAnchor="middle">
-                                    {cand.porcentagemCalculada}%
-                                </text>
-                            </svg>
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            <footer className="resultado-footer-acoes">
-                <button className="btn-nav-texto" onClick={() => navigate('/escolher-senadores')}>
-                    MUDAR
-                </button>
-
-                <button className="btn-share" onClick={() => alert("Link copiado!")}>
-                    COMPARTILHAR
-                </button>
-            </footer>
         </div>
     );
 }
