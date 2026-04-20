@@ -21,7 +21,6 @@ export default function ConfirmModal({
         <h3 className="modal-title">{titulo}</h3>
         <p className="modal-message">{mensagem}</p>
         
-        {/* Se houver children (ex: botões de troca de candidatos), renderiza-os */}
         {children ? (
           <div className="modal-custom-content">
             {children}
@@ -30,7 +29,6 @@ export default function ConfirmModal({
             </button>
           </div>
         ) : (
-          /* Botões normais de ação */
           <div className="modal-actions">
             {mostrarCancelar && (
               <button className="btn-modal btn-cancelar" onClick={onCancel}>

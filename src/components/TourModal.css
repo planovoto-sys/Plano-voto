@@ -1,4 +1,3 @@
-/* Container que bloqueia cliques fora do tour, SEM mexer no overflow do body */
 .tour-overlay-container {
     position: fixed;
     inset: 0;
@@ -9,7 +8,6 @@
     align-items: center;
 }
 
-/* Transições Suaves */
 .tour-overlay-container.fade-in { animation: fadeInTour 0.4s ease forwards; }
 .tour-overlay-container.fade-out { animation: fadeOutTour 0.4s ease forwards; }
 
@@ -23,13 +21,12 @@
     to { opacity: 0; }
 }
 
-/* A grande mágica visual: Uma única div que aplica uma sombra gigante que escurece o fundo e respeita as bordas */
 .tour-highlight-box {
     position: fixed;
-    border-radius: 14px; /* Arredondamento suave natural */
-    border: 2px solid #f8e464; /* Borda amarela viva */
+    border-radius: 14px;
+    border: 2px solid #f8e464; 
     box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.75), 0 0 15px rgba(248, 228, 100, 0.4); 
-    pointer-events: none; /* A caixa em si não bloqueia cliques */
+    pointer-events: none; 
     transition: all 0.45s cubic-bezier(0.25, 0.8, 0.25, 1);
     z-index: 100000;
     background: transparent;
@@ -37,7 +34,6 @@
 
 .tour-tooltip {
     position: fixed;
-    bottom: 25px; 
     left: 20px; 
     right: 20px;
     background: #ffffff;
@@ -45,12 +41,23 @@
     padding: 25px;
     z-index: 100001;
     box-shadow: 0 10px 40px rgba(0,0,0,0.4);
-    animation: tourSlideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    
+    /* O SEGREDO DO DESLIZE PERFEITO */
+    transition: top 0.5s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-@keyframes tourSlideUp {
-    from { opacity: 0; transform: translateY(40px) scale(0.95); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
+/* POSIÇÃO: BASE */
+.tour-tooltip.pos-bottom {
+    top: 100%;
+    bottom: auto; /* Garante que o cartão NUNCA vai esticar */
+    transform: translateY(calc(-100% - 25px));
+}
+
+/* POSIÇÃO: TOPO */
+.tour-tooltip.pos-top {
+    top: 90px; /* Coloca logo abaixo do cabeçalho */
+    bottom: auto; /* Garante que o cartão NUNCA vai esticar */
+    transform: translateY(0);
 }
 
 .tour-title {

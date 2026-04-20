@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 import { db } from '../services/firebaseConfig';
@@ -30,10 +30,20 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [pendingEstado, setPendingEstado] = useState(null);
+  
+  const [busca, setBusca] = useState('');
 
   const selecaoInicial = userData?.estado 
     ? LISTA_ESTADOS.filter(estado => estado.sigla === userData.estado)
     : [];
+
+  const listaExibida = useMemo(() => {
+    if (!busca.trim()) return LISTA_ESTADOS;
+    return LISTA_ESTADOS.filter(e => 
+      e.nome.toLowerCase().includes(busca.toLowerCase()) || 
+      e.sigla.toLowerCase().includes(busca.toLowerCase())
+    );
+  }, [busca]);
 
   const handleConfirmar = async (selecionados) => {
     if (selecionados.length === 0) return;
@@ -100,11 +110,13 @@ export default function Home() {
       <Sidebar />
       <SelectBase
         titulo="SELECIONE SEU ESTADO"
-        dados={LISTA_ESTADOS}
+        dados={listaExibida}
         limiteSelecao={1}
         selecaoInicial={selecaoInicial}
         carregando={userLoading || loading}
-        mostrarBusca={false}
+        mostrarBusca={true} 
+        valorBusca={busca}
+        onChangeBusca={setBusca}
         onConfirmar={handleConfirmar}
         onVoltar={() => navigate(-1)}
         renderItem={(estado) => (
@@ -116,10 +128,10 @@ export default function Home() {
 
       <ConfirmModal 
         isOpen={modalOpen}
-        titulo="MUDAR DE ESTADO?"
-        mensagem="Ao escolher um novo estado, os candidatos que você já selecionou serão desmarcados da sua lista. Deseja prosseguir?"
-        textoConfirmar="SIM, MUDAR"
-        textoCancelar="VOLTAR"
+        titulo="MUDANÇA DE ESTADO"
+        mensagem="Ao mudar de estado, suas seleções atuais serão apagadas. Deseja continuar?"
+        textoConfirmar="SIM"
+        textoCancelar="NÃO"
         tipo="perigo"
         onConfirm={() => executarMudanca(pendingEstado)}
         onCancel={() => setModalOpen(false)}

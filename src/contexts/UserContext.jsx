@@ -10,8 +10,6 @@ export const UserProvider = ({ children }) => {
   const [user, authLoading] = useAuthState(auth);
   const [userData, setUserData] = useState(null);
   const [dataLoading, setDataLoading] = useState(true);
-  
-  // ATUALIZADO: O filtro inicial agora é 'reeleger'
   const [filtroAtivo, setFiltroAtivo] = useState('reeleger');
 
   useEffect(() => {

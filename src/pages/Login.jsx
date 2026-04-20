@@ -6,7 +6,6 @@ import './Login.css';
 function Login() {
   const handleGoogleLogin = async () => {
     try {
-      // O App.jsx e o Contexto farão o trabalho pesado depois do login
       await signInWithPopup(auth, googleProvider);
     } catch (error) {
       console.error("Erro ao fazer login:", error);

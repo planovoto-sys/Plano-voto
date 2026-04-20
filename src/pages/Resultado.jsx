@@ -10,7 +10,7 @@ import TourModal from '../components/TourModal';
 const MEDIA_TESTE = 4;
 
 const ShareIcon = () => (
-  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#f8e464" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#f5eea9" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="18" cy="5" r="3"></circle>
     <circle cx="6" cy="12" r="3"></circle>
     <circle cx="18" cy="19" r="3"></circle>
@@ -70,7 +70,7 @@ const Gauge = ({ value, tema }) => {
             </PieChart>
 
             <svg className="gauge-needle-svg" viewBox="0 0 320 320">
-                <g className="gauge-needle-group" style={{ transform: `rotate(${currentAngle}deg)` }}>
+                <g className="gauge-needle-group" style={{ transform: `rotate(${currentAngle}deg)`, transition: 'transform 1.5s ease' }}>
                     <polygon points="148,20 172,20 160,60" fill="#111" />
                 </g>
             </svg>
@@ -95,10 +95,10 @@ export default function Resultado() {
     
     const [isTourOpen, setIsTourOpen] = useState(false); 
 
+    // Textos atualizados conforme o documento de requisitos
     const tourSteps = [
-        { target: '#tour-gauge', title: 'Termômetro de Qualidade', content: 'Mede a qualidade do seu voto com base nas notas dos candidatos escolhidos. <br/><br/><b>Acima de 7 = Golaço!</b><br/>Abaixo de 7 = Precisa melhorar.' },
-        { target: '#tour-lista-resultado', title: 'Seus Escolhidos', content: 'Aqui estão os candidatos que você selecionou para Deputado Federal e Senadores.' },
-        { target: '#tour-footer-resultado', title: 'Mudar ou Compartilhar', content: 'Se a nota não estiver boa, você pode <b>MUDAR</b> seus candidatos. Se estiver ótima, <b>COMPARTILHE</b> com seus amigos!' }
+        { target: '#tour-gauge', title: 'NOTA', content: 'Mostra a nota do seu voto.<br/><br/><b>Obs.:</b> considera a média das notas dos candidatos selecionados.' },
+        { target: '#tour-lista-resultado', title: 'LISTA', content: 'Mostra os candidatos selecionados, sua classificação/nota no Ranking dos Políticos e chances de se eleger.<br/><br/><b>Obs.:</b> compara a intenção de voto no meuvoto.org com a média de votos dos eleitos nas eleições passadas.' }
     ];
 
     const handleHelpPress = (e) => {
@@ -195,15 +195,25 @@ export default function Resultado() {
             <Sidebar />
             <TourModal steps={tourSteps} isOpen={isTourOpen} onClose={() => setIsTourOpen(false)} />
 
+            <div className="top-nav-bar">
+              <div className="nav-spacer"></div>
+              <div className="top-search-wrapper">
+                <input type="text" value="plano-voto.vercel.app" disabled={true} />
+              </div>
+              <div className="nav-action-right">
+                  <button className="btn-help-icon" onClick={handleHelpPress}>
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                       <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                       <line x1="12" y1="8" x2="12" y2="8"></line>
+                       <line x1="12" y1="12" x2="12" y2="16"></line>
+                    </svg>
+                  </button>
+              </div>
+            </div>
+
             <div className="green-banner-selection banner-resultado">
                 <h2>{config.titulo}</h2>
                 <div className="triangle-down"></div>
-                
-                {/* BOTÃO DÚVIDAS NO RESULTADO COM A ANIMAÇÃO */}
-                <button className="btn-help-floating" onClick={handleHelpPress}>
-                    <div className="help-icon">?</div>
-                    <span>Dúvidas</span>
-                </button>
             </div>
 
             <div className="resultado-subtitle-wrapper">

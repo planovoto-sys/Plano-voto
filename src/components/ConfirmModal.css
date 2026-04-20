@@ -1,6 +1,3 @@
-/* ==========================================================================
-   MODAL OVERLAY & CONTAINER
-   ========================================================================== */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -13,12 +10,13 @@
     align-items: center;
     z-index: 9999;
     padding: 20px;
-    backdrop-filter: blur(3px); /* Efeito de desfoque no fundo */
+    backdrop-filter: blur(3px);
 }
 
 .modal-container {
     background-color: var(--bg-yellow, #f5eea9);
-    width: 100%;
+    width: 90%;
+    /* Garante uma margem lateral em telas minúsculas */
     max-width: 340px;
     border-radius: 16px;
     padding: 25px 20px;
@@ -28,13 +26,17 @@
 }
 
 @keyframes modalFadeIn {
-    from { opacity: 0; transform: translateY(15px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-/* ==========================================================================
-   TEXTOS
-   ========================================================================== */
 .modal-title {
     font-weight: 900;
     font-size: 1.25rem;
@@ -50,9 +52,6 @@
     margin-bottom: 25px;
 }
 
-/* ==========================================================================
-   BOTÕES DE AÇÃO
-   ========================================================================== */
 .modal-actions {
     display: flex;
     gap: 10px;
@@ -79,13 +78,12 @@
     color: #555;
 }
 
-/* Tipos de Confirmação */
 .btn-confirmar.aviso {
     background-color: var(--primary-green, #4CAF50);
     color: #fff;
 }
 
 .btn-confirmar.perigo {
-    background-color: #d32f2f; /* Vermelho para ações destrutivas */
+    background-color: #d32f2f;
     color: #fff;
 }

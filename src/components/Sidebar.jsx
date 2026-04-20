@@ -6,7 +6,6 @@ import './Sidebar.css';
 
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
-  // Importamos o filtroAtivo do UserContext para saber o tema atual
   const { userData, user, filtroAtivo } = useUser();
   const navigate = useNavigate();
 
@@ -15,7 +14,6 @@ export default function Sidebar() {
     navigate('/');
   };
 
-  // Define a classe dinâmica baseada no filtro ativo
   const themeClass = `theme-${filtroAtivo || 'geral'}`;
 
   return (

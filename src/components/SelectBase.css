@@ -1,16 +1,13 @@
-/* ==========================================================================
-   1. LAYOUT PRINCIPAL E CONTAINERS
-   ========================================================================== */
+/* 1. LAYOUT PRINCIPAL E CONTAINERS */
 .select-base-container {
     display: flex;
     flex-direction: column;
     height: 100vh;
     background-color: transparent;
-    /* Deixa o fundo do #root aparecer */
     transition: background-color 0.3s ease;
 }
 
-/* Todos os elementos primários sobem de camada para não sumirem atrás das listras */
+.top-nav-bar,
 .green-banner-selection,
 .tabs-toggle-container,
 .list-wrapper,
@@ -28,49 +25,88 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    /* Centraliza verticalmente a lista no espaço vazio */
 }
 
-/* ==========================================================================
-   EFEITO VITRAL / LÍQUIDO NA LISTA
-   ========================================================================== */
-.list-scroll-box {
-    border-radius: 16px;
-    flex: 1;
-    overflow-y: auto;
+/* 2. TOP NAV BAR (Pesquisa, Menu e Informações) */
+.top-nav-bar {
     display: flex;
-    flex-direction: column;
-    padding-bottom: 0px;
-    margin-bottom: 15px;
-
-    /* Efeito Vitral / Vidro Embaçado */
-    background: rgba(255, 255, 255, 0.35);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-
-    /* Importante: Impede que os cards retangulares "vazem" pelos cantos arredondados */
-    overflow-x: hidden;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 20px;
+    min-height: 70px;
 }
 
-/* Ocultar barra de rolagem grossa */
-.list-scroll-box::-webkit-scrollbar {
-    width: 4px;
+.nav-spacer {
+    width: 30px;
 }
 
-.list-scroll-box::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
+.top-search-wrapper {
+    flex: 1;
+    margin: 0 15px;
 }
 
-/* ==========================================================================
-   2. BANNER VERDE E TÍTULOS
-   ========================================================================== */
+.top-search-wrapper input {
+    width: 100%;
+    background-color: rgba(248, 228, 100, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 20px;
+    padding: 10px 15px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #555;
+    text-align: center;
+    outline: none;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.top-search-wrapper input:disabled {
+    background-color: transparent;
+    opacity: 0.8;
+}
+
+.top-search-wrapper input::placeholder {
+    color: #888;
+}
+
+.btn-help-icon {
+    background: transparent;
+    border: none;
+    color: var(--primary-green);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+    outline: none;
+}
+
+.btn-help-icon.pulse-anim {
+    animation: pulseHelpBtn 0.4s ease forwards;
+}
+
+@keyframes pulseHelpBtn {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.15);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* 3. BANNER VERDE E TÍTULOS */
 .green-banner-selection {
     background-color: var(--primary-green, #4CAF50);
-    color: #f8e464;
+    color: #f5eea9;
     text-align: center;
-    padding: 30px 20px;
+    padding: 20px 20px 25px 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -109,9 +145,7 @@
     transition: border-top-color 0.3s ease;
 }
 
-/* ==========================================================================
-   3. ABAS (TOGGLE)
-   ========================================================================== */
+/* 4. ABAS (TOGGLE) */
 .tabs-toggle-container {
     display: flex;
     justify-content: center;
@@ -131,7 +165,7 @@
 
 .tab-toggle-btn {
     flex: 1;
-    padding: 12px 0;
+    padding: 10px 0;
     border: none;
     font-weight: 900;
     font-size: 0.9rem;
@@ -150,18 +184,47 @@
     color: #555;
 }
 
-/* ==========================================================================
-   4. CARDS DE CANDIDATOS (CORES E OPACIDADES)
-   ========================================================================== */
+/* 5. CARDS DE CANDIDATOS E ESTADOS (EFEITO VITRAL LÍQUIDO) */
+.list-scroll-box {
+    border-radius: 16px;
+    max-height: 320px;
+    /* Reduzido para encaixar perfeitamente os cards achatados (5x 64px) */
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    margin: auto 0;
+    /* Garante que fica centralizado */
+    /* Fundo da lista semitransparente para dar efeito vidro */
+    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    overflow-x: hidden;
+}
+
+.list-scroll-box::-webkit-scrollbar {
+    width: 4px;
+}
+
+.list-scroll-box::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
 .base-card {
     margin: 0;
     display: flex;
-    padding: 18px 20px;
+    align-items: center;
+    padding: 0 15px;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    height: 64px;
+    /* Card mais achatado e elegante */
+    min-height: 64px;
+    box-sizing: border-box;
 }
 
-/* Arredonda internamente os primeiros e últimos elementos da lista */
 .base-card:first-child {
     border-top-left-radius: 16px;
     border-top-right-radius: 16px;
@@ -173,14 +236,14 @@
     border-bottom: none;
 }
 
-/* CORES VITRAIS DAS TUPLAS (Opacidade para aparecer o vidro do fundo) */
+/* AMARELO (VITRAL) - Aplicado também na Home e notas medianas */
 .base-card.card-yellow {
     background-color: rgba(248, 228, 100, 0.85);
     border-bottom: 1px solid rgba(224, 206, 90, 0.4);
 }
 
 .base-card.card-yellow.selected {
-    background-color: rgba(209, 192, 69, 0.9) !important;
+    background-color: rgba(209, 192, 69, 0.95) !important;
 }
 
 .base-card.card-yellow .badge-rank {
@@ -197,13 +260,14 @@
     stroke: var(--primary-green, #4CAF50);
 }
 
+/* VERDE (VITRAL) - Notas Acima de 7 */
 .base-card.card-green {
     background-color: rgba(216, 238, 179, 0.85);
     border-bottom: 1px solid rgba(196, 217, 161, 0.4);
 }
 
 .base-card.card-green.selected {
-    background-color: rgba(196, 217, 161, 0.9) !important;
+    background-color: rgba(196, 217, 161, 0.95) !important;
 }
 
 .base-card.card-green .badge-rank,
@@ -216,13 +280,14 @@
     stroke: #4CAF50;
 }
 
+/* VERMELHO/LARANJA (VITRAL) - Notas Abaixo de 6 */
 .base-card.card-red {
     background-color: rgba(250, 199, 154, 0.85);
     border-bottom: 1px solid rgba(230, 180, 135, 0.4);
 }
 
 .base-card.card-red.selected {
-    background-color: rgba(230, 180, 135, 0.9) !important;
+    background-color: rgba(230, 180, 135, 0.95) !important;
 }
 
 .base-card.card-red .badge-rank,
@@ -235,7 +300,7 @@
     stroke: #ff5252;
 }
 
-/* Textos e Info Interna */
+/* LAYOUT INTERNO DOS CARDS */
 .cand-item-layout {
     display: flex;
     width: 100%;
@@ -252,7 +317,7 @@
 
 .cand-name {
     font-weight: 900;
-    font-size: 1rem;
+    font-size: 0.9rem;
     color: #1a1a1a;
 }
 
@@ -283,14 +348,14 @@
 
 .cand-divider-vertical {
     width: 1px;
-    height: 45px;
+    height: 35px;
     background-color: rgba(0, 0, 0, 0.1);
     margin-right: 15px;
 }
 
 .cand-chart-right {
-    width: 55px;
-    height: 55px;
+    width: 42px;
+    height: 42px;
     flex-shrink: 0;
 }
 
@@ -318,93 +383,11 @@
     text-anchor: middle;
 }
 
-/* ==========================================================================
-   5. PESQUISA E RESULTADOS
-   ========================================================================== */
-.search-container {
-    padding: 0;
-    margin-top: 15px;
-    margin-bottom: 10px;
-    background-color: transparent;
-}
-
-.search-input-box {
-    display: flex;
-    align-items: center;
-    background-color: rgba(248, 228, 100, 0.9);
-    border-radius: 12px;
-    padding: 15px 20px;
-    gap: 15px;
-    margin: 0 10px;
-}
-
-.search-input-box input {
-    border: none;
-    background: transparent;
-    font-size: 1rem;
-    font-weight: 700;
-    color: #333;
-    width: 100%;
-    outline: none;
-}
-
-.search-input-box input::placeholder {
-    color: #666;
-}
-
-.search-results-wrapper {
-    margin: 15px 10px 0 10px;
-    background-color: rgba(229, 209, 78, 0.8);
-    border-radius: 12px;
-    padding: 6px;
-    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.06);
-    display: flex;
-    flex-direction: column;
-}
-
-.search-results-title {
-    font-size: 0.75rem;
-    font-weight: 800;
-    color: #555;
-    padding: 12px 15px 8px 15px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.search-results-wrapper .search-result-card {
-    border-radius: 8px !important;
-    margin-bottom: 6px;
-    border: none;
-}
-
-.search-results-wrapper .search-result-card:last-child {
-    margin-bottom: 0;
-}
-
-.no-data-search {
-    padding: 25px;
-    text-align: center;
-    font-weight: 600;
-    color: #666;
-    font-size: 0.9rem;
-}
-
-.search-info-msg {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #666;
-    padding: 0 15px 10px 15px;
-    font-style: italic;
-    text-align: center;
-}
-
-/* ==========================================================================
-   6. FOOTER DE NAVEGAÇÃO BIPARTIDO
-   ========================================================================== */
+/* 6. FOOTER DE NAVEGAÇÃO BIPARTIDO */
 .navigation-footer {
     display: flex;
     background-color: var(--primary-green);
-    margin: 20px;
+    margin: 0 20px 60px 20px;
     border-radius: 12px;
     overflow: hidden;
     transition: background-color 0.3s ease;
@@ -437,7 +420,7 @@
 
 .arrow-left,
 .arrow-right {
-    border: solid #f8e464;
+    border: solid #f5eea9;
     border-width: 0 6px 6px 0;
     display: inline-block;
     padding: 10px;
@@ -453,15 +436,13 @@
     transform: rotate(-45deg);
 }
 
-/* ==========================================================================
-   7. UTILITÁRIOS E CLASSES DA TELA DE RESULTADO
-   ========================================================================== */
+/* 7. UTILITÁRIOS E CLASSES DA TELA DE RESULTADO */
 .no-data {
     text-align: center;
     padding: 40px;
     color: #666;
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 0.9rem;
 }
 
 .loading {
@@ -478,7 +459,7 @@
 
 .state-centered-name {
     font-weight: 900;
-    font-size: 1.2rem;
+    font-size: 1rem;
     text-align: center;
     width: 100%;
     color: var(--text-dark, #1a1a1a);
@@ -574,6 +555,10 @@
 
 .resultado-scroll-box {
     overflow: visible;
+    background: transparent;
+    backdrop-filter: none;
+    border: none;
+    box-shadow: none;
 }
 
 .res-card-cargo {
@@ -608,19 +593,16 @@
     color: #555;
 }
 
+/* Mantém o botão sincronizado com o ecrã anterior */
 .resultado-nav-footer {
-    margin: 0 20px 20px 20px;
+    margin: 0 20px 60px 20px;
 }
 
-/* ==========================================================================
-   8. TEMA "RENOVAR" (AZUL PROFUNDO + VITRAL ADAPTADO)
-   ========================================================================== */
-/* Fundo dinâmico da tela */
+/* 8. TEMA "RENOVAR" (Efeito Vitral Escuro) */
 .select-base-container.theme-renovar {
     background-color: #2A3B5D;
 }
 
-/* Container Vitral com fundo escurecido no tema azul */
 .select-base-container.theme-renovar .list-scroll-box {
     background: rgba(0, 0, 0, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -642,7 +624,6 @@
     border-top-color: #1F2C47;
 }
 
-/* Toggle no Tema Azul */
 .select-base-container.theme-renovar .tabs-toggle {
     background-color: #ffffff;
 }
@@ -656,7 +637,16 @@
     color: #2A3B5D;
 }
 
-/* Cartas de Candidatos Translucidas no Fundo Azul */
+.select-base-container.theme-renovar .btn-help-icon {
+    color: #ffffff;
+}
+
+.select-base-container.theme-renovar .top-search-wrapper input {
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #2A3B5D;
+}
+
+/* Transparências no Tema Renovar */
 .select-base-container.theme-renovar .base-card.card-yellow {
     background-color: rgba(161, 184, 95, 0.8);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -684,7 +674,6 @@
     background-color: rgba(220, 100, 100, 1) !important;
 }
 
-/* Tipografia Branca nas Cartas do Tema Azul */
 .select-base-container.theme-renovar .cand-name,
 .select-base-container.theme-renovar .res-card-numero,
 .select-base-container.theme-renovar .res-card-nome {
@@ -714,23 +703,6 @@
     color: #ffffff;
 }
 
-/* Pesquisa no Tema Azul */
-.select-base-container.theme-renovar .search-input-box {
-    background-color: rgba(255, 255, 255, 0.9);
-}
-
-.select-base-container.theme-renovar .search-results-wrapper {
-    background-color: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.select-base-container.theme-renovar .search-results-title,
-.select-base-container.theme-renovar .search-info-msg,
-.select-base-container.theme-renovar .no-data-search {
-    color: #ffffff;
-}
-
-/* Setas e Footer no Tema Azul */
 .select-base-container.theme-renovar .nav-btn:not(:disabled):hover {
     background-color: #1A243B;
 }
@@ -744,8 +716,6 @@
     border-color: #ffffff;
 }
 
-/* Setas brancas para o tema escuro */
-
 .select-base-container.theme-renovar .resultado-subtitle {
     background-color: #ffffff;
     color: #2A3B5D;
@@ -757,77 +727,4 @@
 
 .select-base-container.theme-renovar .nav-btn svg {
     stroke: #ffffff;
-}
-
-/* ==========================================================================
-   BOTÃO DE AJUDA / DÚVIDAS (ANIMAÇÃO)
-   ========================================================================== */
-.btn-help-floating {
-    position: absolute;
-    top: 20px;
-    right: 15px;
-    background: transparent;
-    border: none;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    cursor: pointer;
-    z-index: 10;
-    outline: none;
-    transition: transform 0.2s ease;
-}
-
-.btn-help-floating .help-icon {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    border: 2px solid;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 900;
-    font-size: 1.1rem;
-    margin-bottom: 2px;
-}
-
-.btn-help-floating span {
-    font-size: 0.6rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-/* Animação que expande o botão antes de iniciar o tour */
-.btn-help-floating.pulse-anim {
-    animation: pulseHelpBtn 0.4s ease forwards;
-}
-
-@keyframes pulseHelpBtn {
-    0% {
-        transform: scale(1);
-    }
-
-    50% {
-        transform: scale(1.15);
-    }
-
-    100% {
-        transform: scale(1);
-    }
-}
-
-.theme-reeleger .btn-help-floating {
-    color: #1a1a1a;
-}
-
-.theme-reeleger .btn-help-floating .help-icon {
-    border-color: #1a1a1a;
-}
-
-.theme-renovar .btn-help-floating {
-    color: #ffffff;
-}
-
-.theme-renovar .btn-help-floating .help-icon {
-    border-color: #ffffff;
 }

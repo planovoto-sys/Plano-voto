@@ -17,20 +17,19 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
   const [todosCandidatos, setTodosCandidatos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busca, setBusca] = useState('');
-  
   const [selecionadosNaTela, setSelecionadosNaTela] = useState([]);
 
   const [modalAviso, setModalAviso] = useState({ aberto: false, mensagem: '' });
   const [modalTroca, setModalTroca] = useState({ aberto: false, novoCandidato: null });
-  
   const [isTourOpen, setIsTourOpen] = useState(false);
 
+  // Textos atualizados conforme o documento de requisitos
   const tourSteps = [
-    { target: '#tour-reeleger', title: 'Filtro Reeleger', content: 'Mostra candidatos que <b>já foram eleitos</b> anteriormente (últimas eleições).' },
-    { target: '#tour-renovar', title: 'Filtro Renovar', content: 'Apresenta candidatos que <b>nunca foram eleitos</b>.' },
-    { target: '#tour-lista', title: 'Lista de Candidatos', content: 'Exibe os dados: Nome, Partido e Posição no ranking.<br/><br/>Base do ranking: <a href="https://ranking.org.br/" target="_blank">ranking.org.br</a><br/>(<a href="https://ranking.org.br/quem-somos" target="_blank">Quem Somos</a>)' },
-    { target: '.tour-grafico', title: 'Gráfico de Intenção (%)', content: 'Representa uma estimativa de intenção de votos baseada na média de votos da eleição passada no estado.<br/><br/>Quando um candidato atinge <b>100%</b>, ele sai da lista (limitada a 4 posições) e o próximo do ranking entra.' },
-    { target: '#tour-busca', title: 'Pesquisa Inteligente', content: 'Permite buscar candidatos rapidamente por:<br/><br/>- Nome<br/>- Sigla do Partido<br/>- Nome do Partido' }
+    { target: '#tour-busca', title: 'PESQUISA', content: 'Pesquisa candidatos por nome ou partido.' },
+    { target: '#tour-reeleger', title: 'REELEGER', content: 'Mostra candidatos que atuaram como deputado federal ou senador na última legislatura.<br/><br/><b>Obs.:</b> a classificação considera a nota do candidato no Ranking dos Políticos.' },
+    { target: '#tour-renovar', title: 'RENOVAR', content: 'Mostra candidatos que não atuaram como deputado federal ou senador na última legislatura.<br/><br/><b>Obs.:</b> a classificação considera a nota do partido no Ranking dos Políticos.' },
+    { target: '#tour-lista', title: 'LISTA', content: 'Mostra os candidatos a serem selecionados.<br/><br/><b>Obs.:</b> ordenados da maior para menor nota no Ranking dos Políticos (nota &ge;7,00 em verde e nota &lt;7,00 em vermelho).' },
+    { target: '.tour-grafico', title: 'CHANCE', content: 'Mostra as chances do candidato se eleger.<br/><br/><b>Obs.:</b> compara a intenção de voto no meuvoto.org com a média de votos dos eleitos nas eleições passadas.' }
   ];
 
   useEffect(() => {
@@ -103,40 +102,26 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
     } else {
       filtrados.sort((a, b) => a.classificacaoNum - b.classificacaoNum);
     }
-    
     return filtrados;
   }, [todosCandidatos, userData, filtroAtivo]);
 
   const listaExibida = useMemo(() => {
-    const disponiveis = candidatosFiltrados.filter(c => parseInt(c.porcentagemCalculada) < 100);
-    if (filtroAtivo === 'renovar') return disponiveis.filter(c => !c.temNotaCandidato).slice(0, 4);
-    else return disponiveis.filter(c => c.temNotaCandidato).slice(0, 4);
-  }, [candidatosFiltrados, filtroAtivo]);
+    let disponiveis = candidatosFiltrados.filter(c => parseInt(c.porcentagemCalculada) < 100);
+    
+    if (filtroAtivo === 'renovar') disponiveis = disponiveis.filter(c => !c.temNotaCandidato);
+    else disponiveis = disponiveis.filter(c => c.temNotaCandidato);
 
-  const { listaBusca, buscaNaPrincipal, buscaVazia } = useMemo(() => {
-    if (!busca.trim()) {
-      return { listaBusca: [], buscaNaPrincipal: false, buscaVazia: false };
+    if (busca.trim()) {
+        const textoBusca = busca.toLowerCase();
+        disponiveis = disponiveis.filter(c => {
+            const nome = (c.Nome || '').toLowerCase();
+            const partido = (c.Partido || '').toLowerCase();
+            return nome.includes(textoBusca) || partido.includes(textoBusca);
+        });
     }
 
-    const textoBusca = busca.toLowerCase();
-    
-    let matches = candidatosFiltrados.filter(c => {
-        const nome = (c.Nome || '').toLowerCase();
-        const partido = (c.Partido || '').toLowerCase();
-        return nome.includes(textoBusca) || partido.includes(textoBusca);
-    });
-
-    if (filtroAtivo === 'renovar') matches = matches.filter(c => !c.temNotaCandidato);
-    else matches = matches.filter(c => c.temNotaCandidato);
-
-    if (matches.length === 0) return { listaBusca: [], buscaNaPrincipal: false, buscaVazia: true };
-
-    const idsPrincipal = listaExibida.map(c => c.id);
-    const naPrincipal = matches.filter(c => idsPrincipal.includes(c.id));
-    const foraPrincipal = matches.filter(c => !idsPrincipal.includes(c.id));
-
-    return { listaBusca: foraPrincipal, buscaNaPrincipal: naPrincipal.length > 0, buscaVazia: false };
-  }, [candidatosFiltrados, busca, filtroAtivo, listaExibida]);
+    return disponiveis;
+  }, [candidatosFiltrados, filtroAtivo, busca]);
 
   const handleConfirmarFinal = async (listaFinalDaTela) => {
     if (listaFinalDaTela.length < limite) {
@@ -176,9 +161,6 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
       <SelectBase
         titulo={titulo}
         dados={listaExibida}
-        dadosBusca={listaBusca} 
-        buscaNaPrincipal={buscaNaPrincipal} 
-        buscaVazia={buscaVazia} 
         limiteSelecao={limite}
         selecaoInicial={selecionadosNaTela}
         carregando={userLoading || loading}

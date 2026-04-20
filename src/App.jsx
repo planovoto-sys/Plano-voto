@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Home from './pages/Home';
 import EscolherCandidatos from './pages/EscolherCandidatos';
 import Resultado from './pages/Resultado';
+import './App.css';
 
 function App() {
   const { user, loading } = useUser();

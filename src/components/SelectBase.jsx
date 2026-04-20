@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import ConfirmModal from './ConfirmModal';
 import './SelectBase.css';
 
 export default function SelectBase({
   titulo,
   dados,
-  dadosBusca = [],
-  buscaNaPrincipal = false,
-  buscaVazia = false,
   limiteSelecao,
   selecaoInicial = [],
   carregando,
@@ -16,13 +14,16 @@ export default function SelectBase({
   mostrarBusca = false,
   valorBusca = '',
   onChangeBusca = () => {},
+  textoBuscaFixo = null,
   onConfirmar,
   onVoltar,
   renderItem,
   onLimiteAtingido,
-  onHelpClick // Prop para abrir o Tour
+  onHelpClick
 }) {
   const [selecionados, setSelecionados] = useState(selecaoInicial);
+  // Novo estado para controlar o aviso de nota baixa
+  const [modalMalAvaliado, setModalMalAvaliado] = useState({ aberto: false, item: null });
 
   useEffect(() => {
     setSelecionados(selecaoInicial);
@@ -34,6 +35,18 @@ export default function SelectBase({
       setSelecionados(selecionados.filter((v) => v.id !== item.id));
       return;
     }
+
+    // Interceta a seleção se a nota final do candidato for menor que 7
+    if (item.notaFinal !== undefined && item.notaFinal < 7) {
+        setModalMalAvaliado({ aberto: true, item });
+        return;
+    }
+
+    efetivarSelecao(item);
+  };
+
+  // Função isolada para concluir a adição à lista
+  const efetivarSelecao = (item) => {
     if (limiteSelecao === 1) {
       setSelecionados([item]);
       return;
@@ -49,11 +62,10 @@ export default function SelectBase({
     if (onConfirmar) onConfirmar(selecionados);
   };
 
-  // FUNÇÃO NOVA: Anima o botão e depois dispara o evento para abrir o modal
   const handleHelpPress = (e) => {
       const btn = e.currentTarget;
       btn.classList.add('pulse-anim');
-      setTimeout(() => btn.classList.remove('pulse-anim'), 400); // Remove a classe após animação
+      setTimeout(() => btn.classList.remove('pulse-anim'), 400); 
       if (onHelpClick) onHelpClick();
   };
 
@@ -67,18 +79,39 @@ export default function SelectBase({
 
   return (
     <div className={`select-base-container ${themeClass}`}>
+      <div className="top-nav-bar">
+        <div className="nav-spacer"></div>
+
+        {mostrarBusca && (
+          <div className="top-search-wrapper">
+            <input
+              id="tour-busca"
+              type="text"
+              placeholder="Pesquisar"
+              value={textoBuscaFixo !== null ? textoBuscaFixo : valorBusca}
+              onChange={(e) => onChangeBusca(e.target.value)}
+              disabled={textoBuscaFixo !== null}
+            />
+          </div>
+        )}
+
+        <div className="nav-action-right">
+          {onHelpClick && (
+            <button className="btn-help-icon" onClick={handleHelpPress} id="tour-help">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                 <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                 <line x1="12" y1="8" x2="12" y2="8"></line>
+                 <line x1="12" y1="12" x2="12" y2="16"></line>
+              </svg>
+            </button>
+          )}
+        </div>
+      </div>
+
       <div className="green-banner-selection">
         <h2>{tituloPrincipal}</h2>
         {subTitulo && <h3>{subTitulo}</h3>}
         <div className="triangle-down"></div>
-        
-        {/* BOTÃO DÚVIDAS ATUALIZADO */}
-        {onHelpClick && (
-            <button className="btn-help-floating" onClick={handleHelpPress}>
-                <div className="help-icon">?</div>
-                <span>Dúvidas</span>
-            </button>
-        )}
       </div>
 
       {abas.length > 0 && (
@@ -100,7 +133,6 @@ export default function SelectBase({
 
       <div className="list-wrapper">
         <div className="list-scroll-box" id="tour-lista">
-          
           {dados.length > 0 ? (
             dados.map((item) => {
               const isSelected = selecionados.some((v) => v.id === item.id);
@@ -111,52 +143,8 @@ export default function SelectBase({
               );
             })
           ) : (
-            <div className="no-data">Nenhum candidato na lista.</div>
+            <div className="no-data">Nenhum resultado encontrado.</div>
           )}
-
-          {mostrarBusca && (
-            <div className="search-container" id="tour-busca">
-              <div className="search-input-box">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                <input
-                  type="text"
-                  placeholder="Pesquisar outro candidato"
-                  value={valorBusca}
-                  onChange={(e) => onChangeBusca(e.target.value)}
-                />
-              </div>
-
-              {valorBusca.trim().length > 0 && (
-                <div className="search-results-wrapper">
-                  <div className="search-results-title">Resultados da Pesquisa:</div>
-                  {buscaVazia ? (
-                    <div className="no-data-search">Não encontramos este Candidato.</div>
-                  ) : (
-                    <>
-                      {buscaNaPrincipal && dadosBusca.length === 0 && <div className="no-data-search">Este candidato já está exibido na lista acima.</div>}
-                      {dadosBusca.length > 0 && (
-                        <>
-                          {buscaNaPrincipal && <div className="search-info-msg">* Alguns resultados já estão exibidos na lista acima.</div>}
-                          {dadosBusca.map((item) => {
-                            const isSelected = selecionados.some((v) => v.id === item.id);
-                            return (
-                              <div key={item.id} className={`base-card search-result-card ${item.cardColorClass || 'card-yellow'} ${isSelected ? 'selected' : ''}`} onClick={() => handleSelect(item)}>
-                                {renderItem(item, isSelected)}
-                              </div>
-                            );
-                          })}
-                        </>
-                      )}
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-          
         </div>
       </div>
 
@@ -164,6 +152,30 @@ export default function SelectBase({
         <button className="nav-btn" onClick={onVoltar}><i className="arrow-left"></i></button>
         <button className="nav-btn" onClick={handleConfirmar}><i className="arrow-right"></i></button>
       </footer>
+
+      {/* Modal de Alerta: Candidato Mal Avaliado */}
+      <ConfirmModal
+          isOpen={modalMalAvaliado.aberto}
+          titulo="ATENÇÃO"
+          mensagem={
+              modalMalAvaliado.item?.temNotaCandidato
+              ? "Você selecionou um candidato mal avaliado. Que tal selecionar um candidato melhor avaliado?"
+              : "Você selecionou um candidato de um partido mal avaliado. Que tal selecionar um candidato de um partido melhor avaliado?"
+          }
+          textoConfirmar="SIM"
+          textoCancelar="NÃO"
+          tipo="aviso"
+          onConfirm={() => {
+              // Utilizador escolheu "SIM", vai escolher outro -> Fecha modal sem guardar a seleção
+              setModalMalAvaliado({ aberto: false, item: null });
+          }}
+          onCancel={() => {
+              // Utilizador escolheu "NÃO", não quer trocar -> Efetiva o candidato ruim
+              const itemToSelect = modalMalAvaliado.item;
+              setModalMalAvaliado({ aberto: false, item: null });
+              efetivarSelecao(itemToSelect); 
+          }}
+      />
     </div>
   );
 }
