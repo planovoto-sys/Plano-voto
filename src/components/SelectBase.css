@@ -1,4 +1,6 @@
-/* 1. LAYOUT PRINCIPAL E CONTAINERS */
+/* ==========================================================================
+   1. LAYOUT PRINCIPAL E CONTAINERS
+   ========================================================================== */
 .select-base-container {
     display: flex;
     flex-direction: column;
@@ -26,10 +28,11 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    /* Centraliza verticalmente a lista no espaço vazio */
 }
 
-/* 2. TOP NAV BAR (Pesquisa, Menu e Informações) */
+/* ==========================================================================
+   2. TOP NAV BAR E PESQUISA
+   ========================================================================== */
 .top-nav-bar {
     display: flex;
     align-items: center;
@@ -47,10 +50,11 @@
     margin: 0 15px;
 }
 
+/* Pesquisa sem borda */
 .top-search-wrapper input {
     width: 100%;
     background-color: rgba(248, 228, 100, 0.9);
-    border: 1px solid rgba(0, 0, 0, 0.05);
+    border: none;
     border-radius: 20px;
     padding: 10px 15px;
     font-size: 0.95rem;
@@ -71,10 +75,11 @@
     color: #888;
 }
 
+/* Ícone de Ajuda (Cor #504c4c) */
 .btn-help-icon {
     background: transparent;
     border: none;
-    color: var(--primary-green);
+    color: #504c4c;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -101,7 +106,9 @@
     }
 }
 
-/* 3. BANNER VERDE E TÍTULOS */
+/* ==========================================================================
+   3. BANNER VERDE E TRIÂNGULO ACHATADO
+   ========================================================================== */
 .green-banner-selection {
     background-color: var(--primary-green, #4CAF50);
     color: #f5eea9;
@@ -134,18 +141,20 @@
 .triangle-down {
     width: 0;
     height: 0;
-    border-left: 20px solid transparent;
-    border-right: 20px solid transparent;
-    border-top: 20px solid var(--primary-green, #4CAF50);
+    border-left: 25px solid transparent;
+    border-right: 25px solid transparent;
+    border-top: 12px solid var(--primary-green, #4CAF50);
     position: absolute;
-    bottom: -18px;
+    bottom: -11px;
     left: 50%;
     z-index: 1;
     transform: translateX(-50%);
     transition: border-top-color 0.3s ease;
 }
 
-/* 4. ABAS (TOGGLE) */
+/* ==========================================================================
+   4. ABAS (TOGGLE) - REELEGER / RENOVAR
+   ========================================================================== */
 .tabs-toggle-container {
     display: flex;
     justify-content: center;
@@ -158,19 +167,18 @@
     background-color: #f8e464;
     border-radius: 30px;
     width: 100%;
-    max-width: 320px;
     overflow: hidden;
     transition: background-color 0.3s ease;
 }
 
 .tab-toggle-btn {
     flex: 1;
-    padding: 10px 0;
+    padding: 14px 0;
     border: none;
     font-weight: 900;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     cursor: pointer;
-    text-transform: lowercase;
+    text-transform: uppercase;
     transition: 0.3s ease;
 }
 
@@ -184,32 +192,27 @@
     color: #555;
 }
 
-/* 5. CARDS DE CANDIDATOS E ESTADOS (EFEITO VITRAL LÍQUIDO) */
+/* ==========================================================================
+   5. LISTA E CARTÕES (80px, sem borda exterior, alinhamento à esquerda)
+   ========================================================================== */
 .list-scroll-box {
     border-radius: 16px;
-    max-height: 320px;
-    /* Reduzido para encaixar perfeitamente os cards achatados (5x 64px) */
     overflow-y: auto;
     display: flex;
     flex-direction: column;
     margin: auto 0;
-    /* Garante que fica centralizado */
-    /* Fundo da lista semitransparente para dar efeito vidro */
     background: rgba(255, 255, 255, 0.35);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.5);
+    border: none;
     overflow-x: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 .list-scroll-box::-webkit-scrollbar {
-    width: 4px;
-}
-
-.list-scroll-box::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
+    display: none;
 }
 
 .base-card {
@@ -219,9 +222,8 @@
     padding: 0 15px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    height: 64px;
-    /* Card mais achatado e elegante */
-    min-height: 64px;
+    height: 80px;
+    min-height: 80px;
     box-sizing: border-box;
 }
 
@@ -236,14 +238,17 @@
     border-bottom: none;
 }
 
-/* AMARELO (VITRAL) - Aplicado também na Home e notas medianas */
+/* ==========================================================================
+   CORES BASE DOS CARTÕES E ESTADOS DE SELEÇÃO (MAIS ESCUROS)
+   ========================================================================== */
 .base-card.card-yellow {
     background-color: rgba(248, 228, 100, 0.85);
     border-bottom: 1px solid rgba(224, 206, 90, 0.4);
 }
 
+/* Amarelo/Estado selecionado: mais escuro */
 .base-card.card-yellow.selected {
-    background-color: rgba(209, 192, 69, 0.95) !important;
+    background-color: rgba(175, 155, 35, 0.95) !important;
 }
 
 .base-card.card-yellow .badge-rank {
@@ -260,14 +265,14 @@
     stroke: var(--primary-green, #4CAF50);
 }
 
-/* VERDE (VITRAL) - Notas Acima de 7 */
 .base-card.card-green {
-    background-color: rgba(216, 238, 179, 0.85);
-    border-bottom: 1px solid rgba(196, 217, 161, 0.4);
+    background-color: #dcecb3 !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
 }
 
+/* Verde selecionado: verde musgo mais escuro */
 .base-card.card-green.selected {
-    background-color: rgba(196, 217, 161, 0.95) !important;
+    background-color: #b0cc70 !important;
 }
 
 .base-card.card-green .badge-rank,
@@ -280,14 +285,14 @@
     stroke: #4CAF50;
 }
 
-/* VERMELHO/LARANJA (VITRAL) - Notas Abaixo de 6 */
 .base-card.card-red {
-    background-color: rgba(250, 199, 154, 0.85);
-    border-bottom: 1px solid rgba(230, 180, 135, 0.4);
+    background-color: #f0cca4 !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
 }
 
+/* Vermelho/Laranja selecionado: tom de barro mais escuro */
 .base-card.card-red.selected {
-    background-color: rgba(230, 180, 135, 0.95) !important;
+    background-color: #cf9e69 !important;
 }
 
 .base-card.card-red .badge-rank,
@@ -300,7 +305,7 @@
     stroke: #ff5252;
 }
 
-/* LAYOUT INTERNO DOS CARDS */
+/* Tipografia e Alinhamento */
 .cand-item-layout {
     display: flex;
     width: 100%;
@@ -313,17 +318,19 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
+    text-align: left;
+    align-items: flex-start;
 }
 
 .cand-name {
     font-weight: 900;
-    font-size: 0.9rem;
+    font-size: 1.05rem;
     color: #1a1a1a;
 }
 
 .cand-party {
     font-weight: 600;
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     color: #666;
     text-transform: uppercase;
 }
@@ -338,9 +345,9 @@
 
 .badge-rank,
 .badge-score {
-    padding: 2px 10px;
+    padding: 4px 10px;
     border-radius: 12px;
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     font-weight: 800;
     min-width: 45px;
     text-align: center;
@@ -353,9 +360,10 @@
     margin-right: 15px;
 }
 
+/* Gráfico Circular da Lista */
 .cand-chart-right {
-    width: 42px;
-    height: 42px;
+    width: 48px;
+    height: 48px;
     flex-shrink: 0;
 }
 
@@ -378,16 +386,18 @@
 
 .percentage {
     fill: #1a1a1a;
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     font-weight: 800;
     text-anchor: middle;
 }
 
-/* 6. FOOTER DE NAVEGAÇÃO BIPARTIDO */
+/* ==========================================================================
+   6. FOOTER E NAVEGAÇÃO
+   ========================================================================== */
 .navigation-footer {
     display: flex;
     background-color: var(--primary-green);
-    margin: 0 20px 60px 20px;
+    margin: 0 20px 85px 20px;
     border-radius: 12px;
     overflow: hidden;
     transition: background-color 0.3s ease;
@@ -436,7 +446,9 @@
     transform: rotate(-45deg);
 }
 
-/* 7. UTILITÁRIOS E CLASSES DA TELA DE RESULTADO */
+/* ==========================================================================
+   7. TELA DE RESULTADO E VELOCÍMETRO
+   ========================================================================== */
 .no-data {
     text-align: center;
     padding: 40px;
@@ -459,7 +471,7 @@
 
 .state-centered-name {
     font-weight: 900;
-    font-size: 1rem;
+    font-size: 1.15rem;
     text-align: center;
     width: 100%;
     color: var(--text-dark, #1a1a1a);
@@ -480,7 +492,8 @@
 
 .resultado-subtitle-wrapper {
     text-align: center;
-    margin-top: 35px;
+    margin-top: 10px;
+    margin-bottom: 15px;
     padding: 0 20px;
 }
 
@@ -496,6 +509,7 @@
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
+/* Centralização do Termómetro */
 .gauge-wrapper-margin {
     margin-top: 20px;
 }
@@ -512,11 +526,12 @@
 .gauge-needle-svg {
     position: absolute;
     top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    pointer-events: none;
-    width: 320px;
+    left: 0;
+    width: 100%;
     height: 320px;
+    pointer-events: none;
+    display: flex;
+    justify-content: center;
 }
 
 .gauge-needle-group {
@@ -526,25 +541,26 @@
 
 .gauge-text-wrapper {
     position: absolute;
-    top: 75px;
-    left: 50%;
-    transform: translateX(-50%);
-    text-align: center;
+    top: 85px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .gauge-text-label {
     font-size: 1.2rem;
     font-weight: 900;
-    color: #000;
     line-height: 1;
 }
 
 .gauge-text-value {
     font-size: 3.5rem;
     font-weight: 900;
-    color: #000;
     line-height: 1;
     margin-top: 4px;
+    font-variant-numeric: tabular-nums;
 }
 
 .resultado-list-wrapper {
@@ -562,14 +578,14 @@
 }
 
 .res-card-cargo {
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     font-weight: 700;
     color: #666;
     text-transform: uppercase;
 }
 
 .res-card-numero {
-    font-size: 1rem;
+    font-size: 1.15rem;
     font-weight: 900;
     margin-top: 2px;
     color: #1a1a1a;
@@ -586,26 +602,20 @@
     gap: 15px;
 }
 
-.resultado-footer-pergunta {
-    text-align: center;
-    font-weight: 800;
-    font-size: 0.85rem;
-    color: #555;
-}
-
-/* Mantém o botão sincronizado com o ecrã anterior */
 .resultado-nav-footer {
-    margin: 0 20px 60px 20px;
+    margin: 0 20px 85px 20px;
 }
 
-/* 8. TEMA "RENOVAR" (Efeito Vitral Escuro) */
+/* ==========================================================================
+   8. TEMA "RENOVAR" (AZUL PROFUNDO)
+   ========================================================================== */
 .select-base-container.theme-renovar {
     background-color: #2A3B5D;
 }
 
 .select-base-container.theme-renovar .list-scroll-box {
     background: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: none;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
@@ -624,18 +634,22 @@
     border-top-color: #1F2C47;
 }
 
+/* ====== CORREÇÃO DAS ABAS DO TEMA AZUL (Fundo Branco, Inativo Azul, Ativo Azul c/ texto branco) ====== */
 .select-base-container.theme-renovar .tabs-toggle {
-    background-color: #ffffff;
+    background-color: #ffffff !important;
 }
 
 .select-base-container.theme-renovar .tab-toggle-btn.active {
-    background-color: #2A3B5D;
-    color: #ffffff;
+    background-color: #1F2C47 !important;
+    color: #ffffff !important;
 }
 
 .select-base-container.theme-renovar .tab-toggle-btn:not(.active) {
-    color: #2A3B5D;
+    background-color: transparent !important;
+    color: #1F2C47 !important;
 }
+
+/* ================================================================================================== */
 
 .select-base-container.theme-renovar .btn-help-icon {
     color: #ffffff;
@@ -646,61 +660,70 @@
     color: #2A3B5D;
 }
 
-/* Transparências no Tema Renovar */
+/* Cartões Base e Estados no Tema Azul */
 .select-base-container.theme-renovar .base-card.card-yellow {
-    background-color: rgba(161, 184, 95, 0.8);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+/* Estado selecionado no Tema Azul fica mais escuro (quase preto transparente) */
 .select-base-container.theme-renovar .base-card.card-yellow.selected {
-    background-color: rgba(161, 184, 95, 1) !important;
+    background-color: rgba(0, 0, 0, 0.35) !important;
 }
 
-.select-base-container.theme-renovar .base-card.card-green {
-    background-color: rgba(92, 164, 108, 0.8);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+.select-base-container.theme-renovar .state-centered-name {
+    color: #ffffff !important;
 }
 
-.select-base-container.theme-renovar .base-card.card-green.selected {
-    background-color: rgba(92, 164, 108, 1) !important;
-}
-
-.select-base-container.theme-renovar .base-card.card-red {
-    background-color: rgba(220, 100, 100, 0.8);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.select-base-container.theme-renovar .base-card.card-red.selected {
-    background-color: rgba(220, 100, 100, 1) !important;
-}
-
-.select-base-container.theme-renovar .cand-name,
-.select-base-container.theme-renovar .res-card-numero,
-.select-base-container.theme-renovar .res-card-nome {
+.select-base-container.theme-renovar .base-card.card-yellow .cand-name,
+.select-base-container.theme-renovar .base-card.card-yellow .res-card-numero,
+.select-base-container.theme-renovar .base-card.card-yellow .res-card-nome {
     color: #ffffff;
 }
 
-.select-base-container.theme-renovar .cand-party,
-.select-base-container.theme-renovar .res-card-cargo {
+.select-base-container.theme-renovar .base-card.card-yellow .cand-party,
+.select-base-container.theme-renovar .base-card.card-yellow .res-card-cargo {
     color: rgba(255, 255, 255, 0.8);
 }
 
-.select-base-container.theme-renovar .percentage {
+.select-base-container.theme-renovar .base-card.card-yellow .percentage {
     fill: #ffffff;
 }
 
-.select-base-container.theme-renovar .circle {
+.select-base-container.theme-renovar .base-card.card-yellow .circle {
     stroke: #ffffff;
 }
 
-.select-base-container.theme-renovar .circle-bg {
+.select-base-container.theme-renovar .base-card.card-yellow .circle-bg {
     stroke: rgba(255, 255, 255, 0.2);
 }
 
-.select-base-container.theme-renovar .badge-rank,
-.select-base-container.theme-renovar .badge-score {
+.select-base-container.theme-renovar .base-card.card-yellow .badge-rank,
+.select-base-container.theme-renovar .base-card.card-yellow .badge-score {
     background-color: rgba(255, 255, 255, 0.2);
     color: #ffffff;
+}
+
+/* Manter o texto dos cards #dcecb3 e #f0cca4 legível no tema azul */
+.base-card.card-green .cand-name,
+.base-card.card-red .cand-name,
+.base-card.card-green .res-card-numero,
+.base-card.card-red .res-card-numero,
+.base-card.card-green .res-card-nome,
+.base-card.card-red .res-card-nome {
+    color: #1a1a1a !important;
+}
+
+.base-card.card-green .cand-party,
+.base-card.card-red .cand-party,
+.base-card.card-green .res-card-cargo,
+.base-card.card-red .res-card-cargo {
+    color: #666 !important;
+}
+
+.base-card.card-green .percentage,
+.base-card.card-red .percentage {
+    fill: #1a1a1a !important;
 }
 
 .select-base-container.theme-renovar .nav-btn:not(:disabled):hover {
@@ -719,10 +742,6 @@
 .select-base-container.theme-renovar .resultado-subtitle {
     background-color: #ffffff;
     color: #2A3B5D;
-}
-
-.select-base-container.theme-renovar .resultado-footer-pergunta {
-    color: #ffffff;
 }
 
 .select-base-container.theme-renovar .nav-btn svg {

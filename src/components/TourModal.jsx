@@ -6,15 +6,14 @@ export default function TourModal({ steps, isOpen, onClose }) {
     const [targetRect, setTargetRect] = useState(null);
     const [isFadingOut, setIsFadingOut] = useState(false);
     const [isRendered, setIsRendered] = useState(false);
-    const [tooltipPos, setTooltipPos] = useState('bottom'); // Novo estado de posição
+    const [tooltipPos, setTooltipPos] = useState('bottom'); 
 
-    // Gerencia o ciclo de vida da animação de entrada e saída
     useEffect(() => {
         if (isOpen) {
             setIsRendered(true);
             setIsFadingOut(false);
             setCurrentStep(0);
-            setTooltipPos('bottom'); // Posição padrão
+            setTooltipPos('bottom'); 
         } else if (isRendered) {
             setIsFadingOut(true);
             const timer = setTimeout(() => {
@@ -25,7 +24,6 @@ export default function TourModal({ steps, isOpen, onClose }) {
         }
     }, [isOpen]);
 
-    // Calcula a posição do elemento focado e do cartão de texto
     const updatePosition = useCallback(() => {
         if (!isOpen || isFadingOut) return;
         const step = steps[currentStep];
@@ -34,7 +32,6 @@ export default function TourModal({ steps, isOpen, onClose }) {
         setTimeout(() => {
             const el = document.querySelector(step.target);
             if (el) {
-                // Rola a tela apenas o necessário
                 el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 
                 setTimeout(() => {
@@ -46,8 +43,6 @@ export default function TourModal({ steps, isOpen, onClose }) {
                         height: rect.height
                     });
 
-                    // LÓGICA INTELIGENTE: Se o elemento focado estiver na metade inferior da tela,
-                    // joga o cartão de texto para cima (e vice-versa).
                     if (rect.top > window.innerHeight / 2) {
                         setTooltipPos('top');
                     } else {
@@ -82,7 +77,6 @@ export default function TourModal({ steps, isOpen, onClose }) {
 
     return (
         <div className={`tour-overlay-container ${isFadingOut ? 'fade-out' : 'fade-in'}`}>
-            
             <div className="tour-highlight-box" style={{
                 top: targetRect ? targetRect.top - padding : '50%',
                 left: targetRect ? targetRect.left - padding : '50%',
@@ -91,7 +85,6 @@ export default function TourModal({ steps, isOpen, onClose }) {
                 opacity: targetRect ? 1 : 0
             }}></div>
 
-            {/* Cartão de Texto com posição dinâmica */}
             <div className={`tour-tooltip pos-${tooltipPos}`}>
                 <h3 className="tour-title">{step.title}</h3>
                 <div className="tour-content" dangerouslySetInnerHTML={{ __html: step.content }} />

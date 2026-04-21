@@ -19,10 +19,10 @@ export default function SelectBase({
   onVoltar,
   renderItem,
   onLimiteAtingido,
-  onHelpClick
+  onHelpClick,
+  linhasVisiveis = 5
 }) {
   const [selecionados, setSelecionados] = useState(selecaoInicial);
-  // Novo estado para controlar o aviso de nota baixa
   const [modalMalAvaliado, setModalMalAvaliado] = useState({ aberto: false, item: null });
 
   useEffect(() => {
@@ -36,7 +36,6 @@ export default function SelectBase({
       return;
     }
 
-    // Interceta a seleção se a nota final do candidato for menor que 7
     if (item.notaFinal !== undefined && item.notaFinal < 7) {
         setModalMalAvaliado({ aberto: true, item });
         return;
@@ -45,7 +44,6 @@ export default function SelectBase({
     efetivarSelecao(item);
   };
 
-  // Função isolada para concluir a adição à lista
   const efetivarSelecao = (item) => {
     if (limiteSelecao === 1) {
       setSelecionados([item]);
@@ -76,6 +74,9 @@ export default function SelectBase({
   const subTitulo = partesTitulo.slice(1).join(' ');
 
   const themeClass = abaAtiva === 'renovar' ? 'theme-renovar' : 'theme-reeleger';
+  
+  // NOVA ALTURA: Aumentámos o tamanho do card para 80px
+  const maxListHeight = linhasVisiveis * 80; 
 
   return (
     <div className={`select-base-container ${themeClass}`}>
@@ -132,7 +133,7 @@ export default function SelectBase({
       )}
 
       <div className="list-wrapper">
-        <div className="list-scroll-box" id="tour-lista">
+        <div className="list-scroll-box" id="tour-lista" style={{ maxHeight: `${maxListHeight}px` }}>
           {dados.length > 0 ? (
             dados.map((item) => {
               const isSelected = selecionados.some((v) => v.id === item.id);
@@ -153,7 +154,6 @@ export default function SelectBase({
         <button className="nav-btn" onClick={handleConfirmar}><i className="arrow-right"></i></button>
       </footer>
 
-      {/* Modal de Alerta: Candidato Mal Avaliado */}
       <ConfirmModal
           isOpen={modalMalAvaliado.aberto}
           titulo="ATENÇÃO"
@@ -166,11 +166,9 @@ export default function SelectBase({
           textoCancelar="NÃO"
           tipo="aviso"
           onConfirm={() => {
-              // Utilizador escolheu "SIM", vai escolher outro -> Fecha modal sem guardar a seleção
               setModalMalAvaliado({ aberto: false, item: null });
           }}
           onCancel={() => {
-              // Utilizador escolheu "NÃO", não quer trocar -> Efetiva o candidato ruim
               const itemToSelect = modalMalAvaliado.item;
               setModalMalAvaliado({ aberto: false, item: null });
               efetivarSelecao(itemToSelect); 

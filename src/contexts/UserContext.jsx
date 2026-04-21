@@ -16,6 +16,8 @@ export const UserProvider = ({ children }) => {
     if (!authLoading && !user) {
       setUserData(null);
       setDataLoading(false);
+      // BUG CORRIGIDO: Reseta o tema para o padrão ('reeleger') sempre que há um logoff
+      setFiltroAtivo('reeleger');
       return;
     }
 

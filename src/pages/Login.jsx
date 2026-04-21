@@ -14,15 +14,23 @@ function Login() {
   };
 
   return (
-    <div className="login-container">
-      <div className="login-content">
-        <h1 className="login-title">PLANO<br/>DE VOTO</h1>
-        <p className="login-subtitle">Faça login para continuar</p>
-        
-        <button className="btn-green btn-login" onClick={handleGoogleLogin}>
-          ENTRAR COM GOOGLE
+    <div className="login-wrapper">
+      <header className="login-header">
+        <h1>meuvoto.org</h1>
+        <div className="login-triangle-down"></div>
+      </header>
+
+      <main className="login-main">
+        <div className="video-card">
+          <button className="play-button" aria-label="Reproduzir vídeo">
+            <div className="play-icon"></div>
+          </button>
+        </div>
+
+        <button className="btn-comecar" onClick={handleGoogleLogin}>
+          COMEÇAR
         </button>
-      </div>
+      </main>
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { collection, query, where, getDocs, doc, updateDoc, increment } from 'fi
 import SelectBase from '../components/SelectBase';
 import Sidebar from '../components/Sidebar';
 import ConfirmModal from '../components/ConfirmModal';
+import TourModal from '../components/TourModal'; // IMPORTADO O TOUR MODAL
 
 const LISTA_ESTADOS = [
   { id: 'AC', nome: 'Acre', sigla: 'AC' }, { id: 'AL', nome: 'Alagoas', sigla: 'AL' },
@@ -25,24 +26,27 @@ const LISTA_ESTADOS = [
 ];
 
 export default function Home() {
-  const { user, userData, loading: userLoading } = useUser();
+  const { user, userData, loading: userLoading, filtroAtivo } = useUser();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [pendingEstado, setPendingEstado] = useState(null);
-  
   const [busca, setBusca] = useState('');
+  
+  // ESTADO PARA O TOUR NA HOME
+  const [isTourOpen, setIsTourOpen] = useState(false);
 
-  const selecaoInicial = userData?.estado 
-    ? LISTA_ESTADOS.filter(estado => estado.sigla === userData.estado)
-    : [];
+  // TEXTOS DO TOUR ESPECÍFICOS PARA A HOME (Baseados no PDF)
+  const tourSteps = [
+    { target: '#tour-busca', title: 'PESQUISA', content: 'Pesquisa o estado em que você vota.' },
+    { target: '#tour-lista', title: 'LISTA', content: 'Mostra os estados a serem selecionados.' }
+  ];
+
+  const selecaoInicial = userData?.estado ? LISTA_ESTADOS.filter(estado => estado.sigla === userData.estado) : [];
 
   const listaExibida = useMemo(() => {
     if (!busca.trim()) return LISTA_ESTADOS;
-    return LISTA_ESTADOS.filter(e => 
-      e.nome.toLowerCase().includes(busca.toLowerCase()) || 
-      e.sigla.toLowerCase().includes(busca.toLowerCase())
-    );
+    return LISTA_ESTADOS.filter(e => e.nome.toLowerCase().includes(busca.toLowerCase()) || e.sigla.toLowerCase().includes(busca.toLowerCase()));
   }, [busca]);
 
   const handleConfirmar = async (selecionados) => {
@@ -52,90 +56,49 @@ export default function Home() {
     if (userData?.estado && userData.estado !== novoEstado) {
       const escolhidos = userData.candidatos_escolhidos || {};
       const temCandidatos = escolhidos.deputado_federal || (escolhidos.senadores && escolhidos.senadores.length > 0);
-      
-      if (temCandidatos) {
-        setPendingEstado(novoEstado);
-        setModalOpen(true); 
-        return; 
-      }
+      if (temCandidatos) { setPendingEstado(novoEstado); setModalOpen(true); return; }
     }
-
     executarMudanca(novoEstado);
   };
 
   const executarMudanca = async (novoEstado) => {
-    setLoading(true);
-    setModalOpen(false);
-    
+    setLoading(true); setModalOpen(false);
     try {
       const userRef = doc(db, "users", user.uid);
-
       if (userData?.estado && userData.estado !== novoEstado) {
         const escolhidos = userData.candidatos_escolhidos || {};
         const nomesParaLimpar = [];
-        
         if (escolhidos.deputado_federal) nomesParaLimpar.push(escolhidos.deputado_federal);
-        if (escolhidos.senadores && Array.isArray(escolhidos.senadores)) {
-          nomesParaLimpar.push(...escolhidos.senadores);
-        }
-
+        if (escolhidos.senadores && Array.isArray(escolhidos.senadores)) nomesParaLimpar.push(...escolhidos.senadores);
         if (nomesParaLimpar.length > 0) {
           const q = query(collection(db, "candidatos"), where("Nome", "in", nomesParaLimpar));
           const snap = await getDocs(q);
-          
-          const promises = snap.docs.map(d => {
-            return updateDoc(doc(db, "candidatos", d.id), { votos_recebidos: increment(-1) });
-          });
+          const promises = snap.docs.map(d => updateDoc(doc(db, "candidatos", d.id), { votos_recebidos: increment(-1) }));
           await Promise.all(promises);
         }
-
-        await updateDoc(userRef, { 
-          estado: novoEstado,
-          candidatos_escolhidos: null 
-        });
+        await updateDoc(userRef, { estado: novoEstado, candidatos_escolhidos: null });
       } else {
         await updateDoc(userRef, { estado: novoEstado });
       }
-
       navigate('/escolher-deputado-federal');
-    } catch (e) {
-      console.error("Erro ao salvar estado e limpar votos: ", e);
-    } finally {
-      setLoading(false);
-    }
+    } catch (e) { console.error("Erro ao salvar estado e limpar votos: ", e); } finally { setLoading(false); }
   };
 
   return (
     <>
       <Sidebar />
+      <TourModal steps={tourSteps} isOpen={isTourOpen} onClose={() => setIsTourOpen(false)} />
+      
       <SelectBase
-        titulo="SELECIONE SEU ESTADO"
-        dados={listaExibida}
-        limiteSelecao={1}
-        selecaoInicial={selecaoInicial}
-        carregando={userLoading || loading}
-        mostrarBusca={true} 
-        valorBusca={busca}
-        onChangeBusca={setBusca}
-        onConfirmar={handleConfirmar}
-        onVoltar={() => navigate(-1)}
-        renderItem={(estado) => (
-          <div className="state-centered-name">
-            {estado.sigla}
-          </div>
-        )}
+        titulo="SELECIONE SEU ESTADO" dados={listaExibida} limiteSelecao={1} selecaoInicial={selecaoInicial}
+        carregando={userLoading || loading} mostrarBusca={true} valorBusca={busca} onChangeBusca={setBusca}
+        onConfirmar={handleConfirmar} onVoltar={() => navigate(-1)}
+        linhasVisiveis={6} 
+        abaAtiva={filtroAtivo}
+        onHelpClick={() => setIsTourOpen(true)} /* ATIVA O BOTÃO "i" NA TELA DE ESTADOS */
+        renderItem={(estado) => <div className="state-centered-name">{estado.sigla}</div>}
       />
-
-      <ConfirmModal 
-        isOpen={modalOpen}
-        titulo="MUDANÇA DE ESTADO"
-        mensagem="Ao mudar de estado, suas seleções atuais serão apagadas. Deseja continuar?"
-        textoConfirmar="SIM"
-        textoCancelar="NÃO"
-        tipo="perigo"
-        onConfirm={() => executarMudanca(pendingEstado)}
-        onCancel={() => setModalOpen(false)}
-      />
+      <ConfirmModal isOpen={modalOpen} titulo="MUDANÇA DE ESTADO" mensagem="Ao mudar de estado, suas seleções atuais serão apagadas. Deseja continuar?" textoConfirmar="SIM" textoCancelar="NÃO" tipo="perigo" onConfirm={() => executarMudanca(pendingEstado)} onCancel={() => setModalOpen(false)} />
     </>
   );
 }

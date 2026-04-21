@@ -2,31 +2,46 @@
     position: fixed;
     inset: 0;
     z-index: 99999;
-    pointer-events: auto; 
+    pointer-events: auto;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-.tour-overlay-container.fade-in { animation: fadeInTour 0.4s ease forwards; }
-.tour-overlay-container.fade-out { animation: fadeOutTour 0.4s ease forwards; }
+.tour-overlay-container.fade-in {
+    animation: fadeInTour 0.4s ease forwards;
+}
+
+.tour-overlay-container.fade-out {
+    animation: fadeOutTour 0.4s ease forwards;
+}
 
 @keyframes fadeInTour {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes fadeOutTour {
-    from { opacity: 1; }
-    to { opacity: 0; }
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
 }
 
 .tour-highlight-box {
     position: fixed;
     border-radius: 14px;
-    border: 2px solid #f8e464; 
-    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.75), 0 0 15px rgba(248, 228, 100, 0.4); 
-    pointer-events: none; 
+    border: 2px solid #f8e464;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.75), 0 0 15px rgba(248, 228, 100, 0.4);
+    pointer-events: none;
     transition: all 0.45s cubic-bezier(0.25, 0.8, 0.25, 1);
     z-index: 100000;
     background: transparent;
@@ -34,29 +49,25 @@
 
 .tour-tooltip {
     position: fixed;
-    left: 20px; 
+    left: 20px;
     right: 20px;
     background: #ffffff;
     border-radius: 18px;
     padding: 25px;
     z-index: 100001;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
-    
-    /* O SEGREDO DO DESLIZE PERFEITO */
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
     transition: top 0.5s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-/* POSIÇÃO: BASE */
 .tour-tooltip.pos-bottom {
     top: 100%;
-    bottom: auto; /* Garante que o cartão NUNCA vai esticar */
+    bottom: auto;
     transform: translateY(calc(-100% - 25px));
 }
 
-/* POSIÇÃO: TOPO */
 .tour-tooltip.pos-top {
-    top: 90px; /* Coloca logo abaixo do cabeçalho */
-    bottom: auto; /* Garante que o cartão NUNCA vai esticar */
+    top: 90px;
+    bottom: auto;
     transform: translateY(0);
 }
 
@@ -76,22 +87,71 @@
     margin-bottom: 25px;
 }
 
-.tour-content a { color: #4CAF50; font-weight: bold; text-decoration: none;}
-.tour-content b { color: #1a1a1a; font-weight: 900; }
+.tour-content a {
+    color: #4CAF50;
+    font-weight: bold;
+    text-decoration: none;
+}
 
-.tour-footer { display: flex; justify-content: space-between; align-items: center; }
+.tour-content b {
+    color: #1a1a1a;
+    font-weight: 900;
+}
 
-.tour-dots { display: flex; gap: 6px; }
-.tour-dot { width: 8px; height: 8px; border-radius: 50%; background: #e0e0e0; transition: 0.3s; }
-.tour-dot.active { background: var(--primary-green, #4CAF50); width: 22px; border-radius: 4px; }
+.tour-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 
-.tour-actions { display: flex; gap: 10px; }
+.tour-dots {
+    display: flex;
+    gap: 6px;
+}
 
-.tour-btn-sec { background: transparent; border: none; color: #888; font-weight: 800; font-size: 0.85rem; padding: 10px; cursor: pointer; text-transform: uppercase; }
-.tour-btn-sec:disabled { opacity: 0; pointer-events: none; }
+.tour-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #e0e0e0;
+    transition: 0.3s;
+}
+
+.tour-dot.active {
+    background: var(--primary-green, #4CAF50);
+    width: 22px;
+    border-radius: 4px;
+}
+
+.tour-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.tour-btn-sec {
+    background: transparent;
+    border: none;
+    color: #888;
+    font-weight: 800;
+    font-size: 0.85rem;
+    padding: 10px;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+.tour-btn-sec:disabled {
+    opacity: 0;
+    pointer-events: none;
+}
 
 .tour-btn-pri {
-    background: var(--primary-green, #4CAF50); color: #fff;
-    border: none; border-radius: 10px; padding: 10px 20px;
-    font-weight: 800; font-size: 0.85rem; cursor: pointer; text-transform: uppercase;
+    background: var(--primary-green, #4CAF50);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-weight: 800;
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-transform: uppercase;
 }

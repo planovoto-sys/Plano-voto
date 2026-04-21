@@ -23,7 +23,6 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
   const [modalTroca, setModalTroca] = useState({ aberto: false, novoCandidato: null });
   const [isTourOpen, setIsTourOpen] = useState(false);
 
-  // Textos atualizados conforme o documento de requisitos
   const tourSteps = [
     { target: '#tour-busca', title: 'PESQUISA', content: 'Pesquisa candidatos por nome ou partido.' },
     { target: '#tour-reeleger', title: 'REELEGER', content: 'Mostra candidatos que atuaram como deputado federal ou senador na última legislatura.<br/><br/><b>Obs.:</b> a classificação considera a nota do candidato no Ranking dos Políticos.' },
@@ -33,9 +32,7 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
   ];
 
   useEffect(() => {
-    if (!['reeleger', 'renovar'].includes(filtroAtivo)) {
-       setFiltroAtivo('reeleger');
-    }
+    if (!['reeleger', 'renovar'].includes(filtroAtivo)) setFiltroAtivo('reeleger');
 
     const fetchDados = async () => {
       setLoading(true);
@@ -55,32 +52,20 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
           if (temNotaCandidato) notaFinal = parseFloat(valCand);
           else if (isNotaValida(valPart)) notaFinal = parseFloat(valPart);
           
-          let cardColorClass = 'card-yellow';
-          if (notaFinal < 6) cardColorClass = 'card-red';
-          else if (notaFinal >= 7) cardColorClass = 'card-green';
+          // NOVA LÓGICA DE CORES
+          let cardColorClass = 'card-green'; // Default >= 7
+          if (notaFinal < 7) {
+              cardColorClass = 'card-red';
+          }
 
           const classificacaoOriginal = d["Classificação"] || d["Classificacao"] || "-";
           const classificacaoNum = classificacaoOriginal === "-" ? 999999 : Number(classificacaoOriginal);
           const ufLimpa = d.Estado ? d.Estado.replace(/[\s\u00A0]+/g, '') : "TODOS";
 
-          return {
-            id: doc.id,
-            ...d, 
-            ClassificacaoOficial: classificacaoOriginal, 
-            classificacaoNum: classificacaoNum, 
-            ufLimpa: ufLimpa,
-            temNotaCandidato: temNotaCandidato,
-            notaFinal: notaFinal,
-            cardColorClass: cardColorClass,
-            porcentagemCalculada: Math.min((votos / MEDIA_TESTE) * 100, 100).toFixed(0)
-          };
+          return { id: doc.id, ...d, ClassificacaoOficial: classificacaoOriginal, classificacaoNum: classificacaoNum, ufLimpa: ufLimpa, temNotaCandidato: temNotaCandidato, notaFinal: notaFinal, cardColorClass: cardColorClass, porcentagemCalculada: Math.min((votos / MEDIA_TESTE) * 100, 100).toFixed(0) };
         });
         setTodosCandidatos(lista);
-      } catch (e) { 
-        console.error(e); 
-      } finally { 
-        setLoading(false); 
-      }
+      } catch (e) { console.error(e); } finally { setLoading(false); }
     };
     fetchDados();
   }, [cargo, filtroAtivo, setFiltroAtivo]);
@@ -96,38 +81,24 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
   const candidatosFiltrados = useMemo(() => {
     const meuEstado = userData?.estado?.replace(/[\s\u00A0]+/g, '') || "SP";
     let filtrados = todosCandidatos.filter(c => c.ufLimpa === meuEstado || c.ufLimpa === "TODOS");
-    
-    if (filtroAtivo === 'renovar') {
-      filtrados.sort((a, b) => b.notaFinal - a.notaFinal);
-    } else {
-      filtrados.sort((a, b) => a.classificacaoNum - b.classificacaoNum);
-    }
+    if (filtroAtivo === 'renovar') filtrados.sort((a, b) => b.notaFinal - a.notaFinal);
+    else filtrados.sort((a, b) => a.classificacaoNum - b.classificacaoNum);
     return filtrados;
   }, [todosCandidatos, userData, filtroAtivo]);
 
   const listaExibida = useMemo(() => {
     let disponiveis = candidatosFiltrados.filter(c => parseInt(c.porcentagemCalculada) < 100);
-    
     if (filtroAtivo === 'renovar') disponiveis = disponiveis.filter(c => !c.temNotaCandidato);
     else disponiveis = disponiveis.filter(c => c.temNotaCandidato);
-
     if (busca.trim()) {
         const textoBusca = busca.toLowerCase();
-        disponiveis = disponiveis.filter(c => {
-            const nome = (c.Nome || '').toLowerCase();
-            const partido = (c.Partido || '').toLowerCase();
-            return nome.includes(textoBusca) || partido.includes(textoBusca);
-        });
+        disponiveis = disponiveis.filter(c => (c.Nome || '').toLowerCase().includes(textoBusca) || (c.Partido || '').toLowerCase().includes(textoBusca));
     }
-
     return disponiveis;
   }, [candidatosFiltrados, filtroAtivo, busca]);
 
   const handleConfirmarFinal = async (listaFinalDaTela) => {
-    if (listaFinalDaTela.length < limite) {
-      setModalAviso({ aberto: true, mensagem: cargo === "Senador" ? "Tem de selecionar 2 Senadores." : "Tem de selecionar pelo menos 1 Deputado Federal." });
-      return;
-    }
+    if (listaFinalDaTela.length < limite) { setModalAviso({ aberto: true, mensagem: cargo === "Senador" ? "Tem de selecionar 2 Senadores." : "Tem de selecionar pelo menos 1 Deputado Federal." }); return; }
     setLoading(true);
     try {
       const userRef = doc(db, "users", user.uid);
@@ -157,57 +128,26 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
     <>
       <Sidebar />
       <TourModal steps={tourSteps} isOpen={isTourOpen} onClose={() => setIsTourOpen(false)} />
-      
       <SelectBase
-        titulo={titulo}
-        dados={listaExibida}
-        limiteSelecao={limite}
-        selecaoInicial={selecionadosNaTela}
-        carregando={userLoading || loading}
-        abas={['reeleger', 'renovar']}
-        abaAtiva={filtroAtivo}
-        setAbaAtiva={setFiltroAtivo}
-        mostrarBusca={true}
-        valorBusca={busca}
-        onChangeBusca={setBusca}
-        onHelpClick={() => setIsTourOpen(true)}
-        onLimiteAtingido={(c) => setModalTroca({ aberto: true, novoCandidato: c })}
-        onConfirmar={handleConfirmarFinal}
-        onVoltar={() => navigate(cargo === "Senador" ? '/escolher-deputado-federal' : '/home')}
+        titulo={titulo} dados={listaExibida} limiteSelecao={limite} selecaoInicial={selecionadosNaTela}
+        carregando={userLoading || loading} abas={['reeleger', 'renovar']} abaAtiva={filtroAtivo} setAbaAtiva={setFiltroAtivo}
+        mostrarBusca={true} valorBusca={busca} onChangeBusca={setBusca}
+        onHelpClick={() => setIsTourOpen(true)} onLimiteAtingido={(c) => setModalTroca({ aberto: true, novoCandidato: c })}
+        onConfirmar={handleConfirmarFinal} onVoltar={() => navigate(cargo === "Senador" ? '/escolher-deputado-federal' : '/home')}
+        linhasVisiveis={5}
         renderItem={(cand) => (
           <div className="cand-item-layout">
-            <div className="cand-data-left">
-              <div className="cand-name">{cand.Nome.toUpperCase()}</div>
-              <div className="cand-party">{cand.Partido}</div>
-            </div>
-            <div className="cand-rank-score-middle">
-              <div className="badge-rank">
-                {cand.ClassificacaoOficial === "-" ? "-" : `${cand.ClassificacaoOficial}º`}
-              </div>
-              <div className="badge-score">
-                {cand.notaFinal.toFixed(2).replace('.', ',')}
-              </div>
-            </div>
+            <div className="cand-data-left"><div className="cand-name">{cand.Nome.toUpperCase()}</div><div className="cand-party">{cand.Partido}</div></div>
+            <div className="cand-rank-score-middle"><div className="badge-rank">{cand.ClassificacaoOficial === "-" ? "-" : `${cand.ClassificacaoOficial}º`}</div><div className="badge-score">{cand.notaFinal.toFixed(2).replace('.', ',')}</div></div>
             <div className="cand-divider-vertical"></div>
-            <div className="cand-chart-right tour-grafico">
-              <svg viewBox="0 0 36 36" className="circular-chart">
-                <path className="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                <path className="circle" strokeDasharray={`${cand.porcentagemCalculada}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                <text x="18" y="20.35" className="percentage">{cand.porcentagemCalculada}%</text>
-              </svg>
-            </div>
+            <div className="cand-chart-right tour-grafico"><svg viewBox="0 0 36 36" className="circular-chart"><path className="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" /><path className="circle" strokeDasharray={`${cand.porcentagemCalculada}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" /><text x="18" y="20.35" className="percentage">{cand.porcentagemCalculada}%</text></svg></div>
           </div>
         )}
       />
-
       <ConfirmModal isOpen={modalAviso.aberto} titulo="OPS!" mensagem={modalAviso.mensagem} textoConfirmar="OK, ENTENDI" mostrarCancelar={false} onConfirm={() => setModalAviso({ aberto: false, mensagem: '' })} />
       <ConfirmModal isOpen={modalTroca.aberto} titulo="LIMITE ATINGIDO" mensagem={`Apenas pode selecionar ${limite} candidatos. Qual destes deseja trocar por ${modalTroca.novoCandidato?.Nome}?`} onCancel={() => setModalTroca({ aberto: false, novoCandidato: null })}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '15px' }}>
-          {selecionadosNaTela.map(cand => (
-            <button key={cand.id} className="btn-modal btn-confirmar aviso" onClick={() => executarTroca(cand)} style={{ fontSize: '0.85rem', padding: '15px' }}>
-              TROCAR: {cand.Nome}
-            </button>
-          ))}
+          {selecionadosNaTela.map(cand => <button key={cand.id} className="btn-modal btn-confirmar aviso" onClick={() => executarTroca(cand)} style={{ fontSize: '0.85rem', padding: '15px' }}>TROCAR: {cand.Nome}</button>)}
         </div>
       </ConfirmModal>
     </>
