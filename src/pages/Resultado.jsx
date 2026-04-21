@@ -5,7 +5,7 @@ import { useUser } from '../contexts/UserContext';
 import { useNavigate } from 'react-router-dom';
 import { PieChart, Pie, Cell } from 'recharts';
 import Sidebar from '../components/Sidebar';
-import TourModal from '../components/TourModal';
+import TourModal from '../components/TourModal'; 
 
 const MEDIA_TESTE = 4;
 
@@ -29,13 +29,13 @@ const Gauge = ({ value, tema }) => {
         const timer = setTimeout(() => setCurrentAngle(targetAngle), 50);
         return () => clearTimeout(timer);
     }, [targetAngle]);
-
-    const data = [
-        { value: 1, color: '#ff3b3b' },
-        { value: 1, color: '#ff9800' },
-        { value: 1, color: '#ffeb3b' },
-        { value: 1, color: '#8bc34a' },
-        { value: 1, color: '#4caf50' }
+    
+    const data = [ 
+        { value: 1, color: '#ff3b3b' }, 
+        { value: 1, color: '#ff9800' }, 
+        { value: 1, color: '#ffeb3b' }, 
+        { value: 1, color: '#8bc34a' }, 
+        { value: 1, color: '#4caf50' } 
     ];
 
     const colorMode = tema === 'renovar' ? '#ffffff' : '#111111';
@@ -43,7 +43,8 @@ const Gauge = ({ value, tema }) => {
     return (
         <div className="gauge-container" id="tour-gauge">
             <PieChart width={320} height={320}>
-                <Pie data={data} cx={160} cy={150} startAngle={180} endAngle={0} innerRadius={90} outerRadius={130} dataKey="value" stroke="none" isAnimationActive={true} animationDuration={1500} animationEasing="ease" >
+                {/* innerRadius alterado para 102 para deixar o arco cerca de 30% mais fino */}
+                <Pie data={data} cx={160} cy={150} startAngle={180} endAngle={0} innerRadius={102} outerRadius={130} dataKey="value" stroke="none" isAnimationActive={true} animationDuration={1500} animationEasing="ease" >
                     {data.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
                 </Pie>
             </PieChart>
@@ -66,7 +67,7 @@ export default function Resultado() {
     const [candidatosCompletos, setCandidatosCompletos] = useState([]);
     const [media, setMedia] = useState(0);
     const [loading, setLoading] = useState(true);
-    const [isTourOpen, setIsTourOpen] = useState(false);
+    const [isTourOpen, setIsTourOpen] = useState(false); 
 
     const tourSteps = [
         { target: '#tour-gauge', title: 'NOTA', content: 'Mostra a nota do seu voto.<br/><br/><b>Obs.:</b> considera a média das notas dos candidatos selecionados.' },
@@ -100,10 +101,10 @@ export default function Resultado() {
 
                     const votos = d.votos_recebidos || 0; const porcentagem = (votos / MEDIA_TESTE) * 100;
                     soma += notaFinal;
-
+                    
                     let cardColorClass = 'card-green';
                     if (notaFinal < 7) {
-                        cardColorClass = 'card-red';
+                        cardColorClass = 'card-red'; 
                     }
 
                     lista.push({ id: doc.id, ...d, ClassificacaoOficial: d["Classificação"] || d["Classificacao"] || "-", notaFinal: notaFinal, cardColorClass: cardColorClass, porcentagemCalculada: Math.min(porcentagem, 100).toFixed(0) });
@@ -119,7 +120,6 @@ export default function Resultado() {
     if (loading) return <div className="loading">CARREGANDO...</div>;
 
     let config = {};
-    // Removida a "pergunta" do objeto de configurações
     if (media >= 7) config = { titulo: "PARABÉNS!", subtitulo: "SEU VOTO MELHORA O CONGRESSO" };
     else if (media >= 6) config = { titulo: "NA TRAVE!!!", subtitulo: "SEU VOTO NÃO MELHORA O CONGRESSO" };
     else config = { titulo: "BOLA FORA!!!", subtitulo: "SEU VOTO PIORA O CONGRESSO" };
@@ -134,11 +134,8 @@ export default function Resultado() {
             <div className="top-nav-bar"><div className="nav-spacer"></div><div className="top-search-wrapper"><input type="text" value="plano-voto.vercel.app" disabled={true} /></div><div className="nav-action-right"><button className="btn-help-icon" onClick={handleHelpPress}><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path><line x1="12" y1="8" x2="12" y2="8"></line><line x1="12" y1="12" x2="12" y2="16"></line></svg></button></div></div>
             <div className="green-banner-selection banner-resultado"><h2>{config.titulo}</h2><div className="triangle-down"></div></div>
 
-            {/* O SUBTÍTULO FOI MOVIDO DAQUI PARA BAIXO DO GAUGE */}
-
             <div className="gauge-wrapper-margin"><Gauge value={media} tema={filtroAtivo} /></div>
 
-            {/* NOVO LOCAL DO SUBTÍTULO (Entre o Velocímetro e a Lista) */}
             <div className="resultado-subtitle-wrapper"><div className="resultado-subtitle">{config.subtitulo}</div></div>
 
             <div className="list-wrapper resultado-list-wrapper"><div className="list-scroll-box resultado-scroll-box" id="tour-lista-resultado">
@@ -147,7 +144,6 @@ export default function Resultado() {
                 ))}
             </div></div>
 
-            {/* REMOVIDA A PERGUNTA ANTES DO BOTÃO */}
             <div className="resultado-footer-wrapper" id="tour-footer-resultado">
                 <footer className="navigation-footer resultado-nav-footer"><button className="nav-btn" onClick={() => navigate(-1)} style={{ borderRight: media >= 7 ? '1px solid rgba(248, 228, 100, 0.4)' : 'none' }}><i className="arrow-left"></i></button>{media >= 7 && (<button className="nav-btn" onClick={() => alert("Link copiado para a área de transferência!")}><ShareIcon /></button>)}</footer>
             </div>

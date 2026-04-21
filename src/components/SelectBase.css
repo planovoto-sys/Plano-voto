@@ -1,4 +1,32 @@
 /* ==========================================================================
+   TRANSIÇÃO GLOBAL DE TEMA SUAVE EM TODA A APLICAÇÃO
+   ========================================================================== */
+.select-base-container,
+.green-banner-selection,
+.nav-btn,
+.triangle-down,
+.top-search-wrapper input,
+.base-card,
+.cand-name,
+.res-card-numero,
+.res-card-nome,
+.cand-party,
+.res-card-cargo,
+.percentage,
+.circle,
+.circle-bg,
+.badge-rank,
+.badge-score,
+.resultado-subtitle,
+.state-centered-name {
+    /* Tempo de 0.7s garante uma transição perceptível e fluida */
+    transition: background-color 0.7s ease-in-out, 
+                color 0.7s ease-in-out, 
+                border-color 0.7s ease-in-out, 
+                stroke 0.7s ease-in-out, 
+                fill 0.7s ease-in-out;
+}
+/* ==========================================================================
    1. LAYOUT PRINCIPAL E CONTAINERS
    ========================================================================== */
 .select-base-container {
@@ -6,7 +34,6 @@
     flex-direction: column;
     height: 100vh;
     background-color: transparent;
-    transition: background-color 0.3s ease;
 }
 
 .top-nav-bar,
@@ -50,7 +77,6 @@
     margin: 0 15px;
 }
 
-/* Pesquisa sem borda */
 .top-search-wrapper input {
     width: 100%;
     background-color: rgba(248, 228, 100, 0.9);
@@ -62,7 +88,6 @@
     color: #555;
     text-align: center;
     outline: none;
-    transition: all 0.3s ease;
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
@@ -75,7 +100,6 @@
     color: #888;
 }
 
-/* Ícone de Ajuda (Cor #504c4c) */
 .btn-help-icon {
     background: transparent;
     border: none;
@@ -84,7 +108,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.2s ease;
     outline: none;
 }
 
@@ -117,7 +140,6 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .green-banner-selection h2 {
@@ -149,11 +171,10 @@
     left: 50%;
     z-index: 1;
     transform: translateX(-50%);
-    transition: border-top-color 0.3s ease;
 }
 
 /* ==========================================================================
-   4. ABAS (TOGGLE) - REELEGER / RENOVAR
+   4. NOVO SISTEMA SLIDER (TOGGLE) - REELEGER / RENOVAR
    ========================================================================== */
 .tabs-toggle-container {
     display: flex;
@@ -163,12 +184,32 @@
 }
 
 .tabs-toggle {
+    position: relative;
     display: flex;
     background-color: #f8e464;
     border-radius: 30px;
     width: 100%;
     overflow: hidden;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.5s ease;
+    /* Transição de cor de fundo do container */
+}
+
+/* Indicador Deslizante Animado */
+.tab-active-indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 50%;
+    background-color: var(--primary-green);
+    border-radius: 30px;
+    /* Arredondamento completo */
+    transition: transform 0.45s cubic-bezier(0.25, 0.8, 0.25, 1), background-color 0.5s ease;
+    z-index: 1;
+}
+
+.tab-active-indicator.right {
+    transform: translateX(100%);
 }
 
 .tab-toggle-btn {
@@ -179,21 +220,23 @@
     font-size: 0.95rem;
     cursor: pointer;
     text-transform: uppercase;
-    transition: 0.3s ease;
+    background: transparent !important;
+    /* Força o botão a não ter fundo nativo */
+    z-index: 2;
+    /* Fica acima do indicador deslizante */
+    transition: color 0.4s ease;
 }
 
 .tab-toggle-btn.active {
-    background-color: var(--primary-green);
     color: #fff;
 }
 
 .tab-toggle-btn:not(.active) {
-    background-color: transparent;
     color: #555;
 }
 
 /* ==========================================================================
-   5. LISTA E CARTÕES (80px, sem borda exterior, alinhamento à esquerda)
+   5. LISTA E CARTÕES (80px)
    ========================================================================== */
 .list-scroll-box {
     border-radius: 16px;
@@ -221,7 +264,6 @@
     align-items: center;
     padding: 0 15px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
     height: 80px;
     min-height: 80px;
     box-sizing: border-box;
@@ -238,15 +280,12 @@
     border-bottom: none;
 }
 
-/* ==========================================================================
-   CORES BASE DOS CARTÕES E ESTADOS DE SELEÇÃO (MAIS ESCUROS)
-   ========================================================================== */
+/* Cores Base dos Cartões */
 .base-card.card-yellow {
     background-color: rgba(248, 228, 100, 0.85);
     border-bottom: 1px solid rgba(224, 206, 90, 0.4);
 }
 
-/* Amarelo/Estado selecionado: mais escuro */
 .base-card.card-yellow.selected {
     background-color: rgba(175, 155, 35, 0.95) !important;
 }
@@ -270,7 +309,6 @@
     border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
 }
 
-/* Verde selecionado: verde musgo mais escuro */
 .base-card.card-green.selected {
     background-color: #b0cc70 !important;
 }
@@ -290,7 +328,6 @@
     border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
 }
 
-/* Vermelho/Laranja selecionado: tom de barro mais escuro */
 .base-card.card-red.selected {
     background-color: #cf9e69 !important;
 }
@@ -607,7 +644,7 @@
 }
 
 /* ==========================================================================
-   8. TEMA "RENOVAR" (AZUL PROFUNDO)
+   8. TEMA "RENOVAR" (AZUL PROFUNDO) C/ TRANSIÇÕES
    ========================================================================== */
 .select-base-container.theme-renovar {
     background-color: #2A3B5D;
@@ -634,22 +671,27 @@
     border-top-color: #1F2C47;
 }
 
-/* ====== CORREÇÃO DAS ABAS DO TEMA AZUL (Fundo Branco, Inativo Azul, Ativo Azul c/ texto branco) ====== */
+/* ====== REGRAS DO SLIDER NO TEMA AZUL ====== */
 .select-base-container.theme-renovar .tabs-toggle {
+    background-color: #1F2C47 !important;
+    /* Muda o fundo do contentor para branco */
+}
+
+.select-base-container.theme-renovar .tab-active-indicator {
     background-color: #ffffff !important;
+    /* Transforma o fundo deslizante em azul escuro */
 }
 
 .select-base-container.theme-renovar .tab-toggle-btn.active {
-    background-color: #1F2C47 !important;
-    color: #ffffff !important;
-}
-
-.select-base-container.theme-renovar .tab-toggle-btn:not(.active) {
-    background-color: transparent !important;
     color: #1F2C47 !important;
 }
 
-/* ================================================================================================== */
+.select-base-container.theme-renovar .tab-toggle-btn:not(.active) {
+    color: #fdfdff !important;
+    /* Os inativos ganham cor azul */
+}
+
+/* ================================================= */
 
 .select-base-container.theme-renovar .btn-help-icon {
     color: #ffffff;
@@ -666,7 +708,6 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* Estado selecionado no Tema Azul fica mais escuro (quase preto transparente) */
 .select-base-container.theme-renovar .base-card.card-yellow.selected {
     background-color: rgba(0, 0, 0, 0.35) !important;
 }

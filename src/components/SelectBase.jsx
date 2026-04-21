@@ -75,7 +75,7 @@ export default function SelectBase({
 
   const themeClass = abaAtiva === 'renovar' ? 'theme-renovar' : 'theme-reeleger';
   
-  // NOVA ALTURA: Aumentámos o tamanho do card para 80px
+  // Altura dinâmica baseada na prop linhasVisiveis
   const maxListHeight = linhasVisiveis * 80; 
 
   return (
@@ -118,6 +118,9 @@ export default function SelectBase({
       {abas.length > 0 && (
         <div className="tabs-toggle-container">
           <div className="tabs-toggle">
+            {/* O INDICADOR QUE DESLIZA COM ANIMAÇÃO */}
+            <div className={`tab-active-indicator ${abaAtiva === 'renovar' ? 'right' : 'left'}`}></div>
+            
             {abas.map((aba) => (
               <button 
                 key={aba} 
