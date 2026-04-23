@@ -1,11 +1,13 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUser } from '../contexts/UserContext';
+import { useUser } from '../contexts/useUser';
 import { db } from '../services/firebaseConfig';
-import { collection, query, where, getDocs, doc, updateDoc, increment } from 'firebase/firestore';
+import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { clearBallotDraft, clearVoteReceipt, hasBallotSelections } from '../services/votingService';
 import SelectBase from '../components/SelectBase';
 import Sidebar from '../components/Sidebar';
 import ConfirmModal from '../components/ConfirmModal';
+import TourModal from '../components/TourModal'; // IMPORTADO O TOUR MODAL
 
 const LISTA_ESTADOS = [
   { id: 'AC', nome: 'Acre', sigla: 'AC' }, { id: 'AL', nome: 'Alagoas', sigla: 'AL' },
@@ -24,25 +26,50 @@ const LISTA_ESTADOS = [
   { id: 'TO', nome: 'Tocantins', sigla: 'TO' }
 ];
 
+const normalizarBusca = (valor) => (
+  valor
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+);
+
 export default function Home() {
-  const { user, userData, loading: userLoading } = useUser();
+  const { user, userData, userEligibility, loading: userLoading, filtroAtivo } = useUser();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [pendingEstado, setPendingEstado] = useState(null);
-  
   const [busca, setBusca] = useState('');
+  
+  // ESTADO PARA O TOUR NA HOME
+  const [isTourOpen, setIsTourOpen] = useState(false);
 
-  const selecaoInicial = userData?.estado 
-    ? LISTA_ESTADOS.filter(estado => estado.sigla === userData.estado)
-    : [];
+  useEffect(() => {
+    if (userEligibility?.has_voted) {
+      navigate('/finalizacao', { replace: true });
+    }
+  }, [userEligibility?.has_voted, navigate]);
+
+  // TEXTOS DO TOUR ESPECÍFICOS PARA A HOME (Baseados no PDF)
+  const tourSteps = [
+    { target: '#tour-busca', title: 'PESQUISA', content: 'Pesquisa o estado em que você vota.' },
+    { target: '#tour-lista', title: 'LISTA', content: 'Mostra os estados a serem selecionados.' }
+  ];
+
+  const selecaoInicial = userData?.estado ? LISTA_ESTADOS.filter(estado => estado.sigla === userData.estado) : [];
 
   const listaExibida = useMemo(() => {
-    if (!busca.trim()) return LISTA_ESTADOS;
-    return LISTA_ESTADOS.filter(e => 
-      e.nome.toLowerCase().includes(busca.toLowerCase()) || 
-      e.sigla.toLowerCase().includes(busca.toLowerCase())
-    );
+    const termo = normalizarBusca(busca);
+    if (!termo) return LISTA_ESTADOS;
+
+    return LISTA_ESTADOS.filter((estado) => {
+      const nome = normalizarBusca(estado.nome);
+      const sigla = normalizarBusca(estado.sigla);
+      const nomeCompleto = normalizarBusca(`${estado.nome} ${estado.sigla}`);
+
+      return nome.includes(termo) || sigla.includes(termo) || nomeCompleto.includes(termo);
+    });
   }, [busca]);
 
   const handleConfirmar = async (selecionados) => {
@@ -50,92 +77,50 @@ export default function Home() {
     const novoEstado = selecionados[0].sigla;
 
     if (userData?.estado && userData.estado !== novoEstado) {
-      const escolhidos = userData.candidatos_escolhidos || {};
-      const temCandidatos = escolhidos.deputado_federal || (escolhidos.senadores && escolhidos.senadores.length > 0);
-      
-      if (temCandidatos) {
+      if (hasBallotSelections(user.uid)) {
         setPendingEstado(novoEstado);
-        setModalOpen(true); 
-        return; 
+        setModalOpen(true);
+        return;
       }
     }
-
     executarMudanca(novoEstado);
   };
 
   const executarMudanca = async (novoEstado) => {
-    setLoading(true);
-    setModalOpen(false);
-    
+    setLoading(true); setModalOpen(false);
     try {
       const userRef = doc(db, "users", user.uid);
-
       if (userData?.estado && userData.estado !== novoEstado) {
-        const escolhidos = userData.candidatos_escolhidos || {};
-        const nomesParaLimpar = [];
-        
-        if (escolhidos.deputado_federal) nomesParaLimpar.push(escolhidos.deputado_federal);
-        if (escolhidos.senadores && Array.isArray(escolhidos.senadores)) {
-          nomesParaLimpar.push(...escolhidos.senadores);
-        }
-
-        if (nomesParaLimpar.length > 0) {
-          const q = query(collection(db, "candidatos"), where("Nome", "in", nomesParaLimpar));
-          const snap = await getDocs(q);
-          
-          const promises = snap.docs.map(d => {
-            return updateDoc(doc(db, "candidatos", d.id), { votos_recebidos: increment(-1) });
-          });
-          await Promise.all(promises);
-        }
-
-        await updateDoc(userRef, { 
-          estado: novoEstado,
-          candidatos_escolhidos: null 
-        });
+        clearBallotDraft(user.uid);
+        clearVoteReceipt(user.uid);
+        await updateDoc(userRef, { estado: novoEstado, updated_at: serverTimestamp() });
       } else {
-        await updateDoc(userRef, { estado: novoEstado });
+        await updateDoc(userRef, { estado: novoEstado, updated_at: serverTimestamp() });
       }
-
       navigate('/escolher-deputado-federal');
-    } catch (e) {
-      console.error("Erro ao salvar estado e limpar votos: ", e);
-    } finally {
-      setLoading(false);
-    }
+    } catch (e) { console.error("Erro ao salvar estado: ", e); } finally { setLoading(false); }
   };
 
   return (
     <>
       <Sidebar />
+      <TourModal steps={tourSteps} isOpen={isTourOpen} onClose={() => setIsTourOpen(false)} />
+      
       <SelectBase
-        titulo="SELECIONE SEU ESTADO"
-        dados={listaExibida}
-        limiteSelecao={1}
-        selecaoInicial={selecaoInicial}
-        carregando={userLoading || loading}
-        mostrarBusca={true} 
-        valorBusca={busca}
-        onChangeBusca={setBusca}
-        onConfirmar={handleConfirmar}
-        onVoltar={() => navigate(-1)}
+        titulo="SELECIONE SEU ESTADO" dados={listaExibida} limiteSelecao={1} selecaoInicial={selecaoInicial}
+        carregando={userLoading || loading} mostrarBusca={true} valorBusca={busca} onChangeBusca={setBusca}
+        onConfirmar={handleConfirmar} onVoltar={() => navigate(-1)}
+        linhasVisiveis={6} 
+        abaAtiva={filtroAtivo}
+        onHelpClick={() => setIsTourOpen(true)} /* ATIVA O BOTÃO "i" NA TELA DE ESTADOS */
         renderItem={(estado) => (
           <div className="state-centered-name">
-            {estado.sigla}
+            <span className="state-sigla">{estado.sigla}</span>
+            <span className="state-full-name">{estado.nome}</span>
           </div>
         )}
       />
-
-      <ConfirmModal 
-        isOpen={modalOpen}
-        titulo="MUDANÇA DE ESTADO"
-        mensagem="Ao mudar de estado, suas seleções atuais serão apagadas. Deseja continuar?"
-        textoConfirmar="SIM"
-        textoCancelar="NÃO"
-        tipo="perigo"
-        onConfirm={() => executarMudanca(pendingEstado)}
-        onCancel={() => setModalOpen(false)}
-      />
+      <ConfirmModal isOpen={modalOpen} titulo="MUDANÇA DE ESTADO" mensagem="Ao mudar de estado, suas seleções atuais serão apagadas. Deseja continuar?" textoConfirmar="SIM" textoCancelar="NÃO" tipo="perigo" onConfirm={() => executarMudanca(pendingEstado)} onCancel={() => setModalOpen(false)} />
     </>
   );
 }
