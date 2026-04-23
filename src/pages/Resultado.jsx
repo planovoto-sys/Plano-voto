@@ -185,7 +185,7 @@ export default function Resultado() {
     if (submissionError && candidatosCompletos.length === 0) return <div className="loading">{submissionError}</div>;
 
     let config = {};
-    if (media >= 7) config = { titulo: "PARABÉNS!", subtitulo: "SEU VOTO MELHORA O CONGRESSO" };
+    if (media >= 7) config = { titulo: "GoLAÇO!!!", subtitulo: "SEU VOTO MELHORA O CONGRESSO" };
     else if (media >= 6) config = { titulo: "NA TRAVE!!!", subtitulo: "SEU VOTO NÃO MELHORA O CONGRESSO" };
     else config = { titulo: "BOLA FORA!!!", subtitulo: "SEU VOTO PIORA O CONGRESSO" };
 
