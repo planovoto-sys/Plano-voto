@@ -34,6 +34,10 @@
     flex-direction: column;
     height: 100vh;
     height: 100svh;
+    height: 100dvh;
+    min-height: 100vh;
+    min-height: 100svh;
+    min-height: 100dvh;
     background-color: transparent;
     position: relative;
     overflow: hidden;
@@ -57,12 +61,17 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
+    min-height: 0;
 }
 
 .select-base-container.has-tabs .list-wrapper {
     justify-content: flex-start;
     padding-top: 0;
+}
+
+.select-base-container.no-tabs .list-wrapper {
+    padding-top: clamp(38px, 5.6dvh, 58px);
 }
 
 /* ==========================================================================
@@ -238,7 +247,7 @@
 .tabs-toggle-container {
     display: flex;
     justify-content: center;
-    margin: 46px 0 24px 0;
+    margin: 46px 0 30px 0;
     padding: 0 var(--content-gutter);
 }
 
@@ -310,12 +319,21 @@
     display: flex;
     flex-direction: column;
     margin: 0;
+    width: 100%;
     background: transparent;
     box-shadow: none;
     border: none;
     overflow-x: hidden;
     scrollbar-width: none;
     -ms-overflow-style: none;
+    flex: 0 1 auto;
+    align-self: stretch;
+}
+
+.select-base-container:not(.resultado-scrollable) .list-scroll-box {
+    min-height: min(var(--list-max-height), 100%);
+    height: min(var(--list-max-height), 100%);
+    max-height: min(var(--list-max-height), 100%);
 }
 
 .list-scroll-box::-webkit-scrollbar {
@@ -516,10 +534,19 @@
 .navigation-footer {
     display: flex;
     background-color: var(--primary-green);
-    margin: 0 var(--content-gutter) 48px var(--content-gutter);
+    margin: clamp(24px, 3.8dvh, 42px) var(--content-gutter) clamp(20px, 3.8dvh, 40px) var(--content-gutter);
     border-radius: var(--panel-radius);
     overflow: hidden;
     transition: background-color 0.3s ease;
+    flex-shrink: 0;
+}
+
+.navigation-footer.only-forward .nav-btn {
+    width: 100%;
+}
+
+.navigation-footer.only-forward .nav-btn:first-child {
+    border-right: none;
 }
 
 .nav-btn {
@@ -589,6 +616,7 @@
     align-items: center;
     height: 100vh;
     height: 100svh;
+    height: 100dvh;
     font-weight: 900;
     color: var(--primary-green);
     background-color: var(--bg-yellow);
@@ -609,23 +637,32 @@
 }
 
 .resultado-scrollable {
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100svh;
+    height: 100dvh;
+    min-height: 100vh;
+    min-height: 100svh;
+    min-height: 100dvh;
+    overflow: hidden;
     overflow-x: hidden;
 }
 
 .banner-resultado {
     padding: 0 20px;
+    min-height: clamp(80px, 11.5dvh, 92px);
 }
 
 .banner-resultado h2 {
-    font-size: 2.25rem;
-    letter-spacing: 8px;
+    font-size: clamp(1.7rem, 4.6dvh, 2.25rem);
+    letter-spacing: clamp(5px, 1.4vw, 8px);
 }
 
 .resultado-subtitle-wrapper {
     text-align: center;
-    margin-top: 16px;
-    margin-bottom: 38px;
+    margin-top: clamp(10px, 1.8dvh, 16px);
+    margin-bottom: clamp(18px, 3dvh, 30px);
     padding: 0 var(--content-gutter);
 }
 
@@ -644,13 +681,13 @@
 
 /* Centralização do Termómetro */
 .gauge-wrapper-margin {
-    margin-top: 20px;
+    margin-top: clamp(4px, 1.4dvh, 12px);
 }
 
 .gauge-container {
     position: relative;
     width: 100%;
-    height: 170px;
+    height: clamp(116px, 18dvh, 162px);
     display: flex;
     justify-content: center;
     overflow: hidden;
@@ -674,7 +711,7 @@
 
 .gauge-text-wrapper {
     position: absolute;
-    top: 85px;
+    top: clamp(62px, 9.3dvh, 82px);
     left: 0;
     width: 100%;
     display: flex;
@@ -683,13 +720,13 @@
 }
 
 .gauge-text-label {
-    font-size: 1.2rem;
+    font-size: clamp(0.95rem, 1.8dvh, 1.2rem);
     font-weight: 900;
     line-height: 1;
 }
 
 .gauge-text-value {
-    font-size: 3.5rem;
+    font-size: clamp(2.2rem, 5.2dvh, 3.3rem);
     font-weight: 900;
     line-height: 1;
     margin-top: 4px;
@@ -697,13 +734,20 @@
 }
 
 .resultado-list-wrapper {
-    flex: none;
-    padding-bottom: 10px;
+    flex: 1 1 auto;
+    min-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
     margin-top: 0;
+    justify-content: flex-start;
 }
 
 .resultado-scroll-box {
-    overflow: visible;
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+    overflow-y: auto;
+    overflow-x: hidden;
     background: transparent;
     backdrop-filter: none;
     border: none;
@@ -733,14 +777,24 @@
 }
 
 .resultado-footer-wrapper {
-    margin-top: auto;
+    margin-top: clamp(8px, 1.2dvh, 14px);
     display: flex;
     flex-direction: column;
     gap: 15px;
+    flex-shrink: 0;
 }
 
 .resultado-nav-footer {
-    margin: 0 var(--content-gutter) 48px var(--content-gutter);
+    margin: 0 var(--content-gutter) clamp(12px, 2.2dvh, 22px) var(--content-gutter);
+}
+
+.resultado-scrollable .base-card {
+    height: clamp(72px, 9.4dvh, 80px);
+    min-height: clamp(72px, 9.4dvh, 80px);
+}
+
+.resultado-scrollable .cand-divider-vertical {
+    height: clamp(72px, 9.4dvh, 80px);
 }
 
 /* ==========================================================================
@@ -1011,6 +1065,11 @@
         border-radius: 0;
     }
 
+    .select-base-container:not(.resultado-scrollable) .list-scroll-box {
+        min-height: 0;
+        height: auto;
+    }
+
     .select-base-container.has-tabs .list-scroll-box {
         grid-template-columns: 1fr;
     }
@@ -1063,7 +1122,7 @@
     .resultado-nav-footer {
         width: min(100%, 280px);
         max-width: 280px;
-        margin-top: 34px;
+        margin-top: clamp(20px, 2.8dvh, 34px);
         margin-left: auto;
         margin-right: calc((100% - var(--layout-max-width)) / 2);
         margin-bottom: 56px;
@@ -1086,6 +1145,76 @@
     .arrow-right {
         border-width: 0 6px 6px 0;
         padding: 10px;
+    }
+}
+
+@media (max-height: 760px) {
+    .top-nav-bar {
+        min-height: clamp(78px, 10dvh, 92px);
+        padding-top: clamp(14px, 2dvh, 18px);
+        padding-bottom: clamp(12px, 1.8dvh, 16px);
+    }
+
+    .select-base-container.no-tabs .list-wrapper {
+        padding-top: clamp(28px, 4.2dvh, 38px);
+    }
+
+    .navigation-footer {
+        margin-top: clamp(18px, 2.8dvh, 24px);
+        margin-bottom: clamp(16px, 2.8dvh, 24px);
+    }
+
+    .banner-resultado {
+        min-height: clamp(74px, 10.8dvh, 84px);
+    }
+
+    .banner-resultado h2 {
+        font-size: clamp(1.45rem, 4dvh, 1.75rem);
+        letter-spacing: clamp(4px, 1vw, 6px);
+    }
+
+    .gauge-container {
+        height: clamp(106px, 16dvh, 136px);
+    }
+
+    .gauge-text-wrapper {
+        top: clamp(56px, 8.4dvh, 68px);
+    }
+
+    .gauge-text-label {
+        font-size: clamp(0.82rem, 1.6dvh, 0.95rem);
+    }
+
+    .gauge-text-value {
+        font-size: clamp(1.95rem, 4.6dvh, 2.65rem);
+    }
+
+    .resultado-subtitle-wrapper {
+        margin-top: 8px;
+        margin-bottom: 14px;
+    }
+
+    .resultado-subtitle {
+        font-size: 0.74rem;
+        letter-spacing: 1.6px;
+    }
+
+    .resultado-footer-wrapper {
+        margin-top: 6px;
+    }
+
+    .resultado-scrollable .base-card {
+        height: 72px;
+        min-height: 72px;
+    }
+
+    .resultado-scrollable .cand-divider-vertical {
+        height: 72px;
+    }
+
+    .resultado-scrollable .cand-chart-right {
+        width: 54px;
+        height: 54px;
     }
 }
 
@@ -1116,9 +1245,14 @@
         grid-template-rows: auto auto auto 1fr auto;
         column-gap: 48px;
         align-items: start;
+        height: 100vh;
+        height: 100svh;
+        height: 100dvh;
         min-height: 100vh;
         min-height: 100svh;
-        padding-bottom: 48px;
+        min-height: 100dvh;
+        padding-bottom: 0;
+        overflow: hidden;
     }
 
     .resultado-scrollable .top-nav-bar,
@@ -1165,11 +1299,17 @@
     .resultado-scrollable .resultado-list-wrapper {
         grid-row: 4;
         padding-bottom: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
     }
 
     .resultado-scrollable .resultado-scroll-box {
         grid-template-columns: 1fr;
         gap: 10px;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
     }
 
     .resultado-scrollable .resultado-footer-wrapper {
@@ -1186,6 +1326,6 @@
         max-width: 420px;
         margin-left: auto;
         margin-right: auto;
-        margin-bottom: 0;
+        margin-bottom: clamp(8px, 1.4dvh, 16px);
     }
 }

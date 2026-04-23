@@ -22,7 +22,8 @@ export default function SelectBase({
   renderItem,
   onLimiteAtingido,
   onHelpClick,
-  linhasVisiveis = 5
+  linhasVisiveis = 5,
+  mostrarBotaoVoltar = true
 }) {
   const [selecionados, setSelecionados] = useState(selecaoInicial);
   const [modalMalAvaliado, setModalMalAvaliado] = useState({ aberto: false, item: null });
@@ -91,6 +92,7 @@ export default function SelectBase({
   const themeClass = abaAtiva === 'renovar' ? 'theme-renovar' : 'theme-reeleger';
   const layoutClass = abas.length > 0 ? 'has-tabs' : 'no-tabs';
   const canClearBusca = mostrarBusca && textoBuscaFixo === null && valorBusca.trim().length > 0;
+  const showBackButton = mostrarBotaoVoltar && typeof onVoltar === 'function';
   
   // Altura dinâmica baseada na prop linhasVisiveis
   const maxListHeight = `${linhasVisiveis * 80}px`;
@@ -109,6 +111,10 @@ export default function SelectBase({
               value={textoBuscaFixo !== null ? textoBuscaFixo : valorBusca}
               onChange={(e) => onChangeBusca(e.target.value)}
               disabled={textoBuscaFixo !== null}
+              aria-label="Pesquisar na lista"
+              autoComplete="off"
+              inputMode="search"
+              spellCheck={false}
             />
             {canClearBusca && (
               <button className="btn-clear-search" type="button" onClick={handleClearBusca} aria-label="Limpar pesquisa">
@@ -172,8 +178,10 @@ export default function SelectBase({
         </div>
       </div>
 
-      <footer className="navigation-footer">
-        <button className="nav-btn" type="button" onClick={onVoltar} aria-label="Voltar"><i className="arrow-left"></i></button>
+      <footer className={`navigation-footer ${showBackButton ? '' : 'only-forward'}`}>
+        {showBackButton && (
+          <button className="nav-btn" type="button" onClick={onVoltar} aria-label="Voltar"><i className="arrow-left"></i></button>
+        )}
         <button className="nav-btn" type="button" onClick={handleConfirmar} aria-label="Avancar"><i className="arrow-right"></i></button>
       </footer>
 

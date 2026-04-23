@@ -181,8 +181,8 @@ export default function Home() {
       <SelectBase
         titulo="SELECIONE SEU ESTADO" dados={listaExibida} limiteSelecao={1} selecaoInicial={selecaoInicial}
         carregando={userLoading || loading} mostrarBusca={true} valorBusca={busca} onChangeBusca={setBusca}
-        onConfirmar={handleConfirmar} onVoltar={() => navigate(-1)}
-        linhasVisiveis={6} 
+        onConfirmar={handleConfirmar} mostrarBotaoVoltar={false}
+        linhasVisiveis={5} 
         abaAtiva={filtroAtivo}
         onHelpClick={() => setIsTourOpen(true)} /* ATIVA O BOTÃO "i" NA TELA DE ESTADOS */
         renderItem={(estado) => (
