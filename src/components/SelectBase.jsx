@@ -22,7 +22,9 @@ export default function SelectBase({
   renderItem,
   onLimiteAtingido,
   onHelpClick,
-  linhasVisiveis = 5
+  topRightExtra = null,
+  linhasVisiveis = 5,
+  footerMode = 'split'
 }) {
   const [selecionados, setSelecionados] = useState(selecaoInicial);
   const [modalMalAvaliado, setModalMalAvaliado] = useState({ aberto: false, item: null });
@@ -92,8 +94,9 @@ export default function SelectBase({
   const layoutClass = abas.length > 0 ? 'has-tabs' : 'no-tabs';
   const canClearBusca = mostrarBusca && textoBuscaFixo === null && valorBusca.trim().length > 0;
   
-  // Altura dinâmica baseada na prop linhasVisiveis
-  const maxListHeight = `${linhasVisiveis * 80}px`;
+  const showBackButton = footerMode !== 'next-only';
+  const showNextButton = footerMode !== 'back-only';
+  const listBoxStyle = { '--visible-rows': String(linhasVisiveis) };
 
   return (
     <div className={`select-base-container ${themeClass} ${layoutClass}`}>
@@ -119,6 +122,7 @@ export default function SelectBase({
         )}
 
         <div className="nav-action-right">
+          {topRightExtra}
           {onHelpClick && (
             <button className="btn-help-icon top-icon-button" type="button" onClick={handleHelpPress} id="tour-help" aria-label="Abrir ajuda">
               <InfoIcon />
@@ -156,7 +160,7 @@ export default function SelectBase({
       )}
 
       <div className="list-wrapper">
-        <div className="list-scroll-box" id="tour-lista" style={{ '--list-max-height': maxListHeight }}>
+        <div className="list-scroll-box" id="tour-lista" style={listBoxStyle}>
           {dados.length > 0 ? (
             dados.map((item) => {
               const isSelected = selecionados.some((v) => v.id === item.id);
@@ -172,9 +176,17 @@ export default function SelectBase({
         </div>
       </div>
 
-      <footer className="navigation-footer">
-        <button className="nav-btn" type="button" onClick={onVoltar} aria-label="Voltar"><i className="arrow-left"></i></button>
-        <button className="nav-btn" type="button" onClick={handleConfirmar} aria-label="Avancar"><i className="arrow-right"></i></button>
+      <footer className={`navigation-footer footer-${footerMode}`}>
+        {showBackButton && (
+          <button className="nav-btn" type="button" onClick={onVoltar} aria-label="Voltar">
+            <i className="arrow-left"></i>
+          </button>
+        )}
+        {showNextButton && (
+          <button className="nav-btn" type="button" onClick={handleConfirmar} aria-label="Avancar">
+            <i className="arrow-right"></i>
+          </button>
+        )}
       </footer>
 
       <ConfirmModal

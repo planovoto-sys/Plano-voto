@@ -5,6 +5,7 @@ import { PieChart, Pie, Cell } from 'recharts';
 import Sidebar from '../components/Sidebar';
 import TourModal from '../components/TourModal'; 
 import { InfoIcon, ShareSolidIcon } from '../components/AppIcons';
+import { auth } from '../services/firebaseConfig';
 import {
     castAnonymousVote,
     fetchCandidatesByIds,
@@ -32,31 +33,32 @@ const Gauge = ({ value, tema }) => {
     }, [targetAngle]);
     
     const data = [ 
-        { value: 1, color: '#ff3b3b' }, 
-        { value: 1, color: '#ff9800' }, 
-        { value: 1, color: '#ffeb3b' }, 
-        { value: 1, color: '#8bc34a' }, 
-        { value: 1, color: '#4caf50' } 
+        { value: 1, color: '#ff5a36' }, 
+        { value: 1, color: '#ffb617' }, 
+        { value: 1, color: '#f9e507' }, 
+        { value: 1, color: '#abce00' }, 
+        { value: 1, color: '#00b71e' } 
     ];
 
     const colorMode = tema === 'renovar' ? '#ffffff' : '#111111';
 
     return (
         <div className="gauge-container" id="tour-gauge">
-            <PieChart width={320} height={320}>
-                {/* innerRadius alterado para 102 para deixar o arco cerca de 30% mais fino */}
-                <Pie data={data} cx={160} cy={150} startAngle={180} endAngle={0} innerRadius={102} outerRadius={130} dataKey="value" stroke="none" isAnimationActive={true} animationDuration={1500} animationEasing="ease" >
-                    {data.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
-                </Pie>
-            </PieChart>
-            <svg className="gauge-needle-svg" viewBox="0 0 320 320">
-                <g className="gauge-needle-group" style={{ transform: `rotate(${currentAngle}deg)` }}>
-                    <polygon points="148,20 172,20 160,60" fill={colorMode} />
-                </g>
-            </svg>
-            <div className="gauge-text-wrapper">
-                <div className="gauge-text-label" style={{ color: colorMode }}>NOTA</div>
-                <div className="gauge-text-value" style={{ color: colorMode }}>{normalizedValue.toFixed(2).replace('.', ',')}</div>
+            <div className="gauge-scale-shell">
+                <PieChart width={320} height={320}>
+                    <Pie data={data} cx={160} cy={150} startAngle={180} endAngle={0} innerRadius={102} outerRadius={130} dataKey="value" stroke="none" isAnimationActive={true} animationDuration={1500} animationEasing="ease" >
+                        {data.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
+                    </Pie>
+                </PieChart>
+                <svg className="gauge-needle-svg" viewBox="0 0 320 320">
+                    <g className="gauge-needle-group" style={{ transform: `rotate(${currentAngle}deg)` }}>
+                        <polygon points="150,14 170,14 160,62" fill={colorMode} />
+                    </g>
+                </svg>
+                <div className="gauge-text-wrapper">
+                    <div className="gauge-text-label" style={{ color: colorMode }}>NOTA</div>
+                    <div className="gauge-text-value" style={{ color: colorMode }}>{normalizedValue.toFixed(2).replace('.', ',')}</div>
+                </div>
             </div>
         </div>
     );
@@ -77,6 +79,10 @@ export default function Resultado() {
     ];
 
     const handleHelpPress = (e) => { const btn = e.currentTarget; btn.classList.add('pulse-anim'); setTimeout(() => btn.classList.remove('pulse-anim'), 400); setIsTourOpen(true); };
+    const handleLogout = () => {
+        auth.signOut();
+        navigate('/');
+    };
 
     useEffect(() => {
         if (userLoading || !user?.uid) return;
@@ -196,7 +202,14 @@ export default function Resultado() {
             <Sidebar />
             <TourModal steps={tourSteps} isOpen={isTourOpen} onClose={() => setIsTourOpen(false)} />
 
-            <div className="top-nav-bar"><div className="nav-spacer"></div><div className="top-search-wrapper"><input type="text" value="meuvoto.org" disabled={true} aria-label="Site" /></div><div className="nav-action-right"><button className="btn-help-icon top-icon-button" type="button" onClick={handleHelpPress} aria-label="Abrir ajuda"><InfoIcon /></button></div></div>
+            <div className="top-nav-bar">
+                <div className="nav-spacer"></div>
+                <div className="top-search-wrapper"><input type="text" value="meuvoto.org" disabled={true} aria-label="Site" /></div>
+                <div className="nav-action-right">
+                    <button className="desktop-utility-btn" type="button" onClick={handleLogout}>Sair</button>
+                    <button className="btn-help-icon top-icon-button" type="button" onClick={handleHelpPress} aria-label="Abrir ajuda"><InfoIcon /></button>
+                </div>
+            </div>
             <div className="green-banner-selection banner-resultado"><h2>{config.titulo}</h2><div className="triangle-down"></div></div>
 
             <div className="gauge-wrapper-margin"><Gauge value={media} tema={filtroAtivo} /></div>
@@ -210,7 +223,7 @@ export default function Resultado() {
             </div></div>
 
             <div className="resultado-footer-wrapper" id="tour-footer-resultado">
-                <footer className="navigation-footer resultado-nav-footer"><button className="nav-btn" type="button" onClick={() => navigate(-1)} aria-label="Voltar" style={{ borderRight: media >= 7 ? '1px solid rgba(244, 235, 147, 0.4)' : 'none' }}><i className="arrow-left"></i></button>{media >= 7 && (<button className="nav-btn" type="button" onClick={() => alert("Link copiado para a área de transferência!")} aria-label="Compartilhar"><ShareSolidIcon /></button>)}</footer>
+                <footer className="navigation-footer resultado-nav-footer"><button className="nav-btn" type="button" onClick={() => navigate('/escolher-senadores', { state: { bypassVoteRedirect: true } })} aria-label="Voltar" style={{ borderRight: media >= 7 ? '1px solid rgba(244, 235, 147, 0.4)' : 'none' }}><i className="arrow-left"></i></button>{media >= 7 && (<button className="nav-btn" type="button" onClick={() => alert("Link copiado para a área de transferência!")} aria-label="Compartilhar"><ShareSolidIcon /></button>)}</footer>
             </div>
         </div>
     );

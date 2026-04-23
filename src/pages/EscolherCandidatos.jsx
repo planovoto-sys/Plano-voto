@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { db } from '../services/firebaseConfig';
+import { auth, db } from '../services/firebaseConfig';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { useUser } from '../contexts/useUser';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   getBallotEstado,
   getBallotProgress,
@@ -22,6 +22,7 @@ const MEDIA_TESTE = 4;
 export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota, chaveBanco }) {
   const { user, userData, userEligibility, loading: userLoading, filtroAtivo, setFiltroAtivo } = useUser();
   const navigate = useNavigate();
+  const location = useLocation();
   
   const [todosCandidatos, setTodosCandidatos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,6 +33,12 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
   const [modalTroca, setModalTroca] = useState({ aberto: false, novoCandidato: null });
   const [isTourOpen, setIsTourOpen] = useState(false);
   const estadoDoFluxo = user?.uid ? getBallotEstado(user.uid, userData?.estado) : userData?.estado;
+  const bypassVoteRedirect = location.state?.bypassVoteRedirect === true;
+
+  const handleLogout = () => {
+    auth.signOut();
+    navigate('/');
+  };
 
   const tourSteps = [
     { target: '#tour-busca', title: 'PESQUISA', content: 'Pesquisa candidatos por nome ou partido.' },
@@ -49,11 +56,11 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
   }, [filtroAtivo, setFiltroAtivo]);
 
   useEffect(() => {
-    if (user?.uid && userEligibility?.has_voted && readLastVoteReceipt(user.uid)) {
+    if (!bypassVoteRedirect && user?.uid && userEligibility?.has_voted && readLastVoteReceipt(user.uid)) {
       flowLog('candidates.redirect.result-with-receipt', { userId: user.uid, cargo });
       navigate('/finalizacao', { replace: true });
     }
-  }, [cargo, user?.uid, userEligibility?.has_voted, navigate]);
+  }, [bypassVoteRedirect, cargo, user?.uid, userEligibility?.has_voted, navigate]);
 
   useEffect(() => {
     if (!userLoading && user?.uid && !estadoDoFluxo) {
@@ -248,10 +255,11 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
         mostrarBusca={true} 
         valorBusca={busca} 
         onChangeBusca={setBusca}
+        topRightExtra={<button className="desktop-utility-btn" type="button" onClick={handleLogout}>Sair</button>}
         onHelpClick={() => setIsTourOpen(true)} 
         onLimiteAtingido={(c) => setModalTroca({ aberto: true, novoCandidato: c })}
         onConfirmar={handleConfirmarFinal} 
-        onVoltar={() => navigate(cargo === "Senador" ? '/escolher-deputado-federal' : '/home')}
+        onVoltar={() => navigate(cargo === "Senador" ? '/escolher-deputado-federal' : '/home', { state: { bypassVoteRedirect: true } })}
         linhasVisiveis={5}
         renderItem={(cand) => (
           <div className="cand-item-layout">

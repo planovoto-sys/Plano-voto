@@ -2,15 +2,19 @@
 
 :root {
   --app-max-width: 498px;
-  --content-gutter: clamp(28px, 10.25vw, 51px);
+  --mobile-reference-height: 883px;
+  --mobile-scale: 1;
+  --mobile-safe-top: env(safe-area-inset-top, 0px);
+  --mobile-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --content-gutter: clamp(24px, calc(51px * var(--mobile-scale)), 51px);
   --bg-yellow: #f4eb93;
   --card-yellow: #f2e067;
   --primary-green: #639863;
   --muted-card: #d0d687;
-  --selected-yellow: #b5a84d;
+  --selected-yellow: #b8a850;
   --selected-green: #9ab775;
-  --badge-green: #92d863;
-  --chart-green: #7ed957;
+  --badge-green: #90d860;
+  --chart-green: #6ed957;
   --renovar-bg: #3b4d7f;
   --renovar-panel: #414a5e;
   --renovar-card: #527e71;
@@ -18,8 +22,8 @@
   --text-dark: #4a4a4a;
   --text-light: #ffffff;
   --font-family: 'Inter', sans-serif;
-  --panel-radius: 8px;
-  --top-icon-size: 40px;
+  --panel-radius: clamp(8px, calc(8px * var(--mobile-scale)), 8px);
+  --top-icon-size: clamp(32px, calc(40px * var(--mobile-scale)), 40px);
   --layout-max-width: 498px;
   --wide-layout-max-width: 1120px;
   --desktop-nav-width: 0px;
@@ -57,11 +61,11 @@ body {
   content: "";
   position: absolute;
   background-color: var(--primary-green);
-  width: 250px;
-  height: 12px;
+  width: calc(250px * var(--mobile-scale));
+  height: calc(12px * var(--mobile-scale));
   transform: rotate(-45deg);
-  bottom: 25px;
-  right: -80px;
+  bottom: calc(25px * var(--mobile-scale) + var(--mobile-safe-bottom));
+  right: calc(-80px * var(--mobile-scale));
   z-index: 0;
   pointer-events: none;
 }
@@ -70,11 +74,11 @@ body {
   content: "";
   position: absolute;
   background-color: var(--card-yellow);
-  width: 250px;
-  height: 12px;
+  width: calc(250px * var(--mobile-scale));
+  height: calc(12px * var(--mobile-scale));
   transform: rotate(-45deg);
-  bottom: 8px;
-  right: -95px;
+  bottom: calc(8px * var(--mobile-scale) + var(--mobile-safe-bottom));
+  right: calc(-95px * var(--mobile-scale));
   z-index: 0;
   pointer-events: none;
 }
@@ -119,10 +123,11 @@ body {
 @media (min-width: 768px) {
   :root {
     --app-max-width: 100%;
+    --mobile-scale: 1;
     --content-gutter: clamp(48px, 7vw, 72px);
     --layout-max-width: min(100% - 64px, 900px);
     --top-icon-size: 44px;
-    --desktop-nav-width: clamp(300px, 42vw, 390px);
+    --desktop-nav-width: clamp(360px, 52vw, 460px);
   }
 
   #root {
@@ -146,6 +151,6 @@ body {
   :root {
     --content-gutter: clamp(64px, 7vw, 96px);
     --layout-max-width: min(100% - 96px, var(--wide-layout-max-width));
-    --desktop-nav-width: clamp(380px, 36vw, 460px);
+    --desktop-nav-width: clamp(420px, 40vw, 560px);
   }
 }
