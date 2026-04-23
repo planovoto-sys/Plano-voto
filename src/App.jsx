@@ -19,15 +19,15 @@ function App() {
           <Route path="/home" element={user ? <Home /> : <Navigate to="/" replace />} />
           
           <Route path="/escolher-deputado-federal" element={
-            user ? <EscolherCandidatos key="deputado" cargo="Deputado Federal" limite={1} titulo="SELECIONE 1 DEPUTADO FEDERAL" proximaRota="/escolher-senadores" chaveBanco="deputado_federal" /> : <Navigate to="/" />
+            user ? <EscolherCandidatos key="deputado" cargo="Deputado Federal" limite={1} titulo="SELECIONE 1 DEPUTADO FEDERAL" proximaRota="/escolher-senadores" chaveBanco="deputado_federal" /> : <Navigate to="/" replace />
           } />
           
           <Route path="/escolher-senadores" element={
-            user ? <EscolherCandidatos key="senadores" cargo="Senador" limite={2} titulo="SELECIONE 2 SENADORES" proximaRota="/finalizacao" chaveBanco="senadores" /> : <Navigate to="/" />
+            user ? <EscolherCandidatos key="senadores" cargo="Senador" limite={2} titulo="SELECIONE 2 SENADORES" proximaRota="/finalizacao" chaveBanco="senadores" /> : <Navigate to="/" replace />
           } />
           
-          <Route path="/finalizacao" element={user ? <Resultado /> : <Navigate to="/" />} />
-          <Route path="*" element={<Navigate to="/home" replace />} />
+          <Route path="/finalizacao" element={user ? <Resultado /> : <Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       )}
     </BrowserRouter>
