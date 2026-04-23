@@ -171,6 +171,18 @@ export const hasBallotSelections = (userId) => {
   return Object.values(draft.selections).some((items) => items.length > 0);
 };
 
+export const getBallotSelectionCounts = (draft) => {
+  const normalizedDraft = normalizeDraft(draft);
+
+  return {
+    deputadoFederal: normalizedDraft.selections.deputado_federal.length,
+    senadores: normalizedDraft.selections.senadores.length,
+    total: normalizedDraft.selections.deputado_federal.length + normalizedDraft.selections.senadores.length
+  };
+};
+
+export const draftHasBallotSelections = (draft) => getBallotSelectionCounts(draft).total > 0;
+
 export const getBallotProgress = (draft) => {
   const normalizedDraft = normalizeDraft(draft);
   const hasEstado = Boolean(normalizedDraft.estado);

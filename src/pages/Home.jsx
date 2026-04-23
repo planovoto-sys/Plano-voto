@@ -5,8 +5,9 @@ import { db } from '../services/firebaseConfig';
 import { deleteField, doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import {
   clearVoteReceipt,
+  draftHasBallotSelections,
   getBallotEstado,
-  hasBallotSelections,
+  getBallotSelectionCounts,
   readBallotDraft,
   readLastVoteReceipt,
   resetBallotForState,
@@ -103,10 +104,17 @@ export default function Home() {
     const novoEstado = selecionados[0].sigla;
     const draft = readBallotDraft(user.uid, estadoSelecionado);
     const estadoAtual = draft.estado || estadoSelecionado || null;
+    const selectionCounts = getBallotSelectionCounts(draft);
+
+    flowLog('home.confirm-state.draft-status', {
+      estadoAtual,
+      novoEstado,
+      selectionCounts
+    });
 
     if (estadoAtual && estadoAtual !== novoEstado) {
-      if (hasBallotSelections(user.uid)) {
-        flowWarn('home.confirm-state.requires-reset', { estadoAtual, novoEstado });
+      if (draftHasBallotSelections(draft)) {
+        flowWarn('home.confirm-state.requires-reset', { estadoAtual, novoEstado, selectionCounts });
         setPendingEstado(novoEstado);
         setModalOpen(true);
         return;
