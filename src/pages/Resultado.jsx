@@ -92,17 +92,19 @@ export default function Resultado() {
                 const candidateIds = idsDoRecibo.length > 0 ? idsDoRecibo : idsDoRascunho;
 
                 if (candidateIds.length === 0) {
-                    setCandidatosCompletos([]);
-                    setMedia(0);
-                    setSubmissionError(getVotingErrorMessage({ code: 'INCOMPLETE_BALLOT' }));
+                    navigate('/', { replace: true });
                     return;
                 }
 
                 const validation = validateCompleteBallot(draft);
                 if (!receipt && !validation.ok) {
-                    const incompleteBallotError = new Error('Incomplete ballot');
-                    incompleteBallotError.code = validation.code;
-                    throw incompleteBallotError;
+                    navigate('/', { replace: true });
+                    return;
+                }
+
+                if (!receipt && userEligibility?.has_voted) {
+                    navigate('/', { replace: true });
+                    return;
                 }
 
                 if (!receipt && !userEligibility?.has_voted && validation.ok) {
@@ -114,7 +116,11 @@ export default function Resultado() {
                         });
                         saveLastVoteReceipt(user.uid, newReceipt, draft);
                     } catch (error) {
-                        if (error?.code !== 'VOTE_ALREADY_CAST') throw error;
+                        if (error?.code === 'VOTE_ALREADY_CAST') {
+                            navigate('/', { replace: true });
+                            return;
+                        }
+                        throw error;
                     }
                 }
 
@@ -154,7 +160,7 @@ export default function Resultado() {
         return () => {
             isMounted = false;
         };
-    }, [user, userData?.estado, userEligibility?.has_voted, userLoading]);
+    }, [navigate, user, userData?.estado, userEligibility?.has_voted, userLoading]);
 
     if (loading) return <div className="loading">CARREGANDO...</div>;
     if (submissionError && candidatosCompletos.length === 0) return <div className="loading">{submissionError}</div>;

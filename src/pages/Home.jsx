@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/useUser';
 import { db } from '../services/firebaseConfig';
 import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
-import { clearBallotDraft, clearVoteReceipt, hasBallotSelections } from '../services/votingService';
+import { clearBallotDraft, clearVoteReceipt, hasBallotSelections, readLastVoteReceipt } from '../services/votingService';
 import SelectBase from '../components/SelectBase';
 import Sidebar from '../components/Sidebar';
 import ConfirmModal from '../components/ConfirmModal';
@@ -46,10 +46,10 @@ export default function Home() {
   const [isTourOpen, setIsTourOpen] = useState(false);
 
   useEffect(() => {
-    if (userEligibility?.has_voted) {
+    if (user?.uid && userEligibility?.has_voted && readLastVoteReceipt(user.uid)) {
       navigate('/finalizacao', { replace: true });
     }
-  }, [userEligibility?.has_voted, navigate]);
+  }, [user?.uid, userEligibility?.has_voted, navigate]);
 
   // TEXTOS DO TOUR ESPECÍFICOS PARA A HOME (Baseados no PDF)
   const tourSteps = [
