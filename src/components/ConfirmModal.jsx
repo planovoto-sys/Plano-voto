@@ -24,18 +24,18 @@ export default function ConfirmModal({
         {children ? (
           <div className="modal-custom-content">
             {children}
-            <button className="btn-modal btn-cancelar" onClick={onCancel} style={{ marginTop: '10px', width: '100%' }}>
+            <button className="btn-modal btn-cancelar" type="button" onClick={onCancel} style={{ marginTop: '10px', width: '100%' }}>
               DESISTIR
             </button>
           </div>
         ) : (
           <div className="modal-actions">
             {mostrarCancelar && (
-              <button className="btn-modal btn-cancelar" onClick={onCancel}>
+              <button className="btn-modal btn-cancelar" type="button" onClick={onCancel}>
                 {textoCancelar}
               </button>
             )}
-            <button className={`btn-modal btn-confirmar ${tipo}`} onClick={onConfirm} style={{ flex: mostrarCancelar ? 1 : 'none', width: mostrarCancelar ? 'auto' : '100%' }}>
+            <button className={`btn-modal btn-confirmar ${tipo}`} type="button" onClick={onConfirm} style={{ flex: mostrarCancelar ? 1 : 'none', width: mostrarCancelar ? 'auto' : '100%' }}>
               {textoConfirmar}
             </button>
           </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ConfirmModal from './ConfirmModal';
+import { ClearIcon, InfoIcon } from './AppIcons';
 import './SelectBase.css';
 
 export default function SelectBase({
@@ -67,6 +68,10 @@ export default function SelectBase({
       if (onHelpClick) onHelpClick();
   };
 
+  const handleClearBusca = () => {
+    onChangeBusca('');
+  };
+
   if (carregando) return <div className="loading">CARREGANDO...</div>;
 
   const partesTitulo = titulo ? titulo.split(' ') : [''];
@@ -74,17 +79,19 @@ export default function SelectBase({
   const subTitulo = partesTitulo.slice(1).join(' ');
 
   const themeClass = abaAtiva === 'renovar' ? 'theme-renovar' : 'theme-reeleger';
+  const layoutClass = abas.length > 0 ? 'has-tabs' : 'no-tabs';
+  const canClearBusca = mostrarBusca && textoBuscaFixo === null && valorBusca.trim().length > 0;
   
   // Altura dinâmica baseada na prop linhasVisiveis
-  const maxListHeight = linhasVisiveis * 80; 
+  const maxListHeight = `${linhasVisiveis * 80}px`;
 
   return (
-    <div className={`select-base-container ${themeClass}`}>
+    <div className={`select-base-container ${themeClass} ${layoutClass}`}>
       <div className="top-nav-bar">
         <div className="nav-spacer"></div>
 
         {mostrarBusca && (
-          <div className="top-search-wrapper">
+          <div className={`top-search-wrapper ${canClearBusca ? 'has-clear-button' : ''}`}>
             <input
               id="tour-busca"
               type="text"
@@ -93,17 +100,18 @@ export default function SelectBase({
               onChange={(e) => onChangeBusca(e.target.value)}
               disabled={textoBuscaFixo !== null}
             />
+            {canClearBusca && (
+              <button className="btn-clear-search" type="button" onClick={handleClearBusca} aria-label="Limpar pesquisa">
+                <ClearIcon />
+              </button>
+            )}
           </div>
         )}
 
         <div className="nav-action-right">
           {onHelpClick && (
-            <button className="btn-help-icon" onClick={handleHelpPress} id="tour-help">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                 <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-                 <line x1="12" y1="8" x2="12" y2="8"></line>
-                 <line x1="12" y1="12" x2="12" y2="16"></line>
-              </svg>
+            <button className="btn-help-icon top-icon-button" type="button" onClick={handleHelpPress} id="tour-help" aria-label="Abrir ajuda">
+              <InfoIcon />
             </button>
           )}
         </div>
@@ -122,9 +130,11 @@ export default function SelectBase({
             <div className={`tab-active-indicator ${abaAtiva === 'renovar' ? 'right' : 'left'}`}></div>
             
             {abas.map((aba) => (
-              <button 
+              <button
+                type="button"
                 key={aba} 
                 id={`tour-${aba}`} 
+                data-tab={aba}
                 className={`tab-toggle-btn ${abaAtiva === aba ? 'active' : ''}`} 
                 onClick={() => setAbaAtiva(aba)}
               >
@@ -136,7 +146,7 @@ export default function SelectBase({
       )}
 
       <div className="list-wrapper">
-        <div className="list-scroll-box" id="tour-lista" style={{ maxHeight: `${maxListHeight}px` }}>
+        <div className="list-scroll-box" id="tour-lista" style={{ '--list-max-height': maxListHeight }}>
           {dados.length > 0 ? (
             dados.map((item) => {
               const isSelected = selecionados.some((v) => v.id === item.id);
@@ -153,8 +163,8 @@ export default function SelectBase({
       </div>
 
       <footer className="navigation-footer">
-        <button className="nav-btn" onClick={onVoltar}><i className="arrow-left"></i></button>
-        <button className="nav-btn" onClick={handleConfirmar}><i className="arrow-right"></i></button>
+        <button className="nav-btn" type="button" onClick={onVoltar} aria-label="Voltar"><i className="arrow-left"></i></button>
+        <button className="nav-btn" type="button" onClick={handleConfirmar} aria-label="Avancar"><i className="arrow-right"></i></button>
       </footer>
 
       <ConfirmModal

@@ -9,20 +9,31 @@ export default function TourModal({ steps, isOpen, onClose }) {
     const [tooltipPos, setTooltipPos] = useState('bottom'); 
 
     useEffect(() => {
+        let frameId = null;
+        let timer = null;
+
         if (isOpen) {
-            setIsRendered(true);
-            setIsFadingOut(false);
-            setCurrentStep(0);
-            setTooltipPos('bottom'); 
+            frameId = requestAnimationFrame(() => {
+                setIsRendered(true);
+                setIsFadingOut(false);
+                setCurrentStep(0);
+                setTooltipPos('bottom');
+            });
         } else if (isRendered) {
-            setIsFadingOut(true);
-            const timer = setTimeout(() => {
-                setIsRendered(false);
-                setTargetRect(null);
-            }, 400); 
-            return () => clearTimeout(timer);
+            frameId = requestAnimationFrame(() => {
+                setIsFadingOut(true);
+                timer = setTimeout(() => {
+                    setIsRendered(false);
+                    setTargetRect(null);
+                }, 400);
+            });
         }
-    }, [isOpen]);
+
+        return () => {
+            if (frameId !== null) cancelAnimationFrame(frameId);
+            if (timer !== null) clearTimeout(timer);
+        };
+    }, [isOpen, isRendered]);
 
     const updatePosition = useCallback(() => {
         if (!isOpen || isFadingOut) return;
@@ -90,14 +101,18 @@ export default function TourModal({ steps, isOpen, onClose }) {
                 <div className="tour-content" dangerouslySetInnerHTML={{ __html: step.content }} />
                 
                 <div className="tour-footer">
+                    <div className="tour-footer-left">
+                        {currentStep > 0 && (
+                            <button className="tour-btn-sec" type="button" onClick={handlePrev}>VOLTAR</button>
+                        )}
+                    </div>
                     <div className="tour-dots">
                         {steps.map((_, i) => (
                             <div key={i} className={`tour-dot ${i === currentStep ? 'active' : ''}`} />
                         ))}
                     </div>
-                    <div className="tour-actions">
-                        <button className="tour-btn-sec" onClick={handlePrev} disabled={currentStep === 0}>VOLTAR</button>
-                        <button className="tour-btn-pri" onClick={handleNext}>
+                    <div className="tour-footer-right">
+                        <button className="tour-btn-pri" type="button" onClick={handleNext}>
                             {currentStep === steps.length - 1 ? 'CONCLUIR' : 'PRÓXIMO'}
                         </button>
                     </div>

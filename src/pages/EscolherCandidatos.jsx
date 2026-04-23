@@ -1,8 +1,15 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { db } from '../services/firebaseConfig';
-import { collection, query, where, getDocs, doc, updateDoc, increment } from 'firebase/firestore';
-import { useUser } from '../contexts/UserContext';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { useUser } from '../contexts/useUser';
 import { useNavigate } from 'react-router-dom';
+import {
+  castAnonymousVote,
+  getVotingErrorMessage,
+  readBallotDraft,
+  saveBallotOfficeSelection,
+  saveLastVoteReceipt
+} from '../services/votingService';
 import SelectBase from '../components/SelectBase';
 import Sidebar from '../components/Sidebar';
 import ConfirmModal from '../components/ConfirmModal';
@@ -11,7 +18,7 @@ import TourModal from '../components/TourModal';
 const MEDIA_TESTE = 4;
 
 export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota, chaveBanco }) {
-  const { user, userData, loading: userLoading, filtroAtivo, setFiltroAtivo } = useUser();
+  const { user, userData, userEligibility, loading: userLoading, filtroAtivo, setFiltroAtivo } = useUser();
   const navigate = useNavigate();
   
   const [todosCandidatos, setTodosCandidatos] = useState([]);
@@ -38,6 +45,12 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
     }
   }, [filtroAtivo, setFiltroAtivo]);
 
+  useEffect(() => {
+    if (userEligibility?.has_voted) {
+      navigate('/finalizacao', { replace: true });
+    }
+  }, [userEligibility?.has_voted, navigate]);
+
   // BUSCA DADOS NO FIREBASE: Apenas quando o cargo muda (ex: Federal para Senador)
   // Removido o filtroAtivo daqui para evitar que a tela "pisque" ao trocar de aba
   useEffect(() => {
@@ -48,7 +61,7 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
         const snapTodos = await getDocs(qTodos);
         const lista = snapTodos.docs.map(doc => {
           const d = doc.data();
-          const votos = d.votos_rece_bidos || 0;
+          const votos = d.votos_recebidos || 0;
           
           const valCand = d["Nota candidato"];
           const valPart = d["Nota partido"];
@@ -90,14 +103,17 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
     fetchDados();
   }, [cargo]);
 
-  // Sincroniza candidatos selecionados vindos do banco de dados
+  // Sincroniza candidatos selecionados do rascunho local, sem gravar voto ligado ao usuário.
   useEffect(() => {
-    if (userData?.candidatos_escolhidos?.[chaveBanco] && todosCandidatos.length > 0) {
-      const salvo = userData.candidatos_escolhidos[chaveBanco];
-      const nomesArray = Array.isArray(salvo) ? salvo : [salvo];
-      setSelecionadosNaTela(todosCandidatos.filter(c => nomesArray.includes(c.Nome)));
+    if (!user?.uid || todosCandidatos.length === 0) {
+      setSelecionadosNaTela([]);
+      return;
     }
-  }, [userData, todosCandidatos, chaveBanco]);
+
+    const draft = readBallotDraft(user.uid, userData?.estado);
+    const idsSalvos = (draft.selections?.[chaveBanco] || []).map((candidate) => candidate.id);
+    setSelecionadosNaTela(todosCandidatos.filter((candidate) => idsSalvos.includes(candidate.id)));
+  }, [user?.uid, userData?.estado, todosCandidatos, chaveBanco]);
 
   // FILTRAGEM LOCAL: Ocorre instantaneamente na memória ao trocar de aba ou pesquisar
   const candidatosFiltrados = useMemo(() => {
@@ -142,23 +158,29 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
     }
     setLoading(true);
     try {
-      const userRef = doc(db, "users", user.uid);
-      const salvoNoBanco = userData?.candidatos_escolhidos?.[chaveBanco];
-      const nomesNoBanco = salvoNoBanco ? (Array.isArray(salvoNoBanco) ? salvoNoBanco : [salvoNoBanco]) : [];
-      const nomesFinais = listaFinalDaTela.map(c => c.Nome);
-      
-      const paraAdicionar = listaFinalDaTela.filter(c => !nomesNoBanco.includes(c.Nome));
-      const paraRemover = todosCandidatos.filter(c => nomesNoBanco.filter(nome => !nomesFinais.includes(nome)).includes(c.Nome));
+      if (userEligibility?.has_voted) {
+        navigate('/finalizacao', { replace: true });
+        return;
+      }
 
-      const valorParaSalvar = limite === 1 ? nomesFinais[0] : nomesFinais;
-      await updateDoc(userRef, { [`candidatos_escolhidos.${chaveBanco}`]: valorParaSalvar });
+      const draftAtualizado = saveBallotOfficeSelection(user.uid, chaveBanco, listaFinalDaTela, userData?.estado);
 
-      for (const c of paraAdicionar) await updateDoc(doc(db, "candidatos", c.id), { votos_recebidos: increment(1) });
-      for (const c of paraRemover) await updateDoc(doc(db, "candidatos", c.id), { votos_rece_bidos: increment(-1) });
+      if (proximaRota === '/finalizacao') {
+        const receipt = await castAnonymousVote({
+          user,
+          estado: userData?.estado,
+          draft: draftAtualizado
+        });
+        saveLastVoteReceipt(user.uid, receipt, draftAtualizado);
+      }
 
       navigate(proximaRota);
     } catch (e) { 
       console.error("Erro ao salvar seleções:", e); 
+      setModalAviso({
+        aberto: true,
+        mensagem: getVotingErrorMessage(e)
+      });
       setLoading(false); 
     }
   };
@@ -232,6 +254,7 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
             <button 
               key={cand.id} 
               className="btn-modal btn-confirmar aviso" 
+              type="button"
               onClick={() => executarTroca(cand)} 
               style={{ fontSize: '0.85rem', padding: '15px' }}
             >

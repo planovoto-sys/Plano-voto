@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUser } from '../contexts/UserContext';
+import { useUser } from '../contexts/useUser';
 import { db } from '../services/firebaseConfig';
-import { collection, query, where, getDocs, doc, updateDoc, increment } from 'firebase/firestore';
+import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { clearBallotDraft, clearVoteReceipt, hasBallotSelections } from '../services/votingService';
 import SelectBase from '../components/SelectBase';
 import Sidebar from '../components/Sidebar';
 import ConfirmModal from '../components/ConfirmModal';
@@ -25,8 +26,16 @@ const LISTA_ESTADOS = [
   { id: 'TO', nome: 'Tocantins', sigla: 'TO' }
 ];
 
+const normalizarBusca = (valor) => (
+  valor
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+);
+
 export default function Home() {
-  const { user, userData, loading: userLoading, filtroAtivo } = useUser();
+  const { user, userData, userEligibility, loading: userLoading, filtroAtivo } = useUser();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -35,6 +44,12 @@ export default function Home() {
   
   // ESTADO PARA O TOUR NA HOME
   const [isTourOpen, setIsTourOpen] = useState(false);
+
+  useEffect(() => {
+    if (userEligibility?.has_voted) {
+      navigate('/finalizacao', { replace: true });
+    }
+  }, [userEligibility?.has_voted, navigate]);
 
   // TEXTOS DO TOUR ESPECÍFICOS PARA A HOME (Baseados no PDF)
   const tourSteps = [
@@ -45,8 +60,16 @@ export default function Home() {
   const selecaoInicial = userData?.estado ? LISTA_ESTADOS.filter(estado => estado.sigla === userData.estado) : [];
 
   const listaExibida = useMemo(() => {
-    if (!busca.trim()) return LISTA_ESTADOS;
-    return LISTA_ESTADOS.filter(e => e.nome.toLowerCase().includes(busca.toLowerCase()) || e.sigla.toLowerCase().includes(busca.toLowerCase()));
+    const termo = normalizarBusca(busca);
+    if (!termo) return LISTA_ESTADOS;
+
+    return LISTA_ESTADOS.filter((estado) => {
+      const nome = normalizarBusca(estado.nome);
+      const sigla = normalizarBusca(estado.sigla);
+      const nomeCompleto = normalizarBusca(`${estado.nome} ${estado.sigla}`);
+
+      return nome.includes(termo) || sigla.includes(termo) || nomeCompleto.includes(termo);
+    });
   }, [busca]);
 
   const handleConfirmar = async (selecionados) => {
@@ -54,9 +77,11 @@ export default function Home() {
     const novoEstado = selecionados[0].sigla;
 
     if (userData?.estado && userData.estado !== novoEstado) {
-      const escolhidos = userData.candidatos_escolhidos || {};
-      const temCandidatos = escolhidos.deputado_federal || (escolhidos.senadores && escolhidos.senadores.length > 0);
-      if (temCandidatos) { setPendingEstado(novoEstado); setModalOpen(true); return; }
+      if (hasBallotSelections(user.uid)) {
+        setPendingEstado(novoEstado);
+        setModalOpen(true);
+        return;
+      }
     }
     executarMudanca(novoEstado);
   };
@@ -66,22 +91,14 @@ export default function Home() {
     try {
       const userRef = doc(db, "users", user.uid);
       if (userData?.estado && userData.estado !== novoEstado) {
-        const escolhidos = userData.candidatos_escolhidos || {};
-        const nomesParaLimpar = [];
-        if (escolhidos.deputado_federal) nomesParaLimpar.push(escolhidos.deputado_federal);
-        if (escolhidos.senadores && Array.isArray(escolhidos.senadores)) nomesParaLimpar.push(...escolhidos.senadores);
-        if (nomesParaLimpar.length > 0) {
-          const q = query(collection(db, "candidatos"), where("Nome", "in", nomesParaLimpar));
-          const snap = await getDocs(q);
-          const promises = snap.docs.map(d => updateDoc(doc(db, "candidatos", d.id), { votos_recebidos: increment(-1) }));
-          await Promise.all(promises);
-        }
-        await updateDoc(userRef, { estado: novoEstado, candidatos_escolhidos: null });
+        clearBallotDraft(user.uid);
+        clearVoteReceipt(user.uid);
+        await updateDoc(userRef, { estado: novoEstado, updated_at: serverTimestamp() });
       } else {
-        await updateDoc(userRef, { estado: novoEstado });
+        await updateDoc(userRef, { estado: novoEstado, updated_at: serverTimestamp() });
       }
       navigate('/escolher-deputado-federal');
-    } catch (e) { console.error("Erro ao salvar estado e limpar votos: ", e); } finally { setLoading(false); }
+    } catch (e) { console.error("Erro ao salvar estado: ", e); } finally { setLoading(false); }
   };
 
   return (
@@ -96,7 +113,12 @@ export default function Home() {
         linhasVisiveis={6} 
         abaAtiva={filtroAtivo}
         onHelpClick={() => setIsTourOpen(true)} /* ATIVA O BOTÃO "i" NA TELA DE ESTADOS */
-        renderItem={(estado) => <div className="state-centered-name">{estado.sigla}</div>}
+        renderItem={(estado) => (
+          <div className="state-centered-name">
+            <span className="state-sigla">{estado.sigla}</span>
+            <span className="state-full-name">{estado.nome}</span>
+          </div>
+        )}
       />
       <ConfirmModal isOpen={modalOpen} titulo="MUDANÇA DE ESTADO" mensagem="Ao mudar de estado, suas seleções atuais serão apagadas. Deseja continuar?" textoConfirmar="SIM" textoCancelar="NÃO" tipo="perigo" onConfirm={() => executarMudanca(pendingEstado)} onCancel={() => setModalOpen(false)} />
     </>

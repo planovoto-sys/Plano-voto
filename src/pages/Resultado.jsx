@@ -1,23 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '../services/firebaseConfig';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { useUser } from '../contexts/UserContext';
+import { useUser } from '../contexts/useUser';
 import { useNavigate } from 'react-router-dom';
 import { PieChart, Pie, Cell } from 'recharts';
 import Sidebar from '../components/Sidebar';
 import TourModal from '../components/TourModal'; 
+import { InfoIcon, ShareSolidIcon } from '../components/AppIcons';
+import {
+    castAnonymousVote,
+    fetchCandidatesByIds,
+    getCandidateIdsFromDraft,
+    getVotingErrorMessage,
+    readBallotDraft,
+    readLastVoteReceipt,
+    saveLastVoteReceipt,
+    validateCompleteBallot
+} from '../services/votingService';
 
 const MEDIA_TESTE = 4;
-
-const ShareIcon = () => (
-    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#f5eea9" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="18" cy="5" r="3"></circle>
-        <circle cx="6" cy="12" r="3"></circle>
-        <circle cx="18" cy="19" r="3"></circle>
-        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-    </svg>
-);
 
 const Gauge = ({ value, tema }) => {
     const normalizedValue = Math.min(Math.max(value, 0), 10);
@@ -62,11 +61,12 @@ const Gauge = ({ value, tema }) => {
 };
 
 export default function Resultado() {
-    const { userData, loading: userLoading, filtroAtivo } = useUser();
+    const { user, userData, userEligibility, loading: userLoading, filtroAtivo } = useUser();
     const navigate = useNavigate();
     const [candidatosCompletos, setCandidatosCompletos] = useState([]);
     const [media, setMedia] = useState(0);
     const [loading, setLoading] = useState(true);
+    const [submissionError, setSubmissionError] = useState('');
     const [isTourOpen, setIsTourOpen] = useState(false); 
 
     const tourSteps = [
@@ -77,22 +77,52 @@ export default function Resultado() {
     const handleHelpPress = (e) => { const btn = e.currentTarget; btn.classList.add('pulse-anim'); setTimeout(() => btn.classList.remove('pulse-anim'), 400); setIsTourOpen(true); };
 
     useEffect(() => {
-        if (userLoading || !userData) return;
+        if (userLoading || !user?.uid) return;
+        let isMounted = true;
+
         const carregarDados = async () => {
             try {
-                const dep = userData.candidatos_escolhidos?.deputado_federal;
-                const sen = userData.candidatos_escolhidos?.senadores || [];
-                const nomes = [];
-                if (dep) nomes.push(dep);
-                if (sen.length > 0) nomes.push(...sen);
-                if (nomes.length === 0) { setLoading(false); return; }
+                setLoading(true);
+                setSubmissionError('');
 
-                const q = query(collection(db, "candidatos"), where("Nome", "in", nomes));
-                const snap = await getDocs(q);
+                const draft = readBallotDraft(user.uid, userData?.estado);
+                const receipt = readLastVoteReceipt(user.uid);
+                const idsDoRecibo = receipt?.candidate_ids || [];
+                const idsDoRascunho = getCandidateIdsFromDraft(draft);
+                const candidateIds = idsDoRecibo.length > 0 ? idsDoRecibo : idsDoRascunho;
+
+                if (candidateIds.length === 0) {
+                    setCandidatosCompletos([]);
+                    setMedia(0);
+                    setSubmissionError(getVotingErrorMessage({ code: 'INCOMPLETE_BALLOT' }));
+                    return;
+                }
+
+                const validation = validateCompleteBallot(draft);
+                if (!receipt && !validation.ok) {
+                    const incompleteBallotError = new Error('Incomplete ballot');
+                    incompleteBallotError.code = validation.code;
+                    throw incompleteBallotError;
+                }
+
+                if (!receipt && !userEligibility?.has_voted && validation.ok) {
+                    try {
+                        const newReceipt = await castAnonymousVote({
+                            user,
+                            estado: userData?.estado,
+                            draft
+                        });
+                        saveLastVoteReceipt(user.uid, newReceipt, draft);
+                    } catch (error) {
+                        if (error?.code !== 'VOTE_ALREADY_CAST') throw error;
+                    }
+                }
+
+                const candidatos = await fetchCandidatesByIds(candidateIds);
                 let soma = 0; const lista = [];
 
-                snap.forEach(doc => {
-                    const d = doc.data();
+                candidatos.forEach((candidate) => {
+                    const d = candidate;
                     const valCand = d["Nota candidato"]; const valPart = d["Nota partido"];
                     const isNotaValida = (val) => val !== undefined && val !== null && val !== "" && val !== "-";
                     let notaFinal = 0;
@@ -107,17 +137,27 @@ export default function Resultado() {
                         cardColorClass = 'card-red'; 
                     }
 
-                    lista.push({ id: doc.id, ...d, ClassificacaoOficial: d["Classificação"] || d["Classificacao"] || "-", notaFinal: notaFinal, cardColorClass: cardColorClass, porcentagemCalculada: Math.min(porcentagem, 100).toFixed(0) });
+                    lista.push({ id: candidate.id, ...d, ClassificacaoOficial: d["Classificação"] || d["Classificacao"] || "-", notaFinal: notaFinal, cardColorClass: cardColorClass, porcentagemCalculada: Math.min(porcentagem, 100).toFixed(0) });
                 });
-                setMedia(nomes.length > 0 ? soma / nomes.length : 0);
-                lista.sort((a, b) => a.Cargo.localeCompare(b.Cargo));
+                if (!isMounted) return;
+                setMedia(lista.length > 0 ? soma / lista.length : 0);
                 setCandidatosCompletos(lista);
-            } catch (error) { console.error("Erro:", error); } finally { setLoading(false); }
+            } catch (error) {
+                console.error("Erro:", error);
+                if (isMounted) setSubmissionError(getVotingErrorMessage(error));
+            } finally {
+                if (isMounted) setLoading(false);
+            }
         };
+
         carregarDados();
-    }, [userData, userLoading]);
+        return () => {
+            isMounted = false;
+        };
+    }, [user, userData?.estado, userEligibility?.has_voted, userLoading]);
 
     if (loading) return <div className="loading">CARREGANDO...</div>;
+    if (submissionError && candidatosCompletos.length === 0) return <div className="loading">{submissionError}</div>;
 
     let config = {};
     if (media >= 7) config = { titulo: "PARABÉNS!", subtitulo: "SEU VOTO MELHORA O CONGRESSO" };
@@ -131,7 +171,7 @@ export default function Resultado() {
             <Sidebar />
             <TourModal steps={tourSteps} isOpen={isTourOpen} onClose={() => setIsTourOpen(false)} />
 
-            <div className="top-nav-bar"><div className="nav-spacer"></div><div className="top-search-wrapper"><input type="text" value="plano-voto.vercel.app" disabled={true} /></div><div className="nav-action-right"><button className="btn-help-icon" onClick={handleHelpPress}><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path><line x1="12" y1="8" x2="12" y2="8"></line><line x1="12" y1="12" x2="12" y2="16"></line></svg></button></div></div>
+            <div className="top-nav-bar"><div className="nav-spacer"></div><div className="top-search-wrapper"><input type="text" value="meuvoto.org" disabled={true} aria-label="Site" /></div><div className="nav-action-right"><button className="btn-help-icon top-icon-button" type="button" onClick={handleHelpPress} aria-label="Abrir ajuda"><InfoIcon /></button></div></div>
             <div className="green-banner-selection banner-resultado"><h2>{config.titulo}</h2><div className="triangle-down"></div></div>
 
             <div className="gauge-wrapper-margin"><Gauge value={media} tema={filtroAtivo} /></div>
@@ -145,7 +185,7 @@ export default function Resultado() {
             </div></div>
 
             <div className="resultado-footer-wrapper" id="tour-footer-resultado">
-                <footer className="navigation-footer resultado-nav-footer"><button className="nav-btn" onClick={() => navigate(-1)} style={{ borderRight: media >= 7 ? '1px solid rgba(248, 228, 100, 0.4)' : 'none' }}><i className="arrow-left"></i></button>{media >= 7 && (<button className="nav-btn" onClick={() => alert("Link copiado para a área de transferência!")}><ShareIcon /></button>)}</footer>
+                <footer className="navigation-footer resultado-nav-footer"><button className="nav-btn" type="button" onClick={() => navigate(-1)} aria-label="Voltar" style={{ borderRight: media >= 7 ? '1px solid rgba(244, 235, 147, 0.4)' : 'none' }}><i className="arrow-left"></i></button>{media >= 7 && (<button className="nav-btn" type="button" onClick={() => alert("Link copiado para a área de transferência!")} aria-label="Compartilhar"><ShareSolidIcon /></button>)}</footer>
             </div>
         </div>
     );

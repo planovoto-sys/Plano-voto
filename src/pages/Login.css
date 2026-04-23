@@ -2,35 +2,42 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100svh;
   width: 100%;
+  padding-top: 36px;
 }
 
 .login-header {
-  background-color: var(--primary-green, #61905d);
-  color: var(--bg-yellow, #f5eea9);
+  background-color: var(--primary-green);
+  color: var(--bg-yellow);
   text-align: center;
-  padding: 30px 20px;
+  height: 114px;
+  padding: 0 20px;
   position: relative;
   z-index: 2;
   width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .login-header h1 {
   margin: 0;
   font-weight: 800;
-  font-size: 2.2rem;
-  letter-spacing: 2.5px;
+  font-size: 2.25rem;
+  letter-spacing: 6px;
   text-transform: lowercase;
 }
 
 .login-triangle-down {
   width: 0;
   height: 0;
-  border-left: 30px solid transparent;
-  border-right: 30px solid transparent;
-  border-top: 25px solid var(--primary-green, #61905d);
+  border-left: 52px solid transparent;
+  border-right: 52px solid transparent;
+  border-top: 24px solid var(--primary-green);
   position: absolute;
-  bottom: -24px;
+  bottom: -23px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 1;
@@ -41,27 +48,27 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 20px 20px 60px 20px;
-  gap: 30px;
+  justify-content: flex-start;
+  padding: 58px var(--content-gutter) 32px var(--content-gutter);
+  gap: 43px;
   z-index: 2;
 }
 
 .video-card {
-  background-color: #f0dd62;
+  background-color: var(--card-yellow);
   width: 100%;
-  max-width: 320px;
-  aspect-ratio: 3 / 4;
-  border-radius: 12px;
+  max-width: 396px;
+  aspect-ratio: 4 / 5;
+  border-radius: var(--panel-radius);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .play-button {
-  background-color: var(--primary-green, #61905d);
-  width: 130px;
-  height: 130px;
+  background-color: var(--primary-green);
+  width: 198px;
+  height: 198px;
   border-radius: 50%;
   border: none;
   display: flex;
@@ -78,23 +85,24 @@
 .play-icon {
   width: 0;
   height: 0;
-  border-top: 22px solid transparent;
-  border-bottom: 22px solid transparent;
-  border-left: 35px solid var(--bg-yellow, #f5eea9);
-  margin-left: 8px;
+  border-top: 46px solid transparent;
+  border-bottom: 46px solid transparent;
+  border-left: 78px solid var(--bg-yellow);
+  margin-left: 13px;
 }
 
 .btn-comecar {
-  background-color: var(--primary-green, #61905d);
-  color: var(--bg-yellow, #f5eea9);
+  background-color: var(--primary-green);
+  color: var(--bg-yellow);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--panel-radius);
   width: 100%;
-  max-width: 320px;
-  padding: 22px;
+  max-width: 396px;
+  height: 102px;
+  padding: 0 22px;
   font-weight: 800;
   font-size: 1.15rem;
-  letter-spacing: 1.5px;
+  letter-spacing: 3px;
   text-transform: uppercase;
   cursor: pointer;
   transition: transform 0.1s ease;
@@ -102,4 +110,51 @@
 
 .btn-comecar:active {
   transform: scale(0.97);
+}
+
+@media (min-width: 768px) {
+  .login-wrapper {
+    padding-top: 0;
+  }
+
+  .login-header {
+    height: 132px;
+  }
+
+  .login-header h1 {
+    font-size: 2.7rem;
+  }
+
+  .login-main {
+    width: var(--layout-max-width);
+    margin: 0 auto;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 72px;
+    gap: 48px;
+  }
+
+  .video-card {
+    max-width: 430px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .login-main {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 72px;
+    padding-top: 54px;
+    padding-bottom: 72px;
+  }
+
+  .video-card {
+    flex: 0 1 430px;
+  }
+
+  .btn-comecar {
+    flex: 0 0 320px;
+    max-width: 320px;
+  }
 }

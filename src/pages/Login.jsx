@@ -22,12 +22,12 @@ function Login() {
 
       <main className="login-main">
         <div className="video-card">
-          <button className="play-button" aria-label="Reproduzir vídeo">
+          <button className="play-button" type="button" aria-label="Reproduzir vídeo">
             <div className="play-icon"></div>
           </button>
         </div>
 
-        <button className="btn-comecar" onClick={handleGoogleLogin}>
+        <button className="btn-comecar" type="button" onClick={handleGoogleLogin}>
           COMEÇAR
         </button>
       </main>

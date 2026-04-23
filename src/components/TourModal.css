@@ -38,9 +38,9 @@
 
 .tour-highlight-box {
     position: fixed;
-    border-radius: 14px;
-    border: 2px solid #f8e464;
-    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.75), 0 0 15px rgba(248, 228, 100, 0.4);
+    border-radius: var(--panel-radius);
+    border: 2px solid var(--card-yellow);
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.75), 0 0 15px rgba(242, 224, 103, 0.4);
     pointer-events: none;
     transition: all 0.45s cubic-bezier(0.25, 0.8, 0.25, 1);
     z-index: 100000;
@@ -52,7 +52,7 @@
     left: 20px;
     right: 20px;
     background: #ffffff;
-    border-radius: 18px;
+    border-radius: var(--panel-radius);
     padding: 25px;
     z-index: 100001;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
@@ -88,7 +88,7 @@
 }
 
 .tour-content a {
-    color: #4CAF50;
+    color: var(--primary-green);
     font-weight: bold;
     text-decoration: none;
 }
@@ -99,14 +99,30 @@
 }
 
 .tour-footer {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    column-gap: 12px;
     align-items: center;
+}
+
+.tour-footer-left,
+.tour-footer-right {
+    display: flex;
+    align-items: center;
+}
+
+.tour-footer-left {
+    justify-content: flex-start;
+}
+
+.tour-footer-right {
+    justify-content: flex-end;
 }
 
 .tour-dots {
     display: flex;
     gap: 6px;
+    justify-content: center;
 }
 
 .tour-dot {
@@ -118,14 +134,9 @@
 }
 
 .tour-dot.active {
-    background: var(--primary-green, #4CAF50);
+    background: var(--primary-green);
     width: 22px;
     border-radius: 4px;
-}
-
-.tour-actions {
-    display: flex;
-    gap: 10px;
 }
 
 .tour-btn-sec {
@@ -139,16 +150,11 @@
     text-transform: uppercase;
 }
 
-.tour-btn-sec:disabled {
-    opacity: 0;
-    pointer-events: none;
-}
-
 .tour-btn-pri {
-    background: var(--primary-green, #4CAF50);
+    background: var(--primary-green);
     color: #fff;
     border: none;
-    border-radius: 10px;
+    border-radius: var(--panel-radius);
     padding: 10px 20px;
     font-weight: 800;
     font-size: 0.85rem;

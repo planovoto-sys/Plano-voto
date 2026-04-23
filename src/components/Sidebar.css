@@ -1,24 +1,24 @@
 .hamburger-menu {
     position: absolute;
-    top: 24px;
-    left: 20px;
+    top: 31px;
+    left: 35px;
     z-index: 100;
     cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+    background: transparent;
+    border: none;
 }
 
-.bar {
-    width: 28px;
-    height: 3px;
-    background-color: #504c4c;
-    border-radius: 2px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+.hamburger-menu .app-icon {
+    width: 37px;
+    height: 37px;
 }
 
-.theme-renovar .bar {
-    background-color: #ffffff;
+.hamburger-menu.theme-renovar {
+    color: #ffffff;
+}
+
+.desktop-main-nav {
+    display: none;
 }
 
 .sidebar-overlay {
@@ -27,6 +27,7 @@
     left: 0;
     width: 100vw;
     height: 100vh;
+    height: 100svh;
     background: rgba(0, 0, 0, 0.5);
     z-index: 998;
 }
@@ -37,6 +38,7 @@
     left: -280px;
     width: 280px;
     height: 100vh;
+    height: 100svh;
     background-color: var(--bg-yellow);
     z-index: 999;
     transition: left 0.3s ease;
@@ -108,7 +110,7 @@
 
 /* Muda a cor de fundo do menu */
 .sidebar-container.theme-renovar {
-    background-color: #2A3B5D;
+    background-color: var(--renovar-bg);
 }
 
 /* Letras brancas para o nome de utilizador */
@@ -139,4 +141,69 @@
 /* Borda do avatar em branco para fazer um recorte limpo na imagem */
 .sidebar-container.theme-renovar .sidebar-avatar {
     border-color: #ffffff;
+}
+
+@media (min-width: 768px) {
+    .hamburger-menu {
+        display: none;
+    }
+
+    .desktop-main-nav {
+        position: absolute;
+        top: 26px;
+        left: calc((100% - var(--layout-max-width)) / 2);
+        z-index: 20;
+        width: var(--desktop-nav-width);
+        height: 60px;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) 58px;
+        gap: 6px;
+        align-items: center;
+        padding: 6px;
+        border-radius: 30px;
+        background-color: color-mix(in srgb, var(--card-yellow) 92%, #ffffff 8%);
+        box-shadow: 0 10px 28px rgba(74, 74, 74, 0.12);
+    }
+
+    .desktop-main-nav button {
+        height: 48px;
+        min-width: 0;
+        border-radius: 24px;
+        color: var(--text-dark);
+        font-size: 0.8rem;
+        font-weight: 900;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .desktop-main-nav button.active {
+        background-color: var(--primary-green);
+        color: var(--card-yellow);
+    }
+
+    .desktop-main-nav .desktop-logout {
+        color: #c84343;
+        font-size: 0.72rem;
+    }
+
+    .desktop-main-nav.theme-renovar {
+        background-color: rgba(255, 255, 255, 0.12);
+        box-shadow: 0 12px 30px rgba(15, 16, 21, 0.18);
+    }
+
+    .desktop-main-nav.theme-renovar button {
+        color: #ffffff;
+    }
+
+    .desktop-main-nav.theme-renovar button.active {
+        background-color: #ffffff;
+        color: var(--renovar-panel);
+    }
+
+    .desktop-main-nav.theme-renovar .desktop-logout {
+        color: #ffb39c;
+    }
 }
