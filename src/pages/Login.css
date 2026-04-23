@@ -1,32 +1,160 @@
-.login-container {
+.login-wrapper {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  padding: 20px;
+  height: 100vh;
+  height: 100svh;
+  width: 100%;
+  padding-top: 36px;
 }
 
-.login-content {
+.login-header {
+  background-color: var(--primary-green);
+  color: var(--bg-yellow);
   text-align: center;
+  height: 114px;
+  padding: 0 20px;
+  position: relative;
+  z-index: 2;
   width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-.login-title {
-  font-size: 3rem;
-  font-weight: 900;
-  color: var(--primary-green);
-  line-height: 1;
-  margin-bottom: 10px;
+.login-header h1 {
+  margin: 0;
+  font-weight: 800;
+  font-size: 2.25rem;
+  letter-spacing: 6px;
+  text-transform: lowercase;
 }
 
-.login-subtitle {
-  font-weight: 600;
-  color: var(--text-dark);
-  margin-bottom: 50px;
+.login-triangle-down {
+  width: 0;
+  height: 0;
+  border-left: 52px solid transparent;
+  border-right: 52px solid transparent;
+  border-top: 24px solid var(--primary-green);
+  position: absolute;
+  bottom: -23px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
 }
 
-.btn-login {
+.login-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 58px var(--content-gutter) 32px var(--content-gutter);
+  gap: 43px;
+  z-index: 2;
+}
+
+.video-card {
+  background-color: var(--card-yellow);
   width: 100%;
-  padding: 20px;
+  max-width: 396px;
+  aspect-ratio: 4 / 5;
+  border-radius: var(--panel-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.play-button {
+  background-color: var(--primary-green);
+  width: 198px;
+  height: 198px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.play-button:active {
+  transform: scale(0.95);
+}
+
+.play-icon {
+  width: 0;
+  height: 0;
+  border-top: 46px solid transparent;
+  border-bottom: 46px solid transparent;
+  border-left: 78px solid var(--bg-yellow);
+  margin-left: 13px;
+}
+
+.btn-comecar {
+  background-color: var(--primary-green);
+  color: var(--bg-yellow);
+  border: none;
+  border-radius: var(--panel-radius);
+  width: 100%;
+  max-width: 396px;
+  height: 102px;
+  padding: 0 22px;
+  font-weight: 800;
+  font-size: 1.15rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.btn-comecar:active {
+  transform: scale(0.97);
+}
+
+@media (min-width: 768px) {
+  .login-wrapper {
+    padding-top: 0;
+  }
+
+  .login-header {
+    height: 132px;
+  }
+
+  .login-header h1 {
+    font-size: 2.7rem;
+  }
+
+  .login-main {
+    width: var(--layout-max-width);
+    margin: 0 auto;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 72px;
+    gap: 48px;
+  }
+
+  .video-card {
+    max-width: 430px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .login-main {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 72px;
+    padding-top: 54px;
+    padding-bottom: 72px;
+  }
+
+  .video-card {
+    flex: 0 1 430px;
+  }
+
+  .btn-comecar {
+    flex: 0 0 320px;
+    max-width: 320px;
+  }
 }
