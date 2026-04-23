@@ -4,13 +4,14 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 import { useUser } from '../contexts/useUser';
 import { useNavigate } from 'react-router-dom';
 import {
-  castAnonymousVote,
+  getBallotEstado,
+  getBallotProgress,
   getVotingErrorMessage,
   readBallotDraft,
   readLastVoteReceipt,
-  saveBallotOfficeSelection,
-  saveLastVoteReceipt
+  saveBallotOfficeSelection
 } from '../services/votingService';
+import { flowError, flowLog, flowWarn } from '../services/debugFlow';
 import SelectBase from '../components/SelectBase';
 import Sidebar from '../components/Sidebar';
 import ConfirmModal from '../components/ConfirmModal';
@@ -30,6 +31,7 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
   const [modalAviso, setModalAviso] = useState({ aberto: false, mensagem: '' });
   const [modalTroca, setModalTroca] = useState({ aberto: false, novoCandidato: null });
   const [isTourOpen, setIsTourOpen] = useState(false);
+  const estadoDoFluxo = user?.uid ? getBallotEstado(user.uid, userData?.estado) : userData?.estado;
 
   const tourSteps = [
     { target: '#tour-busca', title: 'PESQUISA', content: 'Pesquisa candidatos por nome ou partido.' },
@@ -48,9 +50,17 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
 
   useEffect(() => {
     if (user?.uid && userEligibility?.has_voted && readLastVoteReceipt(user.uid)) {
+      flowLog('candidates.redirect.result-with-receipt', { userId: user.uid, cargo });
       navigate('/finalizacao', { replace: true });
     }
-  }, [user?.uid, userEligibility?.has_voted, navigate]);
+  }, [cargo, user?.uid, userEligibility?.has_voted, navigate]);
+
+  useEffect(() => {
+    if (!userLoading && user?.uid && !estadoDoFluxo) {
+      flowWarn('candidates.missing-state.redirect-home', { userId: user.uid, cargo });
+      navigate('/home', { replace: true });
+    }
+  }, [cargo, estadoDoFluxo, navigate, user?.uid, userLoading]);
 
   // BUSCA DADOS NO FIREBASE: Apenas quando o cargo muda (ex: Federal para Senador)
   // Removido o filtroAtivo daqui para evitar que a tela "pisque" ao trocar de aba
@@ -94,8 +104,10 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
             porcentagemCalculada: Math.min((votos / MEDIA_TESTE) * 100, 100).toFixed(0) 
           };
         });
+        flowLog('candidates.fetch.success', { cargo, total: lista.length });
         setTodosCandidatos(lista);
       } catch (e) { 
+        flowError('candidates.fetch.error', e, { cargo });
         console.error("Erro ao buscar candidatos:", e); 
       } finally { 
         setLoading(false); 
@@ -111,14 +123,20 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
       return;
     }
 
-    const draft = readBallotDraft(user.uid, userData?.estado);
+    const draft = readBallotDraft(user.uid, estadoDoFluxo);
     const idsSalvos = (draft.selections?.[chaveBanco] || []).map((candidate) => candidate.id);
+    flowLog('candidates.restore-selection', {
+      cargo,
+      chaveBanco,
+      estado: estadoDoFluxo,
+      idsSalvos
+    });
     setSelecionadosNaTela(todosCandidatos.filter((candidate) => idsSalvos.includes(candidate.id)));
-  }, [user?.uid, userData?.estado, todosCandidatos, chaveBanco]);
+  }, [cargo, user?.uid, estadoDoFluxo, todosCandidatos, chaveBanco]);
 
   // FILTRAGEM LOCAL: Ocorre instantaneamente na memória ao trocar de aba ou pesquisar
   const candidatosFiltrados = useMemo(() => {
-    const meuEstado = userData?.estado?.replace(/[\s\u00A0]+/g, '') || "SP";
+    const meuEstado = estadoDoFluxo?.replace(/[\s\u00A0]+/g, '') || "";
     let filtrados = todosCandidatos.filter(c => c.ufLimpa === meuEstado || c.ufLimpa === "TODOS");
     
     if (filtroAtivo === 'renovar') {
@@ -127,7 +145,7 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
       filtrados.sort((a, b) => a.classificacaoNum - b.classificacaoNum);
     }
     return filtrados;
-  }, [todosCandidatos, userData, filtroAtivo]);
+  }, [todosCandidatos, estadoDoFluxo, filtroAtivo]);
 
   const listaExibida = useMemo(() => {
     let disponiveis = candidatosFiltrados.filter(c => parseInt(c.porcentagemCalculada) < 100);
@@ -150,7 +168,33 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
   }, [candidatosFiltrados, filtroAtivo, busca]);
 
   const handleConfirmarFinal = async (listaFinalDaTela) => {
+    flowLog('candidates.confirm.start', {
+      cargo,
+      chaveBanco,
+      totalSelecionados: listaFinalDaTela.length,
+      limite,
+      estado: estadoDoFluxo,
+      userId: user?.uid
+    });
+
+    if (!user?.uid) {
+      flowWarn('candidates.confirm.no-user', { cargo });
+      navigate('/', { replace: true });
+      return;
+    }
+
+    if (!estadoDoFluxo) {
+      flowWarn('candidates.confirm.no-state', { cargo });
+      navigate('/home', { replace: true });
+      return;
+    }
+
     if (listaFinalDaTela.length < limite) { 
+      flowWarn('candidates.confirm.incomplete-office', {
+        cargo,
+        totalSelecionados: listaFinalDaTela.length,
+        limite
+      });
       setModalAviso({ 
         aberto: true, 
         mensagem: cargo === "Senador" ? "Tem de selecionar 2 Senadores." : "Tem de selecionar pelo menos 1 Deputado Federal." 
@@ -159,30 +203,26 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
     }
     setLoading(true);
     try {
-      if (userEligibility?.has_voted) {
-        navigate('/finalizacao', { replace: true });
-        return;
-      }
+      const draftAtualizado = saveBallotOfficeSelection(user.uid, chaveBanco, listaFinalDaTela, estadoDoFluxo);
+      const progress = getBallotProgress(draftAtualizado);
 
-      const draftAtualizado = saveBallotOfficeSelection(user.uid, chaveBanco, listaFinalDaTela, userData?.estado);
-
-      if (proximaRota === '/finalizacao') {
-        const receipt = await castAnonymousVote({
-          user,
-          estado: userData?.estado,
-          draft: draftAtualizado
-        });
-        saveLastVoteReceipt(user.uid, receipt, draftAtualizado);
-      }
-
+      flowLog('candidates.confirm.saved', {
+        cargo,
+        chaveBanco,
+        proximaRota,
+        progress,
+        hasVoted: userEligibility?.has_voted === true
+      });
       navigate(proximaRota);
     } catch (e) { 
+      flowError('candidates.confirm.error', e, { cargo, chaveBanco });
       console.error("Erro ao salvar seleções:", e); 
       setModalAviso({
         aberto: true,
         mensagem: getVotingErrorMessage(e)
       });
-      setLoading(false); 
+    } finally {
+      setLoading(false);
     }
   };
 

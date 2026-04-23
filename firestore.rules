@@ -39,6 +39,16 @@ service cloud.firestore {
         && getAfter(eligibilityPath(electionId)).data.voted_at == request.time;
     }
 
+    function candidateVoteIncremented() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votos_recebidos'])
+        && (
+          ('votos_recebidos' in resource.data
+            && request.resource.data.votos_recebidos == resource.data.votos_recebidos + 1)
+          || (!('votos_recebidos' in resource.data)
+            && request.resource.data.votos_recebidos == 1)
+        );
+    }
+
     match /users/{userId} {
       allow get: if isOwner(userId) || isAdmin();
       allow list: if isAdmin();
@@ -84,8 +94,7 @@ service cloud.firestore {
         || (
           signedIn()
           && voteMarkedInThisCommit(activeElectionId())
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votos_recebidos'])
-          && request.resource.data.votos_recebidos == resource.data.votos_recebidos + 1
+          && candidateVoteIncremented()
         );
     }
 

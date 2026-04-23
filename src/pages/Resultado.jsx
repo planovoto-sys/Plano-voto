@@ -8,6 +8,7 @@ import { InfoIcon, ShareSolidIcon } from '../components/AppIcons';
 import {
     castAnonymousVote,
     fetchCandidatesByIds,
+    getBallotProgress,
     getCandidateIdsFromDraft,
     getVotingErrorMessage,
     readBallotDraft,
@@ -15,6 +16,7 @@ import {
     saveLastVoteReceipt,
     validateCompleteBallot
 } from '../services/votingService';
+import { flowError, flowLog, flowWarn } from '../services/debugFlow';
 
 const MEDIA_TESTE = 4;
 
@@ -87,44 +89,60 @@ export default function Resultado() {
 
                 const draft = readBallotDraft(user.uid, userData?.estado);
                 const receipt = readLastVoteReceipt(user.uid);
+                const progress = getBallotProgress(draft);
                 const idsDoRecibo = receipt?.candidate_ids || [];
                 const idsDoRascunho = getCandidateIdsFromDraft(draft);
                 const candidateIds = idsDoRecibo.length > 0 ? idsDoRecibo : idsDoRascunho;
 
+                flowLog('result.load.start', {
+                    userId: user.uid,
+                    hasReceipt: Boolean(receipt),
+                    hasVoted: userEligibility?.has_voted === true,
+                    progress,
+                    candidateIds
+                });
+
                 if (candidateIds.length === 0) {
-                    navigate('/', { replace: true });
+                    flowWarn('result.no-candidates.redirect', { to: progress.nextRoute });
+                    navigate(progress.nextRoute, { replace: true });
                     return;
                 }
 
                 const validation = validateCompleteBallot(draft);
                 if (!receipt && !validation.ok) {
-                    navigate('/', { replace: true });
-                    return;
-                }
-
-                if (!receipt && userEligibility?.has_voted) {
-                    navigate('/', { replace: true });
+                    flowWarn('result.incomplete-draft.redirect', {
+                        code: validation.code,
+                        missingOffices: validation.missingOffices,
+                        to: progress.nextRoute
+                    });
+                    navigate(progress.nextRoute, { replace: true });
                     return;
                 }
 
                 if (!receipt && !userEligibility?.has_voted && validation.ok) {
                     try {
+                        flowLog('result.vote-submit.start', { userId: user.uid });
                         const newReceipt = await castAnonymousVote({
                             user,
                             estado: userData?.estado,
                             draft
                         });
                         saveLastVoteReceipt(user.uid, newReceipt, draft);
+                        flowLog('result.vote-submit.success', { receiptCode: newReceipt.receiptCode });
                     } catch (error) {
                         if (error?.code === 'VOTE_ALREADY_CAST') {
-                            navigate('/', { replace: true });
-                            return;
+                            flowWarn('result.vote-submit.already-voted-showing-local-result', { userId: user.uid });
+                        } else {
+                            flowError('result.vote-submit.error-showing-local-result', error, { userId: user.uid });
+                            setSubmissionError(getVotingErrorMessage(error));
                         }
-                        throw error;
                     }
+                } else if (!receipt && userEligibility?.has_voted) {
+                    flowWarn('result.vote-submit.skipped-already-voted-no-receipt', { userId: user.uid });
                 }
 
                 const candidatos = await fetchCandidatesByIds(candidateIds);
+                flowLog('result.candidates.loaded', { requested: candidateIds.length, loaded: candidatos.length });
                 let soma = 0; const lista = [];
 
                 candidatos.forEach((candidate) => {
@@ -149,6 +167,7 @@ export default function Resultado() {
                 setMedia(lista.length > 0 ? soma / lista.length : 0);
                 setCandidatosCompletos(lista);
             } catch (error) {
+                flowError('result.load.error', error, { userId: user?.uid });
                 console.error("Erro:", error);
                 if (isMounted) setSubmissionError(getVotingErrorMessage(error));
             } finally {

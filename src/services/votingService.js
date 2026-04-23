@@ -10,6 +10,7 @@ import {
   where
 } from 'firebase/firestore';
 import { db } from './firebaseConfig';
+import { flowLog, flowWarn } from './debugFlow';
 
 export const ACTIVE_ELECTION_ID = import.meta.env.VITE_ACTIVE_ELECTION_ID || 'congresso-2026';
 
@@ -104,8 +105,32 @@ export const readBallotDraft = (userId, estado = null) => {
 const persistBallotDraft = (userId, draft) => {
   if (!userId || !canUseStorage()) return draft;
   window.localStorage.setItem(draftKey(userId), JSON.stringify(draft));
+  flowLog('draft.persisted', {
+    userId,
+    estado: draft.estado,
+    deputadoFederal: draft.selections.deputado_federal.length,
+    senadores: draft.selections.senadores.length
+  });
   return draft;
 };
+
+export const getBallotEstado = (userId, fallbackEstado = null) => {
+  const draft = readBallotDraft(userId, fallbackEstado);
+  return draft.estado || fallbackEstado || null;
+};
+
+export const saveBallotState = (userId, estado) => {
+  const currentDraft = readBallotDraft(userId, estado);
+  return persistBallotDraft(userId, {
+    ...currentDraft,
+    estado,
+    updated_at: new Date().toISOString()
+  });
+};
+
+export const resetBallotForState = (userId, estado) => (
+  persistBallotDraft(userId, createEmptyBallotDraft(estado))
+);
 
 export const saveBallotOfficeSelection = (userId, officeKey, candidates, estado = null) => {
   if (!OFFICE_LIMITS[officeKey]) {
@@ -144,6 +169,27 @@ export const clearVoteReceipt = (userId) => {
 export const hasBallotSelections = (userId) => {
   const draft = readBallotDraft(userId);
   return Object.values(draft.selections).some((items) => items.length > 0);
+};
+
+export const getBallotProgress = (draft) => {
+  const normalizedDraft = normalizeDraft(draft);
+  const hasEstado = Boolean(normalizedDraft.estado);
+  const hasDeputadoFederal = normalizedDraft.selections.deputado_federal.length === OFFICE_LIMITS.deputado_federal;
+  const hasSenadores = normalizedDraft.selections.senadores.length === OFFICE_LIMITS.senadores;
+
+  return {
+    hasEstado,
+    hasDeputadoFederal,
+    hasSenadores,
+    isComplete: hasEstado && hasDeputadoFederal && hasSenadores,
+    nextRoute: !hasEstado
+      ? '/home'
+      : !hasDeputadoFederal
+        ? '/escolher-deputado-federal'
+        : !hasSenadores
+          ? '/escolher-senadores'
+          : '/finalizacao'
+  };
 };
 
 export const getCandidateIdsFromDraft = (draft) => {
@@ -274,6 +320,13 @@ export const castAnonymousVote = async ({ user, estado, draft }) => {
   }
 
   const { normalizedDraft, candidateIds } = validation;
+  flowLog('vote.cast.start', {
+    userId: user.uid,
+    electionId: ACTIVE_ELECTION_ID,
+    estado: estado ?? normalizedDraft.estado ?? null,
+    candidateIds
+  });
+
   const allowSelfEnrollment = import.meta.env.VITE_ALLOW_SELF_ENROLLMENT !== 'false';
   const voteRef = doc(collection(db, 'elections', ACTIVE_ELECTION_ID, 'votes'));
   const auditRef = doc(collection(db, 'elections', ACTIVE_ELECTION_ID, 'audit_events'));
@@ -285,6 +338,10 @@ export const castAnonymousVote = async ({ user, estado, draft }) => {
     const eligibility = eligibilitySnap.exists() ? eligibilitySnap.data() : null;
 
     if (eligibility?.has_voted) {
+      flowWarn('vote.cast.already-voted', {
+        userId: user.uid,
+        electionId: ACTIVE_ELECTION_ID
+      });
       throw new VotingError('VOTE_ALREADY_CAST', 'Este eleitor já registrou um voto nesta eleição.');
     }
 
