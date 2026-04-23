@@ -3,7 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/useUser';
 import { db } from '../services/firebaseConfig';
 import { deleteField, doc, serverTimestamp, updateDoc } from 'firebase/firestore';
-import { clearBallotDraft, clearVoteReceipt, hasBallotSelections, readLastVoteReceipt } from '../services/votingService';
+import {
+  clearVoteReceipt,
+  getBallotEstado,
+  hasBallotSelections,
+  readBallotDraft,
+  readLastVoteReceipt,
+  resetBallotForState,
+  saveBallotState
+} from '../services/votingService';
+import { flowError, flowLog, flowWarn } from '../services/debugFlow';
 import SelectBase from '../components/SelectBase';
 import Sidebar from '../components/Sidebar';
 import ConfirmModal from '../components/ConfirmModal';
@@ -44,9 +53,11 @@ export default function Home() {
   
   // ESTADO PARA O TOUR NA HOME
   const [isTourOpen, setIsTourOpen] = useState(false);
+  const estadoSelecionado = user?.uid ? getBallotEstado(user.uid, userData?.estado) : userData?.estado;
 
   useEffect(() => {
     if (user?.uid && userEligibility?.has_voted && readLastVoteReceipt(user.uid)) {
+      flowLog('home.redirect.result-with-receipt', { userId: user.uid });
       navigate('/finalizacao', { replace: true });
     }
   }, [user?.uid, userEligibility?.has_voted, navigate]);
@@ -57,7 +68,7 @@ export default function Home() {
     { target: '#tour-lista', title: 'LISTA', content: 'Mostra os estados a serem selecionados.' }
   ];
 
-  const selecaoInicial = userData?.estado ? LISTA_ESTADOS.filter(estado => estado.sigla === userData.estado) : [];
+  const selecaoInicial = estadoSelecionado ? LISTA_ESTADOS.filter(estado => estado.sigla === estadoSelecionado) : [];
 
   const listaExibida = useMemo(() => {
     const termo = normalizarBusca(busca);
@@ -73,11 +84,29 @@ export default function Home() {
   }, [busca]);
 
   const handleConfirmar = async (selecionados) => {
-    if (selecionados.length === 0) return;
-    const novoEstado = selecionados[0].sigla;
+    flowLog('home.confirm-state.start', {
+      userId: user?.uid,
+      selecionados: selecionados.map((estado) => estado.sigla)
+    });
 
-    if (userData?.estado && userData.estado !== novoEstado) {
+    if (selecionados.length === 0) {
+      flowWarn('home.confirm-state.empty-selection');
+      return;
+    }
+
+    if (!user?.uid) {
+      flowWarn('home.confirm-state.no-user');
+      navigate('/', { replace: true });
+      return;
+    }
+
+    const novoEstado = selecionados[0].sigla;
+    const draft = readBallotDraft(user.uid, estadoSelecionado);
+    const estadoAtual = draft.estado || estadoSelecionado || null;
+
+    if (estadoAtual && estadoAtual !== novoEstado) {
       if (hasBallotSelections(user.uid)) {
+        flowWarn('home.confirm-state.requires-reset', { estadoAtual, novoEstado });
         setPendingEstado(novoEstado);
         setModalOpen(true);
         return;
@@ -87,9 +116,22 @@ export default function Home() {
   };
 
   const executarMudanca = async (novoEstado) => {
+    if (!user?.uid) {
+      flowWarn('home.change-state.no-user');
+      navigate('/', { replace: true });
+      return;
+    }
+
+    flowLog('home.change-state.start', {
+      userId: user.uid,
+      novoEstado,
+      estadoFirestore: userData?.estado || null
+    });
+
     setLoading(true); setModalOpen(false);
     try {
       const userRef = doc(db, "users", user.uid);
+      const estadoAtual = readBallotDraft(user.uid, estadoSelecionado).estado || estadoSelecionado || null;
       const estadoPatch = {
         estado: novoEstado,
         role: userData?.role || 'voter',
@@ -98,14 +140,29 @@ export default function Home() {
         candidatos_escolhidos: deleteField()
       };
 
-      if (userData?.estado && userData.estado !== novoEstado) {
-        clearBallotDraft(user.uid);
+      if (estadoAtual && estadoAtual !== novoEstado) {
+        resetBallotForState(user.uid, novoEstado);
         clearVoteReceipt(user.uid);
+      } else {
+        saveBallotState(user.uid, novoEstado);
       }
 
-      await updateDoc(userRef, estadoPatch);
+      updateDoc(userRef, estadoPatch)
+        .then(() => {
+          flowLog('home.change-state.firestore-success', { userId: user.uid, novoEstado });
+        })
+        .catch((error) => {
+          flowError('home.change-state.firestore-error', error, { userId: user.uid, novoEstado });
+        });
+
+      flowLog('home.change-state.navigate', { to: '/escolher-deputado-federal', novoEstado });
       navigate('/escolher-deputado-federal');
-    } catch (e) { console.error("Erro ao salvar estado: ", e); } finally { setLoading(false); }
+    } catch (e) {
+      flowError('home.change-state.local-error', e, { novoEstado });
+      console.error("Erro ao salvar estado: ", e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

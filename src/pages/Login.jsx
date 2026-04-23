@@ -1,13 +1,17 @@
 import React from 'react';
 import { auth, googleProvider } from '../services/firebaseConfig';
 import { signInWithPopup } from 'firebase/auth';
+import { flowError, flowLog } from '../services/debugFlow';
 import './Login.css';
 
 function Login() {
   const handleGoogleLogin = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
+      flowLog('login.google.start');
+      const result = await signInWithPopup(auth, googleProvider);
+      flowLog('login.google.success', { userId: result.user?.uid });
     } catch (error) {
+      flowError('login.google.error', error);
       console.error("Erro ao fazer login:", error);
       alert("Falha ao fazer login com o Google.");
     }
