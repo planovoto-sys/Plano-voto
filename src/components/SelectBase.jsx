@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ConfirmModal from './ConfirmModal';
 import { ClearIcon, InfoIcon } from './AppIcons';
+import { flowLog, flowWarn } from '../services/debugFlow';
 import './SelectBase.css';
 
 export default function SelectBase({
@@ -33,6 +34,7 @@ export default function SelectBase({
   const handleSelect = (item) => {
     const jaSelecionado = selecionados.find((v) => v.id === item.id);
     if (jaSelecionado) {
+      flowLog('select.item.remove', { titulo, itemId: item.id, itemLabel: item.Nome || item.nome || item.sigla || item.id });
       setSelecionados(selecionados.filter((v) => v.id !== item.id));
       return;
     }
@@ -42,6 +44,7 @@ export default function SelectBase({
         return;
     }
 
+    flowLog('select.item.add', { titulo, itemId: item.id, itemLabel: item.Nome || item.nome || item.sigla || item.id });
     efetivarSelecao(item);
   };
 
@@ -51,6 +54,7 @@ export default function SelectBase({
       return;
     }
     if (selecionados.length >= limiteSelecao) {
+      flowWarn('select.limit-reached', { titulo, limiteSelecao, itemId: item.id });
       if (onLimiteAtingido) onLimiteAtingido(item);
       return;
     }
@@ -58,6 +62,12 @@ export default function SelectBase({
   };
 
   const handleConfirmar = () => {
+    flowLog('select.confirm.click', {
+      titulo,
+      totalSelecionados: selecionados.length,
+      limiteSelecao,
+      selecionados: selecionados.map((item) => item.id)
+    });
     if (onConfirmar) onConfirmar(selecionados);
   };
 

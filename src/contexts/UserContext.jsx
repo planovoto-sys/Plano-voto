@@ -4,6 +4,7 @@ import { auth, db } from '../services/firebaseConfig';
 import { deleteField, doc, getDoc, onSnapshot, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
 import { UserContext } from './UserContextCore';
 import { ACTIVE_ELECTION_ID } from '../services/votingService';
+import { flowError, flowLog, flowWarn } from '../services/debugFlow';
 
 export const UserProvider = ({ children }) => {
   const [user, authLoading] = useAuthState(auth);
@@ -18,6 +19,7 @@ export const UserProvider = ({ children }) => {
     if (!authLoading && !user) {
       queueMicrotask(() => {
         if (cancelled) return;
+        flowLog('auth.signed-out');
         setUserData(null);
         setUserEligibility(null);
         setDataLoading(false);
@@ -31,6 +33,7 @@ export const UserProvider = ({ children }) => {
     }
 
     if (user) {
+      flowLog('auth.signed-in', { userId: user.uid });
       const userRef = doc(db, "users", user.uid);
       const eligibilityRef = doc(db, "elections", ACTIVE_ELECTION_ID, "eligibility", user.uid);
 
@@ -38,6 +41,7 @@ export const UserProvider = ({ children }) => {
         try {
           const docSnap = await getDoc(userRef);
           if (!docSnap.exists()) {
+            flowLog('user.create.start', { userId: user.uid });
             await setDoc(userRef, {
               name: user.displayName,
               email: user.email,
@@ -47,7 +51,12 @@ export const UserProvider = ({ children }) => {
               schema_version: 1,
               created_at: serverTimestamp()
             });
+            flowLog('user.create.success', { userId: user.uid });
           } else {
+            flowLog('user.migrate.start', {
+              userId: user.uid,
+              hasLegacyChoices: docSnap.data().candidatos_escolhidos !== undefined
+            });
             const userPatch = {
               name: user.displayName,
               email: user.email,
@@ -63,8 +72,10 @@ export const UserProvider = ({ children }) => {
             }
 
             await updateDoc(userRef, userPatch);
+            flowLog('user.migrate.success', { userId: user.uid });
           }
         } catch (error) {
+          flowError('user.ensure.error', error, { userId: user.uid });
           console.error("Erro ao criar usuário:", error);
         }
       };
@@ -73,20 +84,35 @@ export const UserProvider = ({ children }) => {
 
       const unsubUser = onSnapshot(userRef, (doc) => {
         if (doc.exists()) {
+          flowLog('user.snapshot', {
+            userId: user.uid,
+            estado: doc.data().estado || null,
+            hasLegacyChoices: doc.data().candidatos_escolhidos !== undefined
+          });
           setUserData(doc.data());
+        } else {
+          flowWarn('user.snapshot.missing', { userId: user.uid });
         }
         setDataLoading(false);
       }, (error) => {
+        flowError('user.snapshot.error', error, { userId: user.uid });
         console.error("Erro no contexto de usuário:", error);
         setDataLoading(false);
       });
 
       const unsubEligibility = onSnapshot(eligibilityRef, (doc) => {
+        flowLog('eligibility.snapshot', {
+          userId: user.uid,
+          exists: doc.exists(),
+          hasVoted: doc.exists() ? doc.data().has_voted === true : false,
+          status: doc.exists() ? doc.data().status || null : 'missing'
+        });
         setUserEligibility(doc.exists()
           ? doc.data()
           : { status: 'pending', has_voted: false, missing: true }
         );
       }, (error) => {
+        flowError('eligibility.snapshot.error', error, { userId: user.uid });
         console.error("Erro ao acompanhar elegibilidade:", error);
         setUserEligibility({ status: 'unknown', has_voted: false, error: true });
       });
