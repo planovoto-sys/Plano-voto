@@ -22,6 +22,7 @@ export default function SelectBase({
   renderItem,
   onLimiteAtingido,
   onHelpClick,
+  topRightExtra = null,
   linhasVisiveis = 5,
   mostrarBotaoVoltar = true
 }) {
@@ -94,8 +95,7 @@ export default function SelectBase({
   const canClearBusca = mostrarBusca && textoBuscaFixo === null && valorBusca.trim().length > 0;
   const showBackButton = mostrarBotaoVoltar && typeof onVoltar === 'function';
   
-  // Altura dinâmica baseada na prop linhasVisiveis
-  const maxListHeight = `${linhasVisiveis * 80}px`;
+  const listBoxStyle = { '--list-max-height': `${linhasVisiveis * 80}px` };
 
   return (
     <div className={`select-base-container ${themeClass} ${layoutClass}`}>
@@ -125,6 +125,7 @@ export default function SelectBase({
         )}
 
         <div className="nav-action-right">
+          {topRightExtra}
           {onHelpClick && (
             <button className="btn-help-icon top-icon-button" type="button" onClick={handleHelpPress} id="tour-help" aria-label="Abrir ajuda">
               <InfoIcon />
@@ -162,7 +163,7 @@ export default function SelectBase({
       )}
 
       <div className="list-wrapper">
-        <div className="list-scroll-box" id="tour-lista" style={{ '--list-max-height': maxListHeight }}>
+        <div className="list-scroll-box" id="tour-lista" style={listBoxStyle}>
           {dados.length > 0 ? (
             dados.map((item) => {
               const isSelected = selecionados.some((v) => v.id === item.id);

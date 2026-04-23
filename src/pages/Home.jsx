@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/useUser';
-import { db } from '../services/firebaseConfig';
+import { auth, db } from '../services/firebaseConfig';
 import { deleteField, doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import {
   clearVoteReceipt,
@@ -47,6 +47,7 @@ const normalizarBusca = (valor) => (
 export default function Home() {
   const { user, userData, userEligibility, loading: userLoading, filtroAtivo } = useUser();
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [pendingEstado, setPendingEstado] = useState(null);
@@ -55,13 +56,19 @@ export default function Home() {
   // ESTADO PARA O TOUR NA HOME
   const [isTourOpen, setIsTourOpen] = useState(false);
   const estadoSelecionado = user?.uid ? getBallotEstado(user.uid, userData?.estado) : userData?.estado;
+  const bypassVoteRedirect = location.state?.bypassVoteRedirect === true;
+
+  const handleLogout = () => {
+    auth.signOut();
+    navigate('/');
+  };
 
   useEffect(() => {
-    if (user?.uid && userEligibility?.has_voted && readLastVoteReceipt(user.uid)) {
+    if (!bypassVoteRedirect && user?.uid && userEligibility?.has_voted && readLastVoteReceipt(user.uid)) {
       flowLog('home.redirect.result-with-receipt', { userId: user.uid });
       navigate('/finalizacao', { replace: true });
     }
-  }, [user?.uid, userEligibility?.has_voted, navigate]);
+  }, [bypassVoteRedirect, user?.uid, userEligibility?.has_voted, navigate]);
 
   // TEXTOS DO TOUR ESPECÍFICOS PARA A HOME (Baseados no PDF)
   const tourSteps = [
@@ -184,6 +191,7 @@ export default function Home() {
         onConfirmar={handleConfirmar} mostrarBotaoVoltar={false}
         linhasVisiveis={5} 
         abaAtiva={filtroAtivo}
+        topRightExtra={<button className="desktop-utility-btn" type="button" onClick={handleLogout}>Sair</button>}
         onHelpClick={() => setIsTourOpen(true)} /* ATIVA O BOTÃO "i" NA TELA DE ESTADOS */
         renderItem={(estado) => (
           <div className="state-centered-name">

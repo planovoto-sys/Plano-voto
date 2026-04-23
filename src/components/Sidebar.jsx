@@ -19,12 +19,13 @@ export default function Sidebar() {
   const themeClass = `theme-${filtroAtivo || 'geral'}`;
   const navItems = [
     { label: 'Estado', path: '/home' },
-    { label: 'Dep. Federais', path: '/escolher-deputado-federal' },
+    { label: 'Deputado Federal', path: '/escolher-deputado-federal' },
     { label: 'Senadores', path: '/escolher-senadores' },
+    { label: 'Resultados', path: '/finalizacao' },
   ];
 
   const goTo = (path) => {
-    navigate(path);
+    navigate(path, { state: { bypassVoteRedirect: true } });
     setIsOpen(false);
   };
 
@@ -45,7 +46,6 @@ export default function Sidebar() {
             {item.label}
           </button>
         ))}
-        <button className="desktop-logout" type="button" onClick={handleLogout}>Sair</button>
       </nav>
 
       {isOpen && <div className="sidebar-overlay" onClick={() => setIsOpen(false)}></div>}

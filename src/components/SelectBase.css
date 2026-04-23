@@ -30,6 +30,26 @@
    1. LAYOUT PRINCIPAL E CONTAINERS
    ========================================================================== */
 .select-base-container {
+    --mobile-nav-top: clamp(18px, calc(23px * var(--mobile-scale)), 23px);
+    --mobile-nav-side: clamp(24px, calc(37px * var(--mobile-scale)), 37px);
+    --mobile-nav-bottom: clamp(18px, calc(22px * var(--mobile-scale)), 22px);
+    --mobile-nav-gap: clamp(18px, calc(27px * var(--mobile-scale)), 27px);
+    --mobile-search-height: clamp(48px, calc(57px * var(--mobile-scale)), 57px);
+    --mobile-search-radius: clamp(20px, calc(24px * var(--mobile-scale)), 24px);
+    --mobile-banner-height: clamp(82px, calc(92px * var(--mobile-scale)), 92px);
+    --mobile-banner-triangle-width: clamp(42px, calc(52px * var(--mobile-scale)), 52px);
+    --mobile-banner-triangle-height: clamp(18px, calc(22px * var(--mobile-scale)), 22px);
+    --mobile-tabs-margin-top: clamp(34px, calc(46px * var(--mobile-scale)), 46px);
+    --mobile-tabs-margin-bottom: clamp(18px, calc(24px * var(--mobile-scale)), 24px);
+    --mobile-tab-height: clamp(40px, calc(45px * var(--mobile-scale)), 45px);
+    --mobile-list-top-padding: clamp(16px, calc(21px * var(--mobile-scale)), 21px);
+    --mobile-card-height: clamp(68px, calc(80px * var(--mobile-scale)), 80px);
+    --mobile-card-padding-x: clamp(14px, calc(17px * var(--mobile-scale)), 17px);
+    --mobile-footer-height: clamp(74px, calc(89px * var(--mobile-scale)), 89px);
+    --mobile-footer-bottom: calc(clamp(28px, calc(48px * var(--mobile-scale)), 48px) + var(--mobile-safe-bottom));
+    --mobile-chart-size: clamp(52px, calc(62px * var(--mobile-scale)), 62px);
+    --mobile-badge-width: clamp(52px, calc(58px * var(--mobile-scale)), 58px);
+    --mobile-badge-height: clamp(22px, calc(25px * var(--mobile-scale)), 25px);
     display: flex;
     flex-direction: column;
     height: 100vh;
@@ -57,7 +77,7 @@
 
 .list-wrapper {
     flex: 1;
-    padding: 21px var(--content-gutter) 0 var(--content-gutter);
+    padding: var(--mobile-list-top-padding) var(--content-gutter) 0 var(--content-gutter);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -81,10 +101,9 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 27px;
-    padding: 23px 37px 22px 37px;
-    height: 103px;
-    min-height: 103px;
+    gap: var(--mobile-nav-gap);
+    padding: calc(var(--mobile-nav-top) + var(--mobile-safe-top)) var(--mobile-nav-side) var(--mobile-nav-bottom) var(--mobile-nav-side);
+    min-height: calc(var(--mobile-search-height) + var(--mobile-nav-top) + var(--mobile-nav-bottom) + var(--mobile-safe-top));
 }
 
 .nav-spacer {
@@ -101,14 +120,14 @@
 
 .top-search-wrapper input {
     width: 100%;
-    height: 57px;
+    height: var(--mobile-search-height);
     background-color: var(--card-yellow);
     border: none;
-    border-radius: 24px;
-    padding: 0 18px;
-    font-size: 1rem;
+    border-radius: var(--mobile-search-radius);
+    padding: 0 clamp(16px, calc(18px * var(--mobile-scale)), 18px);
+    font-size: clamp(0.95rem, calc(0.88rem + 0.2vw), 1rem);
     font-weight: 400;
-    letter-spacing: 2px;
+    letter-spacing: clamp(1px, calc(2px * var(--mobile-scale)), 2px);
     color: var(--text-dark);
     text-align: center;
     outline: none;
@@ -116,16 +135,16 @@
 }
 
 .top-search-wrapper.has-clear-button input {
-    padding-left: 46px;
-    padding-right: 46px;
+    padding-left: clamp(40px, calc(46px * var(--mobile-scale)), 46px);
+    padding-right: clamp(40px, calc(46px * var(--mobile-scale)), 46px);
 }
 
 .btn-clear-search {
     position: absolute;
     top: 50%;
-    right: 11px;
-    width: 34px;
-    height: 34px;
+    right: clamp(8px, calc(11px * var(--mobile-scale)), 11px);
+    width: clamp(30px, calc(34px * var(--mobile-scale)), 34px);
+    height: clamp(30px, calc(34px * var(--mobile-scale)), 34px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -135,8 +154,8 @@
 }
 
 .btn-clear-search .app-icon {
-    width: 22px;
-    height: 22px;
+    width: clamp(20px, calc(22px * var(--mobile-scale)), 22px);
+    height: clamp(20px, calc(22px * var(--mobile-scale)), 22px);
 }
 
 .btn-clear-search:active {
@@ -158,7 +177,13 @@
     width: var(--top-icon-size);
     flex: 0 0 var(--top-icon-size);
     display: flex;
+    align-items: center;
+    gap: 10px;
     justify-content: flex-end;
+}
+
+.desktop-utility-btn {
+    display: none;
 }
 
 .btn-help-icon {
@@ -173,8 +198,8 @@
 }
 
 .btn-help-icon .app-icon {
-    width: 40px;
-    height: 40px;
+    width: clamp(32px, calc(40px * var(--mobile-scale)), 40px);
+    height: clamp(32px, calc(40px * var(--mobile-scale)), 40px);
 }
 
 .btn-help-icon.pulse-anim {
@@ -202,8 +227,8 @@
     background-color: var(--primary-green);
     color: var(--bg-yellow);
     text-align: center;
-    min-height: 92px;
-    padding: 0 20px;
+    min-height: var(--mobile-banner-height);
+    padding: 0 clamp(14px, calc(20px * var(--mobile-scale)), 20px);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -212,18 +237,18 @@
 
 .green-banner-selection h2 {
     font-weight: 900;
-    font-size: 1.75rem;
+    font-size: clamp(1.52rem, calc(1.3rem + 0.95vw), 1.75rem);
     line-height: 1.1;
-    letter-spacing: 7px;
+    letter-spacing: clamp(3px, calc(7px * var(--mobile-scale)), 7px);
     text-transform: uppercase;
     margin: 0;
 }
 
 .green-banner-selection h3 {
     font-weight: 800;
-    font-size: 1.35rem;
+    font-size: clamp(1.06rem, calc(0.95rem + 0.8vw), 1.35rem);
     line-height: 1.2;
-    letter-spacing: 5px;
+    letter-spacing: clamp(2px, calc(5px * var(--mobile-scale)), 5px);
     text-transform: uppercase;
     margin-top: 5px;
 }
@@ -231,11 +256,11 @@
 .triangle-down {
     width: 0;
     height: 0;
-    border-left: 52px solid transparent;
-    border-right: 52px solid transparent;
-    border-top: 22px solid var(--primary-green);
+    border-left: var(--mobile-banner-triangle-width) solid transparent;
+    border-right: var(--mobile-banner-triangle-width) solid transparent;
+    border-top: var(--mobile-banner-triangle-height) solid var(--primary-green);
     position: absolute;
-    bottom: -21px;
+    bottom: calc(-1 * var(--mobile-banner-triangle-height) + 1px);
     left: 50%;
     z-index: 1;
     transform: translateX(-50%);
@@ -255,9 +280,9 @@
     position: relative;
     display: flex;
     background-color: var(--card-yellow);
-    border-radius: 24px;
+    border-radius: var(--mobile-search-radius);
     width: 100%;
-    height: 45px;
+    height: var(--mobile-tab-height);
     overflow: hidden;
     transition: background-color 0.5s ease;
     /* Transição de cor de fundo do container */
@@ -271,7 +296,7 @@
     height: 100%;
     width: 50%;
     background-color: var(--primary-green);
-    border-radius: 24px;
+    border-radius: var(--mobile-search-radius);
     /* Arredondamento completo */
     transition: transform 0.45s cubic-bezier(0.25, 0.8, 0.25, 1), background-color 0.5s ease;
     z-index: 1;
@@ -286,8 +311,8 @@
     padding: 0;
     border: none;
     font-weight: 900;
-    font-size: 0.95rem;
-    letter-spacing: 1px;
+    font-size: clamp(0.84rem, calc(0.78rem + 0.3vw), 0.95rem);
+    letter-spacing: clamp(0.5px, calc(1px * var(--mobile-scale)), 1px);
     cursor: pointer;
     text-transform: uppercase;
     background: transparent !important;
@@ -344,10 +369,10 @@
     margin: 0;
     display: flex;
     align-items: center;
-    padding: 0 17px;
+    padding: 0 var(--mobile-card-padding-x);
     cursor: pointer;
-    height: 80px;
-    min-height: 80px;
+    height: var(--mobile-card-height);
+    min-height: var(--mobile-card-height);
     box-sizing: border-box;
 }
 
@@ -445,7 +470,7 @@
 
 .cand-name {
     font-weight: 900;
-    font-size: 1.05rem;
+    font-size: clamp(0.96rem, calc(0.88rem + 0.42vw), 1.05rem);
     line-height: 1.1;
     color: var(--text-dark);
     max-width: 100%;
@@ -456,7 +481,7 @@
 
 .cand-party {
     font-weight: 600;
-    font-size: 0.85rem;
+    font-size: clamp(0.76rem, calc(0.71rem + 0.24vw), 0.85rem);
     line-height: 1.1;
     color: var(--text-dark);
     text-transform: uppercase;
@@ -469,19 +494,19 @@
 .cand-rank-score-middle {
     display: flex;
     flex-direction: column;
-    gap: 5px;
-    margin-right: 8px;
+    gap: clamp(4px, calc(5px * var(--mobile-scale)), 5px);
+    margin-right: clamp(6px, calc(8px * var(--mobile-scale)), 8px);
     align-items: center;
     flex: 0 0 auto;
 }
 
 .badge-rank,
 .badge-score {
-    min-width: 58px;
-    min-height: 25px;
-    padding: 2px 10px;
-    border-radius: 12px;
-    font-size: 0.95rem;
+    min-width: var(--mobile-badge-width);
+    min-height: var(--mobile-badge-height);
+    padding: 2px clamp(8px, calc(10px * var(--mobile-scale)), 10px);
+    border-radius: calc(var(--mobile-badge-height) / 2);
+    font-size: clamp(0.82rem, calc(0.74rem + 0.32vw), 0.95rem);
     font-weight: 800;
     text-align: center;
     display: flex;
@@ -491,16 +516,16 @@
 
 .cand-divider-vertical {
     width: 1px;
-    height: 80px;
+    height: var(--mobile-card-height);
     background-color: rgba(0, 0, 0, 0.1);
-    margin-right: 12px;
+    margin-right: clamp(8px, calc(12px * var(--mobile-scale)), 12px);
     flex: 0 0 auto;
 }
 
 /* Gráfico Circular da Lista */
 .cand-chart-right {
-    width: 62px;
-    height: 62px;
+    width: var(--mobile-chart-size);
+    height: var(--mobile-chart-size);
     flex-shrink: 0;
 }
 
@@ -523,7 +548,7 @@
 
 .percentage {
     fill: var(--text-dark);
-    font-size: 0.75rem;
+    font-size: clamp(0.68rem, calc(0.63rem + 0.16vw), 0.75rem);
     font-weight: 800;
     text-anchor: middle;
 }
@@ -554,7 +579,7 @@
     background-color: var(--primary-green);
     color: var(--bg-yellow);
     border: none;
-    height: 89px;
+    height: var(--mobile-footer-height);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -576,17 +601,17 @@
 }
 
 .nav-btn .share-icon-solid {
-    width: 42px;
-    height: 42px;
+    width: clamp(34px, calc(42px * var(--mobile-scale)), 42px);
+    height: clamp(34px, calc(42px * var(--mobile-scale)), 42px);
     stroke: none;
 }
 
 .arrow-left,
 .arrow-right {
     border: solid var(--bg-yellow);
-    border-width: 0 8px 8px 0;
+    border-width: 0 clamp(6px, calc(8px * var(--mobile-scale)), 8px) clamp(6px, calc(8px * var(--mobile-scale)), 8px) 0;
     display: inline-block;
-    padding: 13px;
+    padding: clamp(10px, calc(13px * var(--mobile-scale)), 13px);
     border-radius: 2px;
     transition: border-color 0.3s ease;
 }
@@ -626,7 +651,7 @@
 
 .state-centered-name {
     font-weight: 900;
-    font-size: 1.2rem;
+    font-size: clamp(1.04rem, calc(0.96rem + 0.45vw), 1.2rem);
     text-align: center;
     width: 100%;
     color: var(--text-dark, #1a1a1a);
@@ -672,10 +697,10 @@
     padding: 0;
     display: inline-block;
     font-weight: 900;
-    font-size: 0.85rem;
+    font-size: clamp(0.76rem, calc(0.72rem + 0.18vw), 0.85rem);
     color: #111111;
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: clamp(1px, calc(2px * var(--mobile-scale)), 2px);
     box-shadow: none;
 }
 
@@ -693,11 +718,20 @@
     overflow: hidden;
 }
 
+.gauge-scale-shell {
+    position: relative;
+    width: 320px;
+    height: 320px;
+    transform: scale(var(--mobile-scale));
+    transform-origin: top center;
+    flex: 0 0 320px;
+}
+
 .gauge-needle-svg {
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
+    width: 320px;
     height: 320px;
     pointer-events: none;
     display: flex;
@@ -755,7 +789,7 @@
 }
 
 .res-card-cargo {
-    font-size: 0.75rem;
+    font-size: clamp(0.7rem, calc(0.65rem + 0.14vw), 0.75rem);
     font-weight: 700;
     color: var(--text-dark);
     text-transform: uppercase;
@@ -766,7 +800,7 @@
 }
 
 .res-card-numero {
-    font-size: 1.15rem;
+    font-size: clamp(1rem, calc(0.94rem + 0.35vw), 1.15rem);
     font-weight: 900;
     margin-top: 2px;
     color: var(--text-dark);
@@ -1003,11 +1037,11 @@
 
     .top-nav-bar {
         display: grid;
-        grid-template-columns: var(--desktop-nav-width) minmax(220px, 1fr) var(--top-icon-size);
+        grid-template-columns: var(--desktop-nav-width) minmax(140px, 1fr) auto;
         padding: 26px 0 24px 0;
         height: 108px;
         min-height: 108px;
-        gap: 20px;
+        gap: 16px;
     }
 
     .nav-spacer {
@@ -1018,7 +1052,43 @@
     .top-search-wrapper input {
         height: 60px;
         border-radius: 26px;
-        font-size: 1.05rem;
+        font-size: 1rem;
+    }
+
+    .nav-action-right {
+        width: auto;
+        flex: 0 0 auto;
+        gap: 12px;
+    }
+
+    .desktop-utility-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 44px;
+        padding: 0 18px;
+        border-radius: 999px;
+        background-color: color-mix(in srgb, var(--card-yellow) 90%, #ffffff 10%);
+        color: var(--text-dark);
+        font-size: 0.78rem;
+        font-weight: 900;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        box-shadow: 0 8px 20px rgba(74, 74, 74, 0.12);
+    }
+
+    .desktop-utility-btn:hover {
+        background-color: color-mix(in srgb, var(--card-yellow) 82%, #ffffff 18%);
+    }
+
+    .select-base-container.theme-renovar .desktop-utility-btn {
+        background-color: rgba(255, 255, 255, 0.12);
+        color: #ffffff;
+        box-shadow: 0 10px 22px rgba(15, 16, 21, 0.2);
+    }
+
+    .select-base-container.theme-renovar .desktop-utility-btn:hover {
+        background-color: rgba(255, 255, 255, 0.18);
     }
 
     .green-banner-selection {
