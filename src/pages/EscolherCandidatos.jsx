@@ -7,6 +7,7 @@ import {
   castAnonymousVote,
   getVotingErrorMessage,
   readBallotDraft,
+  readLastVoteReceipt,
   saveBallotOfficeSelection,
   saveLastVoteReceipt
 } from '../services/votingService';
@@ -46,10 +47,10 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
   }, [filtroAtivo, setFiltroAtivo]);
 
   useEffect(() => {
-    if (userEligibility?.has_voted) {
+    if (user?.uid && userEligibility?.has_voted && readLastVoteReceipt(user.uid)) {
       navigate('/finalizacao', { replace: true });
     }
-  }, [userEligibility?.has_voted, navigate]);
+  }, [user?.uid, userEligibility?.has_voted, navigate]);
 
   // BUSCA DADOS NO FIREBASE: Apenas quando o cargo muda (ex: Federal para Senador)
   // Removido o filtroAtivo daqui para evitar que a tela "pisque" ao trocar de aba

@@ -48,7 +48,7 @@ export const UserProvider = ({ children }) => {
               created_at: serverTimestamp()
             });
           } else {
-            await setDoc(userRef, {
+            const userPatch = {
               name: user.displayName,
               email: user.email,
               profile_image: user.photoURL,
@@ -56,14 +56,13 @@ export const UserProvider = ({ children }) => {
               schema_version: 1,
               last_login_at: serverTimestamp(),
               updated_at: serverTimestamp()
-            }, { merge: true });
+            };
 
             if (docSnap.data().candidatos_escolhidos !== undefined) {
-              await updateDoc(userRef, {
-                candidatos_escolhidos: deleteField(),
-                updated_at: serverTimestamp()
-              });
+              userPatch.candidatos_escolhidos = deleteField();
             }
+
+            await updateDoc(userRef, userPatch);
           }
         } catch (error) {
           console.error("Erro ao criar usuário:", error);

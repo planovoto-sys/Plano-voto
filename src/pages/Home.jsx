@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/useUser';
 import { db } from '../services/firebaseConfig';
-import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { deleteField, doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { clearBallotDraft, clearVoteReceipt, hasBallotSelections, readLastVoteReceipt } from '../services/votingService';
 import SelectBase from '../components/SelectBase';
 import Sidebar from '../components/Sidebar';
@@ -90,13 +90,20 @@ export default function Home() {
     setLoading(true); setModalOpen(false);
     try {
       const userRef = doc(db, "users", user.uid);
+      const estadoPatch = {
+        estado: novoEstado,
+        role: userData?.role || 'voter',
+        schema_version: 1,
+        updated_at: serverTimestamp(),
+        candidatos_escolhidos: deleteField()
+      };
+
       if (userData?.estado && userData.estado !== novoEstado) {
         clearBallotDraft(user.uid);
         clearVoteReceipt(user.uid);
-        await updateDoc(userRef, { estado: novoEstado, updated_at: serverTimestamp() });
-      } else {
-        await updateDoc(userRef, { estado: novoEstado, updated_at: serverTimestamp() });
       }
+
+      await updateDoc(userRef, estadoPatch);
       navigate('/escolher-deputado-federal');
     } catch (e) { console.error("Erro ao salvar estado: ", e); } finally { setLoading(false); }
   };
