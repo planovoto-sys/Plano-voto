@@ -22,7 +22,8 @@ export default function SelectBase({
   renderItem,
   onLimiteAtingido,
   onHelpClick,
-  linhasVisiveis = 5
+  linhasVisiveis = 5,
+  mostrarBotaoVoltar = true
 }) {
   const [selecionados, setSelecionados] = useState(selecaoInicial);
   const [modalMalAvaliado, setModalMalAvaliado] = useState({ aberto: false, item: null });
@@ -172,8 +173,10 @@ export default function SelectBase({
         </div>
       </div>
 
-      <footer className="navigation-footer">
-        <button className="nav-btn" type="button" onClick={onVoltar} aria-label="Voltar"><i className="arrow-left"></i></button>
+      <footer className={`navigation-footer ${mostrarBotaoVoltar ? '' : 'only-forward'}`}>
+        {mostrarBotaoVoltar && (
+          <button className="nav-btn" type="button" onClick={onVoltar} aria-label="Voltar"><i className="arrow-left"></i></button>
+        )}
         <button className="nav-btn" type="button" onClick={handleConfirmar} aria-label="Avancar"><i className="arrow-right"></i></button>
       </footer>
 

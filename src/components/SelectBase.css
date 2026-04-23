@@ -34,6 +34,7 @@
     flex-direction: column;
     height: 100vh;
     height: 100svh;
+    height: 100dvh;
     background-color: transparent;
     position: relative;
     overflow: hidden;
@@ -57,12 +58,16 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
 }
 
 .select-base-container.has-tabs .list-wrapper {
     justify-content: flex-start;
     padding-top: 0;
+}
+
+.select-base-container.no-tabs .list-wrapper {
+    padding-top: clamp(32px, 5dvh, 46px);
 }
 
 /* ==========================================================================
@@ -238,7 +243,7 @@
 .tabs-toggle-container {
     display: flex;
     justify-content: center;
-    margin: 46px 0 24px 0;
+    margin: 46px 0 30px 0;
     padding: 0 var(--content-gutter);
 }
 
@@ -316,6 +321,11 @@
     overflow-x: hidden;
     scrollbar-width: none;
     -ms-overflow-style: none;
+}
+
+.select-base-container:not(.resultado-scrollable) .list-scroll-box {
+    min-height: var(--list-max-height);
+    height: var(--list-max-height);
 }
 
 .list-scroll-box::-webkit-scrollbar {
@@ -516,10 +526,18 @@
 .navigation-footer {
     display: flex;
     background-color: var(--primary-green);
-    margin: 0 var(--content-gutter) 48px var(--content-gutter);
+    margin: clamp(16px, 2.4dvh, 30px) var(--content-gutter) 48px var(--content-gutter);
     border-radius: var(--panel-radius);
     overflow: hidden;
     transition: background-color 0.3s ease;
+}
+
+.navigation-footer.only-forward .nav-btn {
+    width: 100%;
+}
+
+.navigation-footer.only-forward .nav-btn:first-child {
+    border-right: none;
 }
 
 .nav-btn {
@@ -589,6 +607,7 @@
     align-items: center;
     height: 100vh;
     height: 100svh;
+    height: 100dvh;
     font-weight: 900;
     color: var(--primary-green);
     background-color: var(--bg-yellow);
@@ -609,7 +628,15 @@
 }
 
 .resultado-scrollable {
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100svh;
+    height: 100dvh;
+    min-height: 100vh;
+    min-height: 100svh;
+    min-height: 100dvh;
+    overflow: hidden;
     overflow-x: hidden;
 }
 
@@ -644,13 +671,13 @@
 
 /* Centralização do Termómetro */
 .gauge-wrapper-margin {
-    margin-top: 20px;
+    margin-top: clamp(8px, 1.8dvh, 18px);
 }
 
 .gauge-container {
     position: relative;
     width: 100%;
-    height: 170px;
+    height: clamp(128px, 20dvh, 170px);
     display: flex;
     justify-content: center;
     overflow: hidden;
@@ -674,7 +701,7 @@
 
 .gauge-text-wrapper {
     position: absolute;
-    top: 85px;
+    top: clamp(66px, 10.2dvh, 85px);
     left: 0;
     width: 100%;
     display: flex;
@@ -683,13 +710,13 @@
 }
 
 .gauge-text-label {
-    font-size: 1.2rem;
+    font-size: clamp(0.95rem, 1.8dvh, 1.2rem);
     font-weight: 900;
     line-height: 1;
 }
 
 .gauge-text-value {
-    font-size: 3.5rem;
+    font-size: clamp(2.45rem, 5.7dvh, 3.5rem);
     font-weight: 900;
     line-height: 1;
     margin-top: 4px;
@@ -697,13 +724,19 @@
 }
 
 .resultado-list-wrapper {
-    flex: none;
-    padding-bottom: 10px;
+    flex: 1 1 auto;
+    min-height: 0;
+    padding-bottom: 0;
     margin-top: 0;
+    justify-content: flex-start;
 }
 
 .resultado-scroll-box {
-    overflow: visible;
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+    overflow-y: auto;
+    overflow-x: hidden;
     background: transparent;
     backdrop-filter: none;
     border: none;
@@ -733,14 +766,14 @@
 }
 
 .resultado-footer-wrapper {
-    margin-top: auto;
+    margin-top: clamp(10px, 1.8dvh, 18px);
     display: flex;
     flex-direction: column;
     gap: 15px;
 }
 
 .resultado-nav-footer {
-    margin: 0 var(--content-gutter) 48px var(--content-gutter);
+    margin: 0 var(--content-gutter) clamp(16px, 3dvh, 32px) var(--content-gutter);
 }
 
 /* ==========================================================================
@@ -1011,6 +1044,11 @@
         border-radius: 0;
     }
 
+    .select-base-container:not(.resultado-scrollable) .list-scroll-box {
+        min-height: 0;
+        height: auto;
+    }
+
     .select-base-container.has-tabs .list-scroll-box {
         grid-template-columns: 1fr;
     }
@@ -1063,7 +1101,7 @@
     .resultado-nav-footer {
         width: min(100%, 280px);
         max-width: 280px;
-        margin-top: 34px;
+        margin-top: clamp(20px, 2.8dvh, 34px);
         margin-left: auto;
         margin-right: calc((100% - var(--layout-max-width)) / 2);
         margin-bottom: 56px;
@@ -1086,6 +1124,32 @@
     .arrow-right {
         border-width: 0 6px 6px 0;
         padding: 10px;
+    }
+}
+
+@media (max-height: 760px) {
+    .top-nav-bar {
+        min-height: clamp(78px, 10dvh, 92px);
+        padding-top: clamp(14px, 2dvh, 18px);
+        padding-bottom: clamp(12px, 1.8dvh, 16px);
+    }
+
+    .select-base-container.no-tabs .list-wrapper {
+        padding-top: clamp(22px, 3.4dvh, 32px);
+    }
+
+    .resultado-scrollable .base-card {
+        height: 72px;
+        min-height: 72px;
+    }
+
+    .resultado-scrollable .cand-divider-vertical {
+        height: 72px;
+    }
+
+    .resultado-scrollable .cand-chart-right {
+        width: 54px;
+        height: 54px;
     }
 }
 
@@ -1116,9 +1180,14 @@
         grid-template-rows: auto auto auto 1fr auto;
         column-gap: 48px;
         align-items: start;
+        height: 100vh;
+        height: 100svh;
+        height: 100dvh;
         min-height: 100vh;
         min-height: 100svh;
-        padding-bottom: 48px;
+        min-height: 100dvh;
+        padding-bottom: 0;
+        overflow: hidden;
     }
 
     .resultado-scrollable .top-nav-bar,
@@ -1165,11 +1234,17 @@
     .resultado-scrollable .resultado-list-wrapper {
         grid-row: 4;
         padding-bottom: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
     }
 
     .resultado-scrollable .resultado-scroll-box {
         grid-template-columns: 1fr;
         gap: 10px;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
     }
 
     .resultado-scrollable .resultado-footer-wrapper {
@@ -1186,6 +1261,6 @@
         max-width: 420px;
         margin-left: auto;
         margin-right: auto;
-        margin-bottom: 0;
+        margin-bottom: clamp(8px, 1.4dvh, 16px);
     }
 }
