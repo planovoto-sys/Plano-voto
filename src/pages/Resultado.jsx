@@ -16,9 +16,8 @@ import {
     saveLastVoteReceipt,
     validateCompleteBallot
 } from '../services/votingService';
+import { getCandidateProjection, getCandidateScore } from '../services/candidateMetrics';
 import { flowError, flowLog, flowWarn } from '../services/debugFlow';
-
-const MEDIA_TESTE = 4;
 
 const Gauge = ({ value, tema }) => {
     const normalizedValue = Math.min(Math.max(value, 0), 10);
@@ -147,13 +146,9 @@ export default function Resultado() {
 
                 candidatos.forEach((candidate) => {
                     const d = candidate;
-                    const valCand = d["Nota candidato"]; const valPart = d["Nota partido"];
-                    const isNotaValida = (val) => val !== undefined && val !== null && val !== "" && val !== "-";
-                    let notaFinal = 0;
-                    if (isNotaValida(valCand) && Number(valCand) !== 0) notaFinal = parseFloat(valCand);
-                    else if (isNotaValida(valPart)) notaFinal = parseFloat(valPart);
+                    const { score: notaFinal } = getCandidateScore(d);
+                    const projection = getCandidateProjection(d, d.Cargo);
 
-                    const votos = d.votos_recebidos || 0; const porcentagem = (votos / MEDIA_TESTE) * 100;
                     soma += notaFinal;
                     
                     let cardColorClass = 'card-green';
@@ -161,7 +156,20 @@ export default function Resultado() {
                         cardColorClass = 'card-red'; 
                     }
 
-                    lista.push({ id: candidate.id, ...d, ClassificacaoOficial: d["Classificação"] || d["Classificacao"] || "-", notaFinal: notaFinal, cardColorClass: cardColorClass, porcentagemCalculada: Math.min(porcentagem, 100).toFixed(0) });
+                    lista.push({
+                        id: candidate.id,
+                        ...d,
+                        ClassificacaoOficial: d["Classificação"] || d["Classificacao"] || "-",
+                        notaFinal: notaFinal,
+                        cardColorClass: cardColorClass,
+                        projectionPercent: projection.percent,
+                        projectionVotes: projection.votes,
+                        projectionBaseline: projection.baseline,
+                        projectionReliable: projection.isReliable,
+                        projectionBaselineSource: projection.baselineSource,
+                        projectionCapped: projection.isCapped,
+                        porcentagemCalculada: projection.displayPercent
+                    });
                 });
                 if (!isMounted) return;
                 setMedia(lista.length > 0 ? soma / lista.length : 0);
@@ -196,21 +204,65 @@ export default function Resultado() {
             <Sidebar />
             <TourModal steps={tourSteps} isOpen={isTourOpen} onClose={() => setIsTourOpen(false)} />
 
-            <div className="top-nav-bar"><div className="nav-spacer"></div><div className="top-search-wrapper"><input type="text" value="meuvoto.org" disabled={true} aria-label="Site" /></div><div className="nav-action-right"><button className="btn-help-icon top-icon-button" type="button" onClick={handleHelpPress} aria-label="Abrir ajuda"><InfoIcon /></button></div></div>
-            <div className="green-banner-selection banner-resultado"><h2>{config.titulo}</h2><div className="triangle-down"></div></div>
+            <div className="top-nav-bar">
+                <div className="nav-spacer"></div>
+                <div className="top-search-wrapper">
+                    <input type="text" value="meuvoto.org" disabled={true} aria-label="Site" />
+                </div>
+                <div className="nav-action-right">
+                    <button className="btn-help-icon top-icon-button" type="button" onClick={handleHelpPress} aria-label="Abrir ajuda">
+                        <InfoIcon />
+                    </button>
+                </div>
+            </div>
+            <div className="green-banner-selection banner-resultado">
+                <h2>{config.titulo}</h2>
+                <div className="triangle-down"></div>
+            </div>
 
             <div className="gauge-wrapper-margin"><Gauge value={media} tema={filtroAtivo} /></div>
 
             <div className="resultado-subtitle-wrapper"><div className="resultado-subtitle">{config.subtitulo}</div></div>
 
-            <div className="list-wrapper resultado-list-wrapper"><div className="list-scroll-box resultado-scroll-box" id="tour-lista-resultado">
-                {candidatosCompletos.map((cand) => (
-                    <div className={`base-card ${cand.cardColorClass}`} key={cand.id}><div className="cand-item-layout"><div className="cand-data-left"><div className="res-card-cargo">{cand.Cargo} | {cand.Partido}</div><div className="res-card-numero">{cand.Numero || '0000'}</div><div className="cand-name res-card-nome">{cand.Nome.toUpperCase()}</div></div><div className="cand-rank-score-middle"><div className="badge-rank">{cand.ClassificacaoOficial === "-" ? "-" : `${cand.ClassificacaoOficial}º`}</div><div className="badge-score">{cand.notaFinal.toFixed(2).replace('.', ',')}</div></div><div className="cand-divider-vertical"></div><div className="cand-chart-right"><svg viewBox="0 0 36 36" className="circular-chart"><path className="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" /><path className="circle" strokeDasharray={`${cand.porcentagemCalculada}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" /><text x="18" y="20.35" className="percentage">{cand.porcentagemCalculada}%</text></svg></div></div></div>
-                ))}
-            </div></div>
+            <div className="list-wrapper resultado-list-wrapper">
+                <div className="list-scroll-box resultado-scroll-box" id="tour-lista-resultado">
+                    {candidatosCompletos.map((cand) => (
+                        <div className={`base-card ${cand.cardColorClass}`} key={cand.id}>
+                            <div className="cand-item-layout">
+                                <div className="cand-data-left">
+                                    <div className="res-card-cargo">{cand.Cargo || '-'} | {cand.Partido || '-'}</div>
+                                    <div className="res-card-numero">{cand.Numero || '0000'}</div>
+                                    <div className="cand-name res-card-nome">{(cand.Nome || 'Sem nome').toUpperCase()}</div>
+                                </div>
+                                <div className="cand-rank-score-middle">
+                                    <div className="badge-rank">{cand.ClassificacaoOficial === "-" ? "-" : `${cand.ClassificacaoOficial}º`}</div>
+                                    <div className="badge-score">{cand.notaFinal.toFixed(2).replace('.', ',')}</div>
+                                </div>
+                                <div className="cand-divider-vertical"></div>
+                                <div className="cand-chart-right">
+                                    <svg viewBox="0 0 36 36" className="circular-chart" role="img" aria-label={`Chance de eleição ${cand.porcentagemCalculada}%`}>
+                                        <path className="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                        <path className="circle" strokeDasharray={`${cand.projectionPercent}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                        <text x="18" y="20.35" className="percentage">{cand.porcentagemCalculada}%</text>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
 
             <div className="resultado-footer-wrapper" id="tour-footer-resultado">
-                <footer className="navigation-footer resultado-nav-footer"><button className="nav-btn" type="button" onClick={() => navigate(-1)} aria-label="Voltar" style={{ borderRight: media >= 7 ? '1px solid rgba(244, 235, 147, 0.4)' : 'none' }}><i className="arrow-left"></i></button>{media >= 7 && (<button className="nav-btn" type="button" onClick={() => alert("Link copiado para a área de transferência!")} aria-label="Compartilhar"><ShareSolidIcon /></button>)}</footer>
+                <footer className="navigation-footer resultado-nav-footer">
+                    <button className="nav-btn" type="button" onClick={() => navigate(-1)} aria-label="Voltar" style={{ borderRight: media >= 7 ? '1px solid rgba(244, 235, 147, 0.4)' : 'none' }}>
+                        <i className="arrow-left"></i>
+                    </button>
+                    {media >= 7 && (
+                        <button className="nav-btn" type="button" onClick={() => alert("Link copiado para a área de transferência!")} aria-label="Compartilhar">
+                            <ShareSolidIcon />
+                        </button>
+                    )}
+                </footer>
             </div>
         </div>
     );

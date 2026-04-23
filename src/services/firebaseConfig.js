@@ -1,6 +1,11 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import {
+  browserLocalPersistence,
+  getAuth,
+  GoogleAuthProvider,
+  setPersistence
+} from "firebase/auth";
 
 // Configuração segura via variáveis de ambiente
 const firebaseConfig = {
@@ -18,3 +23,17 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
+
+let persistencePromise = null;
+
+export const ensureAuthPersistence = async () => {
+  if (persistencePromise) return persistencePromise;
+
+  persistencePromise = setPersistence(auth, browserLocalPersistence)
+    .catch((error) => {
+      console.warn("Nao foi possivel aplicar persistencia local de sessao.", error);
+      return null;
+    });
+
+  return persistencePromise;
+};

@@ -1,14 +1,14 @@
-# Modelo Firestore para voto sem vínculo direto com o eleitor
+# Modelo Firestore para voto anonimizado e bloqueio de voto único
 
-Este projeto usa Firestore, então o modelo foi separado em coleções por responsabilidade. A regra principal é: o documento do usuário nunca armazena candidato, partido, cargo escolhido ou histórico de voto.
+Este projeto usa Firestore com separação por responsabilidade para preservar anonimato e integridade. A regra principal é: o documento do usuário nunca armazena candidato escolhido e o documento de voto não contém `uid`, email ou outro identificador do eleitor.
 
 ## Coleções
 
 ```mermaid
 erDiagram
-  USERS ||--o| ELIGIBILITY : "doc id = uid"
-  ELECTIONS ||--o{ ELIGIBILITY : "subcollection"
-  ELECTIONS ||--o{ VOTES : "subcollection"
+  USERS ||--o{ VOTES_REALIZED : "doc id = uid"
+  ELECTIONS ||--o{ VOTES_REALIZED : "subcollection"
+  ELECTIONS ||--o{ VOTES_ANONYMOUS : "subcollection"
   ELECTIONS ||--o{ CANDIDATE_TALLIES : "subcollection"
   CANDIDATES ||--o{ CANDIDATE_TALLIES : "candidate_id"
 
@@ -23,22 +23,19 @@ erDiagram
     timestamp updated_at
   }
 
-  ELIGIBILITY {
+  VOTES_REALIZED {
     string docId_uid
     string election_id
-    boolean eligible
-    string status
-    boolean has_voted
-    timestamp voted_at
+    string user_id
+    timestamp created_at
   }
 
-  VOTES {
+  VOTES_ANONYMOUS {
     string random_doc_id
     string election_id
     string estado
     map offices
     array candidate_ids
-    array candidate_snapshots
     timestamp submitted_at
   }
 
@@ -60,35 +57,45 @@ erDiagram
 
 ## Caminhos Firestore
 
-- `users/{uid}`: identidade e estado do eleitor. Não recebe `candidatos_escolhidos`.
-- `elections/{electionId}/eligibility/{uid}`: controla se o eleitor está habilitado e se já votou. Não contém candidato.
-- `elections/{electionId}/votes/{randomVoteId}`: voto anônimo com candidatos escolhidos. Não contém `uid`, nome ou e-mail.
-- `elections/{electionId}/candidate_tallies/{candidateId}`: totalização por candidato.
-- `elections/{electionId}/audit_events/{eventId}`: eventos técnicos sem candidato e sem identidade direta.
+- `users/{uid}`: identidade e estado do eleitor. Nao recebe `candidatos_escolhidos`.
+- `elections/{electionId}/votes_realized/{uid}`: lock de voto unico (controle anti-duplo voto).
+- `elections/{electionId}/votes_anonymous/{randomVoteId}`: voto anonimo sem `uid`.
+- `elections/{electionId}/candidate_tallies/{candidateId}`: totalizacao por candidato.
+- `candidatos/{candidateId}`: contador agregado (`votos_recebidos`) para leitura de ranking.
+- `elections/{electionId}/audit_events/{eventId}`: evento tecnico de confirmacao da transacao.
+- `elections/{electionId}/eligibility/{uid}`: legado (somente leitura para eleitor, escrita admin).
 
 ## Fluxo implementado no app
 
 1. Login com Firebase Auth identifica o eleitor.
-2. `UserProvider` cria/atualiza `users/{uid}` apenas com perfil mínimo e remove `candidatos_escolhidos` se existir.
-3. A escolha de candidatos durante a navegação fica em `localStorage`, vinculada apenas ao navegador local, não ao Firestore.
-4. Ao finalizar a escolha dos senadores, `castAnonymousVote()` executa uma transação Firestore:
-   - lê `elections/{electionId}/eligibility/{uid}`;
-   - bloqueia se `has_voted` já for `true`;
-   - cria `elections/{electionId}/votes/{randomVoteId}` sem `uid`;
-   - marca `has_voted: true` no documento de elegibilidade;
-   - incrementa a totalização dos candidatos.
-5. A tela de resultado lê o rascunho/recibo local para exibir a nota. Ela não busca voto por `uid`.
+2. `UserProvider` cria/atualiza `users/{uid}` com perfil minimo e remove campos legados sensiveis.
+3. As escolhas ficam em `localStorage` durante o fluxo de UI (nao no documento do usuario).
+4. Ao finalizar, `castAnonymousVote()` executa uma transacao unica:
+   - verifica se `votes_realized/{uid}` ja existe;
+   - cria `votes_realized/{uid}` com lock por `uid`;
+   - grava `votes_anonymous/{voteId}` sem identificador do eleitor;
+   - incrementa `candidatos/{id}.votos_recebidos`;
+   - incrementa `candidate_tallies/{id}.total_votes`;
+   - grava `audit_events/{eventId}`.
+5. A tela de resultado usa recibo local + leitura dos candidatos por `candidate_ids`.
 
-## Modo de avaliação e modo produção
+## Garantias de segurança aplicadas
 
-O serviço usa `VITE_ALLOW_SELF_ENROLLMENT !== 'false'` para permitir que o app de avaliação crie a habilitação do eleitor quando ela ainda não existe. Para produção, defina:
+- Anti-duplo voto: lock em `votes_realized/{auth.uid}`.
+- Anonimato no voto: `votes_anonymous` nao aceita campo de identidade.
+- Integridade de contagem: regras exigem que lock + voto anonimo + incrementos ocorram no mesmo commit atomico.
+- Sigilo entre usuarios: eleitor comum nao le votos anonimos nem lock de outros usuarios.
 
-```env
-VITE_ALLOW_SELF_ENROLLMENT=false
-```
+## Regra de projeção dos gráficos percentuais
 
-Com essa configuração, a coleção `elections/{electionId}/eligibility/{uid}` deve ser pré-carregada por processo administrativo confiável.
+Os graficos de chance usam `src/services/candidateMetrics.js` nas telas de selecao e resultado.
+
+- Votos considerados: `votos_recebidos` e aliases equivalentes.
+- Media de referencia: campo do candidato com media historica; se ausente usa variaveis `VITE_PROJECTION_AVG_DEPUTADO_FEDERAL`, `VITE_PROJECTION_AVG_SENADOR` ou fallback do MVP.
+- Formula: `percentual = clamp((votos / media_de_referencia) * 100, 0, 100)`.
+- Valores invalidos (`-`, string, virgula decimal etc.) sao normalizados antes do calculo.
+- Quando usa fallback do MVP, `projectionReliable` fica `false`.
 
 ## Observação de segurança
 
-Este modelo remove o vínculo direto `UserID -> CandidateID` do Firestore. Para sigilo eleitoral absoluto contra administradores com acesso a logs, o próximo passo deve ser mover `castAnonymousVote()` para uma Cloud Function callable com emissão de token cego ou outra separação criptográfica entre autenticação e urna. O front-end sozinho não consegue impedir correlação por horário de escrita nos logs da infraestrutura.
+O modelo remove o vinculo direto `UserID -> CandidateID` na base operacional. Para elevar sigilo contra correlacao por horario de escrita em logs de infraestrutura, o proximo passo recomendado e mover `castAnonymousVote()` para Cloud Functions com assinatura server-side e trilha de auditoria separada.

@@ -48,6 +48,12 @@ export default function SelectBase({
     efetivarSelecao(item);
   };
 
+  const handleItemKeyDown = (event, item) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    handleSelect(item);
+  };
+
   const efetivarSelecao = (item) => {
     if (limiteSelecao === 1) {
       setSelecionados([item]);
@@ -109,6 +115,8 @@ export default function SelectBase({
               value={textoBuscaFixo !== null ? textoBuscaFixo : valorBusca}
               onChange={(e) => onChangeBusca(e.target.value)}
               disabled={textoBuscaFixo !== null}
+              aria-label={textoBuscaFixo !== null ? 'Campo de texto bloqueado' : 'Pesquisar na lista'}
+              autoComplete="off"
             />
             {canClearBusca && (
               <button className="btn-clear-search" type="button" onClick={handleClearBusca} aria-label="Limpar pesquisa">
@@ -147,6 +155,8 @@ export default function SelectBase({
                 data-tab={aba}
                 className={`tab-toggle-btn ${abaAtiva === aba ? 'active' : ''}`} 
                 onClick={() => setAbaAtiva(aba)}
+                aria-pressed={abaAtiva === aba}
+                aria-label={`Filtrar por ${aba}`}
               >
                 {aba}
               </button>
@@ -161,7 +171,16 @@ export default function SelectBase({
             dados.map((item) => {
               const isSelected = selecionados.some((v) => v.id === item.id);
               return (
-                <div key={item.id} className={`base-card ${item.cardColorClass || 'card-yellow'} ${isSelected ? 'selected' : ''}`} onClick={() => handleSelect(item)}>
+                <div
+                  key={item.id}
+                  className={`base-card ${item.cardColorClass || 'card-yellow'} ${isSelected ? 'selected' : ''}`}
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={isSelected}
+                  aria-label={item.Nome || item.nome || item.sigla || `Item ${item.id}`}
+                  onClick={() => handleSelect(item)}
+                  onKeyDown={(event) => handleItemKeyDown(event, item)}
+                >
                   {renderItem(item, isSelected)}
                 </div>
               );
@@ -174,7 +193,7 @@ export default function SelectBase({
 
       <footer className="navigation-footer">
         <button className="nav-btn" type="button" onClick={onVoltar} aria-label="Voltar"><i className="arrow-left"></i></button>
-        <button className="nav-btn" type="button" onClick={handleConfirmar} aria-label="Avancar"><i className="arrow-right"></i></button>
+        <button className="nav-btn" type="button" onClick={handleConfirmar} aria-label="Avancar para a proxima etapa"><i className="arrow-right"></i></button>
       </footer>
 
       <ConfirmModal

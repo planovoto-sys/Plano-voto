@@ -3,39 +3,29 @@
     top: 0;
     left: 0;
     width: 100vw;
-    height: 100vh;
+    height: 100dvh;
     height: 100svh;
+    height: 100vh;
     background: rgba(0, 0, 0, 0.65);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 9999;
-    padding: 20px;
+    padding: clamp(14px, 3.2dvh, 24px);
     backdrop-filter: blur(3px);
+    animation: appFadeIn var(--motion-base) var(--ease-standard);
 }
 
 .modal-container {
     background-color: var(--bg-yellow, #f5eea9);
     width: 90%;
     /* Garante uma margem lateral em telas minúsculas */
-    max-width: 340px;
+    max-width: 360px;
     border-radius: var(--panel-radius);
-    padding: 25px 20px;
+    padding: clamp(20px, 3.3dvh, 28px) clamp(16px, 4.6vw, 22px);
     text-align: center;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-    animation: modalFadeIn 0.3s ease;
-}
-
-@keyframes modalFadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(15px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    animation: appDialogIn var(--motion-base) var(--ease-emphasized);
 }
 
 .modal-title {
@@ -46,28 +36,33 @@
 }
 
 .modal-message {
-    font-size: 0.95rem;
+    font-size: clamp(0.9rem, 2.8vw, 0.98rem);
     font-weight: 600;
     color: #555;
     line-height: 1.4;
-    margin-bottom: 25px;
+    margin-bottom: clamp(16px, 2.5dvh, 24px);
 }
 
 .modal-actions {
     display: flex;
-    gap: 10px;
+    gap: clamp(8px, 1.4dvh, 12px);
 }
 
 .btn-modal {
     flex: 1;
-    padding: 14px 10px;
+    min-height: clamp(46px, 6.2dvh, 56px);
+    padding: clamp(12px, 1.5dvh, 14px) 10px;
     border: none;
     border-radius: var(--panel-radius);
     font-weight: 800;
     font-size: 0.85rem;
     cursor: pointer;
     text-transform: uppercase;
-    transition: transform 0.1s;
+    transition: transform var(--motion-fast) var(--ease-standard), filter var(--motion-fast) var(--ease-standard);
+}
+
+.btn-modal:hover {
+    filter: brightness(0.96);
 }
 
 .btn-modal:active {

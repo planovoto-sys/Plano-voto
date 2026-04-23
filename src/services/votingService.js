@@ -10,6 +10,7 @@ import {
   where
 } from 'firebase/firestore';
 import { db } from './firebaseConfig';
+import { canAccessVotingArea } from './authPolicy';
 import { flowLog, flowWarn } from './debugFlow';
 
 export const ACTIVE_ELECTION_ID = import.meta.env.VITE_ACTIVE_ELECTION_ID || 'congresso-2026';
@@ -266,12 +267,6 @@ const generateReceiptCode = async (voteId) => {
     .toUpperCase();
 };
 
-const isEligibleStatus = (eligibility) => {
-  if (eligibility?.eligible === false) return false;
-  if (!eligibility?.status) return true;
-  return ['eligible', 'active', 'approved'].includes(eligibility.status);
-};
-
 export const saveLastVoteReceipt = (userId, receipt, draft) => {
   if (!userId || !canUseStorage()) return null;
 
@@ -326,6 +321,10 @@ export const castAnonymousVote = async ({ user, estado, draft }) => {
     throw new VotingError('AUTH_REQUIRED', 'Faça login para confirmar seu voto.');
   }
 
+  if (!canAccessVotingArea(user)) {
+    throw new VotingError('EMAIL_NOT_VERIFIED', 'Valide o email da sua conta para votar.');
+  }
+
   const validation = validateCompleteBallot(draft);
   if (!validation.ok) {
     throw new VotingError(validation.code, 'Complete todos os cargos antes de confirmar o voto.');
@@ -339,17 +338,18 @@ export const castAnonymousVote = async ({ user, estado, draft }) => {
     candidateIds
   });
 
-  const allowSelfEnrollment = import.meta.env.VITE_ALLOW_SELF_ENROLLMENT !== 'false';
-  const voteRef = doc(collection(db, 'elections', ACTIVE_ELECTION_ID, 'votes'));
+  const voteRef = doc(collection(db, 'elections', ACTIVE_ELECTION_ID, 'votes_anonymous'));
+  const voteLockRef = doc(db, 'elections', ACTIVE_ELECTION_ID, 'votes_realized', user.uid);
+  const legacyEligibilityRef = doc(db, 'elections', ACTIVE_ELECTION_ID, 'eligibility', user.uid);
   const auditRef = doc(collection(db, 'elections', ACTIVE_ELECTION_ID, 'audit_events'));
-  const eligibilityRef = doc(db, 'elections', ACTIVE_ELECTION_ID, 'eligibility', user.uid);
   const receiptCode = await generateReceiptCode(voteRef.id);
 
   await runTransaction(db, async (transaction) => {
-    const eligibilitySnap = await transaction.get(eligibilityRef);
-    const eligibility = eligibilitySnap.exists() ? eligibilitySnap.data() : null;
+    const voteLockSnap = await transaction.get(voteLockRef);
+    const legacyEligibilitySnap = await transaction.get(legacyEligibilityRef);
+    const legacyHasVoted = legacyEligibilitySnap.exists() && legacyEligibilitySnap.data().has_voted === true;
 
-    if (eligibility?.has_voted) {
+    if (voteLockSnap.exists() || legacyHasVoted) {
       flowWarn('vote.cast.already-voted', {
         userId: user.uid,
         electionId: ACTIVE_ELECTION_ID
@@ -357,15 +357,16 @@ export const castAnonymousVote = async ({ user, estado, draft }) => {
       throw new VotingError('VOTE_ALREADY_CAST', 'Este eleitor já registrou um voto nesta eleição.');
     }
 
-    if (eligibilitySnap.exists() && !isEligibleStatus(eligibility)) {
-      throw new VotingError('VOTER_NOT_ELIGIBLE', 'Este eleitor não está habilitado para votar nesta eleição.');
-    }
-
-    if (!eligibilitySnap.exists() && !allowSelfEnrollment) {
-      throw new VotingError('VOTER_NOT_ENROLLED', 'Não encontramos sua habilitação para esta eleição.');
-    }
-
     const submittedAt = serverTimestamp();
+    const voteLockPayload = {
+      schema_version: BALLOT_SCHEMA_VERSION,
+      election_id: ACTIVE_ELECTION_ID,
+      user_id: user.uid,
+      created_at: submittedAt
+    };
+
+    transaction.set(voteLockRef, voteLockPayload);
+
     const votePayload = {
       schema_version: BALLOT_SCHEMA_VERSION,
       election_id: ACTIVE_ELECTION_ID,
@@ -375,35 +376,11 @@ export const castAnonymousVote = async ({ user, estado, draft }) => {
         senadores: normalizedDraft.selections.senadores.map((candidate) => candidate.id)
       },
       candidate_ids: candidateIds,
-      candidate_snapshots: [
-        ...normalizedDraft.selections.deputado_federal,
-        ...normalizedDraft.selections.senadores
-      ],
       submitted_at: submittedAt,
-      source: 'web-client-transaction'
+      source: 'web-client-transaction-v2'
     };
 
     transaction.set(voteRef, votePayload);
-
-    const eligibilityPayload = {
-      schema_version: BALLOT_SCHEMA_VERSION,
-      election_id: ACTIVE_ELECTION_ID,
-      has_voted: true,
-      voted_at: submittedAt,
-      updated_at: submittedAt
-    };
-
-    if (eligibilitySnap.exists()) {
-      transaction.update(eligibilityRef, eligibilityPayload);
-    } else {
-      transaction.set(eligibilityRef, {
-        ...eligibilityPayload,
-        status: 'eligible',
-        eligible: true,
-        enrollment_source: 'self_enrollment_mvp',
-        created_at: submittedAt
-      });
-    }
 
     candidateIds.forEach((candidateId) => {
       transaction.update(doc(db, 'candidatos', candidateId), {
@@ -424,7 +401,7 @@ export const castAnonymousVote = async ({ user, estado, draft }) => {
       election_id: ACTIVE_ELECTION_ID,
       event_type: 'anonymous_vote_cast',
       created_at: submittedAt,
-      source: 'web-client-transaction'
+      source: 'web-client-transaction-v2'
     });
   });
 
@@ -437,11 +414,10 @@ export const castAnonymousVote = async ({ user, estado, draft }) => {
 export const getVotingErrorMessage = (error) => {
   const messages = {
     AUTH_REQUIRED: 'Faça login novamente para confirmar seu voto.',
+    EMAIL_NOT_VERIFIED: 'Confirme o email da sua conta antes de acessar a votação.',
     INCOMPLETE_BALLOT: 'Complete a escolha de deputado federal e dos 2 senadores antes de finalizar.',
     DUPLICATED_CANDIDATE: 'O mesmo candidato não pode ser usado mais de uma vez no mesmo voto.',
-    VOTE_ALREADY_CAST: 'Seu voto já foi registrado. Por segurança, ele não pode ser alterado.',
-    VOTER_NOT_ELIGIBLE: 'Seu cadastro não está habilitado para votar nesta eleição.',
-    VOTER_NOT_ENROLLED: 'Não encontramos sua habilitação para esta eleição.'
+    VOTE_ALREADY_CAST: 'Seu voto já foi registrado. Por segurança, ele não pode ser alterado.'
   };
 
   return messages[error?.code] || 'Não foi possível registrar o voto. Tente novamente.';

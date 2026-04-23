@@ -5,13 +5,18 @@ import './index.css';
 import App from './App';
 import { UserProvider } from './contexts/UserContext';
 import { installFlowDebugTools } from './services/debugFlow';
+import { ensureAuthPersistence } from './services/firebaseConfig';
 
 installFlowDebugTools();
 
-createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <UserProvider>
-      <App />
-    </UserProvider>
-  </React.StrictMode>,
-);
+const root = createRoot(document.getElementById('root'));
+
+ensureAuthPersistence().finally(() => {
+  root.render(
+    <React.StrictMode>
+      <UserProvider>
+        <App />
+      </UserProvider>
+    </React.StrictMode>,
+  );
+});

@@ -1,0 +1,409 @@
+.hamburgerMenu {
+  position: fixed;
+  top: clamp(18px, 3.2dvh, 32px);
+  left: var(--content-gutter);
+  z-index: 140;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+}
+
+.hamburgerMenu :global(.app-icon) {
+  width: clamp(32px, 8vw, 37px);
+  height: clamp(32px, 8vw, 37px);
+}
+
+.themeRenovar {
+  color: #ffffff;
+}
+
+.desktopMainNav,
+.desktopSidebar {
+  display: none;
+}
+
+.sidebarOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 998;
+  animation: appFadeIn var(--motion-base) var(--ease-standard);
+}
+
+.sidebarContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: clamp(260px, 72vw, 300px);
+  height: 100dvh;
+  height: 100svh;
+  height: 100vh;
+  background-color: var(--bg-yellow);
+  z-index: 999;
+  transform: translateX(-100%);
+  transition: transform var(--motion-base) var(--ease-emphasized);
+  display: flex;
+  flex-direction: column;
+  padding: clamp(24px, 4dvh, 32px) clamp(18px, 4.8vw, 22px);
+  box-shadow: var(--shadow-raised);
+}
+
+.open {
+  transform: translateX(0);
+}
+
+.sidebarHeader {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: clamp(26px, 4.2dvh, 40px);
+}
+
+.sidebarAvatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid var(--primary-green);
+}
+
+.sidebarUserDetails {
+  min-width: 0;
+}
+
+.sidebarUsername {
+  display: block;
+  font-weight: 900;
+  color: var(--text-dark);
+}
+
+.sidebarUserEmail {
+  display: block;
+  font-size: 0.8rem;
+  color: #666;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebarNav {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 1.8dvh, 15px);
+}
+
+.mobileNavButton {
+  background: none;
+  border: none;
+  text-align: left;
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: var(--primary-green);
+  cursor: pointer;
+  padding: clamp(9px, 1.4dvh, 12px) clamp(8px, 1.2vw, 12px);
+  border-radius: 10px;
+  transition: color var(--motion-fast) var(--ease-standard), background-color var(--motion-fast) var(--ease-standard), transform var(--motion-fast) var(--ease-standard);
+}
+
+.mobileNavButton:hover {
+  transform: translateX(2px);
+  background-color: rgba(99, 152, 99, 0.12);
+}
+
+.mobileNavButton:focus-visible,
+.desktopMainButton:focus-visible,
+.desktopSidebarButton:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--primary-green) 70%, #ffffff 30%);
+  outline-offset: 2px;
+}
+
+.sidebarDivider {
+  height: 1px;
+  background: #ddd;
+  margin: 10px 0;
+}
+
+.btnLogout,
+.desktopLogout {
+  color: #c84343 !important;
+}
+
+.isActive {
+  background-color: var(--primary-green) !important;
+  color: var(--bg-yellow) !important;
+}
+
+.themeRenovar .sidebarContainer,
+.sidebarContainer.themeRenovar {
+  background-color: var(--renovar-bg);
+}
+
+.themeRenovar .sidebarUsername,
+.sidebarContainer.themeRenovar .sidebarUsername {
+  color: #ffffff;
+}
+
+.themeRenovar .sidebarUserEmail,
+.sidebarContainer.themeRenovar .sidebarUserEmail {
+  color: rgba(255, 255, 255, 0.74);
+}
+
+.themeRenovar .mobileNavButton,
+.sidebarContainer.themeRenovar .mobileNavButton {
+  color: #ffffff;
+}
+
+.themeRenovar .mobileNavButton:hover,
+.sidebarContainer.themeRenovar .mobileNavButton:hover {
+  background-color: rgba(255, 255, 255, 0.14);
+}
+
+.themeRenovar .sidebarDivider,
+.sidebarContainer.themeRenovar .sidebarDivider {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.themeRenovar .btnLogout,
+.sidebarContainer.themeRenovar .btnLogout,
+.themeRenovar .desktopLogout {
+  color: #ffb39c !important;
+}
+
+.themeRenovar .sidebarAvatar,
+.themeRenovar .desktopAvatar,
+.sidebarContainer.themeRenovar .sidebarAvatar {
+  border-color: #ffffff;
+}
+
+@media (min-width: 768px) {
+  .hamburgerMenu,
+  .sidebarContainer,
+  .sidebarOverlay {
+    display: none;
+  }
+
+  .desktopMainNav {
+    position: fixed;
+    top: clamp(12px, 2.2dvh, 24px);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 130;
+    width: min(var(--layout-max-width), calc(100vw - clamp(32px, 6vw, 96px)));
+    min-height: var(--desktop-fixed-nav-height);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: clamp(10px, 1.6vw, 16px);
+    align-items: center;
+    padding: clamp(6px, 1dvh, 10px);
+    border-radius: 999px;
+    border: 1px solid rgba(99, 152, 99, 0.2);
+    background-color: color-mix(in srgb, var(--card-yellow) 92%, #ffffff 8%);
+    backdrop-filter: blur(8px);
+    box-shadow: var(--shadow-soft);
+    animation: appSlideInLeft var(--motion-slow) var(--ease-emphasized);
+  }
+
+  .desktopMainPrimary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(6px, 1vw, 10px);
+  }
+
+  .desktopMainTools {
+    display: flex;
+    gap: clamp(6px, 1vw, 10px);
+    align-items: center;
+  }
+
+  .desktopMainButton {
+    min-height: clamp(44px, 5.8dvh, 52px);
+    border-radius: 999px;
+    color: var(--text-dark);
+    font-size: clamp(0.72rem, 1.3vw, 0.82rem);
+    font-weight: 900;
+    letter-spacing: 0;
+    text-transform: uppercase;
+    padding: 0 clamp(10px, 1.4vw, 16px);
+    transition: background-color var(--motion-fast) var(--ease-standard), color var(--motion-fast) var(--ease-standard), transform var(--motion-fast) var(--ease-standard);
+  }
+
+  .desktopMainButton:hover {
+    background-color: rgba(99, 152, 99, 0.14);
+    transform: translateY(-1px);
+  }
+
+  .themeRenovar.desktopMainNav {
+    background-color: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.18);
+    box-shadow: var(--shadow-raised);
+  }
+
+  .themeRenovar .desktopMainButton {
+    color: #ffffff;
+  }
+
+  .themeRenovar .desktopMainButton:hover {
+    background-color: rgba(255, 255, 255, 0.14);
+  }
+
+  .themeRenovar .isActive {
+    background-color: #ffffff !important;
+    color: var(--renovar-panel) !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .desktopMainNav {
+    display: none;
+  }
+
+  .desktopSidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 120;
+    width: var(--desktop-shell-sidebar-width);
+    min-width: 244px;
+    height: 100dvh;
+    height: 100svh;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(20px, 2.8dvh, 30px);
+    padding: clamp(24px, 3.5dvh, 36px) clamp(16px, 1.8vw, 24px);
+    border-right: 1px solid color-mix(in srgb, var(--primary-green) 28%, transparent);
+    background: color-mix(in srgb, var(--bg-yellow) 93%, #ffffff 7%);
+    box-shadow: 4px 0 18px rgba(15, 16, 21, 0.07);
+  }
+
+  .desktopBrandBlock {
+    display: grid;
+    gap: 4px;
+    padding: clamp(8px, 1.2dvh, 12px) 4px;
+    border-bottom: 1px solid color-mix(in srgb, var(--primary-green) 28%, transparent);
+  }
+
+  .desktopBrandTitle {
+    font-size: clamp(1.25rem, 1.2vw, 1.45rem);
+    font-weight: 900;
+    text-transform: lowercase;
+    color: var(--primary-green);
+    line-height: 1.05;
+  }
+
+  .desktopBrandCaption {
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgba(74, 74, 74, 0.75);
+  }
+
+  .desktopUserBlock {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 8px;
+    border-radius: 12px;
+    background-color: color-mix(in srgb, var(--card-yellow) 88%, #ffffff 12%);
+  }
+
+  .desktopAvatar {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    border: 2px solid var(--primary-green);
+    flex: 0 0 auto;
+  }
+
+  .desktopUserName {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: var(--text-dark);
+  }
+
+  .desktopUserEmail {
+    display: block;
+    max-width: 172px;
+    font-size: 0.74rem;
+    color: rgba(74, 74, 74, 0.82);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .desktopSidebarSection {
+    display: grid;
+    gap: 10px;
+  }
+
+  .desktopSectionTitle {
+    font-size: 0.72rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(74, 74, 74, 0.72);
+    padding: 0 6px;
+  }
+
+  .desktopSidebarNav {
+    display: grid;
+    gap: 6px;
+  }
+
+  .desktopSidebarSubmenu {
+    border-top: 1px dashed color-mix(in srgb, var(--primary-green) 30%, transparent);
+    padding-top: 10px;
+  }
+
+  .desktopSidebarButton {
+    min-height: 44px;
+    padding: 0 12px;
+    border-radius: 12px;
+    text-align: left;
+    font-size: 0.84rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--primary-green);
+    transition: background-color var(--motion-fast) var(--ease-standard), color var(--motion-fast) var(--ease-standard), transform var(--motion-fast) var(--ease-standard);
+  }
+
+  .desktopSidebarButton:hover {
+    background-color: rgba(99, 152, 99, 0.15);
+    transform: translateX(1px);
+  }
+
+  .themeRenovar.desktopSidebar {
+    background: var(--renovar-bg);
+    border-right-color: rgba(255, 255, 255, 0.16);
+    box-shadow: 4px 0 24px rgba(7, 11, 20, 0.36);
+  }
+
+  .themeRenovar .desktopBrandBlock {
+    border-bottom-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .themeRenovar .desktopBrandTitle,
+  .themeRenovar .desktopUserName,
+  .themeRenovar .desktopSidebarButton,
+  .themeRenovar .desktopSectionTitle {
+    color: #ffffff;
+  }
+
+  .themeRenovar .desktopBrandCaption,
+  .themeRenovar .desktopUserEmail {
+    color: rgba(255, 255, 255, 0.78);
+  }
+
+  .themeRenovar .desktopUserBlock {
+    background: rgba(255, 255, 255, 0.14);
+  }
+
+  .themeRenovar .desktopSidebarButton:hover {
+    background-color: rgba(255, 255, 255, 0.14);
+  }
+
+  .themeRenovar .desktopSidebarSubmenu {
+    border-top-color: rgba(255, 255, 255, 0.24);
+  }
+}

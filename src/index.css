@@ -2,7 +2,9 @@
 
 :root {
   --app-max-width: 498px;
-  --content-gutter: clamp(28px, 10.25vw, 51px);
+  --content-gutter: clamp(18px, 7vw, 51px);
+  --page-stack-gap: clamp(14px, 2.2dvh, 30px);
+  --button-safe-gap: clamp(12px, 1.8dvh, 22px);
   --bg-yellow: #f4eb93;
   --card-yellow: #f2e067;
   --primary-green: #639863;
@@ -22,7 +24,54 @@
   --top-icon-size: 40px;
   --layout-max-width: 498px;
   --wide-layout-max-width: 1120px;
+  --desktop-content-max-width: 1120px;
   --desktop-nav-width: 0px;
+  --desktop-fixed-nav-height: 0px;
+  --desktop-shell-sidebar-width: 0px;
+  --shadow-soft: 0 12px 30px rgba(74, 74, 74, 0.14);
+  --shadow-raised: 0 18px 42px rgba(15, 16, 21, 0.18);
+  --motion-fast: 160ms;
+  --motion-base: 240ms;
+  --motion-slow: 420ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes appFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes appFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes appDialogIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes appPressPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+@keyframes appSlideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 html {
@@ -33,8 +82,9 @@ body {
   font-family: var(--font-family);
   background-color: #0f1015;
   color: var(--text-dark);
-  min-height: 100vh;
+  min-height: 100dvh;
   min-height: 100svh;
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   overflow-x: hidden;
@@ -44,13 +94,15 @@ body {
 #root {
   width: 100%;
   max-width: var(--app-max-width);
-  min-height: 100vh;
+  min-height: 100dvh;
   min-height: 100svh;
+  min-height: 100vh;
   background-color: var(--bg-yellow);
   position: relative;
   overflow: hidden;
   isolation: isolate;
   box-shadow: 0 0 30px rgba(0, 0, 0, 0.25);
+  min-width: 320px;
 }
 
 #root::before {
@@ -86,9 +138,9 @@ body {
   border-radius: var(--panel-radius);
   font-weight: 800;
   font-size: 1.2rem;
-  letter-spacing: 1px;
+  letter-spacing: 0;
   cursor: pointer;
-  transition: transform 0.1s;
+  transition: transform var(--motion-fast) var(--ease-standard), background-color var(--motion-fast) var(--ease-standard);
   position: relative;
   z-index: 2; 
 }
@@ -121,8 +173,10 @@ body {
     --app-max-width: 100%;
     --content-gutter: clamp(48px, 7vw, 72px);
     --layout-max-width: min(100% - 64px, 900px);
+    --desktop-content-max-width: min(100% - 64px, 1060px);
     --top-icon-size: 44px;
     --desktop-nav-width: clamp(300px, 42vw, 390px);
+    --desktop-fixed-nav-height: clamp(78px, 10dvh, 96px);
   }
 
   #root {
@@ -146,6 +200,17 @@ body {
   :root {
     --content-gutter: clamp(64px, 7vw, 96px);
     --layout-max-width: min(100% - 96px, var(--wide-layout-max-width));
+    --desktop-content-max-width: min(100%, 1280px);
     --desktop-nav-width: clamp(380px, 36vw, 460px);
+    --desktop-fixed-nav-height: 0px;
+    --desktop-shell-sidebar-width: clamp(248px, 22vw, 308px);
+  }
+}
+
+@media (min-width: 1360px) {
+  :root {
+    --app-max-width: 1500px;
+    --layout-max-width: min(100% - 120px, 1360px);
+    --desktop-content-max-width: 1320px;
   }
 }

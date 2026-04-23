@@ -18,25 +18,17 @@ service cloud.firestore {
       return 'congresso-2026';
     }
 
-    function eligibilityPath(electionId) {
-      return /databases/$(database)/documents/elections/$(electionId)/eligibility/$(request.auth.uid);
+    function voteLockPath(electionId, userId) {
+      return /databases/$(database)/documents/elections/$(electionId)/votes_realized/$(userId);
     }
 
-    function notAlreadyVoted(electionId) {
-      return !exists(eligibilityPath(electionId))
-        || get(eligibilityPath(electionId)).data.has_voted != true;
-    }
-
-    function eligibleRecord(data) {
-      return data.eligible != false
-        && (!('status' in data) || data.status in ['eligible', 'active', 'approved']);
-    }
-
-    function voteMarkedInThisCommit(electionId) {
+    function voteLockCreatedInThisCommit(electionId, userId) {
       return signedIn()
-        && notAlreadyVoted(electionId)
-        && getAfter(eligibilityPath(electionId)).data.has_voted == true
-        && getAfter(eligibilityPath(electionId)).data.voted_at == request.time;
+        && userId == request.auth.uid
+        && !exists(voteLockPath(electionId, userId))
+        && getAfter(voteLockPath(electionId, userId)).data.election_id == electionId
+        && getAfter(voteLockPath(electionId, userId)).data.user_id == userId
+        && getAfter(voteLockPath(electionId, userId)).data.created_at == request.time;
     }
 
     function candidateVoteIncremented() {
@@ -69,15 +61,15 @@ service cloud.firestore {
         || (
           isOwner(userId)
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          'name',
-          'email',
-          'profile_image',
-          'estado',
-          'role',
-          'schema_version',
-          'last_login_at',
-          'updated_at',
-          'candidatos_escolhidos'
+            'name',
+            'email',
+            'profile_image',
+            'estado',
+            'role',
+            'schema_version',
+            'last_login_at',
+            'updated_at',
+            'candidatos_escolhidos'
           ])
           && !('candidatos_escolhidos' in request.resource.data)
           && request.resource.data.role == 'voter'
@@ -93,7 +85,7 @@ service cloud.firestore {
       allow update: if isAdmin()
         || (
           signedIn()
-          && voteMarkedInThisCommit(activeElectionId())
+          && voteLockCreatedInThisCommit(activeElectionId(), request.auth.uid)
           && candidateVoteIncremented()
         );
     }
@@ -102,65 +94,45 @@ service cloud.firestore {
       allow read: if true;
       allow create, update, delete: if isAdmin();
 
+      // Legacy support: read-only for voters, full control only for admins.
       match /eligibility/{userId} {
         allow get: if isOwner(userId) || isAdmin();
         allow list: if isAdmin();
+        allow create, update, delete: if isAdmin();
+      }
 
-        allow create: if isAdmin()
-          || (
-            isOwner(userId)
-            && electionId == activeElectionId()
-            && request.resource.data.keys().hasOnly([
+      // Lock collection: doc id is auth.uid. Stores only lock metadata.
+      match /votes_realized/{userId} {
+        allow get: if isOwner(userId) || isAdmin();
+        allow list: if isAdmin();
+
+        allow create: if isOwner(userId)
+          && electionId == activeElectionId()
+          && request.resource.data.keys().hasOnly([
             'schema_version',
             'election_id',
-            'has_voted',
-            'voted_at',
-            'updated_at',
-            'status',
-            'eligible',
-            'enrollment_source',
+            'user_id',
             'created_at'
-            ])
-            && request.resource.data.election_id == electionId
-            && request.resource.data.has_voted == true
-            && request.resource.data.voted_at == request.time
-            && request.resource.data.created_at == request.time
-            && request.resource.data.status == 'eligible'
-          );
+          ])
+          && request.resource.data.election_id == electionId
+          && request.resource.data.user_id == userId
+          && request.resource.data.created_at == request.time;
 
-        allow update: if isAdmin()
-          || (
-            isOwner(userId)
-            && electionId == activeElectionId()
-            && resource.data.has_voted != true
-            && eligibleRecord(resource.data)
-            && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-            'schema_version',
-            'election_id',
-            'has_voted',
-            'voted_at',
-            'updated_at'
-            ])
-            && request.resource.data.election_id == electionId
-            && request.resource.data.has_voted == true
-            && request.resource.data.voted_at == request.time
-            && request.resource.data.updated_at == request.time
-          );
-
+        allow update: if false;
         allow delete: if isAdmin();
       }
 
-      match /votes/{voteId} {
+      // Anonymous votes: no uid, email, or voter identifier allowed.
+      match /votes_anonymous/{voteId} {
         allow create: if signedIn()
           && electionId == activeElectionId()
-          && voteMarkedInThisCommit(electionId)
+          && voteLockCreatedInThisCommit(electionId, request.auth.uid)
           && request.resource.data.keys().hasOnly([
             'schema_version',
             'election_id',
             'estado',
             'offices',
             'candidate_ids',
-            'candidate_snapshots',
             'submitted_at',
             'source'
           ])
@@ -168,8 +140,7 @@ service cloud.firestore {
           && request.resource.data.submitted_at == request.time
           && request.resource.data.candidate_ids is list
           && request.resource.data.candidate_ids.size() == 3
-          && request.resource.data.offices is map
-          && request.resource.data.candidate_snapshots is list;
+          && request.resource.data.offices is map;
 
         allow read, update, delete: if isAdmin();
       }
@@ -179,7 +150,7 @@ service cloud.firestore {
 
         allow create: if signedIn()
           && electionId == activeElectionId()
-          && voteMarkedInThisCommit(electionId)
+          && voteLockCreatedInThisCommit(electionId, request.auth.uid)
           && request.resource.data.keys().hasOnly([
             'schema_version',
             'election_id',
@@ -194,7 +165,7 @@ service cloud.firestore {
 
         allow update: if signedIn()
           && electionId == activeElectionId()
-          && voteMarkedInThisCommit(electionId)
+          && voteLockCreatedInThisCommit(electionId, request.auth.uid)
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
             'total_votes',
             'updated_at'
@@ -208,7 +179,7 @@ service cloud.firestore {
       match /audit_events/{eventId} {
         allow create: if signedIn()
           && electionId == activeElectionId()
-          && voteMarkedInThisCommit(electionId)
+          && voteLockCreatedInThisCommit(electionId, request.auth.uid)
           && request.resource.data.keys().hasOnly([
             'schema_version',
             'election_id',

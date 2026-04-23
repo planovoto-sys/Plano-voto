@@ -5,9 +5,10 @@ import Login from './pages/Login';
 import Home from './pages/Home';
 import EscolherCandidatos from './pages/EscolherCandidatos';
 import Resultado from './pages/Resultado';
+import { ProtectedRoute, PublicRoute } from './components/ProtectedRoute';
 
 function App() {
-  const { user, loading } = useUser();
+  const { loading } = useUser();
 
   return (
     <BrowserRouter>
@@ -15,18 +16,23 @@ function App() {
         <div className="loading">Carregando...</div>
       ) : (
         <Routes>
-          <Route path="/" element={!user ? <Login /> : <Navigate to="/home" replace />} />
-          <Route path="/home" element={user ? <Home /> : <Navigate to="/" replace />} />
-          
-          <Route path="/escolher-deputado-federal" element={
-            user ? <EscolherCandidatos key="deputado" cargo="Deputado Federal" limite={1} titulo="SELECIONE 1 DEPUTADO FEDERAL" proximaRota="/escolher-senadores" chaveBanco="deputado_federal" /> : <Navigate to="/" replace />
-          } />
-          
-          <Route path="/escolher-senadores" element={
-            user ? <EscolherCandidatos key="senadores" cargo="Senador" limite={2} titulo="SELECIONE 2 SENADORES" proximaRota="/finalizacao" chaveBanco="senadores" /> : <Navigate to="/" replace />
-          } />
-          
-          <Route path="/finalizacao" element={user ? <Resultado /> : <Navigate to="/" replace />} />
+          <Route element={<PublicRoute />}>
+            <Route path="/" element={<Login />} />
+          </Route>
+
+          <Route element={<ProtectedRoute />}>
+            <Route path="/home" element={<Home />} />
+            <Route
+              path="/escolher-deputado-federal"
+              element={<EscolherCandidatos key="deputado" cargo="Deputado Federal" limite={1} titulo="SELECIONE 1 DEPUTADO FEDERAL" proximaRota="/escolher-senadores" chaveBanco="deputado_federal" />}
+            />
+            <Route
+              path="/escolher-senadores"
+              element={<EscolherCandidatos key="senadores" cargo="Senador" limite={2} titulo="SELECIONE 2 SENADORES" proximaRota="/finalizacao" chaveBanco="senadores" />}
+            />
+            <Route path="/finalizacao" element={<Resultado />} />
+          </Route>
+
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       )}

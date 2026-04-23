@@ -11,13 +11,20 @@ import {
   readLastVoteReceipt,
   saveBallotOfficeSelection
 } from '../services/votingService';
+import { getCandidateProjection, getCandidateScore, parseMetricNumber } from '../services/candidateMetrics';
 import { flowError, flowLog, flowWarn } from '../services/debugFlow';
 import SelectBase from '../components/SelectBase';
 import Sidebar from '../components/Sidebar';
 import ConfirmModal from '../components/ConfirmModal';
 import TourModal from '../components/TourModal'; 
 
-const MEDIA_TESTE = 4;
+const normalizarBusca = (valor) => (
+  valor
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+);
 
 export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota, chaveBanco }) {
   const { user, userData, userEligibility, loading: userLoading, filtroAtivo, setFiltroAtivo } = useUser();
@@ -72,16 +79,8 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
         const snapTodos = await getDocs(qTodos);
         const lista = snapTodos.docs.map(doc => {
           const d = doc.data();
-          const votos = d.votos_recebidos || 0;
-          
-          const valCand = d["Nota candidato"];
-          const valPart = d["Nota partido"];
-          const isNotaValida = (val) => val !== undefined && val !== null && val !== "" && val !== "-";
-          const temNotaCandidato = isNotaValida(valCand) && Number(valCand) !== 0;
-          
-          let notaFinal = 0;
-          if (temNotaCandidato) notaFinal = parseFloat(valCand);
-          else if (isNotaValida(valPart)) notaFinal = parseFloat(valPart);
+          const { score: notaFinal, hasCandidateScore: temNotaCandidato } = getCandidateScore(d);
+          const projection = getCandidateProjection(d, cargo);
           
           let cardColorClass = 'card-green'; 
           if (notaFinal < 7) {
@@ -89,7 +88,7 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
           }
 
           const classificacaoOriginal = d["Classificação"] || d["Classificacao"] || "-";
-          const classificacaoNum = classificacaoOriginal === "-" ? 999999 : Number(classificacaoOriginal);
+          const classificacaoNum = parseMetricNumber(classificacaoOriginal) ?? 999999;
           const ufLimpa = d.Estado ? d.Estado.replace(/[\s\u00A0]+/g, '') : "TODOS";
 
           return { 
@@ -101,7 +100,13 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
             temNotaCandidato: temNotaCandidato, 
             notaFinal: notaFinal, 
             cardColorClass: cardColorClass, 
-            porcentagemCalculada: Math.min((votos / MEDIA_TESTE) * 100, 100).toFixed(0) 
+            projectionPercent: projection.percent,
+            projectionVotes: projection.votes,
+            projectionBaseline: projection.baseline,
+            projectionReliable: projection.isReliable,
+            projectionBaselineSource: projection.baselineSource,
+            projectionCapped: projection.isCapped,
+            porcentagemCalculada: projection.displayPercent
           };
         });
         flowLog('candidates.fetch.success', { cargo, total: lista.length });
@@ -148,7 +153,7 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
   }, [todosCandidatos, estadoDoFluxo, filtroAtivo]);
 
   const listaExibida = useMemo(() => {
-    let disponiveis = candidatosFiltrados.filter(c => parseInt(c.porcentagemCalculada) < 100);
+    let disponiveis = [...candidatosFiltrados];
     
     // Separa quem tem nota de candidato (REELEGER) de quem usa nota de partido (RENOVAR)
     if (filtroAtivo === 'renovar') {
@@ -158,10 +163,10 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
     }
 
     if (busca.trim()) {
-        const textoBusca = busca.toLowerCase();
+        const textoBusca = normalizarBusca(busca);
         disponiveis = disponiveis.filter(c => 
-          (c.Nome || '').toLowerCase().includes(textoBusca) || 
-          (c.Partido || '').toLowerCase().includes(textoBusca)
+          normalizarBusca(c.Nome || '').includes(textoBusca) || 
+          normalizarBusca(c.Partido || '').includes(textoBusca)
         );
     }
     return disponiveis;
@@ -256,8 +261,8 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
         renderItem={(cand) => (
           <div className="cand-item-layout">
             <div className="cand-data-left">
-              <div className="cand-name">{cand.Nome.toUpperCase()}</div>
-              <div className="cand-party">{cand.Partido}</div>
+              <div className="cand-name">{(cand.Nome || 'Sem nome').toUpperCase()}</div>
+              <div className="cand-party">{cand.Partido || '-'}</div>
             </div>
             <div className="cand-rank-score-middle">
               <div className="badge-rank">{cand.ClassificacaoOficial === "-" ? "-" : `${cand.ClassificacaoOficial}º`}</div>
@@ -265,9 +270,9 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
             </div>
             <div className="cand-divider-vertical"></div>
             <div className="cand-chart-right tour-grafico">
-              <svg viewBox="0 0 36 36" className="circular-chart">
+              <svg viewBox="0 0 36 36" className="circular-chart" role="img" aria-label={`Chance de eleição ${cand.porcentagemCalculada}%`}>
                 <path className="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                <path className="circle" strokeDasharray={`${cand.porcentagemCalculada}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                <path className="circle" strokeDasharray={`${cand.projectionPercent}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                 <text x="18" y="20.35" className="percentage">{cand.porcentagemCalculada}%</text>
               </svg>
             </div>

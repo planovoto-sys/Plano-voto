@@ -35,7 +35,8 @@ export const UserProvider = ({ children }) => {
     if (user) {
       flowLog('auth.signed-in', { userId: user.uid });
       const userRef = doc(db, "users", user.uid);
-      const eligibilityRef = doc(db, "elections", ACTIVE_ELECTION_ID, "eligibility", user.uid);
+      const voteLockRef = doc(db, "elections", ACTIVE_ELECTION_ID, "votes_realized", user.uid);
+      const legacyEligibilityRef = doc(db, "elections", ACTIVE_ELECTION_ID, "eligibility", user.uid);
 
       const checkAndCreateUser = async () => {
         try {
@@ -100,26 +101,73 @@ export const UserProvider = ({ children }) => {
         setDataLoading(false);
       });
 
-      const unsubEligibility = onSnapshot(eligibilityRef, (doc) => {
-        flowLog('eligibility.snapshot', {
-          userId: user.uid,
-          exists: doc.exists(),
-          hasVoted: doc.exists() ? doc.data().has_voted === true : false,
-          status: doc.exists() ? doc.data().status || null : 'missing'
+      let voteLockData = null;
+      let legacyEligibilityData = null;
+
+      const syncEligibility = () => {
+        const hasVotedByVoteLock = Boolean(voteLockData);
+        const hasVotedByLegacy = legacyEligibilityData?.has_voted === true;
+
+        if (hasVotedByVoteLock) {
+          setUserEligibility({
+            ...voteLockData,
+            status: 'locked',
+            has_voted: true,
+            source: 'votes_realized'
+          });
+          return;
+        }
+
+        if (hasVotedByLegacy) {
+          setUserEligibility({
+            ...legacyEligibilityData,
+            status: legacyEligibilityData?.status || 'locked',
+            has_voted: true,
+            source: 'legacy_eligibility'
+          });
+          return;
+        }
+
+        setUserEligibility({
+          status: 'pending',
+          has_voted: false,
+          missing: true,
+          source: 'votes_realized'
         });
-        setUserEligibility(doc.exists()
-          ? doc.data()
-          : { status: 'pending', has_voted: false, missing: true }
-        );
+      };
+
+      const unsubVoteLock = onSnapshot(voteLockRef, (voteLockDoc) => {
+        voteLockData = voteLockDoc.exists() ? voteLockDoc.data() : null;
+        flowLog('vote-lock.snapshot', {
+          userId: user.uid,
+          exists: voteLockDoc.exists(),
+          hasVoted: voteLockDoc.exists()
+        });
+        syncEligibility();
       }, (error) => {
-        flowError('eligibility.snapshot.error', error, { userId: user.uid });
-        console.error("Erro ao acompanhar elegibilidade:", error);
+        flowError('vote-lock.snapshot.error', error, { userId: user.uid });
+        console.error("Erro ao acompanhar bloqueio de voto:", error);
+        setUserEligibility({ status: 'unknown', has_voted: false, error: true });
+      });
+
+      const unsubLegacyEligibility = onSnapshot(legacyEligibilityRef, (legacyDoc) => {
+        legacyEligibilityData = legacyDoc.exists() ? legacyDoc.data() : null;
+        flowLog('eligibility.legacy.snapshot', {
+          userId: user.uid,
+          exists: legacyDoc.exists(),
+          hasVoted: legacyDoc.exists() ? legacyDoc.data().has_voted === true : false
+        });
+        syncEligibility();
+      }, (error) => {
+        flowError('eligibility.legacy.snapshot.error', error, { userId: user.uid });
+        console.error("Erro ao acompanhar elegibilidade legada:", error);
         setUserEligibility({ status: 'unknown', has_voted: false, error: true });
       });
 
       return () => {
         unsubUser();
-        unsubEligibility();
+        unsubVoteLock();
+        unsubLegacyEligibility();
       };
     }
   }, [user, authLoading]);
