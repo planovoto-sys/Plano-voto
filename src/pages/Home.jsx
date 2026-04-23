@@ -182,7 +182,7 @@ export default function Home() {
         titulo="SELECIONE SEU ESTADO" dados={listaExibida} limiteSelecao={1} selecaoInicial={selecaoInicial}
         carregando={userLoading || loading} mostrarBusca={true} valorBusca={busca} onChangeBusca={setBusca}
         onConfirmar={handleConfirmar} mostrarBotaoVoltar={false}
-        linhasVisiveis={6} 
+        linhasVisiveis={5} 
         abaAtiva={filtroAtivo}
         onHelpClick={() => setIsTourOpen(true)} /* ATIVA O BOTÃO "i" NA TELA DE ESTADOS */
         renderItem={(estado) => (
