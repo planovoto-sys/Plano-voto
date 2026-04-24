@@ -1,32 +1,69 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap');
 
 :root {
-  --app-max-width: 498px;
-  --mobile-reference-height: 883px;
-  --mobile-scale: 1;
+  --app-mobile-max-width: 494px;
+  --app-max-width: var(--app-mobile-max-width);
+  --mobile-canvas-width: min(100vw, var(--app-mobile-max-width));
+  --mobile-artboard-height: calc(var(--mobile-canvas-width) * 1.78138);
   --mobile-safe-top: env(safe-area-inset-top, 0px);
   --mobile-safe-bottom: env(safe-area-inset-bottom, 0px);
-  --content-gutter: clamp(24px, calc(51px * var(--mobile-scale)), 51px);
+  --mobile-nav-top: calc(var(--mobile-canvas-width) * 0.04453);
+  --mobile-nav-bottom: calc(var(--mobile-canvas-width) * 0.04453);
+  --mobile-nav-side: calc(var(--mobile-canvas-width) * 0.06478);
+  --mobile-search-width: calc(var(--mobile-canvas-width) * 0.66397);
+  --mobile-search-height: calc(var(--mobile-canvas-width) * 0.10121);
+  --mobile-search-radius: calc(var(--mobile-canvas-width) * 0.03846);
+  --mobile-banner-height: calc(var(--mobile-canvas-width) * 0.18421);
+  --mobile-banner-triangle-width: calc(var(--mobile-canvas-width) * 0.10324);
+  --mobile-banner-triangle-height: calc(var(--mobile-canvas-width) * 0.04453);
+  --mobile-tabs-margin-top: calc(var(--mobile-canvas-width) * 0.05061);
+  --mobile-tabs-margin-bottom: calc(var(--mobile-canvas-width) * 0.04858);
+  --mobile-tab-height: calc(var(--mobile-canvas-width) * 0.09109);
+  --mobile-list-top-padding: calc(var(--mobile-canvas-width) * 0.05061);
+  --mobile-card-height: calc(var(--mobile-canvas-width) * 0.16397);
+  --mobile-card-padding-x: calc(var(--mobile-canvas-width) * 0.03239);
+  --mobile-footer-height: calc(var(--mobile-canvas-width) * 0.18219);
+  --mobile-footer-gap: calc(var(--mobile-canvas-width) * 0.05061);
+  --mobile-footer-bottom: calc((var(--mobile-canvas-width) * 0.08603) + var(--mobile-safe-bottom));
+  --mobile-chart-size: calc(var(--mobile-canvas-width) * 0.12146);
+  --mobile-badge-width: calc(var(--mobile-canvas-width) * 0.10526);
+  --mobile-badge-height: calc(var(--mobile-canvas-width) * 0.04858);
+  --mobile-gauge-width: calc(var(--mobile-canvas-width) * 0.64777);
+  --mobile-gauge-height: calc(var(--mobile-canvas-width) * 0.36842);
+  --content-gutter: calc(var(--mobile-canvas-width) * 0.09919);
+  --panel-radius: calc(var(--mobile-canvas-width) * 0.02024);
+  --top-icon-size: calc(var(--mobile-canvas-width) * 0.06883);
+  --top-action-size: var(--mobile-search-height);
   --bg-yellow: #f4eb93;
   --card-yellow: #f2e067;
   --primary-green: #639863;
   --muted-card: #d0d687;
-  --selected-yellow: #b8a850;
+  --selected-yellow: #b5a84d;
   --selected-green: #9ab775;
-  --badge-green: #90d860;
-  --chart-green: #6ed957;
-  --renovar-bg: #3b4d7f;
-  --renovar-panel: #414a5e;
-  --renovar-card: #527e71;
-  --renovar-selected: #68ac64;
+  --bad-card: #f0cca4;
+  --bad-selected: #ff8f76;
+  --badge-green: #92d863;
+  --badge-red: #ff6a62;
+  --chart-green: #77da51;
+  --chart-red: #ff5555;
+  --renovar-bg: #465891;
+  --renovar-panel: #4d576f;
+  --renovar-card: #5f8f7f;
+  --renovar-selected: #74ba60;
+  --renovar-input: #f1efec;
+  --renovar-accent: #8ee255;
   --text-dark: #4a4a4a;
   --text-light: #ffffff;
-  --font-family: 'Inter', sans-serif;
-  --panel-radius: clamp(8px, calc(8px * var(--mobile-scale)), 8px);
-  --top-icon-size: clamp(32px, calc(40px * var(--mobile-scale)), 40px);
-  --layout-max-width: 498px;
+  --font-family: 'Montserrat', sans-serif;
+  --layout-max-width: min(100% - 72px, 920px);
   --wide-layout-max-width: 1120px;
   --desktop-nav-width: 0px;
+  --stripe-width: calc(var(--mobile-canvas-width) * 0.50607);
+  --stripe-height: calc(var(--mobile-canvas-width) * 0.02227);
+  --stripe-green-bottom: calc((var(--mobile-canvas-width) * -0.00405) + var(--mobile-safe-bottom));
+  --stripe-green-right: calc(var(--mobile-canvas-width) * -0.17409);
+  --stripe-yellow-bottom: calc((var(--mobile-canvas-width) * -0.02429) + var(--mobile-safe-bottom));
+  --stripe-yellow-right: calc(var(--mobile-canvas-width) * -0.19433);
 }
 
 html {
@@ -50,6 +87,7 @@ body {
   max-width: var(--app-max-width);
   min-height: 100vh;
   min-height: 100svh;
+  min-height: 100dvh;
   background-color: var(--bg-yellow);
   position: relative;
   overflow: hidden;
@@ -61,11 +99,11 @@ body {
   content: "";
   position: absolute;
   background-color: var(--primary-green);
-  width: calc(250px * var(--mobile-scale));
-  height: calc(12px * var(--mobile-scale));
+  width: var(--stripe-width);
+  height: var(--stripe-height);
   transform: rotate(-45deg);
-  bottom: calc(25px * var(--mobile-scale) + var(--mobile-safe-bottom));
-  right: calc(-80px * var(--mobile-scale));
+  bottom: var(--stripe-green-bottom);
+  right: var(--stripe-green-right);
   z-index: 0;
   pointer-events: none;
 }
@@ -74,11 +112,11 @@ body {
   content: "";
   position: absolute;
   background-color: var(--card-yellow);
-  width: calc(250px * var(--mobile-scale));
-  height: calc(12px * var(--mobile-scale));
+  width: var(--stripe-width);
+  height: var(--stripe-height);
   transform: rotate(-45deg);
-  bottom: calc(8px * var(--mobile-scale) + var(--mobile-safe-bottom));
-  right: calc(-95px * var(--mobile-scale));
+  bottom: var(--stripe-yellow-bottom);
+  right: var(--stripe-yellow-right);
   z-index: 0;
   pointer-events: none;
 }
@@ -89,12 +127,10 @@ body {
   border: none;
   border-radius: var(--panel-radius);
   font-weight: 800;
-  font-size: 1.2rem;
-  letter-spacing: 1px;
   cursor: pointer;
-  transition: transform 0.1s;
+  transition: transform 0.12s ease;
   position: relative;
-  z-index: 2; 
+  z-index: 2;
 }
 
 .btn-green:active {
@@ -103,54 +139,50 @@ body {
 
 .app-icon {
   display: block;
-  width: 34px;
-  height: 34px;
+  width: var(--top-icon-size);
+  height: var(--top-icon-size);
   flex: 0 0 auto;
 }
 
 .top-icon-button {
-  width: var(--top-icon-size);
-  height: var(--top-icon-size);
-  flex: 0 0 var(--top-icon-size);
+  width: var(--top-action-size);
+  height: var(--top-action-size);
+  flex: 0 0 var(--top-action-size);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0;
-  color: #504c4c;
+  color: var(--text-dark);
   line-height: 1;
+}
+
+.top-icon-button .app-icon {
+  width: calc(var(--top-action-size) * 0.76);
+  height: calc(var(--top-action-size) * 0.76);
 }
 
 @media (min-width: 768px) {
   :root {
     --app-max-width: 100%;
-    --mobile-scale: 1;
-    --content-gutter: clamp(48px, 7vw, 72px);
-    --layout-max-width: min(100% - 64px, 900px);
-    --top-icon-size: 44px;
+    --layout-max-width: min(100% - 96px, 960px);
     --desktop-nav-width: clamp(360px, 52vw, 460px);
+    --top-action-size: 44px;
+    --stripe-width: 360px;
+    --stripe-height: 12px;
+    --stripe-green-bottom: 18px;
+    --stripe-green-right: -102px;
+    --stripe-yellow-bottom: 6px;
+    --stripe-yellow-right: -112px;
   }
 
   #root {
     box-shadow: none;
   }
-
-  #root::before {
-    width: 360px;
-    bottom: 42px;
-    right: -95px;
-  }
-
-  #root::after {
-    width: 360px;
-    bottom: 23px;
-    right: -118px;
-  }
 }
 
 @media (min-width: 1024px) {
   :root {
-    --content-gutter: clamp(64px, 7vw, 96px);
-    --layout-max-width: min(100% - 96px, var(--wide-layout-max-width));
+    --layout-max-width: min(100% - 120px, var(--wide-layout-max-width));
     --desktop-nav-width: clamp(420px, 40vw, 560px);
   }
 }

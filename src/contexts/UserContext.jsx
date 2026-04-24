@@ -6,12 +6,27 @@ import { UserContext } from './UserContextCore';
 import { ACTIVE_ELECTION_ID } from '../services/votingService';
 import { flowError, flowLog, flowWarn } from '../services/debugFlow';
 
+const FILTER_STORAGE_KEY = 'plano-voto:filtro-ativo';
+
+const readPersistedFilter = () => {
+  if (typeof window === 'undefined') {
+    return 'reeleger';
+  }
+
+  try {
+    const value = window.localStorage.getItem(FILTER_STORAGE_KEY);
+    return ['reeleger', 'renovar'].includes(value) ? value : 'reeleger';
+  } catch {
+    return 'reeleger';
+  }
+};
+
 export const UserProvider = ({ children }) => {
   const [user, authLoading] = useAuthState(auth);
   const [userData, setUserData] = useState(null);
   const [userEligibility, setUserEligibility] = useState(null);
   const [dataLoading, setDataLoading] = useState(true);
-  const [filtroAtivo, setFiltroAtivo] = useState('reeleger');
+  const [filtroAtivo, setFiltroAtivo] = useState(readPersistedFilter);
 
   useEffect(() => {
     let cancelled = false;
@@ -23,7 +38,13 @@ export const UserProvider = ({ children }) => {
         setUserData(null);
         setUserEligibility(null);
         setDataLoading(false);
-        // BUG CORRIGIDO: Reseta o tema para o padrão ('reeleger') sempre que há um logoff
+        if (typeof window !== 'undefined') {
+          try {
+            window.localStorage.removeItem(FILTER_STORAGE_KEY);
+          } catch {
+            // Ignora falhas de persistência local.
+          }
+        }
         setFiltroAtivo('reeleger');
       });
 
@@ -123,6 +144,18 @@ export const UserProvider = ({ children }) => {
       };
     }
   }, [user, authLoading]);
+
+  useEffect(() => {
+    if (!user?.uid || typeof window === 'undefined') {
+      return;
+    }
+
+    try {
+      window.localStorage.setItem(FILTER_STORAGE_KEY, filtroAtivo);
+    } catch {
+      // Ignora falhas de persistência local.
+    }
+  }, [filtroAtivo, user?.uid]);
 
   return (
     <UserContext.Provider value={{ 

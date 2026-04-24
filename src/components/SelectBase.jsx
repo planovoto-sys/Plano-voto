@@ -24,7 +24,8 @@ export default function SelectBase({
   onHelpClick,
   topRightExtra = null,
   linhasVisiveis = 5,
-  mostrarBotaoVoltar = true
+  mostrarBotaoVoltar = true,
+  variant = ''
 }) {
   const [selecionados, setSelecionados] = useState(selecaoInicial);
   const [modalMalAvaliado, setModalMalAvaliado] = useState({ aberto: false, item: null });
@@ -92,13 +93,14 @@ export default function SelectBase({
 
   const themeClass = abaAtiva === 'renovar' ? 'theme-renovar' : 'theme-reeleger';
   const layoutClass = abas.length > 0 ? 'has-tabs' : 'no-tabs';
+  const variantClass = variant ? `variant-${variant}` : '';
   const canClearBusca = mostrarBusca && textoBuscaFixo === null && valorBusca.trim().length > 0;
   const showBackButton = mostrarBotaoVoltar && typeof onVoltar === 'function';
   
-  const listBoxStyle = { '--list-max-height': `${linhasVisiveis * 80}px` };
+  const listBoxStyle = { '--list-max-height': `calc(${linhasVisiveis} * var(--mobile-card-height))` };
 
   return (
-    <div className={`select-base-container ${themeClass} ${layoutClass}`}>
+    <div className={`select-base-container ${themeClass} ${layoutClass} ${variantClass}`}>
       <div className="top-nav-bar">
         <div className="nav-spacer"></div>
 

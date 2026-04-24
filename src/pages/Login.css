@@ -1,20 +1,22 @@
 .login-wrapper {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  height: 100svh;
+  min-height: max(100vh, calc(var(--mobile-artboard-height) + var(--mobile-safe-top) + var(--mobile-safe-bottom)));
+  min-height: max(100svh, calc(var(--mobile-artboard-height) + var(--mobile-safe-top) + var(--mobile-safe-bottom)));
+  min-height: max(100dvh, calc(var(--mobile-artboard-height) + var(--mobile-safe-top) + var(--mobile-safe-bottom)));
   width: 100%;
-  padding-top: calc(clamp(24px, calc(36px * var(--mobile-scale)), 36px) + var(--mobile-safe-top));
+  padding-top: calc(var(--mobile-safe-top) + (var(--mobile-canvas-width) * 0.07287));
+  position: relative;
+  z-index: 1;
 }
 
 .login-header {
   background-color: var(--primary-green);
   color: var(--bg-yellow);
   text-align: center;
-  height: clamp(96px, calc(114px * var(--mobile-scale)), 114px);
-  padding: 0 clamp(14px, calc(20px * var(--mobile-scale)), 20px);
+  height: calc(var(--mobile-canvas-width) * 0.23077);
+  padding: 0 var(--content-gutter);
   position: relative;
-  z-index: 2;
   width: 100%;
   display: flex;
   align-items: center;
@@ -25,40 +27,39 @@
 .login-header h1 {
   margin: 0;
   font-weight: 800;
-  font-size: clamp(1.9rem, calc(1.6rem + 1.3vw), 2.25rem);
-  letter-spacing: clamp(3px, calc(6px * var(--mobile-scale)), 6px);
+  font-size: calc(var(--mobile-canvas-width) * 0.06579);
+  letter-spacing: calc(var(--mobile-canvas-width) * 0.0081);
   text-transform: lowercase;
+  line-height: 1;
 }
 
 .login-triangle-down {
   width: 0;
   height: 0;
-  border-left: clamp(42px, calc(52px * var(--mobile-scale)), 52px) solid transparent;
-  border-right: clamp(42px, calc(52px * var(--mobile-scale)), 52px) solid transparent;
-  border-top: clamp(18px, calc(24px * var(--mobile-scale)), 24px) solid var(--primary-green);
+  border-left: calc(var(--mobile-canvas-width) * 0.10324) solid transparent;
+  border-right: calc(var(--mobile-canvas-width) * 0.10324) solid transparent;
+  border-top: calc(var(--mobile-canvas-width) * 0.04656) solid var(--primary-green);
   position: absolute;
-  bottom: clamp(-23px, calc(-23px * var(--mobile-scale)), -18px);
+  bottom: calc(var(--mobile-canvas-width) * -0.04453);
   left: 50%;
   transform: translateX(-50%);
   z-index: 1;
 }
 
 .login-main {
-  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  padding: clamp(46px, calc(58px * var(--mobile-scale)), 58px) var(--content-gutter) calc(clamp(28px, calc(32px * var(--mobile-scale)), 32px) + var(--mobile-safe-bottom)) var(--content-gutter);
-  gap: clamp(28px, calc(43px * var(--mobile-scale)), 43px);
+  padding: calc(var(--mobile-canvas-width) * 0.07287) var(--content-gutter) calc((var(--mobile-canvas-width) * 0.06478) + var(--mobile-safe-bottom));
+  gap: calc(var(--mobile-canvas-width) * 0.08907);
   z-index: 2;
 }
 
 .video-card {
   background-color: var(--card-yellow);
-  width: 100%;
-  max-width: 396px;
-  aspect-ratio: 4 / 5;
+  width: calc(100% - (2 * var(--content-gutter)));
+  max-width: calc(var(--mobile-canvas-width) * 0.79757);
+  aspect-ratio: 394 / 494;
   border-radius: var(--panel-radius);
   display: flex;
   align-items: center;
@@ -67,28 +68,28 @@
 
 .play-button {
   background-color: var(--primary-green);
-  width: clamp(146px, calc(198px * var(--mobile-scale)), 198px);
-  height: clamp(146px, calc(198px * var(--mobile-scale)), 198px);
+  width: calc(var(--mobile-canvas-width) * 0.40081);
+  height: calc(var(--mobile-canvas-width) * 0.40081);
   border-radius: 50%;
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: transform 0.16s ease;
 }
 
 .play-button:active {
-  transform: scale(0.95);
+  transform: scale(0.96);
 }
 
 .play-icon {
   width: 0;
   height: 0;
-  border-top: clamp(34px, calc(46px * var(--mobile-scale)), 46px) solid transparent;
-  border-bottom: clamp(34px, calc(46px * var(--mobile-scale)), 46px) solid transparent;
-  border-left: clamp(58px, calc(78px * var(--mobile-scale)), 78px) solid var(--bg-yellow);
-  margin-left: clamp(9px, calc(13px * var(--mobile-scale)), 13px);
+  border-top: calc(var(--mobile-canvas-width) * 0.09312) solid transparent;
+  border-bottom: calc(var(--mobile-canvas-width) * 0.09312) solid transparent;
+  border-left: calc(var(--mobile-canvas-width) * 0.15789) solid var(--bg-yellow);
+  margin-left: calc(var(--mobile-canvas-width) * 0.02632);
 }
 
 .btn-comecar {
@@ -96,25 +97,28 @@
   color: var(--bg-yellow);
   border: none;
   border-radius: var(--panel-radius);
-  width: 100%;
-  max-width: 396px;
-  height: clamp(84px, calc(102px * var(--mobile-scale)), 102px);
-  padding: 0 clamp(18px, calc(22px * var(--mobile-scale)), 22px);
+  width: calc(100% - (2 * var(--content-gutter)));
+  max-width: calc(var(--mobile-canvas-width) * 0.79757);
+  height: calc(var(--mobile-canvas-width) * 0.20648);
+  padding: 0 calc(var(--mobile-canvas-width) * 0.04453);
   font-weight: 800;
-  font-size: clamp(1rem, calc(0.94rem + 0.35vw), 1.15rem);
-  letter-spacing: clamp(1.5px, calc(3px * var(--mobile-scale)), 3px);
+  font-size: calc(var(--mobile-canvas-width) * 0.04757);
+  letter-spacing: calc(var(--mobile-canvas-width) * 0.00607);
   text-transform: uppercase;
   cursor: pointer;
-  transition: transform 0.1s ease;
+  transition: transform 0.12s ease;
 }
 
 .btn-comecar:active {
-  transform: scale(0.97);
+  transform: scale(0.98);
 }
 
 @media (min-width: 768px) {
   .login-wrapper {
     padding-top: 0;
+    min-height: 100vh;
+    min-height: 100svh;
+    min-height: 100dvh;
   }
 
   .login-header {
@@ -123,19 +127,27 @@
 
   .login-header h1 {
     font-size: 2.7rem;
+    letter-spacing: 5px;
   }
 
   .login-main {
     width: var(--layout-max-width);
     margin: 0 auto;
-    padding-left: 0;
-    padding-right: 0;
-    padding-top: 72px;
+    padding: 72px 0 64px;
     gap: 48px;
   }
 
   .video-card {
+    width: min(430px, 100%);
     max-width: 430px;
+  }
+
+  .btn-comecar {
+    width: min(430px, 100%);
+    max-width: 430px;
+    height: 96px;
+    font-size: 1.1rem;
+    letter-spacing: 2.5px;
   }
 }
 

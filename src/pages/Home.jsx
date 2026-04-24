@@ -189,7 +189,8 @@ export default function Home() {
         titulo="SELECIONE SEU ESTADO" dados={listaExibida} limiteSelecao={1} selecaoInicial={selecaoInicial}
         carregando={userLoading || loading} mostrarBusca={true} valorBusca={busca} onChangeBusca={setBusca}
         onConfirmar={handleConfirmar} mostrarBotaoVoltar={false}
-        linhasVisiveis={5} 
+        linhasVisiveis={6}
+        variant="home-state"
         abaAtiva={filtroAtivo}
         topRightExtra={<button className="desktop-utility-btn" type="button" onClick={handleLogout}>Sair</button>}
         onHelpClick={() => setIsTourOpen(true)} /* ATIVA O BOTÃO "i" NA TELA DE ESTADOS */
