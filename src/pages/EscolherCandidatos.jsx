@@ -220,7 +220,7 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
         progress,
         hasVoted: userEligibility?.has_voted === true
       });
-      navigate(proximaRota);
+      navigate(proximaRota, { state: { bypassVoteRedirect: true } });
     } catch (e) { 
       flowError('candidates.confirm.error', e, { cargo, chaveBanco });
       console.error("Erro ao salvar seleções:", e); 
@@ -260,7 +260,7 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
         onLimiteAtingido={(c) => setModalTroca({ aberto: true, novoCandidato: c })}
         onConfirmar={handleConfirmarFinal} 
         onVoltar={() => navigate(cargo === "Senador" ? '/escolher-deputado-federal' : '/home', { state: { bypassVoteRedirect: true } })}
-        linhasVisiveis={5}
+        linhasVisiveis={6}
         renderItem={(cand) => (
           <div className="cand-item-layout">
             <div className="cand-data-left">

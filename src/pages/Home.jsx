@@ -171,7 +171,7 @@ export default function Home() {
         });
 
       flowLog('home.change-state.navigate', { to: '/escolher-deputado-federal', novoEstado });
-      navigate('/escolher-deputado-federal');
+      navigate('/escolher-deputado-federal', { state: { bypassVoteRedirect: true } });
     } catch (e) {
       flowError('home.change-state.local-error', e, { novoEstado });
       console.error("Erro ao salvar estado: ", e);

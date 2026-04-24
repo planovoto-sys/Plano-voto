@@ -50,15 +50,15 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: calc(var(--mobile-canvas-width) * 0.07287) var(--content-gutter) calc((var(--mobile-canvas-width) * 0.06478) + var(--mobile-safe-bottom));
-  gap: calc(var(--mobile-canvas-width) * 0.08907);
+  padding: calc(var(--mobile-banner-triangle-height) + var(--selection-stack-gap)) var(--content-gutter) calc((var(--mobile-canvas-width) * 0.06478) + var(--mobile-safe-bottom));
+  gap: var(--selection-stack-gap);
   z-index: 2;
 }
 
 .video-card {
   background-color: var(--card-yellow);
-  width: calc(100% - (2 * var(--content-gutter)));
-  max-width: calc(var(--mobile-canvas-width) * 0.79757);
+  width: 100%;
+  max-width: 100%;
   aspect-ratio: 394 / 494;
   border-radius: var(--panel-radius);
   display: flex;
@@ -97,8 +97,8 @@
   color: var(--bg-yellow);
   border: none;
   border-radius: var(--panel-radius);
-  width: calc(100% - (2 * var(--content-gutter)));
-  max-width: calc(var(--mobile-canvas-width) * 0.79757);
+  width: 100%;
+  max-width: 100%;
   height: calc(var(--mobile-canvas-width) * 0.20648);
   padding: 0 calc(var(--mobile-canvas-width) * 0.04453);
   font-weight: 800;

@@ -10,14 +10,16 @@
   --mobile-nav-top: calc(var(--mobile-canvas-width) * 0.04453);
   --mobile-nav-bottom: calc(var(--mobile-canvas-width) * 0.04453);
   --mobile-nav-side: calc(var(--mobile-canvas-width) * 0.06478);
+  --mobile-top-icon-side: calc(var(--mobile-canvas-width) * 0.04049);
   --mobile-search-width: calc(var(--mobile-canvas-width) * 0.66397);
   --mobile-search-height: calc(var(--mobile-canvas-width) * 0.10121);
   --mobile-search-radius: calc(var(--mobile-canvas-width) * 0.03846);
   --mobile-banner-height: calc(var(--mobile-canvas-width) * 0.18421);
   --mobile-banner-triangle-width: calc(var(--mobile-canvas-width) * 0.10324);
   --mobile-banner-triangle-height: calc(var(--mobile-canvas-width) * 0.04453);
-  --mobile-tabs-margin-top: calc(var(--mobile-canvas-width) * 0.05061);
-  --mobile-tabs-margin-bottom: calc(var(--mobile-canvas-width) * 0.04858);
+  --selection-stack-gap: var(--mobile-nav-bottom);
+  --mobile-tabs-margin-top: calc(var(--mobile-banner-triangle-height) + var(--selection-stack-gap));
+  --mobile-tabs-margin-bottom: var(--selection-stack-gap);
   --mobile-tab-height: calc(var(--mobile-canvas-width) * 0.09109);
   --mobile-list-top-padding: calc(var(--mobile-canvas-width) * 0.05061);
   --mobile-card-height: calc(var(--mobile-canvas-width) * 0.16397);

@@ -1,7 +1,7 @@
 .hamburger-menu {
     position: absolute;
     top: calc(var(--mobile-safe-top) + var(--mobile-nav-top));
-    left: var(--mobile-nav-side);
+    left: var(--mobile-top-icon-side);
     z-index: 100;
     cursor: pointer;
     background: transparent;

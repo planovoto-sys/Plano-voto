@@ -123,7 +123,7 @@
 .nav-action-right {
     position: absolute;
     top: calc(var(--mobile-safe-top) + var(--mobile-nav-top));
-    right: var(--mobile-nav-side);
+    right: var(--mobile-top-icon-side);
     width: var(--top-action-size);
     height: var(--top-action-size);
     display: flex;
@@ -289,8 +289,13 @@
 }
 
 .select-base-container.variant-home-state.no-tabs .list-wrapper {
-    padding-top: 0;
-    justify-content: center;
+    flex: 0 0 auto;
+    padding-top: calc(var(--mobile-banner-triangle-height) + var(--selection-stack-gap));
+    justify-content: flex-start;
+}
+
+.select-base-container.variant-home-state.no-tabs .navigation-footer {
+    margin-top: var(--selection-stack-gap);
 }
 
 .select-base-container.has-tabs .list-wrapper,
@@ -299,7 +304,7 @@
 }
 
 .select-base-container.has-tabs:not(.resultado-scrollable) .list-wrapper {
-   margin-top: calc(var(--mobile-tabs-margin-bottom) * 2.56);
+    margin-top: 0;
     min-height: 0;
     flex: 1;
     display: flex;
@@ -308,7 +313,7 @@
 }
 
 .select-base-container.has-tabs:not(.resultado-scrollable) .navigation-footer {
-    margin-top: calc(var(--mobile-footer-gap) * 1.12);
+    margin-top: var(--selection-stack-gap);
 }
 
 .list-scroll-box {
@@ -811,18 +816,30 @@
 
 .theme-renovar .base-card.card-yellow,
 .theme-renovar .base-card.card-green {
-    background-color: var(--renovar-card);
+    background-color: var(--muted-card);
     border-bottom: 1px solid rgba(45, 65, 92, 0.42);
+}
+
+.theme-renovar .base-card.card-yellow {
+    background-color: var(--card-yellow);
 }
 
 .theme-renovar .base-card.card-yellow.selected,
 .theme-renovar .base-card.card-green.selected {
-    background-color: var(--renovar-selected);
+    background-color: var(--selected-green);
+}
+
+.theme-renovar .base-card.card-yellow.selected {
+    background-color: var(--selected-yellow);
 }
 
 .theme-renovar .base-card.card-red {
-    background-color: #86665d;
+    background-color: var(--bad-card);
     border-bottom: 1px solid rgba(45, 65, 92, 0.4);
+}
+
+.theme-renovar .base-card.card-red.selected {
+    background-color: var(--bad-selected);
 }
 
 .theme-renovar .state-centered-name,
@@ -839,8 +856,13 @@
 
 .theme-renovar .badge-rank,
 .theme-renovar .badge-score {
-    background-color: var(--renovar-accent);
-    color: #ffffff;
+    background-color: var(--badge-green);
+    color: var(--text-dark);
+}
+
+.theme-renovar .base-card.card-red .badge-rank,
+.theme-renovar .base-card.card-red .badge-score {
+    background-color: var(--badge-red);
 }
 
 .theme-renovar .nav-btn:first-child {
@@ -858,12 +880,25 @@
     fill: #ffffff;
 }
 
-.theme-renovar .circle {
-    stroke: var(--renovar-accent);
+.theme-renovar .base-card .state-centered-name,
+.theme-renovar .base-card .cand-name,
+.theme-renovar .base-card .cand-party,
+.theme-renovar .base-card .percentage {
+    color: var(--text-dark);
+    fill: var(--text-dark);
+}
+
+.theme-renovar .base-card.card-yellow .circle,
+.theme-renovar .base-card.card-green .circle {
+    stroke: var(--chart-green);
+}
+
+.theme-renovar .base-card.card-red .circle {
+    stroke: var(--chart-red);
 }
 
 .theme-renovar .circle-bg {
-    stroke: rgba(255, 255, 255, 0.18);
+    stroke: rgba(0, 0, 0, 0.08);
 }
 
 @media (min-width: 768px) {

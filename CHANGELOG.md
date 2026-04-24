@@ -1,0 +1,12 @@
+# Changelog
+
+Todas as mudanças relevantes deste projeto serão documentadas aqui.
+
+## [1.3.1] - 2026-04-24
+
+### Ajustado
+- Padroniza os tons de verde e vermelho/rosa dos cards também na tela azul de renovar.
+- Reequilibra os espaçamentos das telas inicial, seleção de estado e seleção de candidatos.
+- Afasta os botões de menu e informação do campo de pesquisa no topo mobile.
+- Corrige a navegação de avanço para seguir o fluxo natural antes do resumo.
+
