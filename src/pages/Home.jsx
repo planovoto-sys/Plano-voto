@@ -188,9 +188,9 @@ export default function Home() {
       <SelectBase
         titulo="SELECIONE SEU ESTADO" dados={listaExibida} limiteSelecao={1} selecaoInicial={selecaoInicial}
         carregando={userLoading || loading} mostrarBusca={true} valorBusca={busca} onChangeBusca={setBusca}
-        onConfirmar={handleConfirmar} onVoltar={() => navigate(-1)}
-        linhasVisiveis={6} 
-        footerMode="next-only"
+        onConfirmar={handleConfirmar} mostrarBotaoVoltar={false}
+        linhasVisiveis={6}
+        variant="home-state"
         abaAtiva={filtroAtivo}
         topRightExtra={<button className="desktop-utility-btn" type="button" onClick={handleLogout}>Sair</button>}
         onHelpClick={() => setIsTourOpen(true)} /* ATIVA O BOTÃO "i" NA TELA DE ESTADOS */

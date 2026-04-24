@@ -24,7 +24,8 @@ export default function SelectBase({
   onHelpClick,
   topRightExtra = null,
   linhasVisiveis = 5,
-  footerMode = 'split'
+  mostrarBotaoVoltar = true,
+  variant = ''
 }) {
   const [selecionados, setSelecionados] = useState(selecaoInicial);
   const [modalMalAvaliado, setModalMalAvaliado] = useState({ aberto: false, item: null });
@@ -92,14 +93,14 @@ export default function SelectBase({
 
   const themeClass = abaAtiva === 'renovar' ? 'theme-renovar' : 'theme-reeleger';
   const layoutClass = abas.length > 0 ? 'has-tabs' : 'no-tabs';
+  const variantClass = variant ? `variant-${variant}` : '';
   const canClearBusca = mostrarBusca && textoBuscaFixo === null && valorBusca.trim().length > 0;
+  const showBackButton = mostrarBotaoVoltar && typeof onVoltar === 'function';
   
-  const showBackButton = footerMode !== 'next-only';
-  const showNextButton = footerMode !== 'back-only';
-  const listBoxStyle = { '--visible-rows': String(linhasVisiveis) };
+  const listBoxStyle = { '--list-max-height': `calc(${linhasVisiveis} * var(--mobile-card-height))` };
 
   return (
-    <div className={`select-base-container ${themeClass} ${layoutClass}`}>
+    <div className={`select-base-container ${themeClass} ${layoutClass} ${variantClass}`}>
       <div className="top-nav-bar">
         <div className="nav-spacer"></div>
 
@@ -112,6 +113,10 @@ export default function SelectBase({
               value={textoBuscaFixo !== null ? textoBuscaFixo : valorBusca}
               onChange={(e) => onChangeBusca(e.target.value)}
               disabled={textoBuscaFixo !== null}
+              aria-label="Pesquisar na lista"
+              autoComplete="off"
+              inputMode="search"
+              spellCheck={false}
             />
             {canClearBusca && (
               <button className="btn-clear-search" type="button" onClick={handleClearBusca} aria-label="Limpar pesquisa">
@@ -176,17 +181,11 @@ export default function SelectBase({
         </div>
       </div>
 
-      <footer className={`navigation-footer footer-${footerMode}`}>
+      <footer className={`navigation-footer ${showBackButton ? '' : 'only-forward'}`}>
         {showBackButton && (
-          <button className="nav-btn" type="button" onClick={onVoltar} aria-label="Voltar">
-            <i className="arrow-left"></i>
-          </button>
+          <button className="nav-btn" type="button" onClick={onVoltar} aria-label="Voltar"><i className="arrow-left"></i></button>
         )}
-        {showNextButton && (
-          <button className="nav-btn" type="button" onClick={handleConfirmar} aria-label="Avancar">
-            <i className="arrow-right"></i>
-          </button>
-        )}
+        <button className="nav-btn" type="button" onClick={handleConfirmar} aria-label="Avancar"><i className="arrow-right"></i></button>
       </footer>
 
       <ConfirmModal

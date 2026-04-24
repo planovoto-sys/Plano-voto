@@ -1,16 +1,24 @@
 .hamburger-menu {
     position: absolute;
-    top: calc(clamp(23px, calc(31px * var(--mobile-scale)), 31px) + var(--mobile-safe-top));
-    left: clamp(24px, calc(35px * var(--mobile-scale)), 35px);
+    top: calc(var(--mobile-safe-top) + var(--mobile-nav-top));
+    left: var(--mobile-nav-side);
     z-index: 100;
     cursor: pointer;
     background: transparent;
     border: none;
+    width: var(--top-action-size);
+    height: var(--top-action-size);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    line-height: 1;
+    color: var(--text-dark);
 }
 
 .hamburger-menu .app-icon {
-    width: clamp(31px, calc(37px * var(--mobile-scale)), 37px);
-    height: clamp(31px, calc(37px * var(--mobile-scale)), 37px);
+    width: calc(var(--top-action-size) * 0.76);
+    height: calc(var(--top-action-size) * 0.76);
 }
 
 .hamburger-menu.theme-renovar {
@@ -23,11 +31,7 @@
 
 .sidebar-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    height: 100svh;
+    inset: 0;
     background: rgba(0, 0, 0, 0.5);
     z-index: 998;
 }
@@ -41,11 +45,11 @@
     height: 100svh;
     background-color: var(--bg-yellow);
     z-index: 999;
-    transition: left 0.3s ease;
+    transition: left 0.28s ease;
     display: flex;
     flex-direction: column;
     padding: calc(30px + var(--mobile-safe-top)) 20px calc(30px + var(--mobile-safe-bottom));
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 2px 0 18px rgba(0, 0, 0, 0.12);
 }
 
 .sidebar-container.open {
@@ -68,13 +72,13 @@
 
 .sidebar-username {
     display: block;
-    font-weight: 900;
+    font-weight: 800;
     color: var(--text-dark);
 }
 
 .sidebar-user-email {
     font-size: 0.8rem;
-    color: #666;
+    color: rgba(74, 74, 74, 0.78);
 }
 
 .sidebar-nav {
@@ -88,7 +92,7 @@
     border: none;
     text-align: left;
     font-weight: 800;
-    font-size: 1rem;
+    font-size: 0.98rem;
     color: var(--primary-green);
     cursor: pointer;
     padding: 10px 0;
@@ -96,49 +100,38 @@
 
 .sidebar-divider {
     height: 1px;
-    background: #ddd;
+    background: rgba(74, 74, 74, 0.12);
     margin: 10px 0;
 }
 
 .btn-logout {
-    color: #ff4d4d !important;
+    color: #d95c56 !important;
 }
 
-/* ==========================================================
-   TEMA RENOVAR (AZUL PROFUNDO E BRANCO)
-   ========================================================== */
-
-/* Muda a cor de fundo do menu */
 .sidebar-container.theme-renovar {
     background-color: var(--renovar-bg);
 }
 
-/* Letras brancas para o nome de utilizador */
 .sidebar-container.theme-renovar .sidebar-username {
     color: #ffffff;
 }
 
-/* E-mail ligeiramente transparente para não chocar com o branco puro */
 .sidebar-container.theme-renovar .sidebar-user-email {
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(255, 255, 255, 0.72);
 }
 
-/* Opções de navegação em branco */
 .sidebar-container.theme-renovar .sidebar-nav button {
     color: #ffffff;
 }
 
-/* Linha divisória suave adaptada ao fundo escuro */
 .sidebar-container.theme-renovar .sidebar-divider {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.18);
 }
 
-/* Botão de sair com um laranja salmão para garantir destaque e contraste */
 .sidebar-container.theme-renovar .btn-logout {
     color: #ff8a65 !important;
 }
 
-/* Borda do avatar em branco para fazer um recorte limpo na imagem */
 .sidebar-container.theme-renovar .sidebar-avatar {
     border-color: #ffffff;
 }
@@ -185,6 +178,7 @@
         background-color: var(--primary-green);
         color: var(--card-yellow);
     }
+
     .desktop-main-nav.theme-renovar {
         background-color: rgba(255, 255, 255, 0.12);
         box-shadow: 0 12px 30px rgba(15, 16, 21, 0.18);
