@@ -182,6 +182,19 @@ body {
   }
 }
 
+@media (min-width: 384px) and (max-width: 412px) {
+  :root {
+    --mobile-search-width: calc(var(--mobile-canvas-width) * 0.66667);
+    --content-gutter: calc(var(--mobile-canvas-width) * 0.09615);
+    --mobile-top-icon-side: calc(var(--mobile-canvas-width) * 0.04167);
+    --selection-stack-gap: calc(var(--mobile-canvas-width) * 0.04567);
+    --mobile-list-top-padding: calc(var(--mobile-banner-triangle-height) + var(--selection-stack-gap));
+    --mobile-card-padding-x: calc(var(--mobile-canvas-width) * 0.03005);
+    --mobile-badge-width: calc(var(--mobile-canvas-width) * 0.10216);
+    --mobile-chart-size: calc(var(--mobile-canvas-width) * 0.11899);
+  }
+}
+
 @media (min-width: 1024px) {
   :root {
     --layout-max-width: min(100% - 120px, var(--wide-layout-max-width));

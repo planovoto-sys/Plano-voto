@@ -151,6 +151,17 @@
   }
 }
 
+@media (min-width: 384px) and (max-width: 412px) {
+  .login-wrapper {
+    padding-top: calc(var(--mobile-safe-top) + (var(--mobile-canvas-width) * 0.06971));
+  }
+
+  .login-main {
+    padding-top: var(--mobile-list-top-padding);
+    gap: var(--selection-stack-gap);
+  }
+}
+
 @media (min-width: 1024px) {
   .login-main {
     flex-direction: row;
