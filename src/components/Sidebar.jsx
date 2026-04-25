@@ -10,6 +10,7 @@ export default function Sidebar() {
   const { userData, user, filtroAtivo } = useUser();
   const navigate = useNavigate();
   const location = useLocation();
+  const screenClass = location.pathname === '/escolher-deputado-federal' ? 'screen-deputado-federal' : '';
 
   const handleLogout = () => {
     auth.signOut();
@@ -31,7 +32,7 @@ export default function Sidebar() {
 
   return (
     <>
-      <button className={`hamburger-menu top-icon-button ${themeClass}`} type="button" onClick={() => setIsOpen(true)} aria-label="Abrir menu">
+      <button className={`hamburger-menu top-icon-button ${themeClass} ${screenClass}`} type="button" onClick={() => setIsOpen(true)} aria-label="Abrir menu">
         <MenuIcon />
       </button>
 

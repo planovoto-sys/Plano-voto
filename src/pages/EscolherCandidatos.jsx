@@ -18,6 +18,10 @@ import ConfirmModal from '../components/ConfirmModal';
 import TourModal from '../components/TourModal'; 
 
 const MEDIA_TESTE = 4;
+const ROTAS_NATURAIS_POR_CARGO = {
+  deputado_federal: '/escolher-senadores',
+  senadores: '/finalizacao'
+};
 
 export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota, chaveBanco }) {
   const { user, userData, userEligibility, loading: userLoading, filtroAtivo, setFiltroAtivo } = useUser();
@@ -213,14 +217,16 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
       const draftAtualizado = saveBallotOfficeSelection(user.uid, chaveBanco, listaFinalDaTela, estadoDoFluxo);
       const progress = getBallotProgress(draftAtualizado);
 
+      const rotaNatural = ROTAS_NATURAIS_POR_CARGO[chaveBanco] || proximaRota;
+
       flowLog('candidates.confirm.saved', {
         cargo,
         chaveBanco,
-        proximaRota,
+        proximaRota: rotaNatural,
         progress,
         hasVoted: userEligibility?.has_voted === true
       });
-      navigate(proximaRota, { state: { bypassVoteRedirect: true } });
+      navigate(rotaNatural, { state: { bypassVoteRedirect: true } });
     } catch (e) { 
       flowError('candidates.confirm.error', e, { cargo, chaveBanco });
       console.error("Erro ao salvar seleções:", e); 
@@ -260,7 +266,8 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
         onLimiteAtingido={(c) => setModalTroca({ aberto: true, novoCandidato: c })}
         onConfirmar={handleConfirmarFinal} 
         onVoltar={() => navigate(cargo === "Senador" ? '/escolher-deputado-federal' : '/home', { state: { bypassVoteRedirect: true } })}
-        linhasVisiveis={6}
+        linhasVisiveis={5}
+        variant={chaveBanco === 'deputado_federal' ? 'office-deputado' : ''}
         renderItem={(cand) => (
           <div className="cand-item-layout">
             <div className="cand-data-left">

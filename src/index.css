@@ -22,7 +22,8 @@
   --mobile-tabs-margin-bottom: var(--selection-stack-gap);
   --mobile-tab-height: calc(var(--mobile-canvas-width) * 0.09109);
   --mobile-list-top-padding: calc(var(--mobile-canvas-width) * 0.05061);
-  --mobile-card-height: calc(var(--mobile-canvas-width) * 0.16397);
+  --mobile-card-base-height: calc(var(--mobile-canvas-width) * 0.16397);
+  --mobile-card-height: var(--mobile-card-base-height);
   --mobile-card-padding-x: calc(var(--mobile-canvas-width) * 0.03239);
   --mobile-footer-height: calc(var(--mobile-canvas-width) * 0.18219);
   --mobile-footer-gap: calc(var(--mobile-canvas-width) * 0.05061);
@@ -48,12 +49,12 @@
   --badge-red: #ff6a62;
   --chart-green: #77da51;
   --chart-red: #ff5555;
-  --renovar-bg: #465891;
-  --renovar-panel: #4d576f;
-  --renovar-card: #5f8f7f;
-  --renovar-selected: #74ba60;
-  --renovar-input: #f1efec;
-  --renovar-accent: #8ee255;
+  --renovar-bg: transparent;
+  --renovar-panel: var(--primary-green);
+  --renovar-card: var(--muted-card);
+  --renovar-selected: var(--selected-green);
+  --renovar-input: var(--card-yellow);
+  --renovar-accent: var(--primary-green);
   --text-dark: #4a4a4a;
   --text-light: #ffffff;
   --font-family: 'Montserrat', sans-serif;

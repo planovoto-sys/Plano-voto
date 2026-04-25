@@ -2,7 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
-// Configuração segura via variáveis de ambiente
+// Configuração segura via variáveis de ambiente.
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_API_KEY,
   authDomain: import.meta.env.VITE_AUTH_DOMAIN,
@@ -13,7 +13,27 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_MEASUREMENT_ID
 };
 
-const app = initializeApp(firebaseConfig);
+export const firebaseReady = Boolean(
+  firebaseConfig.apiKey &&
+  firebaseConfig.authDomain &&
+  firebaseConfig.projectId &&
+  firebaseConfig.appId
+);
+
+const localPreviewConfig = {
+  apiKey: "local-preview-api-key",
+  authDomain: "local-preview.firebaseapp.com",
+  projectId: "local-preview",
+  storageBucket: "local-preview.appspot.com",
+  messagingSenderId: "000000000000",
+  appId: "1:000000000000:web:localpreview"
+};
+
+if (!firebaseReady) {
+  console.warn("Firebase nao configurado. Defina as variaveis VITE_API_KEY, VITE_AUTH_DOMAIN, VITE_PROJECT_ID e VITE_APP_ID para habilitar login e dados reais.");
+}
+
+const app = initializeApp(firebaseReady ? firebaseConfig : localPreviewConfig);
 
 export const db = getFirestore(app);
 export const auth = getAuth(app);

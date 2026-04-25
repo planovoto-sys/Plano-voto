@@ -1,11 +1,16 @@
 import React from 'react';
-import { auth, googleProvider } from '../services/firebaseConfig';
+import { auth, firebaseReady, googleProvider } from '../services/firebaseConfig';
 import { signInWithPopup } from 'firebase/auth';
 import { flowError, flowLog } from '../services/debugFlow';
 import './Login.css';
 
 function Login() {
   const handleGoogleLogin = async () => {
+    if (!firebaseReady) {
+      alert("Firebase não configurado no ambiente local. Configure as variáveis VITE_* para habilitar o login.");
+      return;
+    }
+
     try {
       flowLog('login.google.start');
       const result = await signInWithPopup(auth, googleProvider);
