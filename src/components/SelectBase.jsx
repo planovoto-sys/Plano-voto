@@ -143,7 +143,7 @@ export default function SelectBase({
       </div>
 
       {abas.length > 0 && (
-        <div className="tabs-toggle-container">
+        <div className="tabs-toggle-container content-aligned-container">
           <div className="tabs-toggle">
             {/* O INDICADOR QUE DESLIZA COM ANIMAÇÃO */}
             <div className={`tab-active-indicator ${abaAtiva === 'renovar' ? 'right' : 'left'}`}></div>
@@ -164,7 +164,7 @@ export default function SelectBase({
         </div>
       )}
 
-      <div className="list-wrapper">
+      <div className="list-wrapper content-aligned-container">
         <div className="list-scroll-box" id="tour-lista" style={listBoxStyle}>
           {dados.length > 0 ? (
             dados.map((item) => {
@@ -181,7 +181,7 @@ export default function SelectBase({
         </div>
       </div>
 
-      <footer className={`navigation-footer ${showBackButton ? '' : 'only-forward'}`}>
+      <footer className={`navigation-footer content-aligned-container ${showBackButton ? '' : 'only-forward'}`}>
         {showBackButton && (
           <button className="nav-btn" type="button" onClick={onVoltar} aria-label="Voltar"><i className="arrow-left"></i></button>
         )}

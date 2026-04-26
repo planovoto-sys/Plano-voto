@@ -26,7 +26,7 @@
 }
 
 .hamburger-menu.theme-renovar {
-    color: var(--text-dark);
+    color: #ffffff;
 }
 
 .desktop-main-nav {
@@ -113,31 +113,31 @@
 }
 
 .sidebar-container.theme-renovar {
-    background-color: var(--bg-yellow);
+    background-color: var(--renovar-bg);
 }
 
 .sidebar-container.theme-renovar .sidebar-username {
-    color: var(--text-dark);
+    color: #ffffff;
 }
 
 .sidebar-container.theme-renovar .sidebar-user-email {
-    color: rgba(74, 74, 74, 0.78);
+    color: rgba(255, 255, 255, 0.72);
 }
 
 .sidebar-container.theme-renovar .sidebar-nav button {
-    color: var(--primary-green);
+    color: #ffffff;
 }
 
 .sidebar-container.theme-renovar .sidebar-divider {
-    background: rgba(74, 74, 74, 0.12);
+    background: rgba(255, 255, 255, 0.18);
 }
 
 .sidebar-container.theme-renovar .btn-logout {
-    color: #d95c56 !important;
+    color: #ffb097 !important;
 }
 
 .sidebar-container.theme-renovar .sidebar-avatar {
-    border-color: var(--primary-green);
+    border-color: #ffffff;
 }
 
 @media (min-width: 768px) {
@@ -184,16 +184,16 @@
     }
 
     .desktop-main-nav.theme-renovar {
-        background-color: color-mix(in srgb, var(--card-yellow) 92%, #ffffff 8%);
-        box-shadow: 0 10px 28px rgba(74, 74, 74, 0.12);
+        background-color: rgba(255, 255, 255, 0.12);
+        box-shadow: 0 12px 30px rgba(15, 16, 21, 0.18);
     }
 
     .desktop-main-nav.theme-renovar button {
-        color: var(--text-dark);
+        color: #ffffff;
     }
 
     .desktop-main-nav.theme-renovar button.active {
-        background-color: var(--primary-green);
-        color: var(--card-yellow);
+        background-color: #ffffff;
+        color: var(--renovar-panel);
     }
 }

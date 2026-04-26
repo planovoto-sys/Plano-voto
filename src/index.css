@@ -34,6 +34,7 @@
   --mobile-gauge-width: calc(var(--mobile-canvas-width) * 0.64777);
   --mobile-gauge-height: calc(var(--mobile-canvas-width) * 0.36842);
   --content-gutter: calc(var(--mobile-canvas-width) * 0.09919);
+  --content-aligned-width: calc(100% - (2 * var(--content-gutter)));
   --panel-radius: calc(var(--mobile-canvas-width) * 0.02024);
   --top-icon-size: calc(var(--mobile-canvas-width) * 0.06883);
   --top-action-size: var(--mobile-search-height);
@@ -49,12 +50,16 @@
   --badge-red: #ff6a62;
   --chart-green: #77da51;
   --chart-red: #ff5555;
-  --renovar-bg: transparent;
-  --renovar-panel: var(--primary-green);
+  --renovar-bg: #3f5590;
+  --renovar-panel: #455168;
   --renovar-card: var(--muted-card);
   --renovar-selected: var(--selected-green);
-  --renovar-input: var(--card-yellow);
-  --renovar-accent: var(--primary-green);
+  --renovar-input: #f7f7f7;
+  --renovar-accent: var(--chart-green);
+  --state-blue-card: #5974a8;
+  --state-blue-selected: #66999a;
+  --state-blue-divider: rgba(255, 255, 255, 0.24);
+  --state-blue-text: #ffffff;
   --text-dark: #4a4a4a;
   --text-light: #ffffff;
   --font-family: 'Montserrat', sans-serif;
@@ -168,6 +173,7 @@ body {
   :root {
     --app-max-width: 100%;
     --layout-max-width: min(100% - 96px, 960px);
+    --content-aligned-width: var(--layout-max-width);
     --desktop-nav-width: clamp(360px, 52vw, 460px);
     --top-action-size: 44px;
     --stripe-width: 360px;

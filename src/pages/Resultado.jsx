@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useUser } from '../contexts/useUser';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import TourModal from '../components/TourModal'; 
 import { InfoIcon, ShareSolidIcon } from '../components/AppIcons';
+import ShareResultSvg from '../components/ShareResultSvg';
 import {
     castAnonymousVote,
     fetchCandidatesByIds,
@@ -16,23 +17,21 @@ import {
     validateCompleteBallot
 } from '../services/votingService';
 import { flowError, flowLog, flowWarn } from '../services/debugFlow';
+import {
+    GAUGE_PATH,
+    GAUGE_POINTER_LENGTH,
+    GAUGE_SEGMENTS,
+    getGaugePointerOffset,
+    getGaugeProgress,
+    getGaugeSegmentFill,
+    normalizeGaugeScore
+} from '../utils/gaugeSvg';
+import { shareResult, svgToPngBlob } from '../utils/shareResultImage';
 import './Resultado.css';
 
 const MEDIA_TESTE = 4;
 
-const GAUGE_PATH = 'M 46 164 A 114 114 0 0 1 274 164';
 const CHANCE_RING_PATH = 'M18 2.0845a15.9155 15.9155 0 0 1 0 31.831a15.9155 15.9155 0 0 1 0 -31.831';
-
-const GAUGE_SEGMENTS = [
-    { offset: 0, length: 12, color: '#ff4d32' },
-    { offset: 12, length: 13, color: '#ff9d18' },
-    { offset: 25, length: 13, color: '#ffbf17' },
-    { offset: 38, length: 19, color: '#ffe500' },
-    { offset: 57, length: 12, color: '#b8d600' },
-    { offset: 69, length: 7, color: '#000000' },
-    { offset: 76, length: 10, color: '#7ccd00' },
-    { offset: 86, length: 14, color: '#00c21c' }
-];
 
 const formatScore = (value) => {
     const numericValue = Number(value);
@@ -42,15 +41,17 @@ const formatScore = (value) => {
 const formatRank = (value) => (value === '-' ? '-' : `${value}º`);
 
 const Gauge = ({ value }) => {
-    const normalizedValue = Math.min(Math.max(value, 0), 10);
+    const normalizedValue = normalizeGaugeScore(value);
+    const progress = getGaugeProgress(normalizedValue);
+    const pointerOffset = getGaugePointerOffset(progress);
 
     return (
         <div className="resultado-gauge" id="tour-gauge">
-            <svg className="resultado-gauge__svg" viewBox="0 0 320 188" aria-hidden="true">
+            <svg className="resultado-gauge__svg" viewBox="0 0 320 188" role="img" aria-label={`Nota do voto ${formatScore(normalizedValue)}`}>
                 {GAUGE_SEGMENTS.map((segment) => (
                     <path
-                        key={`${segment.offset}-${segment.length}`}
-                        className="resultado-gauge__segment"
+                        key={`track-${segment.offset}-${segment.length}`}
+                        className="resultado-gauge__segment resultado-gauge__segment--track"
                         d={GAUGE_PATH}
                         pathLength="100"
                         strokeDasharray={`${segment.length} ${100 - segment.length}`}
@@ -58,6 +59,32 @@ const Gauge = ({ value }) => {
                         stroke={segment.color}
                     />
                 ))}
+
+                {GAUGE_SEGMENTS.map((segment) => {
+                    const filledLength = getGaugeSegmentFill(segment, progress);
+                    if (filledLength <= 0) return null;
+
+                    return (
+                        <path
+                            key={`fill-${segment.offset}-${segment.length}`}
+                            className="resultado-gauge__segment resultado-gauge__segment--fill"
+                            d={GAUGE_PATH}
+                            pathLength="100"
+                            strokeDasharray={`${filledLength} ${100 - filledLength}`}
+                            strokeDashoffset={-segment.offset}
+                            stroke={segment.color}
+                        />
+                    );
+                })}
+
+                <path
+                    className="resultado-gauge__pointer"
+                    d={GAUGE_PATH}
+                    pathLength="100"
+                    strokeDasharray={`${GAUGE_POINTER_LENGTH} ${100 - GAUGE_POINTER_LENGTH}`}
+                    strokeDashoffset={-pointerOffset}
+                />
+
                 <text x="160" y="96" className="resultado-gauge__label">NOTA</text>
                 <text x="160" y="146" className="resultado-gauge__value">{formatScore(normalizedValue)}</text>
             </svg>
@@ -66,12 +93,14 @@ const Gauge = ({ value }) => {
 };
 
 export default function Resultado() {
-    const { user, userData, userEligibility, loading: userLoading } = useUser();
+    const { user, userData, userEligibility, loading: userLoading, filtroAtivo } = useUser();
     const navigate = useNavigate();
+    const shareSvgRef = useRef(null);
     const [candidatosCompletos, setCandidatosCompletos] = useState([]);
     const [media, setMedia] = useState(0);
     const [loading, setLoading] = useState(true);
     const [submissionError, setSubmissionError] = useState('');
+    const [isSharing, setIsSharing] = useState(false);
     const [isTourOpen, setIsTourOpen] = useState(false); 
 
     const tourSteps = [
@@ -82,29 +111,24 @@ export default function Resultado() {
     const handleHelpPress = (e) => { const btn = e.currentTarget; btn.classList.add('pulse-anim'); setTimeout(() => btn.classList.remove('pulse-anim'), 400); setIsTourOpen(true); };
 
     const handleShare = async () => {
-        const shareTitle = 'meuvoto.org';
-        const shareText = `${config.titulo} ${formatScore(media)}: ${config.subtitulo}`;
-        const shareUrl = window.location.origin;
+        if (!shareSvgRef.current || isSharing) return;
 
-        if (navigator.share) {
-            try {
-                await navigator.share({
-                    title: shareTitle,
-                    text: shareText,
-                    url: shareUrl
-                });
-                return;
-            } catch (error) {
-                if (error?.name === 'AbortError') return;
-            }
-        }
-
+        setIsSharing(true);
         try {
-            await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-            alert('Link copiado para a area de transferencia!');
+            const imageBlob = await svgToPngBlob(shareSvgRef.current);
+            const formattedScore = formatScore(media);
+            const normalizedFileScore = formattedScore.replace(',', '-');
+
+            await shareResult(imageBlob, {
+                fileName: `meuvoto-${normalizedFileScore}.png`,
+                title: `${config.titulo} ${formattedScore}`,
+                text: config.subtitulo
+            });
         } catch (error) {
-            flowWarn('result.share.copy-failed', { message: error?.message });
-            alert('Nao foi possivel compartilhar agora.');
+            flowError('result.share-image.error', error, { media });
+            alert('Nao foi possivel gerar a imagem para compartilhar agora.');
+        } finally {
+            setIsSharing(false);
         }
     };
 
@@ -220,9 +244,12 @@ export default function Resultado() {
     else config = { titulo: "BOLA FORA!!!", subtitulo: "MEU VOTO PIORA O CONGRESSO" };
 
     return (
-        <div className="resultado-page">
+        <div className={`resultado-page ${filtroAtivo === 'renovar' ? 'theme-renovar' : 'theme-reeleger'}`}>
             <Sidebar />
             <TourModal steps={tourSteps} isOpen={isTourOpen} onClose={() => setIsTourOpen(false)} />
+            <div className="share-result-svg-host" aria-hidden="true">
+                <ShareResultSvg ref={shareSvgRef} score={media} />
+            </div>
 
             <header className="resultado-page__topbar">
                 <div className="resultado-page__topbar-slot" aria-hidden="true"></div>
@@ -290,7 +317,7 @@ export default function Resultado() {
                     </button>
 
                     {media >= 7 && (
-                        <button className="resultado-page__footer-button" type="button" onClick={handleShare} aria-label="Compartilhar">
+                        <button className="resultado-page__footer-button" type="button" onClick={handleShare} aria-label="Compartilhar" disabled={isSharing}>
                             <ShareSolidIcon className="resultado-page__share-icon" />
                         </button>
                     )}
