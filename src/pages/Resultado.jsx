@@ -2,8 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useUser } from '../contexts/useUser';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
-import TourModal from '../components/TourModal'; 
-import { InfoIcon, ShareSolidIcon } from '../components/AppIcons';
+import { ShareSolidIcon } from '../components/AppIcons';
 import ShareResultSvg from '../components/ShareResultSvg';
 import {
     castAnonymousVote,
@@ -54,7 +53,7 @@ const Gauge = ({ value }) => {
                         className="resultado-gauge__segment resultado-gauge__segment--track"
                         d={GAUGE_PATH}
                         pathLength="100"
-                        strokeDasharray={`${segment.length} ${100 - segment.length}`}
+                        strokeDasharray={`${segment.length} 100`}
                         strokeDashoffset={-segment.offset}
                         stroke={segment.color}
                     />
@@ -70,7 +69,7 @@ const Gauge = ({ value }) => {
                             className="resultado-gauge__segment resultado-gauge__segment--fill"
                             d={GAUGE_PATH}
                             pathLength="100"
-                            strokeDasharray={`${filledLength} ${100 - filledLength}`}
+                            strokeDasharray={`${filledLength} 100`}
                             strokeDashoffset={-segment.offset}
                             stroke={segment.color}
                         />
@@ -81,7 +80,7 @@ const Gauge = ({ value }) => {
                     className="resultado-gauge__pointer"
                     d={GAUGE_PATH}
                     pathLength="100"
-                    strokeDasharray={`${GAUGE_POINTER_LENGTH} ${100 - GAUGE_POINTER_LENGTH}`}
+                    strokeDasharray={`${GAUGE_POINTER_LENGTH} 100`}
                     strokeDashoffset={-pointerOffset}
                 />
 
@@ -101,14 +100,6 @@ export default function Resultado() {
     const [loading, setLoading] = useState(true);
     const [submissionError, setSubmissionError] = useState('');
     const [isSharing, setIsSharing] = useState(false);
-    const [isTourOpen, setIsTourOpen] = useState(false); 
-
-    const tourSteps = [
-        { target: '#tour-gauge', title: 'NOTA', content: 'Mostra a nota do seu voto.<br/><br/><b>Obs.:</b> considera a média das notas dos candidatos selecionados.' },
-        { target: '#tour-lista-resultado', title: 'LISTA', content: 'Mostra os candidatos selecionados, sua classificação/nota no Ranking dos Políticos e chances de se eleger.<br/><br/><b>Obs.:</b> compara a intenção de voto no meuvoto.org com a média de votos dos eleitos nas eleições passadas.' }
-    ];
-
-    const handleHelpPress = (e) => { const btn = e.currentTarget; btn.classList.add('pulse-anim'); setTimeout(() => btn.classList.remove('pulse-anim'), 400); setIsTourOpen(true); };
 
     const handleShare = async () => {
         if (!shareSvgRef.current || isSharing) return;
@@ -246,7 +237,6 @@ export default function Resultado() {
     return (
         <div className={`resultado-page ${filtroAtivo === 'renovar' ? 'theme-renovar' : 'theme-reeleger'}`}>
             <Sidebar />
-            <TourModal steps={tourSteps} isOpen={isTourOpen} onClose={() => setIsTourOpen(false)} />
             <div className="share-result-svg-host" aria-hidden="true">
                 <ShareResultSvg ref={shareSvgRef} score={media} />
             </div>
@@ -256,9 +246,6 @@ export default function Resultado() {
                 <div className="resultado-page__search-pill">
                     <input type="text" value="meuvoto.org" disabled={true} aria-label="Site" />
                 </div>
-                <button className="resultado-page__info-button" type="button" onClick={handleHelpPress} aria-label="Abrir ajuda">
-                    <InfoIcon className="resultado-page__top-icon" />
-                </button>
             </header>
 
             <section className="resultado-page__banner">
@@ -286,17 +273,24 @@ export default function Resultado() {
                                     </div>
 
                                     <div className="resultado-page__card-badges">
-                                        <span className="resultado-page__badge">{formatRank(cand.ClassificacaoOficial)}</span>
-                                        <span className="resultado-page__badge">{formatScore(cand.notaFinal)}</span>
+                                        <span className="resultado-page__badge">
+                                            <span className="resultado-page__indicator-label">Ranking</span>
+                                            <span className="resultado-page__indicator-value">{formatRank(cand.ClassificacaoOficial)}</span>
+                                        </span>
+                                        <span className="resultado-page__badge">
+                                            <span className="resultado-page__indicator-label">Nota</span>
+                                            <span className="resultado-page__indicator-value">{formatScore(cand.notaFinal)}</span>
+                                        </span>
                                     </div>
 
                                     <div className="resultado-page__card-divider"></div>
 
                                     <div className="resultado-page__card-chart">
-                                        <svg viewBox="0 0 36 36" className="resultado-page__chance-chart" aria-label={`Chance de eleicao ${cand.porcentagemCalculada}%`}>
+                                        <svg viewBox="0 0 36 36" className="resultado-page__chance-chart" aria-label={`Chance de eleicao ${cand.porcentagemCalculada}`}>
                                             <path className="resultado-page__chance-track" d={CHANCE_RING_PATH} />
                                             <path className="resultado-page__chance-progress" strokeDasharray={`${cand.porcentagemCalculada}, 100`} d={CHANCE_RING_PATH} />
-                                            <text x="18" y="20.35" className="resultado-page__chance-label">{cand.porcentagemCalculada}%</text>
+                                            <text x="18" y="14.25" className="resultado-page__chance-caption">Chance</text>
+                                            <text x="18" y="23.7" className="resultado-page__chance-label">{cand.porcentagemCalculada}</text>
                                         </svg>
                                     </div>
                                 </article>

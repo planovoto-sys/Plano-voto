@@ -2,13 +2,17 @@
   --login-content-gutter: calc(var(--mobile-canvas-width) * 0.05825);
   display: flex;
   flex-direction: column;
-  min-height: max(100vh, calc(var(--mobile-artboard-height) + var(--mobile-safe-top) + var(--mobile-safe-bottom)));
-  min-height: max(100svh, calc(var(--mobile-artboard-height) + var(--mobile-safe-top) + var(--mobile-safe-bottom)));
-  min-height: max(100dvh, calc(var(--mobile-artboard-height) + var(--mobile-safe-top) + var(--mobile-safe-bottom)));
+  height: var(--app-height);
+  min-height: 0;
   width: 100%;
+  background-image: var(--corner-stripes);
+  background-repeat: no-repeat;
+  background-size: var(--corner-stripe-size) var(--corner-stripe-size);
+  background-position: var(--corner-stripe-position);
   padding-top: calc(var(--mobile-safe-top) + (var(--mobile-canvas-width) * 0.07287));
   position: relative;
   z-index: 1;
+  overflow: hidden;
 }
 
 .login-header {
@@ -53,7 +57,11 @@
   align-items: center;
   justify-content: center;
   flex: 1 1 auto;
-  padding: calc(var(--mobile-banner-triangle-height) + var(--selection-stack-gap)) var(--login-content-gutter) var(--mobile-footer-bottom);
+  width: var(--content-aligned-width);
+  max-width: 430px;
+  min-height: 0;
+  margin: 0 auto;
+  padding: calc(var(--mobile-banner-triangle-height) + var(--selection-stack-gap)) 0 var(--mobile-footer-bottom);
   gap: calc(var(--selection-stack-gap) * 1.08);
   z-index: 2;
 }
@@ -103,6 +111,8 @@
   width: 100%;
   max-width: 100%;
   height: calc(var(--mobile-canvas-width) * 0.2233);
+  max-height: 96px;
+  min-height: 64px;
   padding: 0 calc(var(--mobile-canvas-width) * 0.04453);
   font-weight: 800;
   font-size: calc(var(--mobile-canvas-width) * 0.04757);
@@ -116,7 +126,7 @@
   transform: scale(0.98);
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1100px) {
   .login-wrapper {
     padding-top: 0;
     min-height: 100vh;
@@ -167,7 +177,7 @@
   }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1100px) {
   .login-main {
     flex-direction: row;
     justify-content: center;

@@ -1,7 +1,7 @@
 .hamburger-menu {
     position: absolute;
     top: calc(var(--mobile-safe-top) + var(--mobile-nav-top));
-    left: var(--mobile-top-icon-side);
+    left: var(--edge-action-offset);
     z-index: 100;
     cursor: pointer;
     background: transparent;
@@ -22,7 +22,7 @@
 }
 
 .hamburger-menu.screen-deputado-federal {
-    left: calc(var(--mobile-top-icon-side) - (var(--mobile-canvas-width) * 0.01456));
+    left: max(calc(var(--mobile-top-icon-side) - (var(--mobile-canvas-width) * 0.01456)), calc((100% - var(--content-aligned-width)) / 2));
 }
 
 .hamburger-menu.theme-renovar {
@@ -45,8 +45,7 @@
     top: 0;
     left: -280px;
     width: 280px;
-    height: 100vh;
-    height: 100svh;
+    height: var(--app-height);
     background-color: var(--bg-yellow);
     z-index: 999;
     transition: left 0.28s ease;
@@ -140,7 +139,7 @@
     border-color: #ffffff;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1100px) {
     .hamburger-menu {
         display: none;
     }

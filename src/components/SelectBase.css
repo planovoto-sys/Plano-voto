@@ -16,14 +16,18 @@
 .select-base-container {
     display: flex;
     flex-direction: column;
-    min-height: max(100vh, calc(var(--mobile-artboard-height) + var(--mobile-safe-top) + var(--mobile-safe-bottom)));
-    min-height: max(100svh, calc(var(--mobile-artboard-height) + var(--mobile-safe-top) + var(--mobile-safe-bottom)));
-    min-height: max(100dvh, calc(var(--mobile-artboard-height) + var(--mobile-safe-top) + var(--mobile-safe-bottom)));
+    height: var(--app-height);
+    min-height: 0;
     background-color: transparent;
+    background-image: var(--corner-stripes);
+    background-repeat: no-repeat;
+    background-size: var(--corner-stripe-size) var(--corner-stripe-size);
+    background-position: var(--corner-stripe-position);
     position: relative;
     overflow-x: hidden;
-    overflow-y: auto;
+    overflow-y: hidden;
     scrollbar-width: none;
+    padding-bottom: var(--mobile-footer-bottom);
 }
 
 .select-base-container::-webkit-scrollbar,
@@ -58,6 +62,7 @@
     padding-top: calc(var(--mobile-safe-top) + var(--mobile-nav-top));
     padding-bottom: var(--mobile-nav-bottom);
     min-height: calc(var(--mobile-search-height) + var(--mobile-nav-top) + var(--mobile-nav-bottom) + var(--mobile-safe-top));
+    flex: 0 0 auto;
 }
 
 .nav-spacer {
@@ -130,7 +135,7 @@
 .nav-action-right {
     position: absolute;
     top: calc(var(--mobile-safe-top) + var(--mobile-nav-top));
-    right: var(--mobile-top-icon-side);
+    right: var(--edge-action-offset);
     width: var(--top-action-size);
     height: var(--top-action-size);
     display: flex;
@@ -193,6 +198,7 @@
     align-items: center;
     justify-content: center;
     gap: calc(var(--mobile-canvas-width) * 0.00607);
+    flex: 0 0 auto;
 }
 
 .green-banner-selection h2 {
@@ -231,6 +237,7 @@
     justify-content: center;
     margin: var(--mobile-tabs-margin-top) 0 var(--mobile-tabs-margin-bottom);
     padding: 0 var(--content-gutter);
+    flex: 0 0 auto;
 }
 
 .tabs-toggle-container.content-aligned-container {
@@ -287,6 +294,8 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
+    min-height: 0;
+    overflow: hidden;
 }
 
 .list-wrapper.content-aligned-container {
@@ -304,15 +313,15 @@
 }
 
 .select-base-container.no-tabs .navigation-footer {
-    margin-top: calc(var(--mobile-footer-gap) * 1.12);
+    margin-top: var(--mobile-footer-gap);
 }
 
 .select-base-container.variant-home-state.no-tabs .list-wrapper {
     --mobile-card-height: calc(var(--mobile-card-base-height) * 1.12);
     flex: 1 1 auto;
-    padding-top: 0;
-    padding-bottom: calc(var(--mobile-footer-gap) * 2.05);
-    justify-content: flex-end;
+    padding-top: var(--mobile-list-top-padding);
+    padding-bottom: var(--mobile-footer-gap);
+    justify-content: center;
 }
 
 .select-base-container.variant-home-state.no-tabs .navigation-footer {
@@ -352,8 +361,8 @@
 .list-scroll-box {
     border-radius: var(--panel-radius);
     width: 100%;
-    height: var(--list-max-height);
-    max-height: var(--list-max-height);
+    height: min(var(--list-max-height), 100%);
+    max-height: 100%;
     overflow-y: auto;
     overflow-x: hidden;
     display: flex;
@@ -367,7 +376,7 @@
     margin: 0;
     display: flex;
     align-items: center;
-    padding: 0 var(--mobile-card-padding-x);
+    padding: 0 clamp(12px, calc(var(--mobile-canvas-width) * 0.041), 20px);
     cursor: pointer;
     height: var(--mobile-card-height);
     min-height: var(--mobile-card-height);
@@ -449,7 +458,7 @@
 .cand-item-layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto 1px auto;
-    column-gap: calc(var(--mobile-canvas-width) * 0.01417);
+    column-gap: clamp(6px, calc(var(--mobile-canvas-width) * 0.018), 10px);
     width: 100%;
     align-items: center;
     min-width: 0;
@@ -459,15 +468,15 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: calc(var(--mobile-canvas-width) * 0.00405);
+    gap: clamp(1px, calc(var(--mobile-canvas-width) * 0.004), 3px);
     text-align: left;
     align-items: flex-start;
 }
 
 .cand-name {
-    font-weight: 800;
-    font-size: calc(var(--mobile-canvas-width) * 0.03441);
-    line-height: 1.06;
+    font-weight: 700;
+    font-size: clamp(14px, calc(var(--mobile-canvas-width) * 0.04), 20px);
+    line-height: 1;
     color: var(--text-dark);
     max-width: 100%;
     overflow: hidden;
@@ -477,8 +486,8 @@
 
 .cand-party {
     font-weight: 500;
-    font-size: calc(var(--mobile-canvas-width) * 0.02632);
-    line-height: 1.08;
+    font-size: clamp(10px, calc(var(--mobile-canvas-width) * 0.028), 14px);
+    line-height: 1;
     color: var(--text-dark);
     text-transform: uppercase;
     max-width: 100%;
@@ -490,7 +499,7 @@
 .cand-rank-score-middle {
     display: flex;
     flex-direction: column;
-    gap: calc(var(--mobile-canvas-width) * 0.01215);
+    gap: clamp(4px, calc(var(--mobile-canvas-width) * 0.012), 6px);
     align-items: center;
     width: var(--mobile-badge-width);
     flex: 0 0 var(--mobile-badge-width);
@@ -502,13 +511,25 @@
     min-height: var(--mobile-badge-height);
     padding: 0 calc(var(--mobile-canvas-width) * 0.0081);
     border-radius: calc(var(--mobile-badge-height) / 2);
-    font-size: calc(var(--mobile-canvas-width) * 0.02834);
-    font-weight: 700;
-    line-height: 1;
+    font-weight: 600;
+    line-height: 0.98;
     text-align: center;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+}
+
+.indicator-label {
+    display: block;
+    font-size: clamp(7px, calc(var(--mobile-canvas-width) * 0.019), 9px);
+    font-weight: 500;
+}
+
+.indicator-value {
+    display: block;
+    font-size: clamp(14px, calc(var(--mobile-canvas-width) * 0.039), 19px);
+    font-weight: 600;
 }
 
 .cand-divider-vertical {
@@ -544,18 +565,28 @@
 
 .percentage {
     fill: var(--text-dark);
-    font-size: calc(var(--mobile-canvas-width) * 0.01923);
-    font-weight: 800;
+    font-size: 8.8px;
+    font-weight: 700;
     text-anchor: middle;
+    dominant-baseline: middle;
+}
+
+.chance-caption {
+    fill: var(--text-dark);
+    font-size: 4.9px;
+    font-weight: 600;
+    text-anchor: middle;
+    dominant-baseline: middle;
 }
 
 .navigation-footer {
     display: flex;
-    margin: var(--mobile-footer-gap) auto var(--mobile-footer-bottom);
+    margin: 0 auto;
     border-radius: var(--panel-radius);
     overflow: hidden;
     background-color: var(--primary-green);
     flex-shrink: 0;
+    height: var(--mobile-footer-height);
 }
 
 .navigation-footer.content-aligned-container {
@@ -574,7 +605,7 @@
     background-color: var(--primary-green);
     color: var(--bg-yellow);
     border: none;
-    height: var(--mobile-footer-height);
+    height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -627,9 +658,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
-    min-height: 100svh;
-    min-height: 100dvh;
+    height: var(--app-height);
+    min-height: 0;
     font-weight: 800;
     font-size: calc(var(--mobile-canvas-width) * 0.04049);
     color: var(--primary-green);
@@ -893,6 +923,7 @@
 .theme-renovar .res-card-cargo,
 .theme-renovar .res-card-numero,
 .theme-renovar .res-card-nome,
+.theme-renovar .chance-caption,
 .theme-renovar .percentage,
 .theme-renovar .resultado-subtitle {
     color: #ffffff;
@@ -931,6 +962,7 @@
 .theme-renovar .base-card .state-centered-name,
 .theme-renovar .base-card .cand-name,
 .theme-renovar .base-card .cand-party,
+.theme-renovar .base-card .chance-caption,
 .theme-renovar .base-card .percentage {
     color: var(--text-dark);
     fill: var(--text-dark);
@@ -963,14 +995,14 @@
 }
 
 .select-base-container.variant-office-deputado .nav-action-right {
-    right: calc(var(--mobile-top-icon-side) - (var(--mobile-canvas-width) * 0.01456));
+    right: max(calc(var(--mobile-top-icon-side) - (var(--mobile-canvas-width) * 0.01456)), calc((100% - var(--content-aligned-width)) / 2));
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1100px) {
     .select-base-container {
-        min-height: 100vh;
-        min-height: 100svh;
-        min-height: 100dvh;
+        height: 100vh;
+        height: 100dvh;
+        padding-bottom: 0;
     }
 
     .top-nav-bar,
@@ -1277,7 +1309,35 @@
 
 }
 
-@media (min-width: 1024px) {
+@media (max-height: 820px) and (min-width: 520px) {
+    .select-base-container.has-tabs {
+        --compact-list-gap: clamp(8px, calc(var(--mobile-canvas-width) * 0.022), 12px);
+        --compact-card-height: calc(
+            (
+                100dvh
+                - var(--mobile-safe-top)
+                - var(--mobile-search-height)
+                - var(--mobile-nav-top)
+                - var(--mobile-nav-bottom)
+                - var(--mobile-banner-height)
+                - var(--mobile-tabs-margin-top)
+                - var(--mobile-tab-height)
+                - var(--mobile-footer-height)
+                - var(--mobile-footer-bottom)
+                - var(--compact-list-gap)
+                - var(--compact-list-gap)
+            ) / 5
+        );
+        --mobile-card-height: clamp(52px, var(--compact-card-height), calc(var(--mobile-card-base-height) * 1.2));
+    }
+
+    .select-base-container.has-tabs:not(.resultado-scrollable) .list-wrapper {
+        padding-top: var(--compact-list-gap);
+        padding-bottom: var(--compact-list-gap);
+    }
+}
+
+@media (min-width: 1100px) {
     .select-base-container.no-tabs .list-scroll-box {
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }

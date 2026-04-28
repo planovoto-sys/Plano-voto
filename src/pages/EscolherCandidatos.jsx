@@ -275,15 +275,22 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
               <div className="cand-party">{cand.Partido}</div>
             </div>
             <div className="cand-rank-score-middle">
-              <div className="badge-rank">{cand.ClassificacaoOficial === "-" ? "-" : `${cand.ClassificacaoOficial}º`}</div>
-              <div className="badge-score">{cand.notaFinal.toFixed(2).replace('.', ',')}</div>
+              <div className="badge-rank">
+                <span className="indicator-label">Ranking</span>
+                <span className="indicator-value">{cand.ClassificacaoOficial === "-" ? "-" : `${cand.ClassificacaoOficial}º`}</span>
+              </div>
+              <div className="badge-score">
+                <span className="indicator-label">Nota</span>
+                <span className="indicator-value">{cand.notaFinal.toFixed(2).replace('.', ',')}</span>
+              </div>
             </div>
             <div className="cand-divider-vertical"></div>
             <div className="cand-chart-right tour-grafico">
-              <svg viewBox="0 0 36 36" className="circular-chart">
+              <svg viewBox="0 0 36 36" className="circular-chart" aria-label={`Chance ${cand.porcentagemCalculada}`}>
                 <path className="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                 <path className="circle" strokeDasharray={`${cand.porcentagemCalculada}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                <text x="18" y="20.35" className="percentage">{cand.porcentagemCalculada}%</text>
+                <text x="18" y="14.25" className="chance-caption">Chance</text>
+                <text x="18" y="23.7" className="percentage">{cand.porcentagemCalculada}</text>
               </svg>
             </div>
           </div>

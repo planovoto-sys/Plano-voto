@@ -81,7 +81,7 @@ const GaugeArc = ({ score }) => {
             key={`share-segment-${segment.offset}-${segment.length}`}
             d={GAUGE_PATH}
             pathLength="100"
-            strokeDasharray={`${segment.length} ${100 - segment.length}`}
+            strokeDasharray={`${segment.length} 100`}
             strokeDashoffset={-segment.offset}
             stroke={segment.color}
             strokeWidth="30"
@@ -101,7 +101,7 @@ const GaugeArc = ({ score }) => {
               key={`share-fill-${segment.offset}-${segment.length}`}
               d={GAUGE_PATH}
               pathLength="100"
-              strokeDasharray={`${filledLength} ${100 - filledLength}`}
+              strokeDasharray={`${filledLength} 100`}
               strokeDashoffset={-segment.offset}
               stroke={segment.color}
               strokeWidth="30"
@@ -119,7 +119,7 @@ const GaugeArc = ({ score }) => {
             key={`share-outline-${segment.offset}-${segment.length}`}
             d={GAUGE_PATH}
             pathLength="100"
-            strokeDasharray={`${segment.length} ${100 - segment.length}`}
+            strokeDasharray={`${segment.length} 100`}
             strokeDashoffset={-segment.offset}
             stroke="#000000"
             strokeWidth="30"

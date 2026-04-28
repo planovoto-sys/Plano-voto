@@ -2,42 +2,48 @@
 
 :root {
   --app-mobile-max-width: 494px;
-  --app-max-width: var(--app-mobile-max-width);
+  --app-max-width: 100%;
+  --app-height: 100dvh;
   --mobile-canvas-width: min(100vw, var(--app-mobile-max-width));
   --mobile-artboard-height: calc(var(--mobile-canvas-width) * 1.78138);
   --mobile-safe-top: env(safe-area-inset-top, 0px);
   --mobile-safe-bottom: env(safe-area-inset-bottom, 0px);
-  --mobile-nav-top: calc(var(--mobile-canvas-width) * 0.04453);
-  --mobile-nav-bottom: calc(var(--mobile-canvas-width) * 0.04453);
+  --mobile-nav-top: clamp(12px, calc(var(--mobile-canvas-width) * 0.04453), 18px);
+  --mobile-nav-bottom: clamp(12px, calc(var(--mobile-canvas-width) * 0.04453), 18px);
   --mobile-nav-side: calc(var(--mobile-canvas-width) * 0.06478);
   --mobile-top-icon-side: calc(var(--mobile-canvas-width) * 0.04049);
-  --mobile-search-width: calc(var(--mobile-canvas-width) * 0.66397);
-  --mobile-search-height: calc(var(--mobile-canvas-width) * 0.10121);
+  --mobile-search-width: min(
+    calc(var(--mobile-canvas-width) * 0.66397),
+    calc(100vw - var(--edge-action-offset) - var(--top-action-size) - var(--top-action-gap) - var(--edge-action-offset) - var(--top-action-size) - var(--top-action-gap))
+  );
+  --mobile-search-height: clamp(32px, calc(var(--mobile-canvas-width) * 0.10121), 50px);
   --mobile-search-radius: calc(var(--mobile-canvas-width) * 0.03846);
-  --mobile-banner-height: calc(var(--mobile-canvas-width) * 0.18421);
+  --mobile-banner-height: clamp(54px, calc(var(--mobile-canvas-width) * 0.18421), 90px);
   --mobile-banner-triangle-width: calc(var(--mobile-canvas-width) * 0.10324);
-  --mobile-banner-triangle-height: calc(var(--mobile-canvas-width) * 0.04453);
+  --mobile-banner-triangle-height: clamp(14px, calc(var(--mobile-canvas-width) * 0.04453), 22px);
   --selection-stack-gap: var(--mobile-nav-bottom);
   --mobile-tabs-margin-top: calc(var(--mobile-banner-triangle-height) + var(--selection-stack-gap));
   --mobile-tabs-margin-bottom: var(--selection-stack-gap);
-  --mobile-tab-height: calc(var(--mobile-canvas-width) * 0.09109);
+  --mobile-tab-height: clamp(32px, calc(var(--mobile-canvas-width) * 0.09109), 45px);
   --mobile-list-top-padding: calc(var(--mobile-canvas-width) * 0.05061);
-  --mobile-card-base-height: calc(var(--mobile-canvas-width) * 0.16397);
+  --mobile-card-base-height: clamp(49px, calc(var(--mobile-canvas-width) * 0.16397), 64px);
   --mobile-card-height: var(--mobile-card-base-height);
   --mobile-card-padding-x: calc(var(--mobile-canvas-width) * 0.03239);
-  --mobile-footer-height: calc(var(--mobile-canvas-width) * 0.18219);
-  --mobile-footer-gap: calc(var(--mobile-canvas-width) * 0.05061);
-  --mobile-footer-bottom: calc((var(--mobile-canvas-width) * 0.08603) + var(--mobile-safe-bottom));
-  --mobile-chart-size: calc(var(--mobile-canvas-width) * 0.12146);
-  --mobile-badge-width: calc(var(--mobile-canvas-width) * 0.10526);
-  --mobile-badge-height: calc(var(--mobile-canvas-width) * 0.04858);
+  --mobile-footer-height: clamp(54px, calc(var(--mobile-canvas-width) * 0.18219), 78px);
+  --mobile-footer-gap: clamp(12px, calc(var(--mobile-canvas-width) * 0.05061), 20px);
+  --mobile-footer-bottom: calc(clamp(16px, calc(var(--mobile-canvas-width) * 0.08603), 32px) + var(--mobile-safe-bottom));
+  --mobile-chart-size: clamp(48px, calc(var(--mobile-canvas-width) * 0.152), 68px);
+  --mobile-badge-width: clamp(52px, calc(var(--mobile-canvas-width) * 0.148), 70px);
+  --mobile-badge-height: clamp(25px, calc(var(--mobile-canvas-width) * 0.076), 34px);
   --mobile-gauge-width: calc(var(--mobile-canvas-width) * 0.64777);
   --mobile-gauge-height: calc(var(--mobile-canvas-width) * 0.36842);
-  --content-gutter: calc(var(--mobile-canvas-width) * 0.09919);
-  --content-aligned-width: calc(100% - (2 * var(--content-gutter)));
+  --content-gutter: clamp(24px, calc(var(--mobile-canvas-width) * 0.09919), 48px);
+  --content-aligned-width: min(calc(100% - (2 * var(--content-gutter))), 560px);
+  --edge-action-offset: max(var(--mobile-top-icon-side), calc((100% - var(--content-aligned-width)) / 2));
   --panel-radius: calc(var(--mobile-canvas-width) * 0.02024);
   --top-icon-size: calc(var(--mobile-canvas-width) * 0.06883);
   --top-action-size: var(--mobile-search-height);
+  --top-action-gap: clamp(10px, calc(var(--mobile-canvas-width) * 0.028), 14px);
   --bg-yellow: #f4eb93;
   --card-yellow: #f2e067;
   --primary-green: #639863;
@@ -66,67 +72,59 @@
   --layout-max-width: min(100% - 72px, 920px);
   --wide-layout-max-width: 1120px;
   --desktop-nav-width: 0px;
-  --stripe-width: calc(var(--mobile-canvas-width) * 0.50607);
-  --stripe-height: calc(var(--mobile-canvas-width) * 0.02227);
-  --stripe-green-bottom: calc((var(--mobile-canvas-width) * -0.00405) + var(--mobile-safe-bottom));
-  --stripe-green-right: calc(var(--mobile-canvas-width) * -0.17409);
-  --stripe-yellow-bottom: calc((var(--mobile-canvas-width) * -0.02429) + var(--mobile-safe-bottom));
-  --stripe-yellow-right: calc(var(--mobile-canvas-width) * -0.19433);
+  --corner-stripe-size: clamp(104px, calc(var(--mobile-canvas-width) * 0.34), 168px);
+  --corner-stripe-offset-x: clamp(-50px, calc(var(--mobile-canvas-width) * -0.1), -28px);
+  --corner-stripe-offset-y: clamp(-34px, calc(var(--mobile-canvas-width) * -0.06), -18px);
+  --corner-stripe-position: right var(--corner-stripe-offset-x) bottom var(--corner-stripe-offset-y);
+  --corner-stripes:
+    linear-gradient(135deg, transparent 0 68%, var(--primary-green) 68% 74%, transparent 74%),
+    linear-gradient(135deg, transparent 0 59%, var(--card-yellow) 59% 66%, transparent 66%);
 }
 
 html {
-  background: #0f1015;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg-yellow);
 }
 
 body {
   font-family: var(--font-family);
-  background-color: #0f1015;
+  background-color: var(--bg-yellow);
   color: var(--text-dark);
   min-height: 100vh;
   min-height: 100svh;
+  min-height: 100dvh;
+  width: 100%;
+  height: 100%;
   display: flex;
   justify-content: center;
-  overflow-x: hidden;
+  overflow: hidden;
   -webkit-tap-highlight-color: transparent;
 }
 
 #root {
   width: 100%;
   max-width: var(--app-max-width);
-  min-height: 100vh;
-  min-height: 100svh;
-  min-height: 100dvh;
+  height: var(--app-height);
+  min-height: 0;
   background-color: var(--bg-yellow);
+  background-image: var(--corner-stripes);
+  background-repeat: no-repeat;
+  background-size: var(--corner-stripe-size) var(--corner-stripe-size);
+  background-position: var(--corner-stripe-position);
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  box-shadow: 0 0 30px rgba(0, 0, 0, 0.25);
+  box-shadow: none;
 }
 
 #root::before {
-  content: "";
-  position: absolute;
-  background-color: var(--primary-green);
-  width: var(--stripe-width);
-  height: var(--stripe-height);
-  transform: rotate(-45deg);
-  bottom: var(--stripe-green-bottom);
-  right: var(--stripe-green-right);
-  z-index: 0;
-  pointer-events: none;
+  content: none;
 }
 
 #root::after {
-  content: "";
-  position: absolute;
-  background-color: var(--card-yellow);
-  width: var(--stripe-width);
-  height: var(--stripe-height);
-  transform: rotate(-45deg);
-  bottom: var(--stripe-yellow-bottom);
-  right: var(--stripe-yellow-right);
-  z-index: 0;
-  pointer-events: none;
+  content: none;
 }
 
 .btn-green {
@@ -169,40 +167,35 @@ body {
   height: calc(var(--top-action-size) * 0.76);
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1100px) {
   :root {
     --app-max-width: 100%;
     --layout-max-width: min(100% - 96px, 960px);
     --content-aligned-width: var(--layout-max-width);
     --desktop-nav-width: clamp(360px, 52vw, 460px);
     --top-action-size: 44px;
-    --stripe-width: 360px;
-    --stripe-height: 12px;
-    --stripe-green-bottom: 18px;
-    --stripe-green-right: -102px;
-    --stripe-yellow-bottom: 6px;
-    --stripe-yellow-right: -112px;
+    --corner-stripe-size: 188px;
   }
 
-  #root {
-    box-shadow: none;
-  }
 }
 
 @media (min-width: 384px) and (max-width: 412px) {
   :root {
-    --mobile-search-width: calc(var(--mobile-canvas-width) * 0.66667);
+    --mobile-search-width: min(
+      calc(var(--mobile-canvas-width) * 0.66667),
+      calc(100vw - var(--edge-action-offset) - var(--top-action-size) - var(--top-action-gap) - var(--edge-action-offset) - var(--top-action-size) - var(--top-action-gap))
+    );
     --content-gutter: calc(var(--mobile-canvas-width) * 0.09615);
     --mobile-top-icon-side: calc(var(--mobile-canvas-width) * 0.04167);
-    --selection-stack-gap: calc(var(--mobile-canvas-width) * 0.04567);
+    --selection-stack-gap: clamp(14px, calc(var(--mobile-canvas-width) * 0.04567), 18px);
     --mobile-list-top-padding: calc(var(--mobile-banner-triangle-height) + var(--selection-stack-gap));
     --mobile-card-padding-x: calc(var(--mobile-canvas-width) * 0.03005);
-    --mobile-badge-width: calc(var(--mobile-canvas-width) * 0.10216);
+    --mobile-badge-width: clamp(54px, calc(var(--mobile-canvas-width) * 0.145), 68px);
     --mobile-chart-size: calc(var(--mobile-canvas-width) * 0.11899);
   }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1100px) {
   :root {
     --layout-max-width: min(100% - 120px, var(--wide-layout-max-width));
     --desktop-nav-width: clamp(420px, 40vw, 560px);
