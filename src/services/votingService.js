@@ -1,18 +1,16 @@
 import {
   collection,
-  doc,
   documentId,
   getDocs,
-  increment,
   query,
-  runTransaction,
-  serverTimestamp,
   where
 } from 'firebase/firestore';
-import { db } from './firebaseConfig';
-import { flowLog, flowWarn } from './debugFlow';
+import { httpsCallable } from 'firebase/functions';
+import { db, functions } from './firebaseConfig';
+import { flowLog } from './debugFlow';
 
 export const ACTIVE_ELECTION_ID = import.meta.env.VITE_ACTIVE_ELECTION_ID || 'congresso-2026';
+const CAST_VOTE_FUNCTION_NAME = import.meta.env.VITE_CAST_VOTE_FUNCTION || 'castAnonymousVote';
 
 const BALLOT_SCHEMA_VERSION = 1;
 const OFFICE_LIMITS = {
@@ -242,36 +240,6 @@ export const validateCompleteBallot = (draft) => {
   };
 };
 
-const generateReceiptCode = async (voteId) => {
-  const source = `${ACTIVE_ELECTION_ID}:${voteId}`;
-  const encoder = new TextEncoder();
-  const bytes = encoder.encode(source);
-
-  if (globalThis.crypto?.subtle) {
-    const hashBuffer = await globalThis.crypto.subtle.digest('SHA-256', bytes);
-    return Array.from(new Uint8Array(hashBuffer))
-      .map((byte) => byte.toString(16).padStart(2, '0'))
-      .join('')
-      .slice(0, 16)
-      .toUpperCase();
-  }
-
-  return source
-    .split('')
-    .reduce((acc, char) => ((acc << 5) - acc + char.charCodeAt(0)) | 0, 0)
-    .toString(16)
-    .replace('-', '')
-    .padStart(16, '0')
-    .slice(0, 16)
-    .toUpperCase();
-};
-
-const isEligibleStatus = (eligibility) => {
-  if (eligibility?.eligible === false) return false;
-  if (!eligibility?.status) return true;
-  return ['eligible', 'active', 'approved'].includes(eligibility.status);
-};
-
 export const saveLastVoteReceipt = (userId, receipt, draft) => {
   if (!userId || !canUseStorage()) return null;
 
@@ -339,97 +307,26 @@ export const castAnonymousVote = async ({ user, estado, draft }) => {
     candidateIds
   });
 
-  const allowSelfEnrollment = import.meta.env.VITE_ALLOW_SELF_ENROLLMENT !== 'false';
-  const voteRef = doc(collection(db, 'elections', ACTIVE_ELECTION_ID, 'votes'));
-  const auditRef = doc(collection(db, 'elections', ACTIVE_ELECTION_ID, 'audit_events'));
-  const eligibilityRef = doc(db, 'elections', ACTIVE_ELECTION_ID, 'eligibility', user.uid);
-  const receiptCode = await generateReceiptCode(voteRef.id);
-
-  await runTransaction(db, async (transaction) => {
-    const eligibilitySnap = await transaction.get(eligibilityRef);
-    const eligibility = eligibilitySnap.exists() ? eligibilitySnap.data() : null;
-
-    if (eligibility?.has_voted) {
-      flowWarn('vote.cast.already-voted', {
-        userId: user.uid,
-        electionId: ACTIVE_ELECTION_ID
-      });
-      throw new VotingError('VOTE_ALREADY_CAST', 'Este eleitor já registrou um voto nesta eleição.');
-    }
-
-    if (eligibilitySnap.exists() && !isEligibleStatus(eligibility)) {
-      throw new VotingError('VOTER_NOT_ELIGIBLE', 'Este eleitor não está habilitado para votar nesta eleição.');
-    }
-
-    if (!eligibilitySnap.exists() && !allowSelfEnrollment) {
-      throw new VotingError('VOTER_NOT_ENROLLED', 'Não encontramos sua habilitação para esta eleição.');
-    }
-
-    const submittedAt = serverTimestamp();
-    const votePayload = {
-      schema_version: BALLOT_SCHEMA_VERSION,
-      election_id: ACTIVE_ELECTION_ID,
-      estado: estado ?? normalizedDraft.estado ?? null,
-      offices: {
-        deputado_federal: normalizedDraft.selections.deputado_federal[0].id,
-        senadores: normalizedDraft.selections.senadores.map((candidate) => candidate.id)
-      },
-      candidate_ids: candidateIds,
-      candidate_snapshots: [
-        ...normalizedDraft.selections.deputado_federal,
-        ...normalizedDraft.selections.senadores
-      ],
-      submitted_at: submittedAt,
-      source: 'web-client-transaction'
-    };
-
-    transaction.set(voteRef, votePayload);
-
-    const eligibilityPayload = {
-      schema_version: BALLOT_SCHEMA_VERSION,
-      election_id: ACTIVE_ELECTION_ID,
-      has_voted: true,
-      voted_at: submittedAt,
-      updated_at: submittedAt
-    };
-
-    if (eligibilitySnap.exists()) {
-      transaction.update(eligibilityRef, eligibilityPayload);
-    } else {
-      transaction.set(eligibilityRef, {
-        ...eligibilityPayload,
-        status: 'eligible',
-        eligible: true,
-        enrollment_source: 'self_enrollment_mvp',
-        created_at: submittedAt
-      });
-    }
-
-    candidateIds.forEach((candidateId) => {
-      transaction.update(doc(db, 'candidatos', candidateId), {
-        votos_recebidos: increment(1)
-      });
-
-      transaction.set(doc(db, 'elections', ACTIVE_ELECTION_ID, 'candidate_tallies', candidateId), {
-        schema_version: BALLOT_SCHEMA_VERSION,
-        election_id: ACTIVE_ELECTION_ID,
-        candidate_id: candidateId,
-        total_votes: increment(1),
-        updated_at: submittedAt
-      }, { merge: true });
-    });
-
-    transaction.set(auditRef, {
-      schema_version: BALLOT_SCHEMA_VERSION,
-      election_id: ACTIVE_ELECTION_ID,
-      event_type: 'anonymous_vote_cast',
-      created_at: submittedAt,
-      source: 'web-client-transaction'
-    });
+  const castVote = httpsCallable(functions, CAST_VOTE_FUNCTION_NAME);
+  const response = await castVote({
+    schema_version: BALLOT_SCHEMA_VERSION,
+    election_id: ACTIVE_ELECTION_ID,
+    estado: estado ?? normalizedDraft.estado ?? null,
+    offices: {
+      deputado_federal: normalizedDraft.selections.deputado_federal[0].id,
+      senadores: normalizedDraft.selections.senadores.map((candidate) => candidate.id)
+    },
+    candidate_ids: candidateIds
   });
+  const data = response.data || {};
+  const receiptCode = data.receiptCode || data.receipt_code;
+
+  if (!receiptCode) {
+    throw new VotingError('RECEIPT_NOT_RETURNED', 'O servidor registrou a chamada, mas não retornou um recibo válido.');
+  }
 
   return {
-    electionId: ACTIVE_ELECTION_ID,
+    electionId: data.electionId || data.election_id || ACTIVE_ELECTION_ID,
     receiptCode
   };
 };
@@ -441,8 +338,19 @@ export const getVotingErrorMessage = (error) => {
     DUPLICATED_CANDIDATE: 'O mesmo candidato não pode ser usado mais de uma vez no mesmo voto.',
     VOTE_ALREADY_CAST: 'Seu voto já foi registrado. Por segurança, ele não pode ser alterado.',
     VOTER_NOT_ELIGIBLE: 'Seu cadastro não está habilitado para votar nesta eleição.',
-    VOTER_NOT_ENROLLED: 'Não encontramos sua habilitação para esta eleição.'
+    VOTER_NOT_ENROLLED: 'Não encontramos sua habilitação para esta eleição.',
+    RECEIPT_NOT_RETURNED: 'O voto não retornou um recibo válido. Tente novamente.',
+    'functions/not-found': 'Servidor de votação indisponível. Configure a Cloud Function de registro de voto.',
+    not_found: 'Servidor de votação indisponível. Configure a Cloud Function de registro de voto.',
+    'functions/already-exists': 'Seu voto já foi registrado. Por segurança, ele não pode ser alterado.',
+    already_exists: 'Seu voto já foi registrado. Por segurança, ele não pode ser alterado.',
+    'functions/permission-denied': 'Você não tem permissão para votar nesta eleição.',
+    permission_denied: 'Você não tem permissão para votar nesta eleição.',
+    'functions/failed-precondition': 'Não foi possível confirmar sua habilitação para votar.',
+    failed_precondition: 'Não foi possível confirmar sua habilitação para votar.',
+    'functions/invalid-argument': 'Os dados do voto são inválidos. Revise suas escolhas.',
+    invalid_argument: 'Os dados do voto são inválidos. Revise suas escolhas.'
   };
 
-  return messages[error?.code] || 'Não foi possível registrar o voto. Tente novamente.';
+  return messages[error?.code] || messages[error?.message] || 'Não foi possível registrar o voto. Tente novamente.';
 };

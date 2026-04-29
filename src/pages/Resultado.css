@@ -473,6 +473,18 @@
     fill: currentColor;
 }
 
+.resultado-page__footer-button--confirm {
+    padding: 0 clamp(12px, calc(var(--mobile-canvas-width) * 0.03644), 18px);
+}
+
+.resultado-page__footer-confirm-label {
+    font-size: clamp(0.72rem, calc(var(--mobile-canvas-width) * 0.03036), 0.9rem);
+    font-weight: 900;
+    letter-spacing: 0.8px;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
 .resultado-page.theme-renovar {
     background-color: var(--renovar-bg);
 }

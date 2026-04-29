@@ -31,7 +31,17 @@ export default function SelectBase({
   const [modalMalAvaliado, setModalMalAvaliado] = useState({ aberto: false, item: null });
 
   useEffect(() => {
-    setSelecionados(selecaoInicial);
+    let cancelled = false;
+
+    queueMicrotask(() => {
+      if (!cancelled) {
+        setSelecionados(selecaoInicial);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [selecaoInicial]);
 
   const handleSelect = (item) => {
@@ -190,15 +200,16 @@ export default function SelectBase({
 
       <ConfirmModal
           isOpen={modalMalAvaliado.aberto}
-          titulo="ATENÇÃO"
+          titulo="ATENÇÃO!"
           mensagem={
-              modalMalAvaliado.item?.temNotaCandidato
-              ? "Você selecionou um candidato mal avaliado. Que tal selecionar um candidato melhor avaliado?"
-              : "Você selecionou um candidato de um partido mal avaliado. Que tal selecionar um candidato de um partido melhor avaliado?"
+              <>
+                <span>Você selecionou uma opção com</span>
+                <strong className="low-score-highlight">NOTA MENOR QUE 7,00.</strong>
+              </>
           }
-          textoConfirmar="SIM"
-          textoCancelar="NÃO"
-          tipo="aviso"
+          textoConfirmar="MUDAR"
+          textoCancelar="MANTER"
+          tipo="low-score"
           onConfirm={() => {
               setModalMalAvaliado({ aberto: false, item: null });
           }}

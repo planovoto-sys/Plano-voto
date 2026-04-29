@@ -1,6 +1,8 @@
 import { initializeApp } from "firebase/app";
+import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
 import { getFirestore } from "firebase/firestore";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getFunctions } from "firebase/functions";
 
 // Configuração segura via variáveis de ambiente.
 const firebaseConfig = {
@@ -34,7 +36,17 @@ if (!firebaseReady) {
 }
 
 const app = initializeApp(firebaseReady ? firebaseConfig : localPreviewConfig);
+const functionsRegion = import.meta.env.VITE_FIREBASE_FUNCTIONS_REGION;
+const appCheckSiteKey = import.meta.env.VITE_RECAPTCHA_V3_SITE_KEY;
+
+if (firebaseReady && appCheckSiteKey && typeof window !== 'undefined') {
+  initializeAppCheck(app, {
+    provider: new ReCaptchaV3Provider(appCheckSiteKey),
+    isTokenAutoRefreshEnabled: true,
+  });
+}
 
 export const db = getFirestore(app);
 export const auth = getAuth(app);
+export const functions = functionsRegion ? getFunctions(app, functionsRegion) : getFunctions(app);
 export const googleProvider = new GoogleAuthProvider();

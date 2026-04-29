@@ -100,6 +100,10 @@ export default function Resultado() {
     const [loading, setLoading] = useState(true);
     const [submissionError, setSubmissionError] = useState('');
     const [isSharing, setIsSharing] = useState(false);
+    const [isAwaitingConfirmation, setIsAwaitingConfirmation] = useState(false);
+    const [isSubmittingVote, setIsSubmittingVote] = useState(false);
+    const [pendingDraft, setPendingDraft] = useState(null);
+    const [voteReceipt, setVoteReceipt] = useState(null);
 
     const handleShare = async () => {
         if (!shareSvgRef.current || isSharing) return;
@@ -138,10 +142,11 @@ export default function Resultado() {
                 const idsDoRecibo = receipt?.candidate_ids || [];
                 const idsDoRascunho = getCandidateIdsFromDraft(draft);
                 const candidateIds = idsDoRecibo.length > 0 ? idsDoRecibo : idsDoRascunho;
+                const hasReceipt = Boolean(receipt);
 
                 flowLog('result.load.start', {
                     userId: user.uid,
-                    hasReceipt: Boolean(receipt),
+                    hasReceipt,
                     hasVoted: userEligibility?.has_voted === true,
                     progress,
                     candidateIds
@@ -154,7 +159,7 @@ export default function Resultado() {
                 }
 
                 const validation = validateCompleteBallot(draft);
-                if (!receipt && !validation.ok) {
+                if (!hasReceipt && !validation.ok) {
                     flowWarn('result.incomplete-draft.redirect', {
                         code: validation.code,
                         missingOffices: validation.missingOffices,
@@ -164,26 +169,14 @@ export default function Resultado() {
                     return;
                 }
 
-                if (!receipt && !userEligibility?.has_voted && validation.ok) {
-                    try {
-                        flowLog('result.vote-submit.start', { userId: user.uid });
-                        const newReceipt = await castAnonymousVote({
-                            user,
-                            estado: userData?.estado,
-                            draft
-                        });
-                        saveLastVoteReceipt(user.uid, newReceipt, draft);
-                        flowLog('result.vote-submit.success', { receiptCode: newReceipt.receiptCode });
-                    } catch (error) {
-                        if (error?.code === 'VOTE_ALREADY_CAST') {
-                            flowWarn('result.vote-submit.already-voted-showing-local-result', { userId: user.uid });
-                        } else {
-                            flowError('result.vote-submit.error-showing-local-result', error, { userId: user.uid });
-                            setSubmissionError(getVotingErrorMessage(error));
-                        }
-                    }
-                } else if (!receipt && userEligibility?.has_voted) {
+                if (!hasReceipt && userEligibility?.has_voted) {
                     flowWarn('result.vote-submit.skipped-already-voted-no-receipt', { userId: user.uid });
+                    setVoteReceipt(null);
+                    setPendingDraft(null);
+                    setIsAwaitingConfirmation(false);
+                    setSubmissionError('Seu voto consta como registrado, mas este navegador nao tem o recibo local. Por seguranca, nao exibimos um resultado que nao conseguimos confirmar.');
+                    setCandidatosCompletos([]);
+                    return;
                 }
 
                 const candidatos = await fetchCandidatesByIds(candidateIds);
@@ -211,6 +204,9 @@ export default function Resultado() {
                 if (!isMounted) return;
                 setMedia(lista.length > 0 ? soma / lista.length : 0);
                 setCandidatosCompletos(lista);
+                setVoteReceipt(receipt || null);
+                setPendingDraft(!hasReceipt && validation.ok ? validation.normalizedDraft : null);
+                setIsAwaitingConfirmation(!hasReceipt && validation.ok);
             } catch (error) {
                 flowError('result.load.error', error, { userId: user?.uid }); 
                 console.error("Erro:", error);
@@ -226,11 +222,44 @@ export default function Resultado() {
         };
     }, [navigate, user, userData?.estado, userEligibility?.has_voted, userLoading]);
 
+    const handleConfirmVote = async () => {
+        if (!user?.uid || !pendingDraft || isSubmittingVote) return;
+
+        setIsSubmittingVote(true);
+        setSubmissionError('');
+        try {
+            flowLog('result.vote-submit.start', { userId: user.uid });
+            const newReceipt = await castAnonymousVote({
+                user,
+                estado: userData?.estado,
+                draft: pendingDraft
+            });
+            const storedReceipt = saveLastVoteReceipt(user.uid, newReceipt, pendingDraft);
+            setVoteReceipt(storedReceipt);
+            setIsAwaitingConfirmation(false);
+            setPendingDraft(null);
+            flowLog('result.vote-submit.success', { receiptCode: newReceipt.receiptCode });
+        } catch (error) {
+            flowError('result.vote-submit.error', error, { userId: user.uid });
+            setVoteReceipt(null);
+            setIsAwaitingConfirmation(true);
+            setSubmissionError(getVotingErrorMessage(error));
+        } finally {
+            setIsSubmittingVote(false);
+        }
+    };
+
     if (loading) return <div className="loading">CARREGANDO...</div>;
     if (submissionError && candidatosCompletos.length === 0) return <div className="loading">{submissionError}</div>;
 
+    const isConfirmedResult = Boolean(voteReceipt) && !isAwaitingConfirmation;
+    const showConfirmButton = isAwaitingConfirmation;
+    const showShareButton = isConfirmedResult && media >= 7;
+    const footerClass = showConfirmButton || showShareButton ? 'resultado-page__footer--share' : 'resultado-page__footer--single';
+
     let config = {};
-    if (media >= 7) config = { titulo: "GOLAÇO!!!", subtitulo: "MEU VOTO MELHORA O CONGRESSO" };
+    if (showConfirmButton) config = { titulo: "REVISAR VOTO", subtitulo: "CONFIRME PARA REGISTRAR SEU VOTO" };
+    else if (media >= 7) config = { titulo: "GOLAÇO!!!", subtitulo: "MEU VOTO MELHORA O CONGRESSO" };
     else if (media >= 6) config = { titulo: "NA TRAVE!!!", subtitulo: "MEU VOTO NÃO MELHORA O CONGRESSO" };
     else config = { titulo: "BOLA FORA!!!", subtitulo: "MEU VOTO PIORA O CONGRESSO" };
 
@@ -302,15 +331,25 @@ export default function Resultado() {
                 {submissionError && candidatosCompletos.length > 0 && (
                     <div className="resultado-page__notice" role="status">{submissionError}</div>
                 )}
+
+                {showConfirmButton && !submissionError && (
+                    <div className="resultado-page__notice" role="status">Confira suas escolhas. Seu voto ainda nao foi registrado.</div>
+                )}
             </main>
 
             <div className="resultado-page__footer-wrap">
-                <footer className={`resultado-page__footer ${media >= 7 ? 'resultado-page__footer--share' : 'resultado-page__footer--single'}`} id="tour-footer-resultado">
+                <footer className={`resultado-page__footer ${footerClass}`} id="tour-footer-resultado">
                     <button className="resultado-page__footer-button" type="button" onClick={() => navigate('/escolher-senadores', { state: { bypassVoteRedirect: true } })} aria-label="Voltar">
                         <span className="resultado-page__arrow resultado-page__arrow--left"></span>
                     </button>
 
-                    {media >= 7 && (
+                    {showConfirmButton && (
+                        <button className="resultado-page__footer-button resultado-page__footer-button--confirm" type="button" onClick={handleConfirmVote} aria-label="Confirmar voto" disabled={isSubmittingVote}>
+                            <span className="resultado-page__footer-confirm-label">{isSubmittingVote ? 'ENVIANDO' : 'CONFIRMAR'}</span>
+                        </button>
+                    )}
+
+                    {showShareButton && (
                         <button className="resultado-page__footer-button" type="button" onClick={handleShare} aria-label="Compartilhar" disabled={isSharing}>
                             <ShareSolidIcon className="resultado-page__share-icon" />
                         </button>

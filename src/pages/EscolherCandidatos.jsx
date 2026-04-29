@@ -129,20 +129,30 @@ export default function EscolherCandidatos({ cargo, limite, titulo, proximaRota,
 
   // Sincroniza candidatos selecionados do rascunho local, sem gravar voto ligado ao usuário.
   useEffect(() => {
-    if (!user?.uid || todosCandidatos.length === 0) {
-      setSelecionadosNaTela([]);
-      return;
-    }
+    let cancelled = false;
 
-    const draft = readBallotDraft(user.uid, estadoDoFluxo);
-    const idsSalvos = (draft.selections?.[chaveBanco] || []).map((candidate) => candidate.id);
-    flowLog('candidates.restore-selection', {
-      cargo,
-      chaveBanco,
-      estado: estadoDoFluxo,
-      idsSalvos
+    queueMicrotask(() => {
+      if (cancelled) return;
+
+      if (!user?.uid || todosCandidatos.length === 0) {
+        setSelecionadosNaTela([]);
+        return;
+      }
+
+      const draft = readBallotDraft(user.uid, estadoDoFluxo);
+      const idsSalvos = (draft.selections?.[chaveBanco] || []).map((candidate) => candidate.id);
+      flowLog('candidates.restore-selection', {
+        cargo,
+        chaveBanco,
+        estado: estadoDoFluxo,
+        idsSalvos
+      });
+      setSelecionadosNaTela(todosCandidatos.filter((candidate) => idsSalvos.includes(candidate.id)));
     });
-    setSelecionadosNaTela(todosCandidatos.filter((candidate) => idsSalvos.includes(candidate.id)));
+
+    return () => {
+      cancelled = true;
+    };
   }, [cargo, user?.uid, estadoDoFluxo, todosCandidatos, chaveBanco]);
 
   // FILTRAGEM LOCAL: Ocorre instantaneamente na memória ao trocar de aba ou pesquisar

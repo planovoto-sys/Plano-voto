@@ -17,9 +17,9 @@ export default function ConfirmModal({
 
   return (
     <div className="modal-overlay">
-      <div className="modal-container">
+      <div className={`modal-container modal-container--${tipo}`}>
         <h3 className="modal-title">{titulo}</h3>
-        <p className="modal-message">{mensagem}</p>
+        <div className="modal-message">{mensagem}</div>
         
         {children ? (
           <div className="modal-custom-content">

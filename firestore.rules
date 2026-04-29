@@ -14,41 +14,6 @@ service cloud.firestore {
       return signedIn() && request.auth.token.admin == true;
     }
 
-    function activeElectionId() {
-      return 'congresso-2026';
-    }
-
-    function eligibilityPath(electionId) {
-      return /databases/$(database)/documents/elections/$(electionId)/eligibility/$(request.auth.uid);
-    }
-
-    function notAlreadyVoted(electionId) {
-      return !exists(eligibilityPath(electionId))
-        || get(eligibilityPath(electionId)).data.has_voted != true;
-    }
-
-    function eligibleRecord(data) {
-      return data.eligible != false
-        && (!('status' in data) || data.status in ['eligible', 'active', 'approved']);
-    }
-
-    function voteMarkedInThisCommit(electionId) {
-      return signedIn()
-        && notAlreadyVoted(electionId)
-        && getAfter(eligibilityPath(electionId)).data.has_voted == true
-        && getAfter(eligibilityPath(electionId)).data.voted_at == request.time;
-    }
-
-    function candidateVoteIncremented() {
-      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votos_recebidos'])
-        && (
-          ('votos_recebidos' in resource.data
-            && request.resource.data.votos_recebidos == resource.data.votos_recebidos + 1)
-          || (!('votos_recebidos' in resource.data)
-            && request.resource.data.votos_recebidos == 1)
-        );
-    }
-
     match /users/{userId} {
       allow get: if isOwner(userId) || isAdmin();
       allow list: if isAdmin();
@@ -88,14 +53,7 @@ service cloud.firestore {
 
     match /candidatos/{candidateId} {
       allow read: if true;
-      allow create, delete: if isAdmin();
-
-      allow update: if isAdmin()
-        || (
-          signedIn()
-          && voteMarkedInThisCommit(activeElectionId())
-          && candidateVoteIncremented()
-        );
+      allow create, update, delete: if isAdmin();
     }
 
     match /elections/{electionId} {
@@ -105,121 +63,22 @@ service cloud.firestore {
       match /eligibility/{userId} {
         allow get: if isOwner(userId) || isAdmin();
         allow list: if isAdmin();
-
-        allow create: if isAdmin()
-          || (
-            isOwner(userId)
-            && electionId == activeElectionId()
-            && request.resource.data.keys().hasOnly([
-            'schema_version',
-            'election_id',
-            'has_voted',
-            'voted_at',
-            'updated_at',
-            'status',
-            'eligible',
-            'enrollment_source',
-            'created_at'
-            ])
-            && request.resource.data.election_id == electionId
-            && request.resource.data.has_voted == true
-            && request.resource.data.voted_at == request.time
-            && request.resource.data.created_at == request.time
-            && request.resource.data.status == 'eligible'
-          );
-
-        allow update: if isAdmin()
-          || (
-            isOwner(userId)
-            && electionId == activeElectionId()
-            && resource.data.has_voted != true
-            && eligibleRecord(resource.data)
-            && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-            'schema_version',
-            'election_id',
-            'has_voted',
-            'voted_at',
-            'updated_at'
-            ])
-            && request.resource.data.election_id == electionId
-            && request.resource.data.has_voted == true
-            && request.resource.data.voted_at == request.time
-            && request.resource.data.updated_at == request.time
-          );
-
+        allow create, update: if isAdmin();
         allow delete: if isAdmin();
       }
 
       match /votes/{voteId} {
-        allow create: if signedIn()
-          && electionId == activeElectionId()
-          && voteMarkedInThisCommit(electionId)
-          && request.resource.data.keys().hasOnly([
-            'schema_version',
-            'election_id',
-            'estado',
-            'offices',
-            'candidate_ids',
-            'candidate_snapshots',
-            'submitted_at',
-            'source'
-          ])
-          && request.resource.data.election_id == electionId
-          && request.resource.data.submitted_at == request.time
-          && request.resource.data.candidate_ids is list
-          && request.resource.data.candidate_ids.size() == 3
-          && request.resource.data.offices is map
-          && request.resource.data.candidate_snapshots is list;
-
+        allow create: if false;
         allow read, update, delete: if isAdmin();
       }
 
       match /candidate_tallies/{candidateId} {
         allow read: if true;
-
-        allow create: if signedIn()
-          && electionId == activeElectionId()
-          && voteMarkedInThisCommit(electionId)
-          && request.resource.data.keys().hasOnly([
-            'schema_version',
-            'election_id',
-            'candidate_id',
-            'total_votes',
-            'updated_at'
-          ])
-          && request.resource.data.election_id == electionId
-          && request.resource.data.candidate_id == candidateId
-          && request.resource.data.total_votes == 1
-          && request.resource.data.updated_at == request.time;
-
-        allow update: if signedIn()
-          && electionId == activeElectionId()
-          && voteMarkedInThisCommit(electionId)
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-            'total_votes',
-            'updated_at'
-          ])
-          && request.resource.data.total_votes == resource.data.total_votes + 1
-          && request.resource.data.updated_at == request.time;
-
-        allow delete: if isAdmin();
+        allow create, update, delete: if isAdmin();
       }
 
       match /audit_events/{eventId} {
-        allow create: if signedIn()
-          && electionId == activeElectionId()
-          && voteMarkedInThisCommit(electionId)
-          && request.resource.data.keys().hasOnly([
-            'schema_version',
-            'election_id',
-            'event_type',
-            'created_at',
-            'source'
-          ])
-          && request.resource.data.election_id == electionId
-          && request.resource.data.event_type == 'anonymous_vote_cast'
-          && request.resource.data.created_at == request.time;
-
+        allow create: if false;
         allow read, update, delete: if isAdmin();
       }
     }
