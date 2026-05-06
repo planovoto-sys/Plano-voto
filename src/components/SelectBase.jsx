@@ -1,34 +1,146 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import ConfirmModal from './ConfirmModal';
-import { ClearIcon, InfoIcon } from './AppIcons';
+import BottomNavigation from './BottomNavigation';
 import { flowLog, flowWarn } from '../services/debugFlow';
 import './SelectBase.css';
 
+const formatScore = (value) => {
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) ? numericValue.toFixed(2).replace('.', ',') : '0,00';
+};
+
+const getCandidateName = (candidate = {}) => candidate.Nome || candidate.nome || '';
+const getCandidateParty = (candidate = {}) => candidate.Partido || candidate.partido || '';
+
+const getCandidateScore = (candidate = {}) => {
+  const value = candidate.notaFinal ?? candidate.nota_final ?? candidate['Nota candidato'] ?? candidate['Nota partido'] ?? 0;
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) ? numericValue : 0;
+};
+
+const getCandidateChance = (candidate = {}) => {
+  const directValue = candidate.Chance ?? candidate.chance ?? candidate['Chance eleição'] ?? candidate['Chance de eleição'];
+  const directNumeric = Number(directValue);
+
+  if (Number.isFinite(directNumeric)) {
+    return Math.max(0, Math.min(100, Math.round(directNumeric)));
+  }
+
+  const selectedByUsers = Number(candidate.selectedByUsers ?? candidate.total_selecoes ?? candidate.votos_recebidos ?? 0);
+  const averageElectedVotes = Number(candidate.averageElectedVotes ?? 3);
+  if (!Number.isFinite(selectedByUsers) || !Number.isFinite(averageElectedVotes) || averageElectedVotes <= 0) return 0;
+
+  return Math.max(0, Math.min(100, Math.round((selectedByUsers / averageElectedVotes) * 100)));
+};
+
+const getCandidateTone = (candidate = {}) => {
+  const score = getCandidateScore(candidate);
+  const chance = getCandidateChance(candidate);
+
+  if (candidate.isAlreadyChosen || chance >= 100) return 'neutral';
+  if (score < 7) return 'danger';
+  return 'success';
+};
+
+const getScreenCopy = ({ variant, titulo, subtitulo, currentStep }) => {
+  if (variant === 'home-state') {
+    return {
+      title: 'ESTADO',
+      subtitle: 'Escolha o estado em que você vota'
+    };
+  }
+
+  if (variant === 'office-senado') {
+    return {
+      title: currentStep === 'senador2' ? 'SENADOR 2' : 'SENADOR 1',
+      subtitle: 'Escolha 1 candidato'
+    };
+  }
+
+  if (variant === 'office-deputado') {
+    return {
+      title: 'DEPUTADO FEDERAL',
+      subtitle: 'Escolha 1 candidato'
+    };
+  }
+
+  return {
+    title: titulo || '',
+    subtitle: subtitulo || ''
+  };
+};
+
+const getSubNavLabel = (item) => {
+  if (item.mode === 'renovar' || item.id?.includes('renovar')) return 'Renovação';
+  return 'Reeleição';
+};
+
+function MetricCircle({ label, value, tone }) {
+  const numericValue = Number(String(value).replace(',', '.')) || 0;
+  const maxValue = label === 'Nota' ? 10 : 100;
+  const progress = Math.max(0, Math.min(100, (numericValue / maxValue) * 100));
+
+  return (
+    <span className={`metric-circle metric-circle--${tone}`} style={{ '--metric-progress': progress }}>
+      <small>{label}</small>
+      <strong>{value}</strong>
+    </span>
+  );
+}
+
+function CandidateCard({ candidate, highlight = false, selected = false, onSelect }) {
+  const tone = getCandidateTone(candidate);
+  const name = getCandidateName(candidate);
+  const party = getCandidateParty(candidate);
+  const score = getCandidateScore(candidate);
+  const chance = getCandidateChance(candidate);
+  const isBlocked = candidate.isAlreadyChosen || chance >= 100;
+
+  return (
+    <button
+      className={`prototype-candidate-card candidate-card--${tone} ${highlight ? 'is-highlight' : ''} ${selected ? 'is-selected' : ''} ${isBlocked ? 'is-blocked' : ''}`}
+      type="button"
+      onClick={onSelect}
+      aria-disabled={candidate.isAlreadyChosen ? 'true' : undefined}
+    >
+      <span className="candidate-card__identity">
+        <strong>{name}</strong>
+        <small>{party}</small>
+      </span>
+
+      <span className="candidate-card__metrics">
+        <MetricCircle label="Nota" value={formatScore(score)} tone={tone} />
+        <MetricCircle label="Chance" value={chance} tone={tone} />
+      </span>
+    </button>
+  );
+}
+
 export default function SelectBase({
   titulo,
+  subtitulo = '',
   dados,
   limiteSelecao,
   selecaoInicial = [],
   carregando,
-  abas = [],
-  abaAtiva = '',
-  setAbaAtiva = () => {},
-  mostrarBusca = false,
-  valorBusca = '',
-  onChangeBusca = () => {},
-  textoBuscaFixo = null,
   onConfirmar,
-  onVoltar,
-  renderItem,
   onLimiteAtingido,
-  onHelpClick,
-  topRightExtra = null,
+  onVoltar,
   linhasVisiveis = 5,
-  mostrarBotaoVoltar = true,
+  etapa,
+  currentStep,
+  autoAvancarAoSelecionar = false,
+  onSelecaoCompleta,
+  onSelectionChange,
+  subNavigationItems = [],
+  activeSubNavigationId = '',
+  onSubNavigationSelect,
   variant = ''
 }) {
   const [selecionados, setSelecionados] = useState(selecaoInicial);
   const [modalMalAvaliado, setModalMalAvaliado] = useState({ aberto: false, item: null });
+  const [modalAltaChance, setModalAltaChance] = useState({ aberto: false, item: null });
+  const [modalCandidatoRepetido, setModalCandidatoRepetido] = useState({ aberto: false, item: null });
 
   useEffect(() => {
     let cancelled = false;
@@ -44,180 +156,285 @@ export default function SelectBase({
     };
   }, [selecaoInicial]);
 
-  const handleSelect = (item) => {
-    const jaSelecionado = selecionados.find((v) => v.id === item.id);
-    if (jaSelecionado) {
-      flowLog('select.item.remove', { titulo, itemId: item.id, itemLabel: item.Nome || item.nome || item.sigla || item.id });
-      setSelecionados(selecionados.filter((v) => v.id !== item.id));
+  const isHomeState = variant === 'home-state';
+  const isCandidateOffice = variant === 'office-deputado' || variant === 'office-senado';
+  const effectiveLimit = isCandidateOffice ? 1 : limiteSelecao;
+  const hasSelectionLimit = Number.isFinite(effectiveLimit) && effectiveLimit > 0;
+  const visibleRows = Number.isFinite(linhasVisiveis) ? linhasVisiveis : 5;
+  const screenCopy = getScreenCopy({ variant, titulo, subtitulo, currentStep, etapa });
+
+  const highlightCandidate = useMemo(() => {
+    if (!isCandidateOffice || dados.length === 0) return null;
+
+    const selectableCandidates = dados.filter((candidate) => getCandidateName(candidate) && !candidate.isAlreadyChosen);
+    const candidates = selectableCandidates.length > 0
+      ? [...selectableCandidates]
+      : [...dados].filter((candidate) => getCandidateName(candidate));
+    candidates.sort((a, b) => {
+      const scoreDiff = getCandidateScore(b) - getCandidateScore(a);
+      if (scoreDiff !== 0) return scoreDiff;
+      return getCandidateChance(b) - getCandidateChance(a);
+    });
+
+    return candidates.find((candidate) => getCandidateScore(candidate) >= 7) || candidates[0] || null;
+  }, [dados, isCandidateOffice]);
+
+  const commitSelection = (nextSelecionados, { autoConfirm = false, completed = false } = {}) => {
+    setSelecionados(nextSelecionados);
+    if (onSelectionChange) onSelectionChange(nextSelecionados);
+
+    if (completed && onSelecaoCompleta) {
+      queueMicrotask(() => onSelecaoCompleta(nextSelecionados));
       return;
     }
 
-    if (item.notaFinal !== undefined && item.notaFinal < 7) {
-        setModalMalAvaliado({ aberto: true, item });
-        return;
+    if (autoConfirm && onConfirmar) {
+      queueMicrotask(() => {
+        flowLog('select.confirm.auto', {
+          titulo,
+          totalSelecionados: nextSelecionados.length,
+          limiteSelecao: effectiveLimit,
+          selecionados: nextSelecionados.map((selectedItem) => selectedItem.id)
+        });
+        onConfirmar(nextSelecionados);
+      });
     }
-
-    flowLog('select.item.add', { titulo, itemId: item.id, itemLabel: item.Nome || item.nome || item.sigla || item.id });
-    efetivarSelecao(item);
   };
 
   const efetivarSelecao = (item) => {
-    if (limiteSelecao === 1) {
-      setSelecionados([item]);
+    if (effectiveLimit === 1) {
+      commitSelection([item], { autoConfirm: autoAvancarAoSelecionar, completed: true });
       return;
     }
-    if (selecionados.length >= limiteSelecao) {
-      flowWarn('select.limit-reached', { titulo, limiteSelecao, itemId: item.id });
-      if (onLimiteAtingido) onLimiteAtingido(item);
+
+    if (hasSelectionLimit && selecionados.length >= effectiveLimit) {
+      flowWarn('select.limit-reached', { titulo, limiteSelecao: effectiveLimit, itemId: item.id });
+      if (onLimiteAtingido) onLimiteAtingido(item, selecionados);
       return;
     }
-    setSelecionados([...selecionados, item]);
+
+    const nextSelecionados = [...selecionados, item];
+    const completed = hasSelectionLimit && nextSelecionados.length === effectiveLimit;
+    commitSelection(nextSelecionados, { autoConfirm: autoAvancarAoSelecionar && completed, completed });
   };
 
-  const handleConfirmar = () => {
-    flowLog('select.confirm.click', {
-      titulo,
-      totalSelecionados: selecionados.length,
-      limiteSelecao,
-      selecionados: selecionados.map((item) => item.id)
-    });
-    if (onConfirmar) onConfirmar(selecionados);
+  const handleSelect = (item) => {
+    const jaSelecionado = selecionados.find((v) => v.id === item.id);
+    if (jaSelecionado) {
+      flowLog('select.item.remove', { titulo, itemId: item.id, itemLabel: getCandidateName(item) || item.nome || item.sigla || item.id });
+      commitSelection(selecionados.filter((v) => v.id !== item.id));
+      return;
+    }
+
+    if (isCandidateOffice && item.isAlreadyChosen) {
+      setModalCandidatoRepetido({ aberto: true, item });
+      return;
+    }
+
+    if (isCandidateOffice && getCandidateScore(item) < 7) {
+      setModalMalAvaliado({ aberto: true, item });
+      return;
+    }
+
+    if (isCandidateOffice && getCandidateChance(item) >= 100) {
+      setModalAltaChance({ aberto: true, item });
+      return;
+    }
+
+    flowLog('select.item.add', { titulo, itemId: item.id, itemLabel: getCandidateName(item) || item.nome || item.sigla || item.id });
+    efetivarSelecao(item);
   };
 
-  const handleHelpPress = (e) => {
-      const btn = e.currentTarget;
-      btn.classList.add('pulse-anim');
-      setTimeout(() => btn.classList.remove('pulse-anim'), 400); 
-      if (onHelpClick) onHelpClick();
+  const handleStateSelect = (item) => {
+    const nextSelection = [item];
+    commitSelection(nextSelection, { completed: true });
+    if (onConfirmar) {
+      queueMicrotask(() => onConfirmar(nextSelection));
+    }
   };
 
-  const handleClearBusca = () => {
-    onChangeBusca('');
+  const handleSubNavigation = (item) => {
+    if (onSubNavigationSelect) onSubNavigationSelect(item, selecionados);
   };
+
+  const handleHeaderBack = () => {
+    if (onVoltar) onVoltar(selecionados);
+  };
+
+  const handleHeaderConfirm = () => {
+    if (onConfirmar && selecionados.length > 0) onConfirmar(selecionados);
+  };
+
+  const renderStateList = () => (
+    <div className="state-card-list" id="tour-lista" style={{ '--visible-rows': visibleRows }}>
+      {dados.length > 0 ? (
+        dados.map((item) => {
+          const isSelected = selecionados.some((selectedItem) => selectedItem.id === item.id);
+          return (
+            <button
+              key={item.id}
+              className={`state-card ${isSelected ? 'is-selected' : ''}`}
+              type="button"
+              onClick={() => handleStateSelect(item)}
+            >
+              <span>{item.sigla || item.nome}</span>
+            </button>
+          );
+        })
+      ) : (
+        <div className="no-data">Nenhum resultado encontrado.</div>
+      )}
+    </div>
+  );
+
+  const renderCandidateList = () => (
+    <div className="candidate-flow" id="tour-lista">
+      <section className="candidate-spotlight">
+        <div className="prototype-section-heading">
+          <h2>Candidato em destaque <span aria-hidden="true">↗</span></h2>
+          <p>Candidato bem avaliado com maior chance de se eleger</p>
+        </div>
+
+        {highlightCandidate ? (
+          <CandidateCard
+            candidate={highlightCandidate}
+            highlight
+            selected={selecionados.some((item) => item.id === highlightCandidate.id)}
+            onSelect={() => handleSelect(highlightCandidate)}
+          />
+        ) : (
+          <div className="no-data">Nenhum candidato encontrado.</div>
+        )}
+      </section>
+
+      <section className="candidate-list-section">
+        <div className="prototype-section-heading">
+          <h2>Outros candidatos</h2>
+          <p>Candidatos ordenados da maior para menor nota</p>
+        </div>
+
+        {subNavigationItems.length > 0 && (
+          <nav className="candidate-filter-tabs" aria-label="Filtro de candidatos">
+            {subNavigationItems.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className={`candidate-filter-tabs__item ${item.id === activeSubNavigationId ? 'is-active' : ''}`}
+                onClick={() => handleSubNavigation(item)}
+              >
+                {getSubNavLabel(item)}
+              </button>
+            ))}
+          </nav>
+        )}
+
+        <div className="candidate-card-list">
+          {dados.filter((candidate) => candidate.id !== highlightCandidate?.id).length > 0 ? (
+            dados
+              .filter((candidate) => candidate.id !== highlightCandidate?.id)
+              .map((candidate) => (
+              <CandidateCard
+                key={candidate.id}
+                candidate={candidate}
+                selected={selecionados.some((item) => item.id === candidate.id)}
+                onSelect={() => handleSelect(candidate)}
+              />
+              ))
+          ) : (
+            <div className="no-data">Nenhum candidato encontrado.</div>
+          )}
+        </div>
+      </section>
+    </div>
+  );
 
   if (carregando) return <div className="loading">CARREGANDO...</div>;
 
-  const partesTitulo = titulo ? titulo.split(' ') : [''];
-  const tituloPrincipal = partesTitulo[0];
-  const subTitulo = partesTitulo.slice(1).join(' ');
-
-  const themeClass = abaAtiva === 'renovar' ? 'theme-renovar' : 'theme-reeleger';
-  const layoutClass = abas.length > 0 ? 'has-tabs' : 'no-tabs';
-  const variantClass = variant ? `variant-${variant}` : '';
-  const canClearBusca = mostrarBusca && textoBuscaFixo === null && valorBusca.trim().length > 0;
-  const showBackButton = mostrarBotaoVoltar && typeof onVoltar === 'function';
-  
-  const listBoxStyle = { '--list-max-height': `calc(${linhasVisiveis} * var(--mobile-card-height))` };
-
   return (
-    <div className={`select-base-container ${themeClass} ${layoutClass} ${variantClass}`}>
-      <div className="top-nav-bar">
-        <div className="nav-spacer"></div>
+    <div className={`select-base-container prototype-page variant-${variant}`}>
+      <header className="prototype-header app-page-header">
+        <div className="app-page-header__copy">
+          <h1>{screenCopy.title}</h1>
+          {screenCopy.subtitle && <p>{screenCopy.subtitle}</p>}
+        </div>
 
-        {mostrarBusca && (
-          <div className={`top-search-wrapper ${canClearBusca ? 'has-clear-button' : ''}`}>
-            <input
-              id="tour-busca"
-              type="text"
-              placeholder="Pesquisar"
-              value={textoBuscaFixo !== null ? textoBuscaFixo : valorBusca}
-              onChange={(e) => onChangeBusca(e.target.value)}
-              disabled={textoBuscaFixo !== null}
-              aria-label="Pesquisar na lista"
-              autoComplete="off"
-              inputMode="search"
-              spellCheck={false}
-            />
-            {canClearBusca && (
-              <button className="btn-clear-search" type="button" onClick={handleClearBusca} aria-label="Limpar pesquisa">
-                <ClearIcon />
+        <div className="app-page-header__side">
+          <BottomNavigation currentStep={currentStep} placement="header" />
+
+          <div className="app-page-header__actions">
+            {currentStep !== 'estado' && onVoltar && (
+              <button className="app-header-action app-header-action--secondary" type="button" onClick={handleHeaderBack}>
+                Voltar
+              </button>
+            )}
+            {onConfirmar && selecionados.length > 0 && (
+              <button className="app-header-action" type="button" onClick={handleHeaderConfirm}>
+                Confirmar
               </button>
             )}
           </div>
-        )}
-
-        <div className="nav-action-right">
-          {topRightExtra}
-          {onHelpClick && (
-            <button className="btn-help-icon top-icon-button" type="button" onClick={handleHelpPress} id="tour-help" aria-label="Abrir ajuda">
-              <InfoIcon />
-            </button>
-          )}
         </div>
-      </div>
+      </header>
 
-      <div className="green-banner-selection">
-        <h2>{tituloPrincipal}</h2>
-        {subTitulo && <h3>{subTitulo}</h3>}
-        <div className="triangle-down"></div>
-      </div>
+      <main className="prototype-scroll select-base__scroll">
+        {isHomeState ? renderStateList() : renderCandidateList()}
+      </main>
 
-      {abas.length > 0 && (
-        <div className="tabs-toggle-container content-aligned-container">
-          <div className="tabs-toggle">
-            {/* O INDICADOR QUE DESLIZA COM ANIMAÇÃO */}
-            <div className={`tab-active-indicator ${abaAtiva === 'renovar' ? 'right' : 'left'}`}></div>
-            
-            {abas.map((aba) => (
-              <button
-                type="button"
-                key={aba} 
-                id={`tour-${aba}`} 
-                data-tab={aba}
-                className={`tab-toggle-btn ${abaAtiva === aba ? 'active' : ''}`} 
-                onClick={() => setAbaAtiva(aba)}
-              >
-                {aba}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="list-wrapper content-aligned-container">
-        <div className="list-scroll-box" id="tour-lista" style={listBoxStyle}>
-          {dados.length > 0 ? (
-            dados.map((item) => {
-              const isSelected = selecionados.some((v) => v.id === item.id);
-              return (
-                <div key={item.id} className={`base-card ${item.cardColorClass || 'card-yellow'} ${isSelected ? 'selected' : ''}`} onClick={() => handleSelect(item)}>
-                  {renderItem(item, isSelected)}
-                </div>
-              );
-            })
-          ) : (
-            <div className="no-data">Nenhum resultado encontrado.</div>
-          )}
-        </div>
-      </div>
-
-      <footer className={`navigation-footer content-aligned-container ${showBackButton ? '' : 'only-forward'}`}>
-        {showBackButton && (
-          <button className="nav-btn" type="button" onClick={onVoltar} aria-label="Voltar"><i className="arrow-left"></i></button>
-        )}
-        <button className="nav-btn" type="button" onClick={handleConfirmar} aria-label="Avancar"><i className="arrow-right"></i></button>
-      </footer>
+      <BottomNavigation currentStep={currentStep} placement="footer" />
 
       <ConfirmModal
-          isOpen={modalMalAvaliado.aberto}
-          titulo="ATENÇÃO!"
-          mensagem={
-              <>
-                <span>Você selecionou uma opção com</span>
-                <strong className="low-score-highlight">NOTA MENOR QUE 7,00.</strong>
-              </>
-          }
-          textoConfirmar="MUDAR"
-          textoCancelar="MANTER"
-          tipo="low-score"
-          onConfirm={() => {
-              setModalMalAvaliado({ aberto: false, item: null });
-          }}
-          onCancel={() => {
-              const itemToSelect = modalMalAvaliado.item;
-              setModalMalAvaliado({ aberto: false, item: null });
-              efetivarSelecao(itemToSelect); 
-          }}
+        isOpen={modalMalAvaliado.aberto}
+        titulo="ATENÇÃO!"
+        mensagem={
+          <>
+            <span>Você selecionou uma opção com</span>
+            <strong className="low-score-highlight">NOTA MENOR QUE 7,00.</strong>
+          </>
+        }
+        textoConfirmar="MUDAR"
+        textoCancelar="MANTER"
+        tipo="low-score"
+        onConfirm={() => {
+          setModalMalAvaliado({ aberto: false, item: null });
+        }}
+        onCancel={() => {
+          const itemToSelect = modalMalAvaliado.item;
+          setModalMalAvaliado({ aberto: false, item: null });
+          efetivarSelecao(itemToSelect);
+        }}
+      />
+
+      <ConfirmModal
+        isOpen={modalAltaChance.aberto}
+        titulo="ATENÇÃO!"
+        mensagem={
+          <>
+            <span>Este candidato já chegou a 100 de chance.</span>
+            <strong className="low-score-highlight">Ele pode estar com votos suficientes.</strong>
+          </>
+        }
+        textoConfirmar="MANTER ESCOLHA"
+        textoCancelar="TROCAR"
+        tipo="high-chance"
+        onConfirm={() => {
+          const itemToSelect = modalAltaChance.item;
+          setModalAltaChance({ aberto: false, item: null });
+          efetivarSelecao(itemToSelect);
+        }}
+        onCancel={() => {
+          setModalAltaChance({ aberto: false, item: null });
+        }}
+      />
+
+      <ConfirmModal
+        isOpen={modalCandidatoRepetido.aberto}
+        titulo="CANDIDATO JÁ ESCOLHIDO"
+        mensagem="Esse candidato já foi escolhido em outra etapa. Escolha um nome diferente para continuar."
+        textoConfirmar="ESCOLHER OUTRO"
+        mostrarCancelar={false}
+        onConfirm={() => {
+          setModalCandidatoRepetido({ aberto: false, item: null });
+        }}
       />
     </div>
   );

@@ -24,22 +24,34 @@ function Login() {
 
   return (
     <div className="login-wrapper">
-      <header className="login-header">
+      <header className="login-header prototype-header">
         <h1>meuvoto.org</h1>
-        <div className="login-triangle-down"></div>
       </header>
 
       <main className="login-main">
+        <section className="login-copy-block">
+          <h2>Assista ao vídeo</h2>
+          <p>E entenda como meuvoto.org pode te ajudar a votar melhor</p>
+        </section>
+
         <div className="video-card">
           <button className="play-button" type="button" aria-label="Reproduzir vídeo">
             <div className="play-icon"></div>
           </button>
         </div>
 
-        <button className="btn-comecar" type="button" onClick={handleGoogleLogin}>
-          COMEÇAR
-        </button>
+        <section className="login-copy-block login-copy-block--start">
+          <h2>Clique em começar</h2>
+          <p>Após assistir ao vídeo</p>
+        </section>
+
+        <button className="btn-comecar" type="button" onClick={handleGoogleLogin}>COMEÇAR</button>
       </main>
+
+      <footer className="login-footer">
+        <strong>meuvoto.org</strong>
+        <span>Escolha seus candidatos com mais clareza.</span>
+      </footer>
     </div>
   );
 }

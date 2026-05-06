@@ -3,6 +3,7 @@ import { useUser } from '../contexts/useUser';
 import { auth } from '../services/firebaseConfig';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { MenuIcon } from './AppIcons';
+import { BALLOT_ROUTES } from '../services/votingService';
 import './Sidebar.css';
 
 export default function Sidebar() {
@@ -19,10 +20,11 @@ export default function Sidebar() {
 
   const themeClass = `theme-${filtroAtivo || 'geral'}`;
   const navItems = [
-    { label: 'Estado', path: '/home' },
-    { label: 'Deputado Federal', path: '/escolher-deputado-federal' },
-    { label: 'Senadores', path: '/escolher-senadores' },
-    { label: 'Resultados', path: '/finalizacao' },
+    { label: 'Estado', path: BALLOT_ROUTES.estado },
+    { label: 'Deputado Federal', path: BALLOT_ROUTES.deputadoFederal },
+    { label: 'Senador 1', path: BALLOT_ROUTES.senador1 },
+    { label: 'Senador 2', path: BALLOT_ROUTES.senador2 },
+    { label: 'Resultados', path: BALLOT_ROUTES.resultado },
   ];
 
   const goTo = (path) => {
@@ -63,9 +65,10 @@ export default function Sidebar() {
         </div>
 
         <nav className="sidebar-nav">
-          <button type="button" onClick={() => goTo('/home')}>MEU ESTADO</button>
-          <button type="button" onClick={() => goTo('/escolher-deputado-federal')}>DEPUTADO FEDERAL</button>
-          <button type="button" onClick={() => goTo('/escolher-senadores')}>SENADORES</button>
+          <button type="button" onClick={() => goTo(BALLOT_ROUTES.estado)}>MEU ESTADO</button>
+          <button type="button" onClick={() => goTo(BALLOT_ROUTES.deputadoFederal)}>DEPUTADO FEDERAL</button>
+          <button type="button" onClick={() => goTo(BALLOT_ROUTES.senador1)}>SENADOR 1</button>
+          <button type="button" onClick={() => goTo(BALLOT_ROUTES.senador2)}>SENADOR 2</button>
           <div className="sidebar-divider"></div>
           <button className="btn-logout" type="button" onClick={handleLogout}>SAIR DA CONTA</button>
         </nav>

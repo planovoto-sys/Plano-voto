@@ -4,24 +4,23 @@ import { useUser } from '../contexts/useUser';
 import { auth, db } from '../services/firebaseConfig';
 import { deleteField, doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import {
+  BALLOT_ROUTES,
   clearVoteReceipt,
   draftHasBallotSelections,
   getBallotEstado,
   getBallotSelectionCounts,
   readBallotDraft,
-  readLastVoteReceipt,
   resetBallotForState,
   saveBallotState
 } from '../services/votingService';
 import { flowError, flowLog, flowWarn } from '../services/debugFlow';
 import SelectBase from '../components/SelectBase';
-import Sidebar from '../components/Sidebar';
 import ConfirmModal from '../components/ConfirmModal';
 import TourModal from '../components/TourModal'; // IMPORTADO O TOUR MODAL
 
 const LISTA_ESTADOS = [
   { id: 'AC', nome: 'Acre', sigla: 'AC' }, { id: 'AL', nome: 'Alagoas', sigla: 'AL' },
-  { id: 'AP', nome: 'Amapá', sigla: 'AP' }, { id: 'AM', nome: 'Amazonas', sigla: 'AM' },
+  { id: 'AM', nome: 'Amazonas', sigla: 'AM' }, { id: 'AP', nome: 'Amapá', sigla: 'AP' },
   { id: 'BA', nome: 'Bahia', sigla: 'BA' }, { id: 'CE', nome: 'Ceará', sigla: 'CE' },
   { id: 'DF', nome: 'Distrito Federal', sigla: 'DF' }, { id: 'ES', nome: 'Espírito Santo', sigla: 'ES' },
   { id: 'GO', nome: 'Goiás', sigla: 'GO' }, { id: 'MA', nome: 'Maranhão', sigla: 'MA' },
@@ -45,7 +44,7 @@ const normalizarBusca = (valor) => (
 );
 
 export default function Home() {
-  const { user, userData, userEligibility, loading: userLoading, filtroAtivo } = useUser();
+  const { user, userData, userEligibility, loading: userLoading } = useUser();
   const navigate = useNavigate();
   const location = useLocation();
   const [loading, setLoading] = useState(false);
@@ -64,8 +63,8 @@ export default function Home() {
   };
 
   useEffect(() => {
-    if (!bypassVoteRedirect && user?.uid && userEligibility?.has_voted && readLastVoteReceipt(user.uid)) {
-      flowLog('home.redirect.result-with-receipt', { userId: user.uid });
+    if (!bypassVoteRedirect && user?.uid && userEligibility?.has_voted) {
+      flowLog('home.redirect.result-after-vote', { userId: user.uid });
       navigate('/finalizacao', { replace: true });
     }
   }, [bypassVoteRedirect, user?.uid, userEligibility?.has_voted, navigate]);
@@ -170,8 +169,8 @@ export default function Home() {
           flowError('home.change-state.firestore-error', error, { userId: user.uid, novoEstado });
         });
 
-      flowLog('home.change-state.navigate', { to: '/escolher-deputado-federal', novoEstado });
-      navigate('/escolher-deputado-federal', { state: { bypassVoteRedirect: true } });
+      flowLog('home.change-state.navigate', { to: BALLOT_ROUTES.deputadoFederal, novoEstado });
+      navigate(BALLOT_ROUTES.deputadoFederal, { state: { bypassVoteRedirect: true } });
     } catch (e) {
       flowError('home.change-state.local-error', e, { novoEstado });
       console.error("Erro ao salvar estado: ", e);
@@ -182,17 +181,19 @@ export default function Home() {
 
   return (
     <>
-      <Sidebar />
       <TourModal steps={tourSteps} isOpen={isTourOpen} onClose={() => setIsTourOpen(false)} />
       
       <SelectBase
         titulo="SELECIONE SEU ESTADO" dados={listaExibida} limiteSelecao={1} selecaoInicial={selecaoInicial}
         carregando={userLoading || loading} mostrarBusca={true} valorBusca={busca} onChangeBusca={setBusca}
-        onConfirmar={handleConfirmar} mostrarBotaoVoltar={false}
+        onConfirmar={handleConfirmar} mostrarBotaoVoltar={true} mostrarBotaoVoltarTopo={false} onVoltar={handleLogout}
+        showListNavigation={true}
         linhasVisiveis={6}
         variant="home-state"
-        abaAtiva={filtroAtivo}
-        topRightExtra={<button className="desktop-utility-btn" type="button" onClick={handleLogout}>Sair</button>}
+        etapa={1}
+        currentStep="estado"
+        autoAvancarAoSelecionar={false}
+        topRightExtra={<button className="header-utility-btn" type="button" onClick={handleLogout}>Sair</button>}
         onHelpClick={() => setIsTourOpen(true)} /* ATIVA O BOTÃO "i" NA TELA DE ESTADOS */
         renderItem={(estado) => (
           <div className="state-centered-name">

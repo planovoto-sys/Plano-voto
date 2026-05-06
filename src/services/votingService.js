@@ -6,7 +6,7 @@ import {
   where
 } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
-import { db, functions } from './firebaseConfig';
+import { db, functions, functionsRegion } from './firebaseConfig';
 import { flowLog } from './debugFlow';
 
 export const ACTIVE_ELECTION_ID = import.meta.env.VITE_ACTIVE_ELECTION_ID || 'congresso-2026';
@@ -18,6 +18,41 @@ const OFFICE_LIMITS = {
   senadores: 2
 };
 
+export const BALLOT_ROUTES = {
+  estado: '/home',
+  deputadoFederal: '/escolher-deputado-federal',
+  senador1: '/escolher-senador-1',
+  senador2: '/escolher-senador-2',
+  resultado: '/finalizacao'
+};
+
+export const BALLOT_FLOW_STEPS = [
+  {
+    id: 'deputado_federal',
+    officeKey: 'deputado_federal',
+    route: BALLOT_ROUTES.deputadoFederal,
+    title: 'Deputado Federal'
+  },
+  {
+    id: 'senadores_1',
+    officeKey: 'senadores',
+    route: BALLOT_ROUTES.senador1,
+    title: 'Senador 1'
+  },
+  {
+    id: 'senadores_2',
+    officeKey: 'senadores',
+    route: BALLOT_ROUTES.senador2,
+    title: 'Senador 2'
+  }
+];
+
+const BALLOT_FLOW_STEP_IDS = BALLOT_FLOW_STEPS.map((step) => step.id);
+const LEGACY_FLOW_STEP_ALIASES = {
+  deputado_federal: ['deputado_federal_reeleger', 'deputado_federal_renovar'],
+  senadores_1: ['senadores_reeleger'],
+  senadores_2: ['senadores_renovar']
+};
 const STORAGE_PREFIX = `meuvoto:${ACTIVE_ELECTION_ID}`;
 
 export class VotingError extends Error {
@@ -38,11 +73,27 @@ const emptySelections = () => ({
   senadores: []
 });
 
+const emptyCandidateGroups = () => (
+  BALLOT_FLOW_STEP_IDS.reduce((groups, stepId) => ({
+    ...groups,
+    [stepId]: []
+  }), {})
+);
+
+const emptyCompletedSteps = () => (
+  BALLOT_FLOW_STEP_IDS.reduce((steps, stepId) => ({
+    ...steps,
+    [stepId]: false
+  }), {})
+);
+
 export const createEmptyBallotDraft = (estado = null) => ({
   schema_version: BALLOT_SCHEMA_VERSION,
   election_id: ACTIVE_ELECTION_ID,
   estado,
   selections: emptySelections(),
+  candidate_groups: emptyCandidateGroups(),
+  completed_steps: emptyCompletedSteps(),
   updated_at: null
 });
 
@@ -62,7 +113,11 @@ const normalizeStoredCandidate = (candidate) => {
     numero: candidate.numero || candidate.Numero || null,
     estado: candidate.estado || candidate.Estado || null,
     classificacao: candidate.classificacao || candidate.ClassificacaoOficial || candidate['Classificação'] || candidate.Classificacao || null,
-    nota_final: Number(candidate.nota_final ?? candidate.notaFinal ?? 0) || 0
+    nota_final: Number(candidate.nota_final ?? candidate.notaFinal ?? 0) || 0,
+    chance: Number(candidate.chance ?? candidate.Chance ?? 0) || 0,
+    selected_by_users: Number(candidate.selected_by_users ?? candidate.selectedByUsers ?? 0) || 0,
+    average_elected_votes: Number(candidate.average_elected_votes ?? candidate.averageElectedVotes ?? 0) || 0,
+    ranking_total: Number(candidate.ranking_total ?? candidate.rankingTotal ?? 0) || 0
   };
 };
 
@@ -70,12 +125,47 @@ const normalizeDraft = (rawDraft, estado = null) => {
   const baseDraft = createEmptyBallotDraft(estado);
   if (!rawDraft || typeof rawDraft !== 'object') return baseDraft;
 
-  const selections = emptySelections();
+  const rawSelections = emptySelections();
+  const candidateGroups = emptyCandidateGroups();
+  const completedSteps = emptyCompletedSteps();
+
   Object.keys(OFFICE_LIMITS).forEach((officeKey) => {
-    selections[officeKey] = asArray(rawDraft.selections?.[officeKey])
+    rawSelections[officeKey] = asArray(rawDraft.selections?.[officeKey])
       .map(normalizeStoredCandidate)
       .filter(Boolean)
       .slice(0, OFFICE_LIMITS[officeKey]);
+  });
+
+  BALLOT_FLOW_STEP_IDS.forEach((stepId) => {
+    const aliases = LEGACY_FLOW_STEP_ALIASES[stepId] || [];
+    const rawCandidates = [
+      ...asArray(rawDraft.candidate_groups?.[stepId]),
+      ...aliases.flatMap((alias) => asArray(rawDraft.candidate_groups?.[alias]))
+    ];
+
+    candidateGroups[stepId] = rawCandidates
+      .map(normalizeStoredCandidate)
+      .filter(Boolean)
+      .slice(0, 1);
+  });
+
+  const hasGroupedCandidates = Object.values(candidateGroups).some((items) => items.length > 0);
+  if (!hasGroupedCandidates) {
+    candidateGroups.deputado_federal = rawSelections.deputado_federal.slice(0, 1);
+    candidateGroups.senadores_1 = rawSelections.senadores.slice(0, 1);
+    candidateGroups.senadores_2 = rawSelections.senadores.slice(1, 2);
+  }
+
+  const selections = {
+    deputado_federal: candidateGroups.deputado_federal.slice(0, 1),
+    senadores: [candidateGroups.senadores_1[0], candidateGroups.senadores_2[0]].filter(Boolean).slice(0, 2)
+  };
+
+  BALLOT_FLOW_STEP_IDS.forEach((stepId) => {
+    const aliases = LEGACY_FLOW_STEP_ALIASES[stepId] || [];
+    completedSteps[stepId] = rawDraft.completed_steps?.[stepId] === true ||
+      aliases.some((alias) => rawDraft.completed_steps?.[alias] === true) ||
+      candidateGroups[stepId].length > 0;
   });
 
   return {
@@ -84,7 +174,9 @@ const normalizeDraft = (rawDraft, estado = null) => {
     schema_version: BALLOT_SCHEMA_VERSION,
     election_id: ACTIVE_ELECTION_ID,
     estado: rawDraft.estado ?? estado ?? null,
-    selections
+    selections,
+    candidate_groups: candidateGroups,
+    completed_steps: completedSteps
   };
 };
 
@@ -107,7 +199,10 @@ const persistBallotDraft = (userId, draft) => {
     userId,
     estado: draft.estado,
     deputadoFederal: draft.selections.deputado_federal.length,
-    senadores: draft.selections.senadores.length
+    senadores: draft.selections.senadores.length,
+    grupos: Object.fromEntries(
+      Object.entries(draft.candidate_groups || {}).map(([key, items]) => [key, items.length])
+    )
   });
   return draft;
 };
@@ -151,7 +246,36 @@ export const saveBallotOfficeSelection = (userId, officeKey, candidates, estado 
     updated_at: new Date().toISOString()
   };
 
-  return persistBallotDraft(userId, nextDraft);
+  return persistBallotDraft(userId, normalizeDraft(nextDraft, estado));
+};
+
+export const saveBallotStepSelection = (userId, stepKey, candidates, estado = null, options = {}) => {
+  if (!BALLOT_FLOW_STEP_IDS.includes(stepKey)) {
+    throw new VotingError('INVALID_BALLOT_STEP', 'Etapa inválida para esta eleição.');
+  }
+
+  const currentDraft = readBallotDraft(userId, estado);
+  const normalizedCandidates = asArray(candidates)
+    .map(normalizeStoredCandidate)
+    .filter(Boolean);
+
+  const nextDraft = {
+    ...currentDraft,
+    estado: estado ?? currentDraft.estado ?? null,
+    candidate_groups: {
+      ...emptyCandidateGroups(),
+      ...currentDraft.candidate_groups,
+      [stepKey]: normalizedCandidates
+    },
+    completed_steps: {
+      ...emptyCompletedSteps(),
+      ...currentDraft.completed_steps,
+      [stepKey]: options.markCompleted === true || currentDraft.completed_steps?.[stepKey] === true
+    },
+    updated_at: new Date().toISOString()
+  };
+
+  return persistBallotDraft(userId, normalizeDraft(nextDraft, estado));
 };
 
 export const clearBallotDraft = (userId) => {
@@ -171,11 +295,21 @@ export const hasBallotSelections = (userId) => {
 
 export const getBallotSelectionCounts = (draft) => {
   const normalizedDraft = normalizeDraft(draft);
+  const deputadoFederal = normalizedDraft.candidate_groups.deputado_federal.length;
+  const senador1 = normalizedDraft.candidate_groups.senadores_1.length;
+  const senador2 = normalizedDraft.candidate_groups.senadores_2.length;
+  const total = deputadoFederal + senador1 + senador2;
 
   return {
-    deputadoFederal: normalizedDraft.selections.deputado_federal.length,
-    senadores: normalizedDraft.selections.senadores.length,
-    total: normalizedDraft.selections.deputado_federal.length + normalizedDraft.selections.senadores.length
+    deputadoFederal,
+    senadores: senador1 + senador2,
+    deputadoFederalReeleger: deputadoFederal,
+    deputadoFederalRenovar: 0,
+    senador1,
+    senador2,
+    senadoresReeleger: senador1,
+    senadoresRenovar: senador2,
+    total
   };
 };
 
@@ -184,31 +318,52 @@ export const draftHasBallotSelections = (draft) => getBallotSelectionCounts(draf
 export const getBallotProgress = (draft) => {
   const normalizedDraft = normalizeDraft(draft);
   const hasEstado = Boolean(normalizedDraft.estado);
-  const hasDeputadoFederal = normalizedDraft.selections.deputado_federal.length === OFFICE_LIMITS.deputado_federal;
-  const hasSenadores = normalizedDraft.selections.senadores.length === OFFICE_LIMITS.senadores;
+  const isStepComplete = (stepId) => (
+    normalizedDraft.completed_steps?.[stepId] === true ||
+    normalizedDraft.candidate_groups?.[stepId]?.length > 0
+  );
+  const hasDeputadoFederal = isStepComplete('deputado_federal');
+  const hasSenador1 = isStepComplete('senadores_1');
+  const hasSenador2 = isStepComplete('senadores_2');
+  const hasSenadores = hasSenador1 && hasSenador2;
 
   return {
     hasEstado,
+    hasDeputadoFederalReeleger: hasDeputadoFederal,
+    hasDeputadoFederalRenovar: false,
     hasDeputadoFederal,
+    hasSenador1,
+    hasSenador2,
+    hasSenadoresReeleger: hasSenador1,
+    hasSenadoresRenovar: hasSenador2,
     hasSenadores,
     isComplete: hasEstado && hasDeputadoFederal && hasSenadores,
     nextRoute: !hasEstado
-      ? '/home'
+      ? BALLOT_ROUTES.estado
       : !hasDeputadoFederal
-        ? '/escolher-deputado-federal'
-        : !hasSenadores
-          ? '/escolher-senadores'
-          : '/finalizacao'
+        ? BALLOT_ROUTES.deputadoFederal
+        : !hasSenador1
+            ? BALLOT_ROUTES.senador1
+          : !hasSenador2
+              ? BALLOT_ROUTES.senador2
+              : BALLOT_ROUTES.resultado
   };
 };
 
 export const getCandidateIdsFromDraft = (draft) => {
   const normalizedDraft = normalizeDraft(draft);
-  return [
-    ...normalizedDraft.selections.deputado_federal,
-    ...normalizedDraft.selections.senadores
-  ].map((candidate) => candidate.id);
+  const groupedCandidates = Object.values(normalizedDraft.candidate_groups).flat();
+  const candidates = groupedCandidates.length > 0
+    ? groupedCandidates
+    : [
+      ...normalizedDraft.selections.deputado_federal,
+      ...normalizedDraft.selections.senadores
+    ];
+
+  return candidates.map((candidate) => candidate.id);
 };
+
+export const getBallotCandidateGroups = (draft) => normalizeDraft(draft).candidate_groups;
 
 export const validateCompleteBallot = (draft) => {
   const normalizedDraft = normalizeDraft(draft);
@@ -224,7 +379,10 @@ export const validateCompleteBallot = (draft) => {
     };
   }
 
-  const candidateIds = getCandidateIdsFromDraft(normalizedDraft);
+  const candidateIds = [
+    ...normalizedDraft.selections.deputado_federal,
+    ...normalizedDraft.selections.senadores
+  ].map((candidate) => candidate.id);
   if (new Set(candidateIds).size !== candidateIds.length) {
     return {
       ok: false,
@@ -304,6 +462,9 @@ export const castAnonymousVote = async ({ user, estado, draft }) => {
     userId: user.uid,
     electionId: ACTIVE_ELECTION_ID,
     estado: estado ?? normalizedDraft.estado ?? null,
+    functionName: CAST_VOTE_FUNCTION_NAME,
+    functionsRegion,
+    appCheckConfigured: Boolean(import.meta.env.VITE_RECAPTCHA_V3_SITE_KEY),
     candidateIds
   });
 
@@ -340,8 +501,15 @@ export const getVotingErrorMessage = (error) => {
     VOTER_NOT_ELIGIBLE: 'Seu cadastro não está habilitado para votar nesta eleição.',
     VOTER_NOT_ENROLLED: 'Não encontramos sua habilitação para esta eleição.',
     RECEIPT_NOT_RETURNED: 'O voto não retornou um recibo válido. Tente novamente.',
+    FUNCTION_UNREACHABLE: 'Não foi possível conectar ao servidor de votação. Verifique a implantação da Cloud Function e tente novamente.',
     'functions/not-found': 'Servidor de votação indisponível. Configure a Cloud Function de registro de voto.',
     not_found: 'Servidor de votação indisponível. Configure a Cloud Function de registro de voto.',
+    'functions/internal': 'Servidor de votação indisponível ou sem configuração de acesso. Verifique região, deploy e App Check.',
+    internal: 'Servidor de votação indisponível ou sem configuração de acesso. Verifique região, deploy e App Check.',
+    'functions/unavailable': 'Servidor de votação temporariamente indisponível. Tente novamente em instantes.',
+    unavailable: 'Servidor de votação temporariamente indisponível. Tente novamente em instantes.',
+    'functions/unauthenticated': 'Faça login novamente e verifique a configuração do App Check.',
+    unauthenticated: 'Faça login novamente e verifique a configuração do App Check.',
     'functions/already-exists': 'Seu voto já foi registrado. Por segurança, ele não pode ser alterado.',
     already_exists: 'Seu voto já foi registrado. Por segurança, ele não pode ser alterado.',
     'functions/permission-denied': 'Você não tem permissão para votar nesta eleição.',
