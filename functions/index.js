@@ -8,6 +8,7 @@ initializeApp();
 const db = getFirestore();
 const ACTIVE_ELECTION_ID = 'congresso-2026';
 const BALLOT_SCHEMA_VERSION = 1;
+const FUNCTIONS_REGION = 'southamerica-east1';
 const OFFICE_LIMITS = {
   deputado_federal: 1,
   senadores: 2,
@@ -61,14 +62,23 @@ const buildCandidateSnapshot = (candidateId, data) => ({
   nota_final: Number(data['Nota candidato'] || data['Nota partido'] || data.nota_final || 0) || 0,
 });
 
+const normalizeOfficeName = (value) => (
+  asString(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+);
+
 const assertCandidateOffice = (candidateId, candidateData, expectedOffice) => {
-  if (candidateData.Cargo !== expectedOffice) {
+  const actualOffice = candidateData.Cargo || candidateData.cargo;
+  if (normalizeOfficeName(actualOffice) !== normalizeOfficeName(expectedOffice)) {
     throw new HttpsError('invalid-argument', `Candidato ${candidateId} nao pertence ao cargo ${expectedOffice}.`);
   }
 };
 
 export const castAnonymousVote = onCall({
-  region: 'southamerica-east1',
+  region: FUNCTIONS_REGION,
+  cors: true,
   enforceAppCheck: true,
 }, async (request) => {
   if (!request.auth?.uid) {
