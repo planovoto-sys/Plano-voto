@@ -2,6 +2,20 @@
 
 Todas as mudanças relevantes deste projeto serão documentadas aqui.
 
+## [1.4.0] - 2026-05-05
+
+### Adicionado
+- Adiciona arquivo `.env.example` com as variáveis necessárias para configurar o Firebase.
+- Inclui geração de imagem compartilhável para o resultado.
+
+### Alterado
+- Redesenha o fluxo de votação com nova navegação inferior e experiência responsiva modernizada.
+- Refatora componentes e estilos das telas de login, seleção de candidatos e resultado.
+
+### Ajustado
+- Refina listas e espaçamentos em telas mobile.
+- Ajusta configurações de ambiente e integração com Firebase.
+
 ## [1.3.2] - 2026-04-24
 
 ### Ajustado
