@@ -54,6 +54,8 @@ const LEGACY_FLOW_STEP_ALIASES = {
   senadores_2: ['senadores_renovar']
 };
 const STORAGE_PREFIX = `meuvoto:${ACTIVE_ELECTION_ID}`;
+const DRAFT_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+let storageAvailability = null;
 
 export class VotingError extends Error {
   constructor(code, message) {
@@ -63,7 +65,24 @@ export class VotingError extends Error {
   }
 }
 
-const canUseStorage = () => typeof window !== 'undefined' && Boolean(window.localStorage);
+const canUseStorage = () => {
+  if (storageAvailability !== null) return storageAvailability;
+  if (typeof window === 'undefined') {
+    storageAvailability = false;
+    return storageAvailability;
+  }
+
+  try {
+    const testKey = `${STORAGE_PREFIX}:storage-test`;
+    window.localStorage.setItem(testKey, '1');
+    window.localStorage.removeItem(testKey);
+    storageAvailability = true;
+  } catch {
+    storageAvailability = false;
+  }
+
+  return storageAvailability;
+};
 
 const draftKey = (userId) => `${STORAGE_PREFIX}:ballotDraft:${userId}`;
 const receiptKey = (userId) => `${STORAGE_PREFIX}:lastReceipt:${userId}`;
@@ -162,10 +181,7 @@ const normalizeDraft = (rawDraft, estado = null) => {
   };
 
   BALLOT_FLOW_STEP_IDS.forEach((stepId) => {
-    const aliases = LEGACY_FLOW_STEP_ALIASES[stepId] || [];
-    completedSteps[stepId] = rawDraft.completed_steps?.[stepId] === true ||
-      aliases.some((alias) => rawDraft.completed_steps?.[alias] === true) ||
-      candidateGroups[stepId].length > 0;
+    completedSteps[stepId] = candidateGroups[stepId].length > 0;
   });
 
   return {
@@ -185,7 +201,15 @@ export const readBallotDraft = (userId, estado = null) => {
 
   try {
     const raw = window.localStorage.getItem(draftKey(userId));
-    return normalizeDraft(raw ? JSON.parse(raw) : null, estado);
+    const parsedDraft = raw ? JSON.parse(raw) : null;
+    const updatedAt = Date.parse(parsedDraft?.updated_at || '');
+
+    if (Number.isFinite(updatedAt) && Date.now() - updatedAt > DRAFT_MAX_AGE_MS) {
+      window.localStorage.removeItem(draftKey(userId));
+      return createEmptyBallotDraft(estado);
+    }
+
+    return normalizeDraft(parsedDraft, estado);
   } catch (error) {
     console.warn('Rascunho de voto local inválido. Criando um novo rascunho.', error);
     return createEmptyBallotDraft(estado);
@@ -194,7 +218,12 @@ export const readBallotDraft = (userId, estado = null) => {
 
 const persistBallotDraft = (userId, draft) => {
   if (!userId || !canUseStorage()) return draft;
-  window.localStorage.setItem(draftKey(userId), JSON.stringify(draft));
+  try {
+    window.localStorage.setItem(draftKey(userId), JSON.stringify(draft));
+  } catch {
+    return draft;
+  }
+
   flowLog('draft.persisted', {
     userId,
     estado: draft.estado,
@@ -270,7 +299,10 @@ export const saveBallotStepSelection = (userId, stepKey, candidates, estado = nu
     completed_steps: {
       ...emptyCompletedSteps(),
       ...currentDraft.completed_steps,
-      [stepKey]: options.markCompleted === true || currentDraft.completed_steps?.[stepKey] === true
+      [stepKey]: normalizedCandidates.length > 0 && (
+        options.markCompleted === true ||
+        currentDraft.completed_steps?.[stepKey] === true
+      )
     },
     updated_at: new Date().toISOString()
   };
@@ -280,12 +312,20 @@ export const saveBallotStepSelection = (userId, stepKey, candidates, estado = nu
 
 export const clearBallotDraft = (userId) => {
   if (!userId || !canUseStorage()) return;
-  window.localStorage.removeItem(draftKey(userId));
+  try {
+    window.localStorage.removeItem(draftKey(userId));
+  } catch {
+    // O rascunho local e apenas um apoio de navegacao.
+  }
 };
 
 export const clearVoteReceipt = (userId) => {
   if (!userId || !canUseStorage()) return;
-  window.localStorage.removeItem(receiptKey(userId));
+  try {
+    window.localStorage.removeItem(receiptKey(userId));
+  } catch {
+    // O recibo local pode ser recriado apos nova confirmacao bem-sucedida.
+  }
 };
 
 export const hasBallotSelections = (userId) => {
@@ -319,7 +359,6 @@ export const getBallotProgress = (draft) => {
   const normalizedDraft = normalizeDraft(draft);
   const hasEstado = Boolean(normalizedDraft.estado);
   const isStepComplete = (stepId) => (
-    normalizedDraft.completed_steps?.[stepId] === true ||
     normalizedDraft.candidate_groups?.[stepId]?.length > 0
   );
   const hasDeputadoFederal = isStepComplete('deputado_federal');
@@ -411,7 +450,12 @@ export const saveLastVoteReceipt = (userId, receipt, draft) => {
     submitted_at: new Date().toISOString()
   };
 
-  window.localStorage.setItem(receiptKey(userId), JSON.stringify(storedReceipt));
+  try {
+    window.localStorage.setItem(receiptKey(userId), JSON.stringify(storedReceipt));
+  } catch {
+    return storedReceipt;
+  }
+
   return storedReceipt;
 };
 
@@ -423,6 +467,11 @@ export const readLastVoteReceipt = (userId) => {
     return raw ? JSON.parse(raw) : null;
   } catch (error) {
     console.warn('Recibo local inválido. Ignorando recibo salvo.', error);
+    try {
+      window.localStorage.removeItem(receiptKey(userId));
+    } catch {
+      // Sem acao: falha ao limpar recibo invalido.
+    }
     return null;
   }
 };

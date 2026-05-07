@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useDeferredValue, useEffect, useState, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/useUser';
 import { auth, db } from '../services/firebaseConfig';
@@ -51,6 +51,7 @@ export default function Home() {
   const [modalOpen, setModalOpen] = useState(false);
   const [pendingEstado, setPendingEstado] = useState(null);
   const [busca, setBusca] = useState('');
+  const buscaDiferida = useDeferredValue(busca);
   
   // ESTADO PARA O TOUR NA HOME
   const [isTourOpen, setIsTourOpen] = useState(false);
@@ -78,7 +79,7 @@ export default function Home() {
   const selecaoInicial = estadoSelecionado ? LISTA_ESTADOS.filter(estado => estado.sigla === estadoSelecionado) : [];
 
   const listaExibida = useMemo(() => {
-    const termo = normalizarBusca(busca);
+    const termo = normalizarBusca(buscaDiferida);
     if (!termo) return LISTA_ESTADOS;
 
     return LISTA_ESTADOS.filter((estado) => {
@@ -88,7 +89,7 @@ export default function Home() {
 
       return nome.includes(termo) || sigla.includes(termo) || nomeCompleto.includes(termo);
     });
-  }, [busca]);
+  }, [buscaDiferida]);
 
   const handleConfirmar = async (selecionados) => {
     flowLog('home.confirm-state.start', {
@@ -173,7 +174,9 @@ export default function Home() {
       navigate(BALLOT_ROUTES.deputadoFederal, { state: { bypassVoteRedirect: true } });
     } catch (e) {
       flowError('home.change-state.local-error', e, { novoEstado });
-      console.error("Erro ao salvar estado: ", e);
+      if (import.meta.env.DEV) {
+        console.error("Erro ao salvar estado: ", e);
+      }
     } finally {
       setLoading(false);
     }

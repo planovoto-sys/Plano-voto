@@ -1,15 +1,19 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { auth, db } from '../services/firebaseConfig';
-import { collection, documentId, query, where, getDocs } from 'firebase/firestore';
+import React, { useState, useEffect, useMemo, useDeferredValue } from 'react';
+import { auth } from '../services/firebaseConfig';
 import { useUser } from '../contexts/useUser';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
-  ACTIVE_ELECTION_ID,
   getBallotEstado,
   getVotingErrorMessage,
   readBallotDraft,
   saveBallotStepSelection
 } from '../services/votingService';
+import {
+  fetchCandidatesByOffice,
+  fetchCandidateTallies,
+  readCachedCandidatesByOffice,
+  readCachedTallies
+} from '../services/candidateService';
 import { flowError, flowLog, flowWarn } from '../services/debugFlow';
 import SelectBase from '../components/SelectBase';
 import ConfirmModal from '../components/ConfirmModal';
@@ -39,26 +43,6 @@ const calculateChance = (selectedByUsers, averageElectedVotes) => {
   return Math.max(0, Math.min(100, Math.round((selectedByUsers / averageElectedVotes) * 100)));
 };
 
-const fetchCandidateTallies = async (candidateIds) => {
-  const tallies = new Map();
-  const uniqueIds = [...new Set(candidateIds)].filter(Boolean);
-
-  for (let index = 0; index < uniqueIds.length; index += 10) {
-    const chunk = uniqueIds.slice(index, index + 10);
-    const talliesQuery = query(
-      collection(db, 'elections', ACTIVE_ELECTION_ID, 'candidate_tallies'),
-      where(documentId(), 'in', chunk)
-    );
-
-    const talliesSnap = await getDocs(talliesQuery);
-    talliesSnap.forEach((tallyDoc) => {
-      tallies.set(tallyDoc.id, tallyDoc.data());
-    });
-  }
-
-  return tallies;
-};
-
 const normalizeSearch = (value) => (
   value
     .normalize('NFD')
@@ -83,7 +67,9 @@ export default function EscolherCandidatos({
 
   const [todosCandidatos, setTodosCandidatos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [erroCarregamento, setErroCarregamento] = useState('');
   const [busca, setBusca] = useState('');
+  const buscaDiferida = useDeferredValue(busca);
   const [filtroLista, setFiltroLista] = useState('reeleger');
   const [selecionadosNaTela, setSelecionadosNaTela] = useState([]);
   const [modalAviso, setModalAviso] = useState({ aberto: false, mensagem: '' });
@@ -123,21 +109,11 @@ export default function EscolherCandidatos({
   }, [cargo, chaveGrupo, estadoDoFluxo, navigate, userId, userLoading]);
 
   useEffect(() => {
-    const fetchDados = async () => {
-      setLoading(true);
-      try {
-        const qTodos = query(collection(db, 'candidatos'), where('Cargo', '==', cargo));
-        const snapTodos = await getDocs(qTodos);
-        let tallies = new Map();
+    let cancelled = false;
 
-        try {
-          tallies = await fetchCandidateTallies(snapTodos.docs.map((candidateDoc) => candidateDoc.id));
-        } catch (error) {
-          flowWarn('candidates.tallies.fetch-error', { cargo, chaveGrupo, message: error?.message });
-        }
-
-        const lista = snapTodos.docs.map((candidateDoc) => {
-          const d = candidateDoc.data();
+    const buildCandidateList = (candidateDocs, tallies, source) => {
+      const lista = candidateDocs.map((candidateDoc) => {
+          const d = candidateDoc;
           const tally = tallies.get(candidateDoc.id) || {};
           const valCand = d['Nota candidato'];
           const valPart = d['Nota partido'];
@@ -186,17 +162,60 @@ export default function EscolherCandidatos({
         const rankingTotal = lista.length;
         const listaComRanking = lista.map((candidate) => ({ ...candidate, rankingTotal }));
 
-        flowLog('candidates.fetch.success', { cargo, chaveGrupo, total: listaComRanking.length });
+        if (cancelled) return;
+
+        flowLog('candidates.fetch.success', {
+          cargo,
+          chaveGrupo,
+          total: listaComRanking.length,
+          source
+        });
         setTodosCandidatos(listaComRanking);
+        setErroCarregamento('');
+        setLoading(false);
+    };
+
+    const fetchDados = async () => {
+      setLoading(true);
+      setErroCarregamento('');
+
+      const cachedCandidates = readCachedCandidatesByOffice(cargo);
+      if (cachedCandidates?.value?.length) {
+        const cachedTallies = readCachedTallies(cachedCandidates.value.map((candidateDoc) => candidateDoc.id));
+        buildCandidateList(cachedCandidates.value, cachedTallies, cachedCandidates.isFresh ? 'cache' : 'stale-cache');
+      }
+
+      try {
+        const candidateDocs = cachedCandidates?.isFresh
+          ? cachedCandidates.value
+          : await fetchCandidatesByOffice(cargo);
+        let tallies = readCachedTallies(candidateDocs.map((candidateDoc) => candidateDoc.id));
+
+        try {
+          tallies = await fetchCandidateTallies(candidateDocs.map((candidateDoc) => candidateDoc.id));
+        } catch (error) {
+          flowWarn('candidates.tallies.fetch-error', { cargo, chaveGrupo, message: error?.message });
+        }
+
+        buildCandidateList(candidateDocs, tallies, cachedCandidates?.isFresh ? 'cache-refresh' : 'network');
       } catch (error) {
         flowError('candidates.fetch.error', error, { cargo, chaveGrupo });
-        console.error('Erro ao buscar candidatos:', error);
+
+        if (!cancelled && !cachedCandidates?.value?.length) {
+          setErroCarregamento('Nao foi possivel carregar os candidatos. Verifique sua conexao e tente novamente.');
+          setTodosCandidatos([]);
+          setLoading(false);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     fetchDados();
+
+    return () => {
+      cancelled = true;
+    };
   }, [cargo, chaveBanco, chaveGrupo]);
 
   useEffect(() => {
@@ -226,18 +245,20 @@ export default function EscolherCandidatos({
     };
   }, [cargo, userId, estadoDoFluxo, todosCandidatos, chaveGrupo]);
 
-  const candidatosFiltrados = useMemo(() => {
+  const candidatosDoEstado = useMemo(() => {
     const meuEstado = estadoDoFluxo?.replace(/[\s\u00A0]+/g, '') || '';
-    const filtrados = todosCandidatos.filter((candidate) => (
+    return todosCandidatos.filter((candidate) => (
       candidate.ufLimpa === meuEstado || candidate.ufLimpa === 'TODOS'
     ));
+  }, [todosCandidatos, estadoDoFluxo]);
 
+  const candidatosFiltrados = useMemo(() => {
     if (filtroLista === 'renovar') {
-      return filtrados.sort((a, b) => b.notaFinal - a.notaFinal);
+      return [...candidatosDoEstado].sort((a, b) => (a.Nome || '').localeCompare(b.Nome || ''));
     }
 
-    return filtrados.sort((a, b) => a.classificacaoNum - b.classificacaoNum);
-  }, [todosCandidatos, estadoDoFluxo, filtroLista]);
+    return [...candidatosDoEstado].sort((a, b) => b.notaFinal - a.notaFinal);
+  }, [candidatosDoEstado, filtroLista]);
 
   const selectedCandidateIdsInOtherSteps = useMemo(() => {
     if (!userId) return new Set();
@@ -259,13 +280,14 @@ export default function EscolherCandidatos({
       disponiveis = disponiveis.filter((candidate) => candidate.temNotaCandidato);
     }
 
-    const termo = normalizeSearch(busca);
+    const termo = normalizeSearch(buscaDiferida);
     if (termo) {
       disponiveis = disponiveis.filter((candidate) => {
         const nome = normalizeSearch(candidate.Nome || '');
         const partido = normalizeSearch(candidate.Partido || '');
+        const numero = normalizeSearch(candidate.Numero || candidate.numero || '');
 
-        return nome.includes(termo) || partido.includes(termo);
+        return nome.includes(termo) || partido.includes(termo) || numero.includes(termo);
       });
     }
 
@@ -273,7 +295,21 @@ export default function EscolherCandidatos({
       ...candidate,
       isAlreadyChosen: selectedCandidateIdsInOtherSteps.has(candidate.id)
     }));
-  }, [candidatosFiltrados, filtroLista, busca, selectedCandidateIdsInOtherSteps]);
+  }, [candidatosFiltrados, filtroLista, buscaDiferida, selectedCandidateIdsInOtherSteps]);
+
+  const listaDestaque = useMemo(() => (
+    [...candidatosDoEstado]
+      .filter((candidate) => candidate.temNotaCandidato)
+      .sort((a, b) => {
+        const scoreDiff = b.notaFinal - a.notaFinal;
+        if (scoreDiff !== 0) return scoreDiff;
+        return b.chance - a.chance;
+      })
+      .map((candidate) => ({
+        ...candidate,
+        isAlreadyChosen: selectedCandidateIdsInOtherSteps.has(candidate.id)
+      }))
+  ), [candidatosDoEstado, selectedCandidateIdsInOtherSteps]);
 
   const persistirEtapa = (listaFinalDaTela, { markCompleted = false } = {}) => {
     if (!userId) {
@@ -335,6 +371,8 @@ export default function EscolherCandidatos({
         titulo={tituloEtapa}
         subtitulo={subtitulo}
         dados={listaExibida}
+        highlightDados={listaDestaque}
+        emptyMessage={erroCarregamento || 'Nenhum candidato encontrado.'}
         limiteSelecao={null}
         selecaoInicial={selecionadosNaTela}
         carregando={userLoading || loading}

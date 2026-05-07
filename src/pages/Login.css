@@ -205,14 +205,15 @@
     margin: 0;
     min-height: auto;
     border-radius: 0;
-    background: var(--desktop-primary-strong);
-    color: #ffffff;
+    border-bottom: 1px solid var(--desktop-border);
+    background: var(--header-bg);
+    color: var(--text-main);
     align-items: flex-start;
     padding: 24px var(--screen-gutter);
   }
 
   .login-header h1 {
-    color: #ffffff;
+    color: var(--text-main);
     font-size: clamp(30px, 3vw, 42px);
     letter-spacing: 1.8px;
   }
@@ -221,40 +222,50 @@
     width: min(100%, 1180px);
     min-height: 0;
     margin: 0 auto;
-    padding: 42px var(--screen-gutter);
+    padding: clamp(34px, 5vw, 60px) var(--screen-gutter);
     display: grid;
-    grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
-    grid-template-rows: auto 1fr auto;
-    gap: 18px 34px;
-    align-items: start;
+    grid-template-columns: minmax(300px, 0.72fr) minmax(420px, 1.28fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "intro video"
+      "start video"
+      "action video";
+    gap: 22px clamp(34px, 5vw, 70px);
+    align-items: stretch;
   }
 
   .login-copy-block {
     margin: 0;
   }
 
+  .login-copy-block:not(.login-copy-block--start) {
+    grid-area: intro;
+    align-self: end;
+  }
+
   .login-copy-block h2 {
-    font-size: 23px;
+    font-size: clamp(25px, 2.5vw, 38px);
     letter-spacing: 0.7px;
+    line-height: 1.05;
   }
 
   .login-copy-block p {
-    margin-top: 6px;
-    color: #65716b;
-    font-size: 14px;
+    margin-top: 10px;
+    color: #6f7378;
+    font-size: clamp(15px, 1.2vw, 18px);
     letter-spacing: 0.2px;
+    line-height: 1.35;
   }
 
   .video-card {
-    grid-column: 1;
-    grid-row: 2 / span 2;
-    height: min(58vh, 560px);
-    min-height: 390px;
+    grid-area: video;
+    height: min(62vh, 620px);
+    min-height: 420px;
     margin: 0;
     border: 1px solid var(--desktop-border);
     border-radius: 8px;
     background: #ffffff;
-    box-shadow: 0 16px 42px rgba(23, 59, 42, 0.08);
+    box-shadow: 0 16px 42px rgba(34, 36, 38, 0.08);
   }
 
   .play-button {
@@ -263,18 +274,16 @@
   }
 
   .login-copy-block--start {
-    grid-column: 2;
-    grid-row: 2;
+    grid-area: start;
     align-self: end;
     margin-top: 0;
-    padding-top: 24px;
-    border-top: 4px solid var(--desktop-primary);
+    padding-top: 26px;
+    border-top: 4px solid #cfd3d6;
   }
 
   .btn-comecar {
-    grid-column: 2;
-    grid-row: 3;
-    height: 72px;
+    grid-area: action;
+    height: 76px;
     margin-top: 0;
     border-radius: 8px;
     background: var(--desktop-primary);
@@ -302,7 +311,7 @@
   }
 
   .login-footer strong {
-    color: var(--desktop-primary-strong);
+    color: var(--text-main);
     font-size: 15px;
     letter-spacing: 0.5px;
   }
@@ -312,17 +321,25 @@
   .login-main {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto auto auto;
-  }
-
-  .video-card,
-  .login-copy-block--start,
-  .btn-comecar {
-    grid-column: 1;
-    grid-row: auto;
+    grid-template-areas:
+      "intro"
+      "video"
+      "start"
+      "action";
+    gap: 18px;
   }
 
   .video-card {
-    height: 430px;
+    height: min(46vh, 460px);
     min-height: 360px;
+  }
+
+  .login-copy-block:not(.login-copy-block--start),
+  .login-copy-block--start {
+    align-self: start;
+  }
+
+  .login-copy-block h2 {
+    font-size: 28px;
   }
 }

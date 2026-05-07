@@ -97,7 +97,9 @@ export const UserProvider = ({ children }) => {
           }
         } catch (error) {
           flowError('user.ensure.error', error, { userId: user.uid });
-          console.error("Erro ao criar usuário:", error);
+          if (import.meta.env.DEV) {
+            console.error("Erro ao criar usuário:", error);
+          }
         }
       };
 
@@ -117,7 +119,9 @@ export const UserProvider = ({ children }) => {
         setDataLoading(false);
       }, (error) => {
         flowError('user.snapshot.error', error, { userId: user.uid });
-        console.error("Erro no contexto de usuário:", error);
+        if (import.meta.env.DEV) {
+          console.error("Erro no contexto de usuário:", error);
+        }
         setDataLoading(false);
       });
 
@@ -134,7 +138,9 @@ export const UserProvider = ({ children }) => {
         );
       }, (error) => {
         flowError('eligibility.snapshot.error', error, { userId: user.uid });
-        console.error("Erro ao acompanhar elegibilidade:", error);
+        if (import.meta.env.DEV) {
+          console.error("Erro ao acompanhar elegibilidade:", error);
+        }
         setUserEligibility({ status: 'unknown', has_voted: false, error: true });
       });
 

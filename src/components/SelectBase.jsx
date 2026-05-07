@@ -1,8 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import ConfirmModal from './ConfirmModal';
 import BottomNavigation from './BottomNavigation';
+import AppFooter from './AppFooter';
 import { flowLog, flowWarn } from '../services/debugFlow';
 import './SelectBase.css';
+
+const INITIAL_CANDIDATE_RENDER_LIMIT = 80;
+const CANDIDATE_RENDER_INCREMENT = 80;
 
 const formatScore = (value) => {
   const numericValue = Number(value);
@@ -13,6 +17,8 @@ const getCandidateName = (candidate = {}) => candidate.Nome || candidate.nome ||
 const getCandidateParty = (candidate = {}) => candidate.Partido || candidate.partido || '';
 
 const getCandidateScore = (candidate = {}) => {
+  if (candidate.temNotaCandidato === false) return 0;
+
   const value = candidate.notaFinal ?? candidate.nota_final ?? candidate['Nota candidato'] ?? candidate['Nota partido'] ?? 0;
   const numericValue = Number(value);
   return Number.isFinite(numericValue) ? numericValue : 0;
@@ -38,6 +44,7 @@ const getCandidateTone = (candidate = {}) => {
   const chance = getCandidateChance(candidate);
 
   if (candidate.isAlreadyChosen || chance >= 100) return 'neutral';
+  if (score <= 0) return 'new';
   if (score < 7) return 'danger';
   return 'success';
 };
@@ -53,7 +60,7 @@ const getScreenCopy = ({ variant, titulo, subtitulo, currentStep }) => {
   if (variant === 'office-senado') {
     return {
       title: currentStep === 'senador2' ? 'SENADOR 2' : 'SENADOR 1',
-      subtitle: 'Escolha 1 candidato'
+      subtitle: currentStep === 'senador2' ? 'Escolha o segundo senador' : 'Escolha o primeiro senador'
     };
   }
 
@@ -94,7 +101,8 @@ function CandidateCard({ candidate, highlight = false, selected = false, onSelec
   const party = getCandidateParty(candidate);
   const score = getCandidateScore(candidate);
   const chance = getCandidateChance(candidate);
-  const isBlocked = candidate.isAlreadyChosen || chance >= 100;
+  const hasScore = score > 0;
+  const isBlocked = candidate.isAlreadyChosen;
 
   return (
     <button
@@ -104,12 +112,15 @@ function CandidateCard({ candidate, highlight = false, selected = false, onSelec
       aria-disabled={candidate.isAlreadyChosen ? 'true' : undefined}
     >
       <span className="candidate-card__identity">
+        {highlight && <span className="candidate-card__badge">Destaque</span>}
+        {!highlight && !hasScore && !candidate.isAlreadyChosen && <span className="candidate-card__badge candidate-card__badge--new">Sem nota</span>}
+        {candidate.isAlreadyChosen && <span className="candidate-card__badge candidate-card__badge--neutral">Já escolhido</span>}
         <strong>{name}</strong>
         <small>{party}</small>
       </span>
 
       <span className="candidate-card__metrics">
-        <MetricCircle label="Nota" value={formatScore(score)} tone={tone} />
+        <MetricCircle label="Nota" value={hasScore ? formatScore(score) : '--'} tone={tone} />
         <MetricCircle label="Chance" value={chance} tone={tone} />
       </span>
     </button>
@@ -126,6 +137,9 @@ export default function SelectBase({
   onConfirmar,
   onLimiteAtingido,
   onVoltar,
+  mostrarBusca = false,
+  valorBusca = '',
+  onChangeBusca,
   linhasVisiveis = 5,
   etapa,
   currentStep,
@@ -135,9 +149,13 @@ export default function SelectBase({
   subNavigationItems = [],
   activeSubNavigationId = '',
   onSubNavigationSelect,
-  variant = ''
+  highlightDados,
+  variant = '',
+  emptyMessage = 'Nenhum resultado encontrado.',
+  renderItem
 }) {
   const [selecionados, setSelecionados] = useState(selecaoInicial);
+  const [candidateRenderLimit, setCandidateRenderLimit] = useState(INITIAL_CANDIDATE_RENDER_LIMIT);
   const [modalMalAvaliado, setModalMalAvaliado] = useState({ aberto: false, item: null });
   const [modalAltaChance, setModalAltaChance] = useState({ aberto: false, item: null });
   const [modalCandidatoRepetido, setModalCandidatoRepetido] = useState({ aberto: false, item: null });
@@ -158,26 +176,42 @@ export default function SelectBase({
 
   const isHomeState = variant === 'home-state';
   const isCandidateOffice = variant === 'office-deputado' || variant === 'office-senado';
+  const highlightSource = highlightDados || dados;
   const effectiveLimit = isCandidateOffice ? 1 : limiteSelecao;
   const hasSelectionLimit = Number.isFinite(effectiveLimit) && effectiveLimit > 0;
   const visibleRows = Number.isFinite(linhasVisiveis) ? linhasVisiveis : 5;
   const screenCopy = getScreenCopy({ variant, titulo, subtitulo, currentStep, etapa });
 
   const highlightCandidate = useMemo(() => {
-    if (!isCandidateOffice || dados.length === 0) return null;
+    if (!isCandidateOffice || highlightSource.length === 0) return null;
 
-    const selectableCandidates = dados.filter((candidate) => getCandidateName(candidate) && !candidate.isAlreadyChosen);
-    const candidates = selectableCandidates.length > 0
-      ? [...selectableCandidates]
-      : [...dados].filter((candidate) => getCandidateName(candidate));
+    const candidates = highlightSource.filter((candidate) => (
+      getCandidateName(candidate) &&
+      !candidate.isAlreadyChosen &&
+      getCandidateScore(candidate) >= 7 &&
+      getCandidateChance(candidate) < 100
+    ));
+
     candidates.sort((a, b) => {
       const scoreDiff = getCandidateScore(b) - getCandidateScore(a);
       if (scoreDiff !== 0) return scoreDiff;
       return getCandidateChance(b) - getCandidateChance(a);
     });
 
-    return candidates.find((candidate) => getCandidateScore(candidate) >= 7) || candidates[0] || null;
-  }, [dados, isCandidateOffice]);
+    return candidates[0] || null;
+  }, [highlightSource, isCandidateOffice]);
+
+  const secondaryCandidates = useMemo(() => (
+    isCandidateOffice
+      ? dados.filter((candidate) => candidate.id !== highlightCandidate?.id)
+      : []
+  ), [dados, highlightCandidate?.id, isCandidateOffice]);
+
+  const visibleSecondaryCandidates = useMemo(() => (
+    secondaryCandidates.slice(0, candidateRenderLimit)
+  ), [candidateRenderLimit, secondaryCandidates]);
+
+  const hasMoreCandidates = visibleSecondaryCandidates.length < secondaryCandidates.length;
 
   const commitSelection = (nextSelecionados, { autoConfirm = false, completed = false } = {}) => {
     setSelecionados(nextSelecionados);
@@ -231,7 +265,7 @@ export default function SelectBase({
       return;
     }
 
-    if (isCandidateOffice && getCandidateScore(item) < 7) {
+    if (isCandidateOffice && getCandidateScore(item) > 0 && getCandidateScore(item) < 7) {
       setModalMalAvaliado({ aberto: true, item });
       return;
     }
@@ -261,30 +295,49 @@ export default function SelectBase({
     if (onVoltar) onVoltar(selecionados);
   };
 
-  const handleHeaderConfirm = () => {
-    if (onConfirmar && selecionados.length > 0) onConfirmar(selecionados);
+  const handleSearchChange = (event) => {
+    if (onChangeBusca) onChangeBusca(event.target.value);
+  };
+
+  const renderSearchField = (className = '') => {
+    if (!mostrarBusca) return null;
+
+    return (
+      <label className={`select-search-field ${className}`}>
+        <span>Buscar</span>
+        <input
+          type="search"
+          value={valorBusca}
+          onChange={handleSearchChange}
+          placeholder={isHomeState ? 'Buscar estado' : 'Buscar candidato, partido ou número'}
+        />
+      </label>
+    );
   };
 
   const renderStateList = () => (
-    <div className="state-card-list" id="tour-lista" style={{ '--visible-rows': visibleRows }}>
-      {dados.length > 0 ? (
-        dados.map((item) => {
-          const isSelected = selecionados.some((selectedItem) => selectedItem.id === item.id);
-          return (
-            <button
-              key={item.id}
-              className={`state-card ${isSelected ? 'is-selected' : ''}`}
-              type="button"
-              onClick={() => handleStateSelect(item)}
-            >
-              <span>{item.sigla || item.nome}</span>
-            </button>
-          );
-        })
-      ) : (
-        <div className="no-data">Nenhum resultado encontrado.</div>
-      )}
-    </div>
+    <section className="state-selection-panel" aria-label="Escolha seu estado">
+      {renderSearchField('select-search-field--state')}
+      <div className="state-card-list" id="tour-lista" style={{ '--visible-rows': visibleRows }}>
+        {dados.length > 0 ? (
+          dados.map((item) => {
+            const isSelected = selecionados.some((selectedItem) => selectedItem.id === item.id);
+            return (
+              <button
+                key={item.id}
+                className={`state-card ${isSelected ? 'is-selected' : ''}`}
+                type="button"
+                onClick={() => handleStateSelect(item)}
+              >
+                {renderItem ? renderItem(item) : <span>{item.sigla || item.nome}</span>}
+              </button>
+            );
+          })
+        ) : (
+          <div className="no-data">{emptyMessage}</div>
+        )}
+      </div>
+    </section>
   );
 
   const renderCandidateList = () => (
@@ -303,7 +356,7 @@ export default function SelectBase({
             onSelect={() => handleSelect(highlightCandidate)}
           />
         ) : (
-          <div className="no-data">Nenhum candidato encontrado.</div>
+          <div className="no-data">{emptyMessage}</div>
         )}
       </section>
 
@@ -313,42 +366,54 @@ export default function SelectBase({
           <p>Candidatos ordenados da maior para menor nota</p>
         </div>
 
-        {subNavigationItems.length > 0 && (
-          <nav className="candidate-filter-tabs" aria-label="Filtro de candidatos">
-            {subNavigationItems.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                className={`candidate-filter-tabs__item ${item.id === activeSubNavigationId ? 'is-active' : ''}`}
-                onClick={() => handleSubNavigation(item)}
-              >
-                {getSubNavLabel(item)}
-              </button>
-            ))}
-          </nav>
-        )}
+        <div className="candidate-list-tools">
+          {subNavigationItems.length > 0 && (
+            <nav className="candidate-filter-tabs" aria-label="Filtro de candidatos">
+              {subNavigationItems.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={`candidate-filter-tabs__item ${item.id === activeSubNavigationId ? 'is-active' : ''}`}
+                  onClick={() => handleSubNavigation(item)}
+                  title={item.mode === 'renovar' ? 'Renovação: candidatos sem nota' : 'Reeleição: candidatos com nota'}
+                >
+                  {getSubNavLabel(item)}
+                </button>
+              ))}
+            </nav>
+          )}
+          {renderSearchField('select-search-field--candidates')}
+        </div>
 
         <div className="candidate-card-list">
-          {dados.filter((candidate) => candidate.id !== highlightCandidate?.id).length > 0 ? (
-            dados
-              .filter((candidate) => candidate.id !== highlightCandidate?.id)
-              .map((candidate) => (
+          {secondaryCandidates.length > 0 ? (
+            visibleSecondaryCandidates.map((candidate) => (
               <CandidateCard
                 key={candidate.id}
                 candidate={candidate}
                 selected={selecionados.some((item) => item.id === candidate.id)}
                 onSelect={() => handleSelect(candidate)}
               />
-              ))
+            ))
           ) : (
-            <div className="no-data">Nenhum candidato encontrado.</div>
+            <div className="no-data">{emptyMessage}</div>
           )}
         </div>
+
+        {hasMoreCandidates && (
+          <button
+            className="candidate-load-more"
+            type="button"
+            onClick={() => setCandidateRenderLimit((limit) => limit + CANDIDATE_RENDER_INCREMENT)}
+          >
+            Mostrar mais candidatos
+          </button>
+        )}
       </section>
     </div>
   );
 
-  if (carregando) return <div className="loading">CARREGANDO...</div>;
+  if (carregando) return <div className="loading" role="status" aria-live="polite">CARREGANDO...</div>;
 
   return (
     <div className={`select-base-container prototype-page variant-${variant}`}>
@@ -364,12 +429,7 @@ export default function SelectBase({
           <div className="app-page-header__actions">
             {currentStep !== 'estado' && onVoltar && (
               <button className="app-header-action app-header-action--secondary" type="button" onClick={handleHeaderBack}>
-                Voltar
-              </button>
-            )}
-            {onConfirmar && selecionados.length > 0 && (
-              <button className="app-header-action" type="button" onClick={handleHeaderConfirm}>
-                Confirmar
+                ← Voltar
               </button>
             )}
           </div>
@@ -378,6 +438,7 @@ export default function SelectBase({
 
       <main className="prototype-scroll select-base__scroll">
         {isHomeState ? renderStateList() : renderCandidateList()}
+        <AppFooter className="app-footer--mobile-only" />
       </main>
 
       <BottomNavigation currentStep={currentStep} placement="footer" />

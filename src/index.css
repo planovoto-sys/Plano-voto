@@ -5,11 +5,11 @@
   --app-height: 100dvh;
   --page-bg: #ffffff;
   --header-bg: #e9ecef;
-  --desktop-bg: #f4f7f6;
+  --desktop-bg: #f4f4f4;
   --desktop-primary: #24593d;
   --desktop-primary-strong: #173b2a;
   --desktop-surface: #ffffff;
-  --desktop-border: #dce5e0;
+  --desktop-border: #dedede;
   --card-bg: #f5f5f5;
   --nav-line: #e8ebee;
   --text-strong: #111111;
@@ -149,9 +149,9 @@ body {
 }
 
 .app-header-action--secondary {
-  background: rgba(255, 255, 255, 0.14);
-  color: #ffffff;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.32);
+  background: #f7f8f9;
+  color: var(--text-main);
+  box-shadow: inset 0 0 0 1px #cfd3d6;
 }
 
 .loading {
@@ -238,6 +238,10 @@ body {
 
 .metric-circle--danger {
   color: var(--tone-danger);
+}
+
+.metric-circle--new {
+  color: #69746f;
 }
 
 @media (max-width: 420px) {
@@ -346,8 +350,9 @@ body {
     min-height: auto;
     margin: 0;
     border-radius: 0;
-    background: var(--desktop-primary-strong);
-    color: #ffffff;
+    border-bottom: 1px solid var(--desktop-border);
+    background: var(--header-bg);
+    color: var(--text-main);
     display: grid;
     grid-template-columns: minmax(220px, 0.68fr) minmax(0, 1.32fr);
     align-items: center;
@@ -357,14 +362,14 @@ body {
   }
 
   .prototype-page > .app-page-header h1 {
-    color: #ffffff;
+    color: var(--text-main);
     font-size: clamp(24px, 2.6vw, 38px);
     letter-spacing: 1.4px;
   }
 
   .prototype-page > .app-page-header p {
     margin-top: 7px;
-    color: rgba(255, 255, 255, 0.78);
+    color: #6f7378;
     font-size: 14px;
     letter-spacing: 0.4px;
   }

@@ -14,6 +14,58 @@
   padding-bottom: 48px;
 }
 
+.state-selection-panel {
+  display: grid;
+}
+
+.state-centered-name {
+  display: grid;
+  gap: 0;
+  justify-items: center;
+}
+
+.state-full-name {
+  display: none;
+}
+
+.select-search-field {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  margin: 0 0 12px;
+}
+
+.select-search-field span {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+}
+
+.select-search-field input {
+  width: 100%;
+  height: 48px;
+  border: 1px solid var(--nav-line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--text-strong);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 0 16px;
+  outline: 0;
+}
+
+.select-search-field input:focus {
+  border-color: var(--desktop-primary);
+  box-shadow: 0 0 0 3px rgba(36, 89, 61, 0.12);
+}
+
+.select-search-field input::placeholder {
+  color: #9ca2a7;
+}
+
 .state-card {
   width: 100%;
   height: 80px;
@@ -42,7 +94,8 @@
 }
 
 .state-card.is-selected {
-  background: #eef1f3;
+  background: #eef8f2;
+  color: var(--desktop-primary-strong);
 }
 
 .candidate-flow {
@@ -92,6 +145,12 @@
   margin: 10px 0 12px;
 }
 
+.candidate-list-tools {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
 .candidate-filter-tabs__item {
   height: 44px;
   min-width: 115px;
@@ -111,13 +170,34 @@
 }
 
 .candidate-filter-tabs__item.is-active {
-  border-color: #111111;
+  border-color: var(--desktop-primary);
+  background: #eef8f2;
+  color: var(--desktop-primary-strong);
 }
 
 .candidate-card-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.candidate-load-more {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 12px;
+  border: 1px solid rgba(17, 17, 17, 0.18);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--text-strong);
+  font-family: var(--font-family);
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.candidate-load-more:focus-visible {
+  outline: 3px solid rgba(48, 102, 67, 0.28);
+  outline-offset: 2px;
 }
 
 .prototype-candidate-card {
@@ -174,11 +254,20 @@
   color: var(--tone-danger);
 }
 
+.candidate-card--new {
+  background: #ffffff;
+  color: #69746f;
+}
+
 .candidate-card__identity {
   min-width: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
+}
+
+.candidate-card__badge {
+  display: none;
 }
 
 .candidate-card__identity strong {
@@ -271,6 +360,10 @@
 
 .metric-circle--danger {
   color: var(--tone-danger);
+}
+
+.metric-circle--new {
+  color: #69746f;
 }
 
 @media (max-width: 420px) {
@@ -390,16 +483,36 @@
   }
 
   .candidate-flow,
+  .state-selection-panel,
   .state-card-list {
     width: min(100%, 1180px);
     margin: 0 auto;
   }
 
+  .state-selection-panel {
+    width: min(100%, 980px);
+    border: 1px solid var(--desktop-border);
+    border-radius: 8px;
+    background: #ffffff;
+    padding: clamp(22px, 3vw, 34px);
+    box-shadow: 0 16px 42px rgba(34, 36, 38, 0.06);
+  }
+
   .state-card-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(auto-fill, minmax(136px, 1fr));
+    gap: 18px;
     padding-bottom: 0;
+  }
+
+  .select-search-field {
+    margin-bottom: 18px;
+  }
+
+  .select-search-field--state {
+    width: min(100%, 620px);
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .state-card {
@@ -408,19 +521,46 @@
     border: 1px solid var(--desktop-border);
     border-radius: 8px;
     background: var(--desktop-surface);
-    box-shadow: 0 12px 28px rgba(23, 59, 42, 0.06);
+    box-shadow: 0 12px 28px rgba(34, 36, 38, 0.06);
     transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
   }
 
   .state-card:hover {
-    border-color: rgba(36, 89, 61, 0.45);
-    box-shadow: 0 16px 36px rgba(23, 59, 42, 0.1);
+    border-color: rgba(74, 74, 74, 0.32);
+    box-shadow: 0 16px 36px rgba(34, 36, 38, 0.1);
     transform: translateY(-1px);
   }
 
   .state-card.is-selected {
     border-color: var(--desktop-primary);
     background: #eef8f2;
+    color: var(--desktop-primary-strong);
+    box-shadow: 0 16px 36px rgba(36, 89, 61, 0.14);
+  }
+
+  .state-card .state-centered-name {
+    gap: 8px;
+  }
+
+  .state-card .state-sigla {
+    font-size: 30px;
+    font-weight: 900;
+  }
+
+  .state-card .state-full-name {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    color: #6d7772;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.15;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .state-card.is-selected .state-full-name {
+    color: var(--desktop-primary-strong);
   }
 
   .candidate-flow {
@@ -435,13 +575,19 @@
 
   .candidate-list-section {
     display: grid;
-    grid-template-columns: minmax(180px, 220px) minmax(0, 1fr);
-    gap: 16px 28px;
-    align-items: start;
+    gap: 16px;
   }
 
-  .candidate-list-section .prototype-section-heading {
-    grid-column: 1 / -1;
+  .candidate-list-tools {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    grid-template-columns: minmax(260px, auto) minmax(280px, 1fr);
+    align-items: end;
+    gap: 18px;
+    margin-bottom: 2px;
+    padding: 10px 0 12px;
+    background: var(--desktop-bg);
   }
 
   .prototype-section-heading {
@@ -449,8 +595,19 @@
   }
 
   .prototype-section-heading h2 {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
     font-size: 20px;
     letter-spacing: 0.8px;
+  }
+
+  .prototype-section-heading h2::before {
+    content: '';
+    width: 4px;
+    height: 22px;
+    border-radius: 999px;
+    background: var(--desktop-primary);
   }
 
   .prototype-section-heading p {
@@ -460,26 +617,22 @@
   }
 
   .candidate-filter-tabs {
-    position: sticky;
-    top: 22px;
-    grid-column: 1;
-    grid-row: 2;
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row;
+    align-items: center;
     gap: 10px;
     margin: 0;
-    padding-left: 14px;
-    border-left: 4px solid var(--desktop-primary);
+    padding: 0;
+    border: 0;
   }
 
   .candidate-filter-tabs__item {
-    width: 100%;
+    width: auto;
     min-width: 0;
     height: 48px;
     border-color: var(--desktop-border);
     border-radius: 8px;
-    justify-content: flex-start;
-    padding: 0 16px;
+    justify-content: center;
+    padding: 0 22px;
     background: var(--desktop-surface);
     font-weight: 700;
   }
@@ -490,9 +643,11 @@
     color: var(--desktop-primary-strong);
   }
 
+  .select-search-field--candidates {
+    margin: 0;
+  }
+
   .candidate-card-list {
-    grid-column: 2;
-    grid-row: 2;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
     gap: 14px;
@@ -508,12 +663,25 @@
     border: 1px solid transparent;
     border-radius: 8px;
     padding: 0 18px 0 20px;
-    box-shadow: 0 10px 24px rgba(23, 59, 42, 0.05);
+    box-shadow: 0 10px 24px rgba(34, 36, 38, 0.05);
     transition: box-shadow 160ms ease, transform 160ms ease, border-color 160ms ease;
   }
 
+  .prototype-candidate-card.is-highlight {
+    min-height: 118px;
+    border-color: rgba(36, 89, 61, 0.34);
+    border-left-width: 6px;
+    box-shadow: 0 18px 44px rgba(36, 89, 61, 0.14);
+  }
+
+  .prototype-candidate-card.candidate-card--new {
+    border-color: #cfd8d2;
+    border-style: dashed;
+  }
+
   .prototype-candidate-card:hover {
-    box-shadow: 0 16px 34px rgba(23, 59, 42, 0.1);
+    border-color: var(--desktop-primary);
+    box-shadow: 0 16px 34px rgba(34, 36, 38, 0.1);
     transform: translateY(-1px);
   }
 
@@ -533,10 +701,45 @@
   .candidate-card__identity small {
     font-size: 13px;
   }
+
+  .candidate-card__badge {
+    width: fit-content;
+    min-height: 24px;
+    border-radius: 999px;
+    background: var(--desktop-primary);
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 9px;
+    margin-bottom: 7px;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.4px;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  .candidate-card__badge--new {
+    border: 1px dashed #bfc7c2;
+    background: #ffffff;
+    color: #69746f;
+  }
+
+  .candidate-card__badge--neutral {
+    border: 1px solid #d2d6d9;
+    background: #f2f4f5;
+    color: #69746f;
+  }
 }
 
 @media (min-width: 1180px) {
   .candidate-card-list {
     grid-template-columns: repeat(2, minmax(360px, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .candidate-card-list {
+    grid-template-columns: repeat(3, minmax(300px, 1fr));
   }
 }

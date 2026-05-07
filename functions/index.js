@@ -13,6 +13,35 @@ const OFFICE_LIMITS = {
   deputado_federal: 1,
   senadores: 2,
 };
+const VALID_STATES = new Set([
+  'AC',
+  'AL',
+  'AM',
+  'AP',
+  'BA',
+  'CE',
+  'DF',
+  'ES',
+  'GO',
+  'MA',
+  'MG',
+  'MS',
+  'MT',
+  'PA',
+  'PB',
+  'PE',
+  'PI',
+  'PR',
+  'RJ',
+  'RN',
+  'RO',
+  'RR',
+  'RS',
+  'SC',
+  'SE',
+  'SP',
+  'TO',
+]);
 
 const makeReceiptCode = (electionId, voteId) => (
   createHash('sha256')
@@ -69,10 +98,23 @@ const normalizeOfficeName = (value) => (
     .toLowerCase()
 );
 
+const normalizeState = (value) => (
+  asString(value)
+    .replace(/[\s\u00A0]+/g, '')
+    .toUpperCase()
+);
+
 const assertCandidateOffice = (candidateId, candidateData, expectedOffice) => {
   const actualOffice = candidateData.Cargo || candidateData.cargo;
   if (normalizeOfficeName(actualOffice) !== normalizeOfficeName(expectedOffice)) {
     throw new HttpsError('invalid-argument', `Candidato ${candidateId} nao pertence ao cargo ${expectedOffice}.`);
+  }
+};
+
+const assertCandidateState = (candidateId, candidateData, expectedState) => {
+  const actualState = normalizeState(candidateData.Estado || candidateData.estado || 'TODOS');
+  if (actualState && actualState !== 'TODOS' && actualState !== expectedState) {
+    throw new HttpsError('invalid-argument', `Candidato ${candidateId} nao pertence ao estado informado.`);
   }
 };
 
@@ -87,14 +129,18 @@ export const castAnonymousVote = onCall({
 
   const payload = request.data || {};
   const electionId = asString(payload.election_id) || ACTIVE_ELECTION_ID;
-  const estado = asString(payload.estado);
+  const estado = normalizeState(payload.estado);
 
   if (electionId !== ACTIVE_ELECTION_ID) {
     throw new HttpsError('invalid-argument', 'Eleicao invalida.');
   }
 
-  if (!estado || estado.length !== 2) {
+  if (!VALID_STATES.has(estado)) {
     throw new HttpsError('invalid-argument', 'Estado invalido.');
+  }
+
+  if (Number(payload.schema_version) !== BALLOT_SCHEMA_VERSION) {
+    throw new HttpsError('invalid-argument', 'Versao do voto invalida.');
   }
 
   const deputadoFederal = assertValidId(payload.offices?.deputado_federal, 'Deputado federal');
@@ -145,6 +191,9 @@ export const castAnonymousVote = onCall({
     assertCandidateOffice(deputadoFederal, candidateData[0], 'Deputado Federal');
     assertCandidateOffice(senadores[0], candidateData[1], 'Senador');
     assertCandidateOffice(senadores[1], candidateData[2], 'Senador');
+    candidateData.forEach((candidate, index) => {
+      assertCandidateState(candidateIds[index], candidate, estado);
+    });
 
     transaction.set(voteRef, {
       schema_version: BALLOT_SCHEMA_VERSION,

@@ -2,6 +2,7 @@ import React from 'react';
 import { auth, firebaseReady, googleProvider } from '../services/firebaseConfig';
 import { signInWithPopup } from 'firebase/auth';
 import { flowError, flowLog } from '../services/debugFlow';
+import AppFooter from '../components/AppFooter';
 import './Login.css';
 
 function Login() {
@@ -17,7 +18,9 @@ function Login() {
       flowLog('login.google.success', { userId: result.user?.uid });
     } catch (error) {
       flowError('login.google.error', error);
-      console.error("Erro ao fazer login:", error);
+      if (import.meta.env.DEV) {
+        console.error("Erro ao fazer login:", error);
+      }
       alert("Falha ao fazer login com o Google.");
     }
   };
@@ -48,10 +51,7 @@ function Login() {
         <button className="btn-comecar" type="button" onClick={handleGoogleLogin}>COMEÇAR</button>
       </main>
 
-      <footer className="login-footer">
-        <strong>meuvoto.org</strong>
-        <span>Escolha seus candidatos com mais clareza.</span>
-      </footer>
+      <AppFooter />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 {
   "short_name": "meuvoto",
   "name": "meuvoto.org",
+  "description": "PWA para organizar escolhas de voto com funcionamento fluido em redes instaveis.",
   "id": "/",
   "lang": "pt-BR",
   "icons": [
@@ -20,6 +21,7 @@
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait-primary",
   "theme_color": "#639863",
   "background_color": "#f4eb93"

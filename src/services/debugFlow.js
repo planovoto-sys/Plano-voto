@@ -1,8 +1,27 @@
 const DEBUG_STORAGE_KEY = 'meuvoto:debug-flow';
 const DEBUG_HISTORY_KEY = 'meuvoto:debug-flow-history';
 const MAX_HISTORY_ITEMS = 80;
+const SENSITIVE_KEY_PATTERN = /(uid|userId|email|candidateIds|candidate_ids|receipt|token|photoURL|profile_image)/i;
+let storageAvailability = null;
 
-const canUseStorage = () => typeof window !== 'undefined' && Boolean(window.localStorage);
+const canUseStorage = () => {
+  if (storageAvailability !== null) return storageAvailability;
+  if (typeof window === 'undefined') {
+    storageAvailability = false;
+    return storageAvailability;
+  }
+
+  try {
+    const testKey = `${DEBUG_STORAGE_KEY}:storage-test`;
+    window.localStorage.setItem(testKey, '1');
+    window.localStorage.removeItem(testKey);
+    storageAvailability = true;
+  } catch {
+    storageAvailability = false;
+  }
+
+  return storageAvailability;
+};
 
 const readDebugFlag = () => {
   if (import.meta.env.DEV || import.meta.env.VITE_FLOW_DEBUG === 'true') return true;
@@ -24,14 +43,30 @@ const readDebugFlag = () => {
 
 export const isFlowDebugEnabled = () => readDebugFlag();
 
+const sanitizePayload = (value) => {
+  if (Array.isArray(value)) {
+    return value.map(sanitizePayload);
+  }
+
+  if (!value || typeof value !== 'object') {
+    return value;
+  }
+
+  return Object.fromEntries(
+    Object.entries(value).map(([key, entryValue]) => [
+      key,
+      SENSITIVE_KEY_PATTERN.test(key) ? '[redigido]' : sanitizePayload(entryValue)
+    ])
+  );
+};
+
 const simplifyError = (error) => {
   if (!error) return null;
 
   return {
     name: error.name,
     code: error.code,
-    message: error.message,
-    stack: error.stack
+    message: error.message
   };
 };
 
@@ -53,39 +88,48 @@ const makeEntry = (stage, payload = {}, level = 'log') => ({
   level,
   stage,
   path: typeof window !== 'undefined' ? window.location.pathname : '',
-  payload
+  payload: sanitizePayload(payload)
 });
 
 export const flowLog = (stage, payload = {}) => {
+  const debugEnabled = isFlowDebugEnabled();
   const entry = makeEntry(stage, payload, 'log');
-  persistHistory(entry);
 
-  if (isFlowDebugEnabled()) {
-    console.log(`[meuvoto-flow] ${stage}`, payload);
+  if (debugEnabled) {
+    persistHistory(entry);
+    console.log(`[meuvoto-flow] ${stage}`, entry.payload);
   }
 };
 
 export const flowWarn = (stage, payload = {}) => {
+  const debugEnabled = isFlowDebugEnabled();
   const entry = makeEntry(stage, payload, 'warn');
-  persistHistory(entry);
 
-  if (isFlowDebugEnabled()) {
-    console.warn(`[meuvoto-flow] ${stage}`, payload);
+  if (debugEnabled) {
+    persistHistory(entry);
+    console.warn(`[meuvoto-flow] ${stage}`, entry.payload);
   }
 };
 
 export const flowError = (stage, error, payload = {}) => {
+  const debugEnabled = isFlowDebugEnabled();
   const entry = makeEntry(stage, {
     ...payload,
     error: simplifyError(error)
   }, 'error');
-  persistHistory(entry);
 
-  console.error(`[meuvoto-flow] ${stage}`, error, payload);
+  if (debugEnabled) {
+    persistHistory(entry);
+  }
+
+  if (debugEnabled || import.meta.env.DEV) {
+    console.error(`[meuvoto-flow] ${stage}`, entry.payload);
+  }
 };
 
 export const installFlowDebugTools = () => {
   if (typeof window === 'undefined' || window.meuVotoDebug) return;
+  if (!import.meta.env.DEV && import.meta.env.VITE_FLOW_DEBUG !== 'true' && !readDebugFlag()) return;
 
   window.meuVotoDebug = {
     enable: () => {
