@@ -49,9 +49,11 @@ function Login() {
         </section>
 
         <button className="btn-comecar" type="button" onClick={handleGoogleLogin}>COMEÇAR</button>
+
+        <AppFooter className="app-footer--login-scroll" />
       </main>
 
-      <AppFooter />
+      <AppFooter className="app-footer--login-fixed" />
     </div>
   );
 }

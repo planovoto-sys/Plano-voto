@@ -550,7 +550,7 @@ export default function Resultado() {
                         </button>
                     </section>
                 </div>
-                <AppFooter className="app-footer--mobile-only" />
+                <AppFooter className="app-footer--scroll-content" />
             </main>
 
             <BottomNavigation currentStep="resultado" placement="footer" />

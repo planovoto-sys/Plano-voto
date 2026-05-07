@@ -55,11 +55,11 @@
   outline: 0;
 }
 
-.app-footer--mobile-only {
+.app-footer--scroll-content {
   margin: 34px 0 0;
 }
 
-.app-footer--desktop-footer {
+.app-footer--login-scroll {
   display: none;
 }
 
@@ -68,17 +68,23 @@
     width: min(100%, 1180px);
     margin: 0 auto;
     grid-template-columns: minmax(260px, 1.1fr) minmax(190px, 0.7fr) minmax(230px, 0.8fr);
-    gap: 42px;
-    padding: 26px var(--screen-gutter) 28px;
+    gap: 30px;
+    padding: 20px var(--screen-gutter) 22px;
   }
 
-  .app-footer--mobile-only {
-    display: none;
-  }
-
-  .app-footer--desktop-footer {
+  .app-footer--scroll-content {
     display: block;
-    width: 100%;
+    margin: clamp(42px, 6vw, 72px) calc(var(--screen-gutter) * -1) -36px;
+  }
+
+  .app-footer--login-scroll {
+    display: block;
+    grid-column: 1 / -1;
+    margin: clamp(24px, 4vw, 44px) calc(var(--screen-gutter) * -1) calc(clamp(34px, 5vw, 60px) * -1);
+  }
+
+  .app-footer--login-fixed {
+    display: none;
   }
 }
 

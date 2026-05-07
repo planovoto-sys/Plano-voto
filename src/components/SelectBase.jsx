@@ -438,7 +438,7 @@ export default function SelectBase({
 
       <main className="prototype-scroll select-base__scroll">
         {isHomeState ? renderStateList() : renderCandidateList()}
-        <AppFooter className="app-footer--mobile-only" />
+        <AppFooter className="app-footer--scroll-content" />
       </main>
 
       <BottomNavigation currentStep={currentStep} placement="footer" />

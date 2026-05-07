@@ -17,7 +17,6 @@ import {
   ResultadoNavIcon,
   SenadoNavIcon
 } from './AppIcons';
-import AppFooter from './AppFooter';
 import './BottomNavigation.css';
 
 const PROGRESS_ITEMS = [
@@ -149,7 +148,6 @@ export default function BottomNavigation({ currentStep, placement = 'footer' }) 
           </button>
         )}
 
-        {placement === 'footer' && <AppFooter className="app-footer--desktop-footer" />}
       </NavigationShell>
 
       {isOptionsOpen && (
