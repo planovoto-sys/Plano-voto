@@ -89,6 +89,27 @@
   letter-spacing: 0;
 }
 
+.state-card .state-centered-name {
+  gap: 5px;
+}
+
+.state-card .state-sigla {
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.state-card .state-full-name {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  color: #5f6367;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .state-card:active {
   transform: scale(0.99);
 }
@@ -446,6 +467,14 @@
 
   .state-card span {
     font-size: 24px;
+  }
+
+  .state-card .state-sigla {
+    font-size: 24px;
+  }
+
+  .state-card .state-full-name {
+    font-size: 13px;
   }
 
   .prototype-section-heading {
