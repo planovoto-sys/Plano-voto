@@ -1,8 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useUser } from '../contexts/useUser';
 import { useNavigate } from 'react-router-dom';
 import BottomNavigation from '../components/BottomNavigation';
 import AppFooter from '../components/AppFooter';
+import ShareResultSvg from '../components/ShareResultSvg';
+import { ShareSolidIcon } from '../components/AppIcons';
 import {
     BALLOT_ROUTES,
     castAnonymousVote,
@@ -20,6 +22,7 @@ import {
     readCachedTallies
 } from '../services/candidateService';
 import { flowLog, flowWarn } from '../services/debugFlow';
+import { shareResult, svgToPngBlob } from '../utils/shareResultImage';
 import './Resultado.css';
 
 const AVERAGE_ELECTED_VOTES_BY_OFFICE = {
@@ -252,11 +255,14 @@ function VoteCard({ candidate, fallbackName, defaultNumber, tone = 'neutral' }) 
 export default function Resultado() {
     const { user, userData, userEligibility, loading: userLoading } = useUser();
     const navigate = useNavigate();
+    const shareSvgRef = useRef(null);
     const [draft, setDraft] = useState(null);
     const [rankedCandidates, setRankedCandidates] = useState({ deputadoFederal: [], senadores: [] });
     const [openComparison, setOpenComparison] = useState(null);
     const [submitStatus, setSubmitStatus] = useState({ type: '', message: '' });
+    const [shareStatus, setShareStatus] = useState({ type: '', message: '' });
     const [submitting, setSubmitting] = useState(false);
+    const [sharing, setSharing] = useState(false);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -367,6 +373,16 @@ export default function Resultado() {
         }
     ]), [deputado, rankedCandidates.deputadoFederal, rankedCandidates.senadores, senador1, senador2]);
 
+    const shareScore = useMemo(() => {
+        const scores = [deputado, senador1, senador2]
+            .map((candidate) => getCandidateScore(candidate))
+            .filter((score) => score > 0);
+
+        if (scores.length === 0) return 0;
+
+        return scores.reduce((total, score) => total + score, 0) / scores.length;
+    }, [deputado, senador1, senador2]);
+
     const handleSwapCandidate = (section) => {
         if (!user?.uid || !draft?.estado || !section.recommendation) return;
 
@@ -396,6 +412,7 @@ export default function Resultado() {
 
         setSubmitting(true);
         setSubmitStatus({ type: '', message: '' });
+        setShareStatus({ type: '', message: '' });
 
         try {
             const receipt = await castAnonymousVote({ user, estado: draft.estado, draft });
@@ -411,6 +428,44 @@ export default function Resultado() {
             });
         } finally {
             setSubmitting(false);
+        }
+    };
+
+    const handleEditChoices = () => {
+        navigateToStep(BALLOT_ROUTES.estado);
+    };
+
+    const handleShareVote = async () => {
+        setSharing(true);
+        setShareStatus({ type: '', message: '' });
+
+        try {
+            const blob = await svgToPngBlob(shareSvgRef.current);
+            const result = await shareResult(blob, {
+                fileName: 'meuvoto-resultado.png',
+                title: 'Meu Voto',
+                text: 'Meu voto no meuvoto.org'
+            });
+
+            if (result === 'downloaded') {
+                setShareStatus({
+                    type: 'success',
+                    message: 'Imagem gerada para compartilhamento.'
+                });
+            } else if (result === 'shared') {
+                setShareStatus({
+                    type: 'success',
+                    message: 'Compartilhamento iniciado.'
+                });
+            }
+        } catch (error) {
+            flowWarn('result.share.error', { message: error?.message });
+            setShareStatus({
+                type: 'error',
+                message: 'Não foi possível compartilhar agora. Tente novamente.'
+            });
+        } finally {
+            setSharing(false);
         }
     };
 
@@ -540,6 +595,11 @@ export default function Resultado() {
                                 {submitStatus.message}
                             </p>
                         )}
+                        {shareStatus.message && (
+                            <p className={`vote-submit-message vote-submit-message--${shareStatus.type}`}>
+                                {shareStatus.message}
+                            </p>
+                        )}
                         <button
                             className="vote-confirm-button"
                             type="button"
@@ -548,7 +608,21 @@ export default function Resultado() {
                         >
                             {voteAlreadyConfirmed ? 'Voto confirmado' : submitting ? 'Confirmando...' : 'Confirmar meu voto'}
                         </button>
+                        {voteAlreadyConfirmed && (
+                            <div className="vote-post-confirm-actions">
+                                <button className="vote-secondary-action" type="button" onClick={handleEditChoices}>
+                                    Editar escolhas
+                                </button>
+                                <button className="vote-secondary-action vote-secondary-action--share" type="button" onClick={handleShareVote} disabled={sharing}>
+                                    <ShareSolidIcon />
+                                    <span>{sharing ? 'Preparando...' : 'Compartilhar'}</span>
+                                </button>
+                            </div>
+                        )}
                     </section>
+                </div>
+                <div className="share-preview-hidden" aria-hidden="true">
+                    <ShareResultSvg ref={shareSvgRef} score={shareScore} />
                 </div>
                 <AppFooter className="app-footer--scroll-content" />
             </main>
