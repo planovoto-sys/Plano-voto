@@ -349,10 +349,20 @@ export default function EscolherCandidatos({
   };
 
   const handleAvancar = async (listaFinalDaTela) => {
+    if (isSenadoresUnificados) {
+      if (listaFinalDaTela.length < 2) return false;
+
+      setSelecionadosNaTela(listaFinalDaTela);
+      flowLog('candidates.flow.saved-on-senators', {
+        cargo,
+        chaveGrupo,
+        totalSelecionados: listaFinalDaTela.length
+      });
+      return true;
+    }
+
     const draftAtualizado = await persistirEtapa(listaFinalDaTela, { markCompleted: true });
     if (!draftAtualizado) return false;
-
-    if (isSenadoresUnificados && listaFinalDaTela.length < 2) return false;
 
     setSelecionadosNaTela(listaFinalDaTela);
     flowLog('candidates.step.next', {
@@ -361,7 +371,7 @@ export default function EscolherCandidatos({
       totalSelecionados: listaFinalDaTela.length,
       proximaRota
     });
-    navigate(proximaRota, { state: { bypassVoteRedirect: true } });
+    if (proximaRota) navigate(proximaRota, { state: { bypassVoteRedirect: true } });
     return true;
   };
 

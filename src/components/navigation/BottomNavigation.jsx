@@ -38,8 +38,7 @@ const STEP_BY_PATH = {
   '/escolher-senador-2': 'senador',
   '/escolher-senadores': 'senador',
   '/escolher-senadores/reeleger': 'senador',
-  '/escolher-senadores/renovar': 'senador',
-  '/finalizacao': 'senador'
+  '/escolher-senadores/renovar': 'senador'
 };
 
 export default function BottomNavigation({ currentStep, placement = 'footer' }) {

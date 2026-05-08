@@ -8,13 +8,11 @@ import PrivacyConsent from '@/components/privacy/PrivacyConsent';
 const loadLogin = () => import('@/pages/Login');
 const loadHome = () => import('@/pages/Home');
 const loadEscolherCandidatos = () => import('@/pages/EscolherCandidatos');
-const loadResultado = () => import('@/pages/Resultado');
 const loadLegalPage = () => import('@/pages/LegalPage');
 
 const Login = lazy(loadLogin);
 const Home = lazy(loadHome);
 const EscolherCandidatos = lazy(loadEscolherCandidatos);
-const Resultado = lazy(loadResultado);
 const LegalPage = lazy(loadLegalPage);
 
 const renderCandidateRoute = (config) => (
@@ -50,7 +48,7 @@ function App() {
     if (loading) return undefined;
 
     const preloadRoutes = user
-      ? [loadHome, loadEscolherCandidatos, loadResultado]
+      ? [loadHome, loadEscolherCandidatos]
       : [loadLogin];
 
     const preload = () => {
@@ -93,8 +91,8 @@ function App() {
 
             <Route path="/meu-voto" element={privateRedirect(BALLOT_ROUTES.estado)} />
             <Route path="/meuvoto" element={privateRedirect(BALLOT_ROUTES.estado)} />
-            <Route path="/resultado" element={privateRedirect(BALLOT_ROUTES.estado)} />
-            <Route path="/finalizacao" element={privateRoute(<Resultado />)} />
+            <Route path="/resultado" element={privateRedirect(BALLOT_ROUTES.senadores)} />
+            <Route path="/finalizacao" element={privateRedirect(BALLOT_ROUTES.senadores)} />
             <Route path="/cookies" element={<LegalPage type="cookies" />} />
             <Route path="/politica-de-privacidade" element={<LegalPage type="privacidade" />} />
             <Route path="/lgpd" element={<LegalPage type="lgpd" />} />

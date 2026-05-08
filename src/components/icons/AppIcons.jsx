@@ -22,17 +22,6 @@ export function InfoIcon({ className = 'app-icon' }) {
   );
 }
 
-export function ShareSolidIcon({ className = 'app-icon' }) {
-  return (
-    <svg className={`${className} share-icon-solid`} viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        d="M18.28 15.16a3.81 3.81 0 0 0-2.92 1.36l-5.58-2.96c.1-.36.1-.55.1-.88 0-.31-.04-.61-.11-.9l5.59-2.97a3.82 3.82 0 1 0-1.11-2.67c0 .31.04.61.11.9l-5.59 2.98a3.82 3.82 0 1 0 .03 5.31l5.56 2.95c-.07.29-.11.59-.11.9a3.82 3.82 0 1 0 4.03-4.02Z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
 export function ClearIcon({ className = 'app-icon' }) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
@@ -85,17 +74,6 @@ export function SenadoNavIcon({ className = 'app-icon' }) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
       <path d="M4.1 16.3c.8-4.95 3.95-8.15 7.9-8.15s7.1 3.2 7.9 8.15H4.1Z" fill="currentColor" />
-    </svg>
-  );
-}
-
-export function ResultadoNavIcon({ className = 'app-icon' }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
-      <circle cx="8.3" cy="8.7" r="3" fill="currentColor" />
-      <circle cx="15.7" cy="8.7" r="3" fill="currentColor" />
-      <path d="M3.35 18.7c.25-3.15 2.25-5.2 4.95-5.2s4.7 2.05 4.95 5.2H3.35Z" fill="currentColor" />
-      <path d="M10.75 18.7c.25-3.15 2.25-5.2 4.95-5.2s4.7 2.05 4.95 5.2h-9.9Z" fill="currentColor" />
     </svg>
   );
 }

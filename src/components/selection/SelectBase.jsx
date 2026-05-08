@@ -414,6 +414,7 @@ export default function SelectBase({
     const currentEmptyTitle = isSenateOffice ? 'Nenhum senador selecionado' : 'Nenhum candidato selecionado';
     const currentEmptyCopy = isSenateOffice ? 'Escolha 2 candidatos abaixo' : 'Escolha um candidato abaixo';
     const senateSlots = [selecionados[0] || null, selecionados[1] || null];
+    const senateSelectionComplete = isSenateOffice && selecionados.length === effectiveLimit;
     const selectedBestChanceCandidate = Boolean(
       featuredCandidate?.id && selecionados.some((candidate) => candidate.id === featuredCandidate.id)
     );
@@ -474,6 +475,13 @@ export default function SelectBase({
             <div className="no-data candidate-empty-card">
               <strong>{currentEmptyTitle}</strong>
               <span>{currentEmptyCopy}</span>
+            </div>
+          )}
+
+          {senateSelectionComplete && (
+            <div className={`candidate-save-status ${salvandoSelecao ? 'is-saving' : 'is-saved'}`} role="status" aria-live="polite">
+              <strong>{salvandoSelecao ? 'Salvando escolhas...' : 'Todos os dados foram salvos'}</strong>
+              <span>Se você trocar algum candidato, a escolha anterior será substituída automaticamente.</span>
             </div>
           )}
         </section>

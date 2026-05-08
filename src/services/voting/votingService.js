@@ -26,7 +26,7 @@ import {
 } from '@/constants/ballot';
 import { db, functions, functionsRegion } from '@/services/firebase/firebase';
 import { flowLog } from '@/utils/debugFlow';
-import { normalizeStateCode } from '@/utils/state';
+import { getCandidateStateCode, normalizeStateCode } from '@/utils/state';
 const STORAGE_PREFIX = `meuvoto:${ACTIVE_ELECTION_ID}`;
 const DRAFT_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 let storageAvailability = null;
@@ -106,7 +106,7 @@ const normalizeStoredCandidate = (candidate) => {
     numero: candidate.numero || candidate.Numero || null,
     estado: candidate.estado || candidate.Estado || null,
     classificacao: candidate.classificacao || candidate.ClassificacaoOficial || candidate['Classificação'] || candidate.Classificacao || null,
-    nota_final: Number(candidate.nota_final ?? candidate.notaFinal ?? 0) || 0,
+    nota_final: Number(candidate.nota_final ?? candidate.notaFinal ?? candidate['Nota candidato'] ?? candidate['Nota partido'] ?? 0) || 0,
     chance: Number(candidate.chance ?? candidate.Chance ?? 0) || 0,
     selected_by_users: Number(candidate.selected_by_users ?? candidate.selectedByUsers ?? 0) || 0,
     average_elected_votes: Number(candidate.average_elected_votes ?? candidate.averageElectedVotes ?? 0) || 0,
@@ -227,6 +227,36 @@ const normalizeRemoteDraftData = (data) => {
   };
 };
 
+const normalizeOfficeName = (value) => (
+  String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+);
+
+const getStepExpectedOffice = (stepKey) => (
+  stepKey === 'deputado_federal' ? 'Deputado Federal' : 'Senador'
+);
+
+const assertCandidateMatchesStep = (candidate, stepKey, estado) => {
+  const candidateId = candidate?.id || 'selecionado';
+  const candidateOffice = candidate?.Cargo || candidate?.cargo;
+  const expectedOffice = getStepExpectedOffice(stepKey);
+
+  if (normalizeOfficeName(candidateOffice) !== normalizeOfficeName(expectedOffice)) {
+    throw new VotingError('INVALID_CANDIDATE_OFFICE', `Candidato ${candidateId} não pertence ao cargo ${expectedOffice}.`);
+  }
+
+  const candidateState = getCandidateStateCode(candidate, { allowPartyFallback: stepKey !== 'deputado_federal' });
+  if (stepKey !== 'deputado_federal' && !candidateState) {
+    throw new VotingError('INVALID_CANDIDATE_STATE', `Candidato ${candidateId} não possui estado definido.`);
+  }
+
+  if (candidateState && candidateState !== 'TODOS' && candidateState !== estado) {
+    throw new VotingError('INVALID_CANDIDATE_STATE', `Candidato ${candidateId} não pertence ao estado selecionado.`);
+  }
+};
+
 const getDraftActiveCandidateIds = (draft) => {
   const normalizedDraft = normalizeDraft(draft);
   return [
@@ -341,9 +371,11 @@ const saveBallotStepSelectionDirectly = async (userId, stepKey, candidates, esta
   const candidateIds = normalizedCandidates.map((candidate) => candidate.id);
   const fetchedCandidates = await fetchCandidatesByIds(candidateIds);
   const fetchedById = new Map(fetchedCandidates.map((candidate) => [candidate.id, candidate]));
-  const candidateSnapshots = normalizedCandidates.map((candidate) => (
-    normalizeStoredCandidate(fetchedById.get(candidate.id) || candidate)
-  )).filter(Boolean);
+  const candidateSnapshots = normalizedCandidates.map((candidate) => {
+    const storedCandidate = fetchedById.get(candidate.id) || candidate;
+    assertCandidateMatchesStep(storedCandidate, stepKey, activeEstado);
+    return normalizeStoredCandidate(storedCandidate);
+  }).filter(Boolean);
   let responseDraft = null;
 
   await runTransaction(db, async (transaction) => {
@@ -578,7 +610,7 @@ export const getBallotProgress = (draft) => {
             ? BALLOT_ROUTES.senadores
           : !hasSenador2
               ? BALLOT_ROUTES.senadores
-              : BALLOT_ROUTES.resultado
+              : BALLOT_ROUTES.senadores
   };
 };
 
