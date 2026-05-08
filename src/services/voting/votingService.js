@@ -1,10 +1,14 @@
 import {
   collection,
+  deleteField,
   documentId,
   doc,
   getDoc,
   getDocs,
+  increment,
   query,
+  runTransaction,
+  serverTimestamp,
   where
 } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
@@ -223,6 +227,162 @@ const normalizeRemoteDraftData = (data) => {
   };
 };
 
+const getDraftActiveCandidateIds = (draft) => {
+  const normalizedDraft = normalizeDraft(draft);
+  return [
+    ...normalizedDraft.candidate_groups.deputado_federal,
+    ...normalizedDraft.candidate_groups.senadores_1,
+    ...normalizedDraft.candidate_groups.senadores_2
+  ].map((candidate) => candidate.id).filter(Boolean);
+};
+
+const countCandidateIds = (candidateIds) => (
+  candidateIds.reduce((counts, candidateId) => {
+    counts.set(candidateId, (counts.get(candidateId) || 0) + 1);
+    return counts;
+  }, new Map())
+);
+
+const updateActiveTalliesInTransaction = (transaction, oldDraft, newDraft, updatedAt) => {
+  const oldCounts = countCandidateIds(getDraftActiveCandidateIds(oldDraft));
+  const newCounts = countCandidateIds(getDraftActiveCandidateIds(newDraft));
+  const candidateIds = new Set([...oldCounts.keys(), ...newCounts.keys()]);
+
+  candidateIds.forEach((candidateId) => {
+    const delta = (newCounts.get(candidateId) || 0) - (oldCounts.get(candidateId) || 0);
+    if (delta === 0) return;
+
+    transaction.set(doc(db, 'elections', ACTIVE_ELECTION_ID, 'candidate_tallies', candidateId), {
+      schema_version: BALLOT_SCHEMA_VERSION,
+      election_id: ACTIVE_ELECTION_ID,
+      candidate_id: candidateId,
+      active_selections: increment(delta),
+      updated_at: updatedAt
+    }, { merge: true });
+  });
+};
+
+const prepareDraftForFirestore = (draft, userId, updatedAt) => ({
+  ...normalizeDraft(draft, draft.estado),
+  schema_version: BALLOT_SCHEMA_VERSION,
+  election_id: ACTIVE_ELECTION_ID,
+  user_id: userId,
+  active_candidate_ids: getDraftActiveCandidateIds(draft),
+  updated_at: updatedAt
+});
+
+const shouldFallbackToFirestore = (error) => {
+  const code = String(error?.code || '').toLowerCase();
+  const message = String(error?.message || '').toLowerCase();
+
+  return [
+    'internal',
+    'functions/internal',
+    'unavailable',
+    'functions/unavailable',
+    'not-found',
+    'functions/not-found',
+    'unknown',
+    'functions/unknown'
+  ].includes(code) || message.includes('failed to fetch') || message.includes('network') || message.includes('cors');
+};
+
+const saveBallotStateDirectly = async (userId, estado) => {
+  const activeEstado = normalizeStateCode(estado);
+  if (!activeEstado) throw new VotingError('STATE_REQUIRED', 'Escolha um estado antes de continuar.');
+
+  const draftRef = doc(db, 'elections', ACTIVE_ELECTION_ID, 'ballot_drafts', userId);
+  const userRef = doc(db, 'users', userId);
+  let responseDraft = null;
+
+  await runTransaction(db, async (transaction) => {
+    const updatedAt = serverTimestamp();
+    const draftSnap = await transaction.get(draftRef);
+    const previousDraft = draftSnap.exists()
+      ? normalizeDraft(normalizeRemoteDraftData(draftSnap.data()), activeEstado)
+      : createEmptyBallotDraft(activeEstado);
+    const nextDraft = previousDraft.estado === activeEstado
+      ? normalizeDraft({ ...previousDraft, estado: activeEstado, updated_at: new Date().toISOString() }, activeEstado)
+      : createEmptyBallotDraft(activeEstado);
+
+    responseDraft = normalizeDraft({
+      ...nextDraft,
+      estado: activeEstado,
+      updated_at: new Date().toISOString()
+    }, activeEstado);
+
+    updateActiveTalliesInTransaction(transaction, previousDraft, responseDraft, updatedAt);
+    transaction.set(draftRef, prepareDraftForFirestore(responseDraft, userId, updatedAt), { merge: false });
+    transaction.set(userRef, {
+      estado: activeEstado,
+      role: 'voter',
+      schema_version: 1,
+      updated_at: updatedAt,
+      candidatos_escolhidos: deleteField()
+    }, { merge: true });
+  });
+
+  return persistBallotDraft(userId, responseDraft);
+};
+
+const saveBallotStepSelectionDirectly = async (userId, stepKey, candidates, estado = null) => {
+  const normalizedCandidates = asArray(candidates)
+    .map(normalizeStoredCandidate)
+    .filter(Boolean)
+    .slice(0, 1);
+  const currentDraft = readBallotDraft(userId, estado);
+  const activeEstado = normalizeStateCode(estado ?? currentDraft.estado);
+
+  if (!activeEstado) {
+    throw new VotingError('STATE_REQUIRED', 'Escolha um estado antes de selecionar candidatos.');
+  }
+
+  const draftRef = doc(db, 'elections', ACTIVE_ELECTION_ID, 'ballot_drafts', userId);
+  const candidateIds = normalizedCandidates.map((candidate) => candidate.id);
+  const fetchedCandidates = await fetchCandidatesByIds(candidateIds);
+  const fetchedById = new Map(fetchedCandidates.map((candidate) => [candidate.id, candidate]));
+  const candidateSnapshots = normalizedCandidates.map((candidate) => (
+    normalizeStoredCandidate(fetchedById.get(candidate.id) || candidate)
+  )).filter(Boolean);
+  let responseDraft = null;
+
+  await runTransaction(db, async (transaction) => {
+    const updatedAt = serverTimestamp();
+    const draftSnap = await transaction.get(draftRef);
+    const previousDraft = draftSnap.exists()
+      ? normalizeDraft(normalizeRemoteDraftData(draftSnap.data()), activeEstado)
+      : currentDraft;
+
+    if (previousDraft.estado && previousDraft.estado !== activeEstado) {
+      throw new VotingError('STATE_MISMATCH', 'Estado ativo diferente do estado informado.');
+    }
+
+    const nextDraft = normalizeDraft({
+      ...previousDraft,
+      estado: activeEstado,
+      candidate_groups: {
+        ...previousDraft.candidate_groups,
+        [stepKey]: candidateSnapshots
+      },
+      updated_at: new Date().toISOString()
+    }, activeEstado);
+    const senatorIds = [
+      nextDraft.candidate_groups.senadores_1[0]?.id,
+      nextDraft.candidate_groups.senadores_2[0]?.id
+    ].filter(Boolean);
+
+    if (new Set(senatorIds).size !== senatorIds.length) {
+      throw new VotingError('DUPLICATED_CANDIDATE', 'O mesmo senador não pode ser escolhido duas vezes.');
+    }
+
+    responseDraft = nextDraft;
+    updateActiveTalliesInTransaction(transaction, previousDraft, responseDraft, updatedAt);
+    transaction.set(draftRef, prepareDraftForFirestore(responseDraft, userId, updatedAt), { merge: false });
+  });
+
+  return persistBallotDraft(userId, responseDraft);
+};
+
 export const getBallotEstado = (userId, fallbackEstado = null) => {
   const draft = readBallotDraft(userId, fallbackEstado);
   return draft.estado || fallbackEstado || null;
@@ -244,11 +404,23 @@ export const saveBallotState = async (userId, estado) => {
   if (!userId) throw new VotingError('AUTH_REQUIRED', 'Faça login para continuar.');
 
   const saveState = httpsCallable(functions, SAVE_BALLOT_STATE_FUNCTION_NAME);
-  const response = await saveState({
-    schema_version: BALLOT_SCHEMA_VERSION,
-    election_id: ACTIVE_ELECTION_ID,
-    estado: normalizeStateCode(estado)
-  });
+  let response = null;
+
+  try {
+    response = await saveState({
+      schema_version: BALLOT_SCHEMA_VERSION,
+      election_id: ACTIVE_ELECTION_ID,
+      estado: normalizeStateCode(estado)
+    });
+  } catch (error) {
+    if (!shouldFallbackToFirestore(error)) throw error;
+    flowLog('draft.save-state.firestore-fallback', {
+      userId,
+      estado,
+      code: error?.code || error?.message || 'unknown'
+    });
+    return saveBallotStateDirectly(userId, estado);
+  }
 
   return persistCallableDraft(userId, estado, response.data);
 };
@@ -292,14 +464,27 @@ export const saveBallotStepSelection = async (userId, stepKey, candidates, estad
   }
 
   const saveStep = httpsCallable(functions, SAVE_BALLOT_STEP_FUNCTION_NAME);
-  const response = await saveStep({
-    schema_version: BALLOT_SCHEMA_VERSION,
-    election_id: ACTIVE_ELECTION_ID,
-    estado: activeEstado,
-    step_key: stepKey,
-    candidate_ids: normalizedCandidates.map((candidate) => candidate.id),
-    mark_completed: options.markCompleted === true
-  });
+  let response = null;
+
+  try {
+    response = await saveStep({
+      schema_version: BALLOT_SCHEMA_VERSION,
+      election_id: ACTIVE_ELECTION_ID,
+      estado: activeEstado,
+      step_key: stepKey,
+      candidate_ids: normalizedCandidates.map((candidate) => candidate.id),
+      mark_completed: options.markCompleted === true
+    });
+  } catch (error) {
+    if (!shouldFallbackToFirestore(error)) throw error;
+    flowLog('draft.save-step.firestore-fallback', {
+      userId,
+      estado: activeEstado,
+      stepKey,
+      code: error?.code || error?.message || 'unknown'
+    });
+    return saveBallotStepSelectionDirectly(userId, stepKey, normalizedCandidates, activeEstado);
+  }
 
   return persistCallableDraft(userId, activeEstado, response.data);
 };
