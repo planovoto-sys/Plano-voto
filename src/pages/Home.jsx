@@ -1,10 +1,10 @@
-import React, { useDeferredValue, useEffect, useState, useMemo } from 'react';
+import { useDeferredValue, useEffect, useState, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useUser } from '../contexts/useUser';
-import { auth, db } from '../services/firebaseConfig';
 import { deleteField, doc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { BRAZILIAN_STATES } from '@/constants/states';
+import { useUser } from '@/hooks/useUser';
+import { db } from '@/services/firebase/firebase';
 import {
-  BALLOT_ROUTES,
   clearVoteReceipt,
   draftHasBallotSelections,
   getBallotEstado,
@@ -12,36 +12,12 @@ import {
   readBallotDraft,
   resetBallotForState,
   saveBallotState
-} from '../services/votingService';
-import { flowError, flowLog, flowWarn } from '../services/debugFlow';
-import SelectBase from '../components/SelectBase';
-import ConfirmModal from '../components/ConfirmModal';
-import TourModal from '../components/TourModal'; // IMPORTADO O TOUR MODAL
-
-const LISTA_ESTADOS = [
-  { id: 'AC', nome: 'Acre', sigla: 'AC' }, { id: 'AL', nome: 'Alagoas', sigla: 'AL' },
-  { id: 'AM', nome: 'Amazonas', sigla: 'AM' }, { id: 'AP', nome: 'Amapá', sigla: 'AP' },
-  { id: 'BA', nome: 'Bahia', sigla: 'BA' }, { id: 'CE', nome: 'Ceará', sigla: 'CE' },
-  { id: 'DF', nome: 'Distrito Federal', sigla: 'DF' }, { id: 'ES', nome: 'Espírito Santo', sigla: 'ES' },
-  { id: 'GO', nome: 'Goiás', sigla: 'GO' }, { id: 'MA', nome: 'Maranhão', sigla: 'MA' },
-  { id: 'MT', nome: 'Mato Grosso', sigla: 'MT' }, { id: 'MS', nome: 'Mato Grosso do Sul', sigla: 'MS' },
-  { id: 'MG', nome: 'Minas Gerais', sigla: 'MG' }, { id: 'PA', nome: 'Pará', sigla: 'PA' },
-  { id: 'PB', nome: 'Paraíba', sigla: 'PB' }, { id: 'PR', nome: 'Paraná', sigla: 'PR' },
-  { id: 'PE', nome: 'Pernambuco', sigla: 'PE' }, { id: 'PI', nome: 'Piauí', sigla: 'PI' },
-  { id: 'RJ', nome: 'Rio de Janeiro', sigla: 'RJ' }, { id: 'RN', nome: 'Rio Grande do Norte', sigla: 'RN' },
-  { id: 'RS', nome: 'Rio Grande do Sul', sigla: 'RS' }, { id: 'RO', nome: 'Rondônia', sigla: 'RO' },
-  { id: 'RR', nome: 'Roraima', sigla: 'RR' }, { id: 'SC', nome: 'Santa Catarina', sigla: 'SC' },
-  { id: 'SP', nome: 'São Paulo', sigla: 'SP' }, { id: 'SE', nome: 'Sergipe', sigla: 'SE' },
-  { id: 'TO', nome: 'Tocantins', sigla: 'TO' }
-];
-
-const normalizarBusca = (valor) => (
-  valor
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim()
-);
+} from '@/services/voting/votingService';
+import { flowError, flowLog, flowWarn } from '@/utils/debugFlow';
+import { normalizeSearch } from '@/utils/search';
+import ConfirmModal from '@/components/feedback/ConfirmModal';
+import TourModal from '@/components/feedback/TourModal';
+import SelectBase from '@/components/selection/SelectBase';
 
 export default function Home() {
   const { user, userData, userEligibility, loading: userLoading } = useUser();
@@ -53,15 +29,9 @@ export default function Home() {
   const [busca, setBusca] = useState('');
   const buscaDiferida = useDeferredValue(busca);
   
-  // ESTADO PARA O TOUR NA HOME
   const [isTourOpen, setIsTourOpen] = useState(false);
   const estadoSelecionado = user?.uid ? getBallotEstado(user.uid, userData?.estado) : userData?.estado;
   const bypassVoteRedirect = location.state?.bypassVoteRedirect === true;
-
-  const handleLogout = () => {
-    auth.signOut();
-    navigate('/');
-  };
 
   useEffect(() => {
     if (!bypassVoteRedirect && user?.uid && userEligibility?.has_voted) {
@@ -70,22 +40,22 @@ export default function Home() {
     }
   }, [bypassVoteRedirect, user?.uid, userEligibility?.has_voted, navigate]);
 
-  // TEXTOS DO TOUR ESPECÍFICOS PARA A HOME (Baseados no PDF)
   const tourSteps = [
+    { target: '.app-help-action', title: 'AJUDA', content: 'Abre este guia sempre que você quiser revisar a tela.' },
     { target: '#tour-busca', title: 'PESQUISA', content: 'Pesquisa o estado em que você vota.' },
     { target: '#tour-lista', title: 'LISTA', content: 'Mostra os estados a serem selecionados.' }
   ];
 
-  const selecaoInicial = estadoSelecionado ? LISTA_ESTADOS.filter(estado => estado.sigla === estadoSelecionado) : [];
+  const selecaoInicial = estadoSelecionado ? BRAZILIAN_STATES.filter(estado => estado.sigla === estadoSelecionado) : [];
 
   const listaExibida = useMemo(() => {
-    const termo = normalizarBusca(buscaDiferida);
-    if (!termo) return LISTA_ESTADOS;
+    const termo = normalizeSearch(buscaDiferida);
+    if (!termo) return BRAZILIAN_STATES;
 
-    return LISTA_ESTADOS.filter((estado) => {
-      const nome = normalizarBusca(estado.nome);
-      const sigla = normalizarBusca(estado.sigla);
-      const nomeCompleto = normalizarBusca(`${estado.nome} ${estado.sigla}`);
+    return BRAZILIAN_STATES.filter((estado) => {
+      const nome = normalizeSearch(estado.nome);
+      const sigla = normalizeSearch(estado.sigla);
+      const nomeCompleto = normalizeSearch(`${estado.nome} ${estado.sigla}`);
 
       return nome.includes(termo) || sigla.includes(termo) || nomeCompleto.includes(termo);
     });
@@ -170,8 +140,7 @@ export default function Home() {
           flowError('home.change-state.firestore-error', error, { userId: user.uid, novoEstado });
         });
 
-      flowLog('home.change-state.navigate', { to: BALLOT_ROUTES.deputadoFederal, novoEstado });
-      navigate(BALLOT_ROUTES.deputadoFederal, { state: { bypassVoteRedirect: true } });
+      flowLog('home.change-state.saved', { novoEstado });
     } catch (e) {
       flowError('home.change-state.local-error', e, { novoEstado });
       if (import.meta.env.DEV) {
@@ -189,19 +158,16 @@ export default function Home() {
       <SelectBase
         titulo="SELECIONE SEU ESTADO" dados={listaExibida} limiteSelecao={1} selecaoInicial={selecaoInicial}
         carregando={userLoading || loading} mostrarBusca={true} valorBusca={busca} onChangeBusca={setBusca}
-        onConfirmar={handleConfirmar} mostrarBotaoVoltar={true} mostrarBotaoVoltarTopo={false} onVoltar={handleLogout}
-        showListNavigation={true}
+        onConfirmar={handleConfirmar}
         linhasVisiveis={6}
         variant="home-state"
-        etapa={1}
         currentStep="estado"
         autoAvancarAoSelecionar={false}
-        topRightExtra={<button className="header-utility-btn" type="button" onClick={handleLogout}>Sair</button>}
-        onHelpClick={() => setIsTourOpen(true)} /* ATIVA O BOTÃO "i" NA TELA DE ESTADOS */
+        onHelpClick={() => setIsTourOpen(true)}
         renderItem={(estado) => (
           <div className="state-centered-name">
-            <span className="state-sigla">{estado.sigla}</span>
             <span className="state-full-name">{estado.nome}</span>
+            <span className="state-sigla">{estado.sigla}</span>
           </div>
         )}
       />

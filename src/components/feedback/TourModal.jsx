@@ -102,9 +102,14 @@ export default function TourModal({ steps, isOpen, onClose }) {
                 
                 <div className="tour-footer">
                     <div className="tour-footer-left">
-                        {currentStep > 0 && (
-                            <button className="tour-btn-sec" type="button" onClick={handlePrev}>VOLTAR</button>
-                        )}
+                        <button
+                            className="tour-btn-sec"
+                            type="button"
+                            onClick={handlePrev}
+                            disabled={currentStep === 0}
+                        >
+                            VOLTAR
+                        </button>
                     </div>
                     <div className="tour-dots">
                         {steps.map((_, i) => (
@@ -113,7 +118,7 @@ export default function TourModal({ steps, isOpen, onClose }) {
                     </div>
                     <div className="tour-footer-right">
                         <button className="tour-btn-pri" type="button" onClick={handleNext}>
-                            {currentStep === steps.length - 1 ? 'CONCLUIR' : 'PRÓXIMO'}
+                            {currentStep === steps.length - 1 ? 'CONCLUIR' : 'AVANÇAR'}
                         </button>
                     </div>
                 </div>

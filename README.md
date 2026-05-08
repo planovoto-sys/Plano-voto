@@ -40,8 +40,8 @@ O desenvolvimento priorizou:
 - **Backend:** Firebase  
   - Authentication  
   - Cloud Firestore  
-- **Roteamento:** React Router Dom v6  
-- **Estilização:** CSS Modules  
+- **Roteamento:** React Router Dom  
+- **Estilização:** CSS global organizado por componente e página  
 
 ---
 
@@ -60,22 +60,35 @@ O desenvolvimento priorizou:
 
 ```bash
 src/
-├── assets/
+├── app/
+│   └── App.jsx
+├── components/
+│   ├── feedback/
+│   ├── icons/
+│   ├── layout/
+│   ├── navigation/
+│   ├── privacy/
+│   ├── selection/
+│   └── share/
+├── constants/
+├── contexts/
+├── hooks/
 ├── pages/
-│   ├── Login.jsx
-│   ├── SelectState.jsx
-│   ├── DefineStrategy.jsx
-│   ├── MyPlan.jsx
-│   └── Profile.jsx
+├── providers/
 ├── services/
-│   └── firebaseConfig.js
+│   ├── candidates/
+│   ├── firebase/
+│   ├── pwa/
+│   ├── share/
+│   └── voting/
+├── styles/
 ├── utils/
-├── App.jsx
 └── main.jsx
-🚀 Como Executar
-Pré-requisitos
-Node.js v18+
 ```
+
+## 🚀 Como Executar
+
+Pré-requisito: Node.js v20.19+
 
 👨‍💻 Autor
 Alexandre Hackbardt Bolsoni

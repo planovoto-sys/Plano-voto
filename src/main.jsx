@@ -1,11 +1,11 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import './reset.css';
-import './index.css';
-import App from './App';
-import { UserProvider } from './contexts/UserContext';
-import { installFlowDebugTools } from './services/debugFlow';
-import { registerPwaServiceWorker } from './services/pwa';
+import '@/styles/reset.css';
+import '@/styles/global.css';
+import App from '@/app/App';
+import { UserProvider } from '@/providers/UserProvider';
+import { installFlowDebugTools } from '@/utils/debugFlow';
+import { registerPwaServiceWorker } from '@/services/pwa/registerServiceWorker';
 
 installFlowDebugTools();
 registerPwaServiceWorker();

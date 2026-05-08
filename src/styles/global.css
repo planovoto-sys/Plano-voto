@@ -78,6 +78,7 @@ body {
 .prototype-page > .app-page-header {
   flex: 0 0 auto;
   margin: 18px var(--screen-gutter) 0;
+  position: relative;
 }
 
 .prototype-scroll {
@@ -111,8 +112,12 @@ body {
   font-size: 34px;
   font-weight: 800;
   line-height: 1;
-  letter-spacing: 2.5px;
+  letter-spacing: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .prototype-header p {
@@ -121,16 +126,28 @@ body {
   font-size: 17px;
   font-weight: 400;
   line-height: 1.2;
-  letter-spacing: 1.6px;
+  letter-spacing: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .app-page-header__copy {
   min-width: 0;
 }
 
-.app-page-header__side,
-.app-page-header__actions {
+.app-page-header__side {
   display: none;
+}
+
+.app-page-header__actions {
+  width: 100%;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .app-header-action {
@@ -152,6 +169,52 @@ body {
   background: #f7f8f9;
   color: var(--text-main);
   box-shadow: inset 0 0 0 1px #cfd3d6;
+}
+
+.app-header-icon-action {
+  width: 38px;
+  height: 38px;
+  border: 1px solid #cfd3d6;
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--desktop-primary-strong);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.app-header-icon-action .app-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.app-header-back-button {
+  min-width: 38px;
+  height: 38px;
+  border: 1px solid #cfd3d6;
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--text-main);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 11px;
+  margin-right: auto;
+  font-family: var(--font-family);
+  font-size: 0;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.app-header-back-button .app-icon {
+  width: 19px;
+  height: 19px;
+}
+
+.app-header-back-button span {
+  display: none;
 }
 
 .loading {
@@ -250,13 +313,13 @@ body {
   }
 
   .prototype-header h1 {
-    font-size: 29px;
-    letter-spacing: 2px;
+    font-size: 27px;
+    letter-spacing: 0;
   }
 
   .prototype-header p {
-    font-size: 15px;
-    letter-spacing: 1.2px;
+    font-size: 14px;
+    letter-spacing: 0;
   }
 
   .metric-circle {
@@ -276,11 +339,11 @@ body {
   }
 
   .prototype-header h1 {
-    font-size: 25px;
+    font-size: 23px;
   }
 
   .prototype-header p {
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .metric-circle {
@@ -309,11 +372,11 @@ body {
   }
 
   .prototype-header h1 {
-    font-size: 22px;
+    font-size: 20px;
   }
 
   .prototype-header p {
-    font-size: 12px;
+    font-size: 11px;
   }
 }
 
@@ -354,7 +417,7 @@ body {
     background: var(--header-bg);
     color: var(--text-main);
     display: grid;
-    grid-template-columns: minmax(220px, 0.68fr) minmax(0, 1.32fr);
+    grid-template-columns: minmax(92px, auto) minmax(220px, 0.68fr) minmax(0, 1.32fr);
     align-items: center;
     gap: 24px;
     padding: 18px var(--screen-gutter);
@@ -363,18 +426,35 @@ body {
 
   .prototype-page > .app-page-header h1 {
     color: var(--text-main);
-    font-size: clamp(24px, 2.6vw, 38px);
-    letter-spacing: 1.4px;
+    font-size: 34px;
+    letter-spacing: 0;
   }
 
   .prototype-page > .app-page-header p {
     margin-top: 7px;
     color: #6f7378;
     font-size: 14px;
-    letter-spacing: 0.4px;
+    letter-spacing: 0;
+  }
+
+  .app-page-header__actions {
+    grid-column: 1;
+    grid-row: 1;
+    width: auto;
+    min-width: 0;
+    min-height: 0;
+    justify-content: flex-start;
+    gap: 10px;
+  }
+
+  .app-page-header__copy {
+    grid-column: 2;
+    grid-row: 1;
   }
 
   .app-page-header__side {
+    grid-column: 3;
+    grid-row: 1;
     min-width: 0;
     display: flex;
     align-items: center;
@@ -383,10 +463,25 @@ body {
   }
 
   .app-page-header__actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
     flex: 0 0 auto;
+  }
+
+  .app-header-icon-action {
+    width: 42px;
+    height: 42px;
+  }
+
+  .app-header-back-button {
+    height: 42px;
+    min-width: 0;
+    padding: 0 15px 0 12px;
+    margin-right: 0;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+
+  .app-header-back-button span {
+    display: inline;
   }
 
   .prototype-scroll {

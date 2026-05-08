@@ -62,10 +62,13 @@ export function EstadoNavIcon({ className = 'app-icon' }) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
       <path
-        d="M12 21.2c-3.95-5.2-6.1-8.75-6.1-11.2A6.1 6.1 0 0 1 12 3.9a6.1 6.1 0 0 1 6.1 6.1c0 2.45-2.15 6-6.1 11.2Z"
-        fill="currentColor"
+        d="M12 21.1c-3.9-5.18-5.85-8.63-5.85-11.05A5.85 5.85 0 0 1 12 4.2a5.85 5.85 0 0 1 5.85 5.85c0 2.42-1.95 5.87-5.85 11.05Z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinejoin="round"
       />
-      <circle cx="12" cy="10" r="2.25" fill="#ffffff" />
+      <circle cx="12" cy="10.05" r="1.7" fill="currentColor" />
     </svg>
   );
 }

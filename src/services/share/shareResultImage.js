@@ -1,4 +1,4 @@
-import { SHARE_IMAGE_HEIGHT, SHARE_IMAGE_WIDTH } from '../components/ShareResultSvg';
+import { SHARE_IMAGE_HEIGHT, SHARE_IMAGE_WIDTH } from '@/components/share/ShareResultSvg';
 
 const DEFAULT_FILE_NAME = 'meuvoto-resultado.png';
 const SVG_MIME_TYPE = 'image/svg+xml;charset=utf-8';

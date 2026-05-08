@@ -1,8 +1,8 @@
 import React from 'react';
-import { auth, firebaseReady, googleProvider } from '../services/firebaseConfig';
 import { signInWithPopup } from 'firebase/auth';
-import { flowError, flowLog } from '../services/debugFlow';
-import AppFooter from '../components/AppFooter';
+import { auth, firebaseReady, googleProvider } from '@/services/firebase/firebase';
+import { flowError, flowLog } from '@/utils/debugFlow';
+import AppFooter from '@/components/layout/AppFooter';
 import './Login.css';
 
 function Login() {

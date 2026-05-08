@@ -1,12 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useUser } from '../contexts/useUser';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import BottomNavigation from '../components/BottomNavigation';
-import AppFooter from '../components/AppFooter';
-import ShareResultSvg from '../components/ShareResultSvg';
-import { ShareSolidIcon } from '../components/AppIcons';
+import { BALLOT_ROUTES } from '@/constants/ballot';
+import { AVERAGE_ELECTED_VOTES_BY_OFFICE } from '@/constants/candidates';
+import { STATE_NAMES } from '@/constants/states';
+import { useUser } from '@/hooks/useUser';
 import {
-    BALLOT_ROUTES,
     castAnonymousVote,
     getBallotCandidateGroups,
     getBallotProgress,
@@ -14,123 +12,32 @@ import {
     readBallotDraft,
     saveLastVoteReceipt,
     saveBallotStepSelection
-} from '../services/votingService';
+} from '@/services/voting/votingService';
 import {
     fetchCandidatesByOffice,
     fetchCandidateTallies,
     readCachedCandidatesByOffice,
     readCachedTallies
-} from '../services/candidateService';
-import { flowLog, flowWarn } from '../services/debugFlow';
-import { shareResult, svgToPngBlob } from '../utils/shareResultImage';
+} from '@/services/candidates/candidateService';
+import { shareResult, svgToPngBlob } from '@/services/share/shareResultImage';
+import { flowLog, flowWarn } from '@/utils/debugFlow';
+import {
+    calculateCandidateChance,
+    formatScore,
+    getCandidateChance,
+    getCandidateScore,
+    getCandidateScoreTone,
+    getDisplayCandidate,
+    parseNumeric
+} from '@/utils/candidateMetrics';
+import { normalizeState } from '@/utils/search';
+import AppFooter from '@/components/layout/AppFooter';
+import BottomNavigation from '@/components/navigation/BottomNavigation';
+import { BackIcon, ShareSolidIcon } from '@/components/icons/AppIcons';
+import ShareResultSvg from '@/components/share/ShareResultSvg';
 import './Resultado.css';
 
-const AVERAGE_ELECTED_VOTES_BY_OFFICE = {
-    deputado_federal: 3,
-    senadores: 3
-};
-const STATE_NAMES = {
-    AC: 'Acre',
-    AL: 'Alagoas',
-    AM: 'Amazonas',
-    AP: 'Amapá',
-    BA: 'Bahia',
-    CE: 'Ceará',
-    DF: 'Distrito Federal',
-    ES: 'Espírito Santo',
-    GO: 'Goiás',
-    MA: 'Maranhão',
-    MG: 'Minas Gerais',
-    MS: 'Mato Grosso do Sul',
-    MT: 'Mato Grosso',
-    PA: 'Pará',
-    PB: 'Paraíba',
-    PE: 'Pernambuco',
-    PI: 'Piauí',
-    PR: 'Paraná',
-    RJ: 'Rio de Janeiro',
-    RN: 'Rio Grande do Norte',
-    RO: 'Rondônia',
-    RR: 'Roraima',
-    RS: 'Rio Grande do Sul',
-    SC: 'Santa Catarina',
-    SE: 'Sergipe',
-    SP: 'São Paulo',
-    TO: 'Tocantins'
-};
-
-const parseNumeric = (...values) => {
-    for (const value of values) {
-        const numericValue = Number(value);
-        if (Number.isFinite(numericValue)) return numericValue;
-    }
-
-    return 0;
-};
-
-const normalizeState = (value) => (
-    String(value || '')
-        .replace(/[\s\u00A0]+/g, '')
-        .toUpperCase()
-);
-
 const getCandidateId = (candidate) => candidate?.id || null;
-
-const formatScore = (value) => {
-    const numericValue = Number(value);
-    return Number.isFinite(numericValue) ? numericValue.toFixed(2).replace('.', ',') : '0,00';
-};
-
-const getCandidateScore = (candidate) => {
-    if (!candidate) return 0;
-    if (candidate.temNotaCandidato === false) return 0;
-
-    const candidateScore = candidate.nota_final ?? candidate.notaFinal ?? candidate['Nota candidato'];
-    const partyScore = candidate['Nota partido'];
-    const numericCandidateScore = Number(candidateScore);
-
-    if (Number.isFinite(numericCandidateScore) && numericCandidateScore !== 0) {
-        return numericCandidateScore;
-    }
-
-    const numericPartyScore = Number(partyScore);
-    return Number.isFinite(numericPartyScore) ? numericPartyScore : 0;
-};
-
-const getCandidateChance = (candidate) => {
-    if (!candidate) return 0;
-
-    const directValue = candidate.chance ?? candidate.Chance;
-    const directNumeric = Number(directValue);
-    if (Number.isFinite(directNumeric)) return Math.max(0, Math.min(100, Math.round(directNumeric)));
-
-    const selectedByUsers = Number(
-        candidate.selected_by_users ??
-        candidate.selectedByUsers ??
-        candidate.total_selecoes ??
-        candidate.votos_recebidos ??
-        0
-    );
-    const averageElectedVotes = Number(candidate.average_elected_votes ?? candidate.averageElectedVotes ?? 3);
-    if (!Number.isFinite(selectedByUsers) || !Number.isFinite(averageElectedVotes) || averageElectedVotes <= 0) return 0;
-
-    return Math.max(0, Math.min(100, Math.round((selectedByUsers / averageElectedVotes) * 100)));
-};
-
-const getCandidateTone = (candidate, fallback = 'neutral') => {
-    if (!candidate) return fallback;
-    if (getCandidateChance(candidate) >= 100) return 'neutral';
-    if (getCandidateScore(candidate) <= 0) return 'new';
-    return getCandidateScore(candidate) < 7 ? 'danger' : 'success';
-};
-
-const getDisplayCandidate = (candidate, fallbackName, defaultNumber) => ({
-    numero: candidate?.numero || candidate?.Numero || defaultNumber,
-    nome: candidate?.nome || candidate?.Nome || fallbackName,
-    partido: candidate?.partido || candidate?.Partido || 'PARTIDO',
-    nota: getCandidateScore(candidate),
-    chance: getCandidateChance(candidate)
-});
 
 const enrichCandidate = (candidate, tally, officeKey, rankingTotal) => {
     const selectedByUsers = parseNumeric(
@@ -143,7 +50,7 @@ const enrichCandidate = (candidate, tally, officeKey, rankingTotal) => {
         candidate.votos_recebidos
     );
     const averageElectedVotes = AVERAGE_ELECTED_VOTES_BY_OFFICE[officeKey] || 3;
-    const chance = Math.max(0, Math.min(100, Math.round((selectedByUsers / averageElectedVotes) * 100)));
+    const chance = calculateCandidateChance(selectedByUsers, averageElectedVotes);
 
     return {
         ...candidate,
@@ -348,7 +255,7 @@ export default function Resultado() {
             candidate: deputado,
             recommendation: getSlotRecommendation(rankedCandidates.deputadoFederal, deputado, [], 0),
             defaultNumber: '00000',
-            tone: getCandidateTone(deputado, 'success'),
+            tone: getCandidateScoreTone(deputado, 'success'),
             recommendationLabel: 'Candidato em destaque'
         },
         {
@@ -358,7 +265,7 @@ export default function Resultado() {
             candidate: senador1,
             recommendation: getSlotRecommendation(rankedCandidates.senadores, senador1, [senador2], 0),
             defaultNumber: '000',
-            tone: getCandidateTone(senador1, 'success'),
+            tone: getCandidateScoreTone(senador1, 'success'),
             recommendationLabel: 'Senador em destaque'
         },
         {
@@ -368,7 +275,7 @@ export default function Resultado() {
             candidate: senador2,
             recommendation: getSlotRecommendation(rankedCandidates.senadores, senador2, [senador1], 1),
             defaultNumber: '000',
-            tone: getCandidateTone(senador2, 'danger'),
+            tone: getCandidateScoreTone(senador2, 'danger'),
             recommendationLabel: '2º melhor senador'
         }
     ]), [deputado, rankedCandidates.deputadoFederal, rankedCandidates.senadores, senador1, senador2]);
@@ -476,22 +383,25 @@ export default function Resultado() {
     return (
         <div className="resultado-page prototype-page">
             <header className="prototype-header app-page-header">
+                <div className="app-page-header__actions">
+                    <button
+                        className="app-header-back-button"
+                        type="button"
+                        onClick={() => navigateToStep(BALLOT_ROUTES.senadores)}
+                        aria-label="Voltar"
+                    >
+                        <BackIcon />
+                        <span>Voltar</span>
+                    </button>
+                </div>
+
                 <div className="app-page-header__copy">
                     <h1>MEU VOTO</h1>
                     <p>Confirme seus candidatos antes de votar</p>
                 </div>
 
                 <div className="app-page-header__side">
-                    <BottomNavigation currentStep="resultado" placement="header" />
-                    <div className="app-page-header__actions">
-                        <button
-                            className="app-header-action app-header-action--secondary"
-                            type="button"
-                            onClick={() => navigateToStep(BALLOT_ROUTES.senador2)}
-                        >
-                            ← Voltar
-                        </button>
-                    </div>
+                    <BottomNavigation currentStep="senador" placement="header" />
                 </div>
             </header>
 
@@ -531,9 +441,7 @@ export default function Resultado() {
                                             onClick={() => navigateToStep(
                                                 section.id === 'deputado_federal'
                                                     ? BALLOT_ROUTES.deputadoFederal
-                                                    : section.id === 'senadores_1'
-                                                        ? BALLOT_ROUTES.senador1
-                                                        : BALLOT_ROUTES.senador2
+                                                    : BALLOT_ROUTES.senadores
                                             )}
                                         >
                                             Alterar
@@ -572,7 +480,7 @@ export default function Resultado() {
                                                 candidate={section.recommendation}
                                                 fallbackName="CANDIDATO"
                                                 defaultNumber={section.defaultNumber}
-                                                tone={getCandidateTone(section.recommendation, 'success')}
+                                                tone={getCandidateScoreTone(section.recommendation, 'success')}
                                             />
                                             <div className="vote-recommendation-actions">
                                                 <button type="button" onClick={() => handleSwapCandidate(section)}>
@@ -627,7 +535,7 @@ export default function Resultado() {
                 <AppFooter className="app-footer--scroll-content" />
             </main>
 
-            <BottomNavigation currentStep="resultado" placement="footer" />
+            <BottomNavigation currentStep="senador" placement="footer" />
         </div>
     );
 }

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth, db } from '../services/firebaseConfig';
+import { auth, db } from '@/services/firebase/firebase';
 import { deleteField, doc, getDoc, onSnapshot, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
-import { UserContext } from './UserContextCore';
-import { ACTIVE_ELECTION_ID } from '../services/votingService';
-import { flowError, flowLog, flowWarn } from '../services/debugFlow';
+import { ACTIVE_ELECTION_ID } from '@/constants/ballot';
+import { UserContext } from '@/contexts/UserContext';
+import { flowError, flowLog, flowWarn } from '@/utils/debugFlow';
 
 const FILTER_STORAGE_KEY = 'plano-voto:filtro-ativo';
 

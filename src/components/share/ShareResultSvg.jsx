@@ -5,7 +5,7 @@ import {
   getGaugeProgress,
   getGaugeSegmentFill,
   normalizeGaugeScore
-} from '../utils/gaugeSvg';
+} from './gaugeSvg';
 
 export const SHARE_IMAGE_WIDTH = 1080;
 export const SHARE_IMAGE_HEIGHT = 1920;

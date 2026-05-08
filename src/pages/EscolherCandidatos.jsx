@@ -1,55 +1,25 @@
-import React, { useState, useEffect, useMemo, useDeferredValue } from 'react';
-import { auth } from '../services/firebaseConfig';
-import { useUser } from '../contexts/useUser';
+import { useState, useEffect, useMemo, useDeferredValue } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { AVERAGE_ELECTED_VOTES_BY_OFFICE, CANDIDATE_FILTERS } from '@/constants/candidates';
+import { useUser } from '@/hooks/useUser';
 import {
   getBallotEstado,
   getVotingErrorMessage,
   readBallotDraft,
   saveBallotStepSelection
-} from '../services/votingService';
+} from '@/services/voting/votingService';
 import {
   fetchCandidatesByOffice,
   fetchCandidateTallies,
   readCachedCandidatesByOffice,
   readCachedTallies
-} from '../services/candidateService';
-import { flowError, flowLog, flowWarn } from '../services/debugFlow';
-import SelectBase from '../components/SelectBase';
-import ConfirmModal from '../components/ConfirmModal';
-import TourModal from '../components/TourModal';
-
-const CANDIDATE_FILTERS = [
-  { id: 'reeleger', mode: 'reeleger', shortLabel: 'Reeleger' },
-  { id: 'renovar', mode: 'renovar', shortLabel: 'Renovar' }
-];
-
-const AVERAGE_ELECTED_VOTES_BY_OFFICE = {
-  deputado_federal: 3,
-  senadores: 3
-};
-
-const parseNumeric = (...values) => {
-  for (const value of values) {
-    const numericValue = Number(value);
-    if (Number.isFinite(numericValue)) return numericValue;
-  }
-
-  return 0;
-};
-
-const calculateChance = (selectedByUsers, averageElectedVotes) => {
-  if (!Number.isFinite(averageElectedVotes) || averageElectedVotes <= 0) return 0;
-  return Math.max(0, Math.min(100, Math.round((selectedByUsers / averageElectedVotes) * 100)));
-};
-
-const normalizeSearch = (value) => (
-  value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim()
-);
+} from '@/services/candidates/candidateService';
+import { flowError, flowLog, flowWarn } from '@/utils/debugFlow';
+import { calculateCandidateChance, parseNumeric } from '@/utils/candidateMetrics';
+import { normalizeSearch } from '@/utils/search';
+import ConfirmModal from '@/components/feedback/ConfirmModal';
+import TourModal from '@/components/feedback/TourModal';
+import SelectBase from '@/components/selection/SelectBase';
 
 export default function EscolherCandidatos({
   cargo,
@@ -59,7 +29,7 @@ export default function EscolherCandidatos({
   rotaAnterior,
   chaveBanco,
   chaveGrupo,
-  etapa
+  chaveGrupos
 }) {
   const { user, userData, userEligibility, loading: userLoading } = useUser();
   const navigate = useNavigate();
@@ -78,20 +48,17 @@ export default function EscolherCandidatos({
   const userId = user?.uid;
   const estadoDoFluxo = userId ? getBallotEstado(userId, userData?.estado) : userData?.estado;
   const bypassVoteRedirect = location.state?.bypassVoteRedirect === true;
+  const isSenadoresUnificados = chaveBanco === 'senadores' && Array.isArray(chaveGrupos) && chaveGrupos.length > 1;
   const currentStep = chaveBanco === 'deputado_federal'
     ? 'deputado'
-    : (chaveGrupo === 'senadores_2' ? 'senador2' : 'senador1');
-  const tituloEtapa = titulo;
-
-  const handleLogout = () => {
-    auth.signOut();
-    navigate('/');
-  };
+    : 'senador';
 
   const tourSteps = [
+    { target: '.app-help-action', title: 'AJUDA', content: 'Abre este guia sempre que você quiser revisar a tela.' },
     { target: '#tour-busca', title: 'PESQUISA', content: 'Pesquisa candidatos por nome ou partido.' },
-    { target: '#tour-lista', title: 'LISTA', content: 'Mostra os candidatos desta etapa em uma lista unica.' },
-    { target: '.candidate-subnav-mobile', title: 'ETAPAS', content: 'Mostra as etapas internas de deputados federais e senadores.' }
+    { target: '.candidate-filter-tabs', title: 'FILTROS', content: '<b>Reeleição:</b> Exibe candidatos que atuaram na última legislatura.<br><b>Renovação:</b> Exibe candidatos que não atuaram na última legislatura.' },
+    { target: '.prototype-candidate-card.is-fire-featured .metric-badge--featured', title: 'FOGUINHO', content: 'O foguinho destaca o candidato bem avaliado com a maior chance entre as opções disponíveis.' },
+    { target: '.prototype-candidate-card.is-chance-complete .metric-badge:last-child', title: 'CHANCE 100', content: 'Quando a chance está em 100, esse candidato já possui grandes chances e não precisa de mais voto.' }
   ];
 
   useEffect(() => {
@@ -141,7 +108,7 @@ export default function EscolherCandidatos({
             d.votos_recebidos
           );
           const averageElectedVotes = AVERAGE_ELECTED_VOTES_BY_OFFICE[chaveBanco] || 3;
-          const chance = calculateChance(selectedByUsers, averageElectedVotes);
+          const chance = calculateCandidateChance(selectedByUsers, averageElectedVotes);
 
           return {
             id: candidateDoc.id,
@@ -230,10 +197,13 @@ export default function EscolherCandidatos({
       }
 
       const draft = readBallotDraft(userId, estadoDoFluxo);
-      const idsSalvos = (draft.candidate_groups?.[chaveGrupo] || []).map((candidate) => candidate.id);
+      const gruposDaTela = isSenadoresUnificados ? chaveGrupos : [chaveGrupo];
+      const idsSalvos = gruposDaTela
+        .flatMap((groupKey) => draft.candidate_groups?.[groupKey] || [])
+        .map((candidate) => candidate.id);
       flowLog('candidates.restore-selection', {
         cargo,
-        chaveGrupo,
+        chaveGrupo: isSenadoresUnificados ? chaveGrupos.join(',') : chaveGrupo,
         estado: estadoDoFluxo,
         idsSalvos
       });
@@ -243,7 +213,7 @@ export default function EscolherCandidatos({
     return () => {
       cancelled = true;
     };
-  }, [cargo, userId, estadoDoFluxo, todosCandidatos, chaveGrupo]);
+  }, [cargo, userId, estadoDoFluxo, todosCandidatos, chaveGrupo, chaveGrupos, isSenadoresUnificados]);
 
   const candidatosDoEstado = useMemo(() => {
     const meuEstado = estadoDoFluxo?.replace(/[\s\u00A0]+/g, '') || '';
@@ -252,27 +222,20 @@ export default function EscolherCandidatos({
     ));
   }, [todosCandidatos, estadoDoFluxo]);
 
-  const candidatosFiltrados = useMemo(() => {
-    if (filtroLista === 'renovar') {
-      return [...candidatosDoEstado].sort((a, b) => (a.Nome || '').localeCompare(b.Nome || ''));
-    }
-
-    return [...candidatosDoEstado].sort((a, b) => b.notaFinal - a.notaFinal);
-  }, [candidatosDoEstado, filtroLista]);
-
   const selectedCandidateIdsInOtherSteps = useMemo(() => {
     if (!userId) return new Set();
 
     const draft = readBallotDraft(userId, estadoDoFluxo);
+    const gruposDaTela = new Set(isSenadoresUnificados ? chaveGrupos : [chaveGrupo]);
     const ids = Object.entries(draft.candidate_groups || {})
-      .filter(([stepId]) => stepId !== chaveGrupo)
+      .filter(([stepId]) => !gruposDaTela.has(stepId))
       .flatMap(([, candidates]) => candidates.map((candidate) => candidate.id));
 
     return new Set(ids);
-  }, [chaveGrupo, estadoDoFluxo, userId]);
+  }, [chaveGrupo, chaveGrupos, estadoDoFluxo, isSenadoresUnificados, userId]);
 
   const listaExibida = useMemo(() => {
-    let disponiveis = candidatosFiltrados;
+    let disponiveis = candidatosDoEstado;
 
     if (filtroLista === 'renovar') {
       disponiveis = disponiveis.filter((candidate) => !candidate.temNotaCandidato);
@@ -291,25 +254,68 @@ export default function EscolherCandidatos({
       });
     }
 
-    return disponiveis.map((candidate) => ({
+    const listaComEstado = disponiveis.map((candidate) => ({
       ...candidate,
       isAlreadyChosen: selectedCandidateIdsInOtherSteps.has(candidate.id)
     }));
-  }, [candidatosFiltrados, filtroLista, buscaDiferida, selectedCandidateIdsInOtherSteps]);
 
-  const listaDestaque = useMemo(() => (
-    [...candidatosDoEstado]
-      .filter((candidate) => candidate.temNotaCandidato)
-      .sort((a, b) => {
-        const scoreDiff = b.notaFinal - a.notaFinal;
-        if (scoreDiff !== 0) return scoreDiff;
-        return b.chance - a.chance;
-      })
+    const desempatarPorNome = (a, b) => (a.Nome || '').localeCompare(b.Nome || '');
+    const notaSistema = (candidate) => {
+      const score = Number(candidate.notaFinal ?? candidate.nota_final ?? candidate['Nota partido'] ?? 0);
+      return Number.isFinite(score) ? score : 0;
+    };
+
+    const desempatarPorChanceNotaNome = (a, b) => {
+      const chanceDiff = b.chance - a.chance;
+      if (chanceDiff !== 0) return chanceDiff;
+
+      const scoreDiff = notaSistema(b) - notaSistema(a);
+      if (scoreDiff !== 0) return scoreDiff;
+
+      return desempatarPorNome(a, b);
+    };
+
+    const candidatoFoguinho = [...listaComEstado]
+      .filter((candidate) => (
+        !candidate.isAlreadyChosen &&
+        notaSistema(candidate) >= 7 &&
+        candidate.chance > 0 &&
+        candidate.chance < 100
+      ))
+      .sort(desempatarPorChanceNotaNome)[0];
+    const foguinhoId = candidatoFoguinho?.id || null;
+
+    const grupoVisual = (candidate) => {
+      const score = notaSistema(candidate);
+
+      if (candidate.id === foguinhoId) return 0;
+      if (score >= 7 && candidate.chance < 100) return 1;
+      if (score >= 7 && candidate.chance >= 100) return 2;
+      if (score > 0 && score < 7) return 3;
+      return 4;
+    };
+
+    return listaComEstado
       .map((candidate) => ({
         ...candidate,
-        isAlreadyChosen: selectedCandidateIdsInOtherSteps.has(candidate.id)
+        isChanceFeatured: candidate.id === foguinhoId
       }))
-  ), [candidatosDoEstado, selectedCandidateIdsInOtherSteps]);
+      .sort((a, b) => {
+        const blockedDiff = Number(a.isAlreadyChosen) - Number(b.isAlreadyChosen);
+        if (blockedDiff !== 0) return blockedDiff;
+
+        const groupDiff = grupoVisual(a) - grupoVisual(b);
+        if (groupDiff !== 0) return groupDiff;
+
+        const chanceDiff = b.chance - a.chance;
+        if (chanceDiff !== 0) return chanceDiff;
+
+        const scoreDiff = notaSistema(b) - notaSistema(a);
+        if (scoreDiff !== 0) return scoreDiff;
+
+        return desempatarPorNome(a, b);
+      });
+  }, [candidatosDoEstado, filtroLista, buscaDiferida, selectedCandidateIdsInOtherSteps]);
 
   const persistirEtapa = (listaFinalDaTela, { markCompleted = false } = {}) => {
     if (!userId) {
@@ -325,6 +331,12 @@ export default function EscolherCandidatos({
     }
 
     try {
+      if (isSenadoresUnificados) {
+        const [primeiroSenador, segundoSenador] = listaFinalDaTela.slice(0, 2);
+        saveBallotStepSelection(userId, 'senadores_1', primeiroSenador ? [primeiroSenador] : [], estadoDoFluxo, { markCompleted });
+        return saveBallotStepSelection(userId, 'senadores_2', segundoSenador ? [segundoSenador] : [], estadoDoFluxo, { markCompleted });
+      }
+
       return saveBallotStepSelection(userId, chaveGrupo, listaFinalDaTela, estadoDoFluxo, { markCompleted });
     } catch (error) {
       flowError('candidates.persist.error', error, { cargo, chaveGrupo });
@@ -344,6 +356,8 @@ export default function EscolherCandidatos({
   const handleAvancar = (listaFinalDaTela) => {
     const draftAtualizado = persistirEtapa(listaFinalDaTela, { markCompleted: true });
     if (!draftAtualizado) return;
+
+    if (isSenadoresUnificados) return;
 
     flowLog('candidates.step.next', {
       cargo,
@@ -368,29 +382,24 @@ export default function EscolherCandidatos({
     <>
       <TourModal steps={tourSteps} isOpen={isTourOpen} onClose={() => setIsTourOpen(false)} />
       <SelectBase
-        titulo={tituloEtapa}
+        titulo={titulo}
         subtitulo={subtitulo}
         dados={listaExibida}
-        highlightDados={listaDestaque}
         emptyMessage={erroCarregamento || 'Nenhum candidato encontrado.'}
-        limiteSelecao={null}
+        limiteSelecao={isSenadoresUnificados ? 2 : 1}
         selecaoInicial={selecionadosNaTela}
         carregando={userLoading || loading}
         mostrarBusca={true}
         valorBusca={busca}
         onChangeBusca={setBusca}
-        topRightExtra={<button className="header-utility-btn" type="button" onClick={handleLogout}>Sair</button>}
         onHelpClick={() => setIsTourOpen(true)}
         onConfirmar={handleAvancar}
         onSelectionChange={handleSelectionChange}
         onVoltar={handleVoltar}
         linhasVisiveis={5}
-        etapa={etapa}
         currentStep={currentStep}
-        autoAvancarAoSelecionar={true}
+        autoAvancarAoSelecionar={false}
         variant={chaveBanco === 'deputado_federal' ? 'office-deputado' : 'office-senado'}
-        integratedListSearch={true}
-        showListNavigation={true}
         subNavigationItems={CANDIDATE_FILTERS}
         activeSubNavigationId={filtroLista}
         onSubNavigationSelect={handleSubNavigation}

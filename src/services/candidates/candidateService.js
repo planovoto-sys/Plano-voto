@@ -5,8 +5,8 @@ import {
   query,
   where
 } from 'firebase/firestore';
-import { db } from './firebaseConfig';
-import { ACTIVE_ELECTION_ID } from './votingService';
+import { ACTIVE_ELECTION_ID } from '@/constants/ballot';
+import { db } from '@/services/firebase/firebase';
 
 const PUBLIC_CACHE_VERSION = 'v1';
 const CACHE_PREFIX = `meuvoto:public-cache:${PUBLIC_CACHE_VERSION}`;
