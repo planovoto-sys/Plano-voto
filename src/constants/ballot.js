@@ -1,5 +1,8 @@
 export const ACTIVE_ELECTION_ID = import.meta.env.VITE_ACTIVE_ELECTION_ID || 'congresso-2026';
 export const CAST_VOTE_FUNCTION_NAME = import.meta.env.VITE_CAST_VOTE_FUNCTION || 'castAnonymousVote';
+export const SAVE_BALLOT_STATE_FUNCTION_NAME = import.meta.env.VITE_SAVE_BALLOT_STATE_FUNCTION || 'saveBallotState';
+export const SAVE_BALLOT_STEP_FUNCTION_NAME = import.meta.env.VITE_SAVE_BALLOT_STEP_FUNCTION || 'saveBallotStepSelection';
+export const DELETE_USER_ELECTION_DATA_FUNCTION_NAME = import.meta.env.VITE_DELETE_USER_ELECTION_DATA_FUNCTION || 'deleteUserElectionData';
 
 export const BALLOT_SCHEMA_VERSION = 1;
 

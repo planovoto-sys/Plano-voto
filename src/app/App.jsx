@@ -91,6 +91,9 @@ function App() {
             <Route path="/escolher-senadores/reeleger" element={privateRedirect(BALLOT_ROUTES.senadores)} />
             <Route path="/escolher-senadores/renovar" element={privateRedirect(BALLOT_ROUTES.senadores)} />
 
+            <Route path="/meu-voto" element={privateRedirect(BALLOT_ROUTES.estado)} />
+            <Route path="/meuvoto" element={privateRedirect(BALLOT_ROUTES.estado)} />
+            <Route path="/resultado" element={privateRedirect(BALLOT_ROUTES.estado)} />
             <Route path="/finalizacao" element={privateRoute(<Resultado />)} />
             <Route path="/cookies" element={<LegalPage type="cookies" />} />
             <Route path="/politica-de-privacidade" element={<LegalPage type="privacidade" />} />

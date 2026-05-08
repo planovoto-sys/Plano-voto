@@ -1,6 +1,8 @@
 import {
   collection,
   documentId,
+  doc,
+  getDoc,
   getDocs,
   query,
   where
@@ -12,11 +14,15 @@ import {
   BALLOT_ROUTES,
   BALLOT_SCHEMA_VERSION,
   CAST_VOTE_FUNCTION_NAME,
+  DELETE_USER_ELECTION_DATA_FUNCTION_NAME,
   LEGACY_FLOW_STEP_ALIASES,
-  OFFICE_LIMITS
+  OFFICE_LIMITS,
+  SAVE_BALLOT_STATE_FUNCTION_NAME,
+  SAVE_BALLOT_STEP_FUNCTION_NAME
 } from '@/constants/ballot';
 import { db, functions, functionsRegion } from '@/services/firebase/firebase';
 import { flowLog } from '@/utils/debugFlow';
+import { normalizeStateCode } from '@/utils/state';
 const STORAGE_PREFIX = `meuvoto:${ACTIVE_ELECTION_ID}`;
 const DRAFT_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 let storageAvailability = null;
@@ -73,7 +79,7 @@ const emptyCompletedSteps = () => (
 export const createEmptyBallotDraft = (estado = null) => ({
   schema_version: BALLOT_SCHEMA_VERSION,
   election_id: ACTIVE_ELECTION_ID,
-  estado,
+  estado: normalizeStateCode(estado) || null,
   selections: emptySelections(),
   candidate_groups: emptyCandidateGroups(),
   completed_steps: emptyCompletedSteps(),
@@ -153,7 +159,7 @@ const normalizeDraft = (rawDraft, estado = null) => {
     ...rawDraft,
     schema_version: BALLOT_SCHEMA_VERSION,
     election_id: ACTIVE_ELECTION_ID,
-    estado: rawDraft.estado ?? estado ?? null,
+    estado: normalizeStateCode(rawDraft.estado ?? estado) || null,
     selections,
     candidate_groups: candidateGroups,
     completed_steps: completedSteps
@@ -200,78 +206,102 @@ const persistBallotDraft = (userId, draft) => {
   return draft;
 };
 
+const persistCallableDraft = (userId, fallbackEstado, data) => {
+  const normalizedDraft = normalizeDraft(data?.draft || data, fallbackEstado);
+  return persistBallotDraft(userId, normalizedDraft);
+};
+
+const normalizeRemoteDraftData = (data) => {
+  if (!data) return data;
+  const updatedAt = typeof data.updated_at?.toDate === 'function'
+    ? data.updated_at.toDate().toISOString()
+    : data.updated_at || null;
+
+  return {
+    ...data,
+    updated_at: updatedAt
+  };
+};
+
 export const getBallotEstado = (userId, fallbackEstado = null) => {
   const draft = readBallotDraft(userId, fallbackEstado);
   return draft.estado || fallbackEstado || null;
 };
 
-export const saveBallotState = (userId, estado) => {
-  const currentDraft = readBallotDraft(userId, estado);
-  return persistBallotDraft(userId, {
-    ...currentDraft,
-    estado,
-    updated_at: new Date().toISOString()
-  });
+export const fetchRemoteBallotDraft = async (userId, estado = null) => {
+  if (!userId) return createEmptyBallotDraft(estado);
+
+  const draftRef = doc(db, 'elections', ACTIVE_ELECTION_ID, 'ballot_drafts', userId);
+  const draftSnap = await getDoc(draftRef);
+  const draft = draftSnap.exists()
+    ? normalizeDraft(normalizeRemoteDraftData(draftSnap.data()), estado)
+    : createEmptyBallotDraft(estado);
+
+  return persistBallotDraft(userId, draft);
 };
 
-export const resetBallotForState = (userId, estado) => (
-  persistBallotDraft(userId, createEmptyBallotDraft(estado))
-);
+export const saveBallotState = async (userId, estado) => {
+  if (!userId) throw new VotingError('AUTH_REQUIRED', 'Faça login para continuar.');
 
-export const saveBallotOfficeSelection = (userId, officeKey, candidates, estado = null) => {
+  const saveState = httpsCallable(functions, SAVE_BALLOT_STATE_FUNCTION_NAME);
+  const response = await saveState({
+    schema_version: BALLOT_SCHEMA_VERSION,
+    election_id: ACTIVE_ELECTION_ID,
+    estado: normalizeStateCode(estado)
+  });
+
+  return persistCallableDraft(userId, estado, response.data);
+};
+
+export const resetBallotForState = (userId, estado) => saveBallotState(userId, estado);
+
+export const saveBallotOfficeSelection = async (userId, officeKey, candidates, estado = null) => {
   if (!OFFICE_LIMITS[officeKey]) {
     throw new VotingError('INVALID_OFFICE', 'Cargo inválido para esta eleição.');
   }
 
-  const currentDraft = readBallotDraft(userId, estado);
   const normalizedCandidates = asArray(candidates)
     .map(normalizeStoredCandidate)
     .filter(Boolean)
     .slice(0, OFFICE_LIMITS[officeKey]);
 
-  const nextDraft = {
-    ...currentDraft,
-    estado: estado ?? currentDraft.estado ?? null,
-    selections: {
-      ...currentDraft.selections,
-      [officeKey]: normalizedCandidates
-    },
-    updated_at: new Date().toISOString()
-  };
+  if (officeKey === 'deputado_federal') {
+    return saveBallotStepSelection(userId, 'deputado_federal', normalizedCandidates, estado, { markCompleted: true });
+  }
 
-  return persistBallotDraft(userId, normalizeDraft(nextDraft, estado));
+  const [senador1, senador2] = normalizedCandidates;
+  await saveBallotStepSelection(userId, 'senadores_1', senador1 ? [senador1] : [], estado, { markCompleted: true });
+  return saveBallotStepSelection(userId, 'senadores_2', senador2 ? [senador2] : [], estado, { markCompleted: true });
 };
 
-export const saveBallotStepSelection = (userId, stepKey, candidates, estado = null, options = {}) => {
+export const saveBallotStepSelection = async (userId, stepKey, candidates, estado = null, options = {}) => {
   if (!BALLOT_FLOW_STEP_IDS.includes(stepKey)) {
     throw new VotingError('INVALID_BALLOT_STEP', 'Etapa inválida para esta eleição.');
   }
 
-  const currentDraft = readBallotDraft(userId, estado);
+  if (!userId) throw new VotingError('AUTH_REQUIRED', 'Faça login para continuar.');
+
   const normalizedCandidates = asArray(candidates)
     .map(normalizeStoredCandidate)
     .filter(Boolean);
+  const currentDraft = readBallotDraft(userId, estado);
+  const activeEstado = normalizeStateCode(estado ?? currentDraft.estado);
 
-  const nextDraft = {
-    ...currentDraft,
-    estado: estado ?? currentDraft.estado ?? null,
-    candidate_groups: {
-      ...emptyCandidateGroups(),
-      ...currentDraft.candidate_groups,
-      [stepKey]: normalizedCandidates
-    },
-    completed_steps: {
-      ...emptyCompletedSteps(),
-      ...currentDraft.completed_steps,
-      [stepKey]: normalizedCandidates.length > 0 && (
-        options.markCompleted === true ||
-        currentDraft.completed_steps?.[stepKey] === true
-      )
-    },
-    updated_at: new Date().toISOString()
-  };
+  if (!activeEstado) {
+    throw new VotingError('STATE_REQUIRED', 'Escolha um estado antes de selecionar candidatos.');
+  }
 
-  return persistBallotDraft(userId, normalizeDraft(nextDraft, estado));
+  const saveStep = httpsCallable(functions, SAVE_BALLOT_STEP_FUNCTION_NAME);
+  const response = await saveStep({
+    schema_version: BALLOT_SCHEMA_VERSION,
+    election_id: ACTIVE_ELECTION_ID,
+    estado: activeEstado,
+    step_key: stepKey,
+    candidate_ids: normalizedCandidates.map((candidate) => candidate.id),
+    mark_completed: options.markCompleted === true
+  });
+
+  return persistCallableDraft(userId, activeEstado, response.data);
 };
 
 export const clearBallotDraft = (userId) => {
@@ -290,6 +320,20 @@ export const clearVoteReceipt = (userId) => {
   } catch {
     // O recibo local pode ser recriado apos nova confirmacao bem-sucedida.
   }
+};
+
+export const deleteUserElectionData = async (userId) => {
+  if (!userId) throw new VotingError('AUTH_REQUIRED', 'Faça login para continuar.');
+
+  const deleteData = httpsCallable(functions, DELETE_USER_ELECTION_DATA_FUNCTION_NAME);
+  await deleteData({
+    schema_version: BALLOT_SCHEMA_VERSION,
+    election_id: ACTIVE_ELECTION_ID
+  });
+  clearBallotDraft(userId);
+  clearVoteReceipt(userId);
+
+  return { ok: true };
 };
 
 export const hasBallotSelections = (userId) => {

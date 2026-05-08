@@ -8,7 +8,7 @@ import {
 import { ACTIVE_ELECTION_ID } from '@/constants/ballot';
 import { db } from '@/services/firebase/firebase';
 
-const PUBLIC_CACHE_VERSION = 'v1';
+const PUBLIC_CACHE_VERSION = 'v2';
 const CACHE_PREFIX = `meuvoto:public-cache:${PUBLIC_CACHE_VERSION}`;
 const CANDIDATE_CACHE_MAX_AGE_MS = 12 * 60 * 60 * 1000;
 const CANDIDATE_CACHE_MAX_STALE_MS = 7 * 24 * 60 * 60 * 1000;
@@ -97,6 +97,19 @@ const writeCacheEntry = (key, value) => {
   }
 };
 
+const removeCacheEntry = (key) => {
+  const storageKey = makeCacheKey(key);
+  memoryCache.delete(storageKey);
+
+  if (!canUseStorage()) return;
+
+  try {
+    window.localStorage.removeItem(storageKey);
+  } catch {
+    // O cache sera reconstruido na proxima leitura valida.
+  }
+};
+
 const candidateCacheKey = (officeName) => `candidates:${officeName}`;
 const tallyCacheKey = (candidateId) => `tallies:${ACTIVE_ELECTION_ID}:${candidateId}`;
 
@@ -136,7 +149,13 @@ export const readCachedTallies = (candidateIds) => {
   return tallies;
 };
 
-export const fetchCandidateTallies = async (candidateIds) => {
+export const invalidateCandidateTalliesCache = (candidateIds) => {
+  [...new Set(candidateIds)].filter(Boolean).forEach((candidateId) => {
+    removeCacheEntry(tallyCacheKey(candidateId));
+  });
+};
+
+export const fetchCandidateTallies = async (candidateIds, { forceRefresh = false } = {}) => {
   const uniqueIds = [...new Set(candidateIds)].filter(Boolean);
   const tallies = new Map();
   const idsToFetch = [];
@@ -151,7 +170,7 @@ export const fetchCandidateTallies = async (candidateIds) => {
       tallies.set(candidateId, cached.value);
     }
 
-    if (!cached?.isFresh) {
+    if (forceRefresh || !cached?.isFresh) {
       idsToFetch.push(candidateId);
     }
   });

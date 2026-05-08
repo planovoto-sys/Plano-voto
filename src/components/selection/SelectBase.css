@@ -178,6 +178,24 @@
   gap: 7px;
 }
 
+.candidate-slot {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.candidate-slot__label {
+  margin-left: 4px;
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.candidate-empty-card--slot {
+  width: 100%;
+}
+
 .candidate-list-section {
   margin-top: 0;
 }
@@ -374,12 +392,10 @@
 .candidate-card__identity strong {
   display: block;
   max-width: 100%;
-  overflow: hidden;
   color: currentColor;
-  font-size: 20px;
+  font-size: var(--candidate-name-size, 20px);
   font-weight: 800;
   line-height: 1.05;
-  text-overflow: ellipsis;
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -401,14 +417,12 @@
 .candidate-card__assessment {
   display: block;
   max-width: 100%;
-  overflow: hidden;
   margin-top: 4px;
   color: currentColor;
-  font-size: 10px;
+  font-size: var(--candidate-assessment-size, 10px);
   font-weight: 800;
   line-height: 1.05;
   opacity: 0.78;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -546,7 +560,7 @@
   }
 
   .candidate-card__identity strong {
-    font-size: 17px;
+    font-size: min(var(--candidate-name-size, 17px), 17px);
   }
 
   .candidate-card__identity small {
@@ -554,7 +568,7 @@
   }
 
   .candidate-card__assessment {
-    font-size: 9px;
+    font-size: min(var(--candidate-assessment-size, 9px), 9px);
   }
 
   .metric-badge {
@@ -894,7 +908,7 @@
   }
 
   .candidate-card__identity strong {
-    font-size: 20px;
+    font-size: var(--candidate-name-size, 20px);
   }
 
   .candidate-card__identity small {
@@ -902,7 +916,7 @@
   }
 
   .candidate-card__assessment {
-    font-size: 11px;
+    font-size: min(var(--candidate-assessment-size, 11px), 11px);
   }
 
   .candidate-card__badge {

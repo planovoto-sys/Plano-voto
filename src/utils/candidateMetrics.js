@@ -67,10 +67,10 @@ export const getCandidateChance = (candidate = {}) => {
   }
 
   const selectedByUsers = Number(
+    candidate.active_selections ??
+    candidate.total_active_selections ??
     candidate.selected_by_users ??
     candidate.selectedByUsers ??
-    candidate.total_selecoes ??
-    candidate.votos_recebidos ??
     0
   );
   const averageElectedVotes = Number(candidate.average_elected_votes ?? candidate.averageElectedVotes ?? 3);

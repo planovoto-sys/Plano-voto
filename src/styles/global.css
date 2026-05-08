@@ -22,6 +22,10 @@
   --tone-neutral: #a9a9a9;
   --bottom-nav-height: 72px;
   --screen-gutter: 20px;
+  --panel-radius: 12px;
+  --metric-progress: 0;
+  --candidate-name-size: 20px;
+  --candidate-assessment-size: 10px;
   --font-family: 'Montserrat', Arial, sans-serif;
 }
 

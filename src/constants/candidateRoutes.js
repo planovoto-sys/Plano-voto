@@ -18,6 +18,6 @@ export const CANDIDATE_ROUTES = {
     titulo: 'Senadores',
     subtitulo: 'Escolha 2 candidatos',
     rotaAnterior: BALLOT_ROUTES.deputadoFederal,
-    proximaRota: BALLOT_ROUTES.senadores
+    proximaRota: BALLOT_ROUTES.resultado
   }
 };

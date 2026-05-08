@@ -35,6 +35,16 @@ function MetricCircle({ label, value, tone, featured = false }) {
   );
 }
 
+const getSingleLineSize = (value, sizes) => {
+  const length = String(value || '').trim().length;
+
+  if (length > 42) return sizes.xs;
+  if (length > 34) return sizes.sm;
+  if (length > 28) return sizes.md;
+  if (length > 22) return sizes.lg;
+  return sizes.base;
+};
+
 export default function CandidateCard({
   candidate,
   highlight = false,
@@ -67,10 +77,15 @@ export default function CandidateCard({
     if (systemScore > 0 && systemScore < 7) return 'Candidato Mal Avaliado';
     return '';
   })();
+  const textFitStyle = {
+    '--candidate-name-size': `${getSingleLineSize(name, { base: 20, lg: 15, md: 13, sm: 11, xs: 9 })}px`,
+    '--candidate-assessment-size': `${getSingleLineSize(assessmentSubtitle, { base: 10, lg: 9, md: 8.5, sm: 8, xs: 7.5 })}px`
+  };
 
   return (
     <button
       className={`prototype-candidate-card candidate-card--${tone} ${highlight ? 'is-highlight' : ''} ${selected ? 'is-selected' : ''} ${summary ? 'is-summary' : ''} ${isFireFeatured ? 'is-fire-featured' : ''} ${isChanceComplete ? 'is-chance-complete' : ''} ${isBlocked ? 'is-blocked' : ''}`}
+      style={textFitStyle}
       type="button"
       onClick={onSelect}
       title={summary ? 'Remover candidato selecionado' : undefined}

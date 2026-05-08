@@ -83,10 +83,14 @@ export default function BottomNavigation({ currentStep, placement = 'footer' }) 
     navigate(path, { state: { bypassVoteRedirect: true } });
   };
 
-  const handleClearChoices = () => {
-    if (user?.uid) {
-      resetBallotForState(user.uid, estadoSelecionado || null);
-      clearVoteReceipt(user.uid);
+  const handleClearChoices = async () => {
+    if (user?.uid && estadoSelecionado) {
+      try {
+        await resetBallotForState(user.uid, estadoSelecionado);
+        clearVoteReceipt(user.uid);
+      } catch (error) {
+        console.warn('Nao foi possivel limpar as escolhas agora.', error);
+      }
     }
 
     navigateFromOptions(BALLOT_ROUTES.estado);

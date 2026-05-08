@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo, useDeferredValue } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { AVERAGE_ELECTED_VOTES_BY_OFFICE, CANDIDATE_FILTERS } from '@/constants/candidates';
 import { useUser } from '@/hooks/useUser';
 import {
+  fetchRemoteBallotDraft,
   getBallotEstado,
   getVotingErrorMessage,
   readBallotDraft,
@@ -17,6 +18,7 @@ import {
 import { flowError, flowLog, flowWarn } from '@/utils/debugFlow';
 import { calculateCandidateChance, parseNumeric } from '@/utils/candidateMetrics';
 import { normalizeSearch } from '@/utils/search';
+import { getCandidateStateCode, normalizeStateCode } from '@/utils/state';
 import ConfirmModal from '@/components/feedback/ConfirmModal';
 import TourModal from '@/components/feedback/TourModal';
 import SelectBase from '@/components/selection/SelectBase';
@@ -31,9 +33,8 @@ export default function EscolherCandidatos({
   chaveGrupo,
   chaveGrupos
 }) {
-  const { user, userData, userEligibility, loading: userLoading } = useUser();
+  const { user, userData, loading: userLoading } = useUser();
   const navigate = useNavigate();
-  const location = useLocation();
 
   const [todosCandidatos, setTodosCandidatos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -47,7 +48,6 @@ export default function EscolherCandidatos({
 
   const userId = user?.uid;
   const estadoDoFluxo = userId ? getBallotEstado(userId, userData?.estado) : userData?.estado;
-  const bypassVoteRedirect = location.state?.bypassVoteRedirect === true;
   const isSenadoresUnificados = chaveBanco === 'senadores' && Array.isArray(chaveGrupos) && chaveGrupos.length > 1;
   const currentStep = chaveBanco === 'deputado_federal'
     ? 'deputado'
@@ -60,13 +60,6 @@ export default function EscolherCandidatos({
     { target: '.prototype-candidate-card.is-fire-featured .metric-badge--featured', title: 'FOGUINHO', content: 'O foguinho destaca o candidato bem avaliado com a maior chance entre as opções disponíveis.' },
     { target: '.prototype-candidate-card.is-chance-complete .metric-badge:last-child', title: 'CHANCE 100', content: 'Quando a chance está em 100, esse candidato já possui grandes chances e não precisa de mais voto.' }
   ];
-
-  useEffect(() => {
-    if (!bypassVoteRedirect && userId && userEligibility?.has_voted) {
-      flowLog('candidates.redirect.result-after-vote', { userId, cargo, chaveGrupo });
-      navigate('/finalizacao', { replace: true });
-    }
-  }, [bypassVoteRedirect, cargo, chaveGrupo, userId, userEligibility?.has_voted, navigate]);
 
   useEffect(() => {
     if (!userLoading && userId && !estadoDoFluxo) {
@@ -97,16 +90,10 @@ export default function EscolherCandidatos({
 
           const classificacaoOriginal = d['Classificação'] || d.Classificacao || '-';
           const classificacaoNum = classificacaoOriginal === '-' ? 999999 : Number(classificacaoOriginal);
-          const ufLimpa = d.Estado ? d.Estado.replace(/[\s\u00A0]+/g, '') : 'TODOS';
-          const selectedByUsers = parseNumeric(
-            tally.total_votes,
-            tally.total_selections,
-            d.total_selecoes,
-            d.selecoes_recebidas,
-            d.selecionado_por,
-            d.selecionados,
-            d.votos_recebidos
+          const ufLimpa = getCandidateStateCode(d, { allowPartyFallback: chaveBanco === 'senadores' }) || (
+            chaveBanco === 'senadores' ? '' : 'TODOS'
           );
+          const selectedByUsers = parseNumeric(tally.active_selections, d.active_selections);
           const averageElectedVotes = AVERAGE_ELECTED_VOTES_BY_OFFICE[chaveBanco] || 3;
           const chance = calculateCandidateChance(selectedByUsers, averageElectedVotes);
 
@@ -159,7 +146,7 @@ export default function EscolherCandidatos({
         let tallies = readCachedTallies(candidateDocs.map((candidateDoc) => candidateDoc.id));
 
         try {
-          tallies = await fetchCandidateTallies(candidateDocs.map((candidateDoc) => candidateDoc.id));
+          tallies = await fetchCandidateTallies(candidateDocs.map((candidateDoc) => candidateDoc.id), { forceRefresh: true });
         } catch (error) {
           flowWarn('candidates.tallies.fetch-error', { cargo, chaveGrupo, message: error?.message });
         }
@@ -185,18 +172,31 @@ export default function EscolherCandidatos({
     };
   }, [cargo, chaveBanco, chaveGrupo]);
 
+  const candidatosDoEstado = useMemo(() => {
+    const meuEstado = normalizeStateCode(estadoDoFluxo);
+    return todosCandidatos.filter((candidate) => (
+      candidate.ufLimpa === meuEstado || (chaveBanco !== 'senadores' && candidate.ufLimpa === 'TODOS')
+    ));
+  }, [chaveBanco, todosCandidatos, estadoDoFluxo]);
+
   useEffect(() => {
     let cancelled = false;
 
-    queueMicrotask(() => {
-      if (cancelled) return;
-
+    const restoreSelection = async () => {
       if (!userId || todosCandidatos.length === 0) {
         setSelecionadosNaTela([]);
         return;
       }
 
-      const draft = readBallotDraft(userId, estadoDoFluxo);
+      let draft = readBallotDraft(userId, estadoDoFluxo);
+      try {
+        draft = await fetchRemoteBallotDraft(userId, estadoDoFluxo);
+      } catch (error) {
+        flowWarn('candidates.remote-draft.fetch-error', { cargo, chaveGrupo, message: error?.message });
+      }
+
+      if (cancelled) return;
+
       const gruposDaTela = isSenadoresUnificados ? chaveGrupos : [chaveGrupo];
       const idsSalvos = gruposDaTela
         .flatMap((groupKey) => draft.candidate_groups?.[groupKey] || [])
@@ -207,20 +207,15 @@ export default function EscolherCandidatos({
         estado: estadoDoFluxo,
         idsSalvos
       });
-      setSelecionadosNaTela(todosCandidatos.filter((candidate) => idsSalvos.includes(candidate.id)));
-    });
+      setSelecionadosNaTela(candidatosDoEstado.filter((candidate) => idsSalvos.includes(candidate.id)));
+    };
+
+    restoreSelection();
 
     return () => {
       cancelled = true;
     };
-  }, [cargo, userId, estadoDoFluxo, todosCandidatos, chaveGrupo, chaveGrupos, isSenadoresUnificados]);
-
-  const candidatosDoEstado = useMemo(() => {
-    const meuEstado = estadoDoFluxo?.replace(/[\s\u00A0]+/g, '') || '';
-    return todosCandidatos.filter((candidate) => (
-      candidate.ufLimpa === meuEstado || candidate.ufLimpa === 'TODOS'
-    ));
-  }, [todosCandidatos, estadoDoFluxo]);
+  }, [cargo, userId, estadoDoFluxo, todosCandidatos, candidatosDoEstado, chaveGrupo, chaveGrupos, isSenadoresUnificados]);
 
   const selectedCandidateIdsInOtherSteps = useMemo(() => {
     if (!userId) return new Set();
@@ -317,48 +312,49 @@ export default function EscolherCandidatos({
       });
   }, [candidatosDoEstado, filtroLista, buscaDiferida, selectedCandidateIdsInOtherSteps]);
 
-  const persistirEtapa = (listaFinalDaTela, { markCompleted = false } = {}) => {
+  const persistirEtapa = async (listaFinalDaTela, { markCompleted = false } = {}) => {
     if (!userId) {
       flowWarn('candidates.persist.no-user', { cargo, chaveGrupo });
       navigate('/', { replace: true });
-      return null;
+      throw new Error('Faça login para continuar.');
     }
 
     if (!estadoDoFluxo) {
       flowWarn('candidates.persist.no-state', { cargo, chaveGrupo });
       navigate('/home', { replace: true });
-      return null;
+      throw new Error('Escolha um estado antes de selecionar candidatos.');
     }
 
     try {
       if (isSenadoresUnificados) {
         const [primeiroSenador, segundoSenador] = listaFinalDaTela.slice(0, 2);
-        saveBallotStepSelection(userId, 'senadores_1', primeiroSenador ? [primeiroSenador] : [], estadoDoFluxo, { markCompleted });
-        return saveBallotStepSelection(userId, 'senadores_2', segundoSenador ? [segundoSenador] : [], estadoDoFluxo, { markCompleted });
+        await saveBallotStepSelection(userId, 'senadores_1', primeiroSenador ? [primeiroSenador] : [], estadoDoFluxo, { markCompleted });
+        return await saveBallotStepSelection(userId, 'senadores_2', segundoSenador ? [segundoSenador] : [], estadoDoFluxo, { markCompleted });
       }
 
-      return saveBallotStepSelection(userId, chaveGrupo, listaFinalDaTela, estadoDoFluxo, { markCompleted });
+      return await saveBallotStepSelection(userId, chaveGrupo, listaFinalDaTela, estadoDoFluxo, { markCompleted });
     } catch (error) {
       flowError('candidates.persist.error', error, { cargo, chaveGrupo });
       setModalAviso({
         aberto: true,
         mensagem: getVotingErrorMessage(error)
       });
-      return null;
+      throw error;
     }
   };
 
-  const handleSelectionChange = (listaAtualizada) => {
+  const handleSelectionChange = async (listaAtualizada) => {
+    await persistirEtapa(listaAtualizada);
     setSelecionadosNaTela(listaAtualizada);
-    persistirEtapa(listaAtualizada);
   };
 
-  const handleAvancar = (listaFinalDaTela) => {
-    const draftAtualizado = persistirEtapa(listaFinalDaTela, { markCompleted: true });
-    if (!draftAtualizado) return;
+  const handleAvancar = async (listaFinalDaTela) => {
+    const draftAtualizado = await persistirEtapa(listaFinalDaTela, { markCompleted: true });
+    if (!draftAtualizado) return false;
 
-    if (isSenadoresUnificados) return;
+    if (isSenadoresUnificados && listaFinalDaTela.length < 2) return false;
 
+    setSelecionadosNaTela(listaFinalDaTela);
     flowLog('candidates.step.next', {
       cargo,
       chaveGrupo,
@@ -366,15 +362,16 @@ export default function EscolherCandidatos({
       proximaRota
     });
     navigate(proximaRota, { state: { bypassVoteRedirect: true } });
+    return true;
   };
 
-  const handleVoltar = (listaAtualDaTela) => {
-    persistirEtapa(listaAtualDaTela);
+  const handleVoltar = async (listaAtualDaTela) => {
+    await persistirEtapa(listaAtualDaTela);
     navigate(rotaAnterior, { state: { bypassVoteRedirect: true } });
   };
 
-  const handleSubNavigation = (item, listaAtualDaTela) => {
-    persistirEtapa(listaAtualDaTela);
+  const handleSubNavigation = async (item, listaAtualDaTela) => {
+    await persistirEtapa(listaAtualDaTela);
     setFiltroLista(item.mode);
   };
 
@@ -398,7 +395,7 @@ export default function EscolherCandidatos({
         onVoltar={handleVoltar}
         linhasVisiveis={5}
         currentStep={currentStep}
-        autoAvancarAoSelecionar={false}
+        autoAvancarAoSelecionar={isSenadoresUnificados}
         variant={chaveBanco === 'deputado_federal' ? 'office-deputado' : 'office-senado'}
         subNavigationItems={CANDIDATE_FILTERS}
         activeSubNavigationId={filtroLista}

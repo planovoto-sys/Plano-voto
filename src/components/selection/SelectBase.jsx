@@ -81,6 +81,10 @@ export default function SelectBase({
   const [modalAltaChance, setModalAltaChance] = useState({ aberto: false, item: null });
   const [modalCandidatoRepetido, setModalCandidatoRepetido] = useState({ aberto: false, item: null });
   const [modalLimiteSelecao, setModalLimiteSelecao] = useState({ aberto: false });
+  const [modalEscolhaDeputado, setModalEscolhaDeputado] = useState({ aberto: false, item: null });
+  const [modalSubstituirSenador, setModalSubstituirSenador] = useState({ aberto: false, item: null });
+  const [modalErroSalvar, setModalErroSalvar] = useState({ aberto: false, mensagem: '' });
+  const [salvandoSelecao, setSalvandoSelecao] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -153,51 +157,74 @@ export default function SelectBase({
 
   const hasMoreCandidates = visibleSecondaryCandidates.length < dados.length;
 
-  const commitSelection = (nextSelecionados, { autoConfirm = false, completed = false } = {}) => {
+  const commitSelection = async (nextSelecionados, { autoConfirm = false, completed = false } = {}) => {
+    const previousSelecionados = selecionados;
     setSelecionados(nextSelecionados);
-    if (onSelectionChange) onSelectionChange(nextSelecionados);
 
-    if (completed && onSelecaoCompleta) {
-      queueMicrotask(() => onSelecaoCompleta(nextSelecionados));
-      return;
-    }
+    try {
+      setSalvandoSelecao(true);
+      if (onSelectionChange) await onSelectionChange(nextSelecionados);
 
-    if (autoConfirm && onConfirmar) {
-      queueMicrotask(() => {
+      if (completed && onSelecaoCompleta) {
+        await onSelecaoCompleta(nextSelecionados);
+        return true;
+      }
+
+      if (autoConfirm && onConfirmar) {
         flowLog('select.confirm.auto', {
           titulo,
           totalSelecionados: nextSelecionados.length,
           limiteSelecao: effectiveLimit,
           selecionados: nextSelecionados.map((selectedItem) => selectedItem.id)
         });
-        onConfirmar(nextSelecionados);
+        await onConfirmar(nextSelecionados);
+      }
+
+      return true;
+    } catch (error) {
+      setSelecionados(previousSelecionados);
+      setModalErroSalvar({
+        aberto: true,
+        mensagem: error?.message || 'Não foi possível salvar sua escolha. Tente novamente.'
       });
+      return false;
+    } finally {
+      setSalvandoSelecao(false);
     }
   };
 
-  const efetivarSelecao = (item) => {
+  const efetivarSelecao = async (item) => {
+    if (!item) return false;
+
+    if (isDeputyOffice) {
+      setModalEscolhaDeputado({ aberto: true, item });
+      return true;
+    }
+
     if (effectiveLimit === 1) {
-      commitSelection([item], { autoConfirm: autoAvancarAoSelecionar, completed: true });
-      return;
+      return commitSelection([item], { autoConfirm: autoAvancarAoSelecionar, completed: true });
     }
 
     if (hasSelectionLimit && selecionados.length >= effectiveLimit) {
       flowWarn('select.limit-reached', { titulo, limiteSelecao: effectiveLimit, itemId: item.id });
       if (onLimiteAtingido) onLimiteAtingido(item, selecionados);
+      else if (isSenateOffice) setModalSubstituirSenador({ aberto: true, item });
       else setModalLimiteSelecao({ aberto: true });
-      return;
+      return false;
     }
 
     const nextSelecionados = [...selecionados, item];
     const completed = hasSelectionLimit && nextSelecionados.length === effectiveLimit;
-    commitSelection(nextSelecionados, { autoConfirm: autoAvancarAoSelecionar && completed, completed });
+    return commitSelection(nextSelecionados, { autoConfirm: autoAvancarAoSelecionar && completed, completed });
   };
 
-  const handleSelect = (item) => {
+  const handleSelect = async (item) => {
+    if (salvandoSelecao) return;
+
     const jaSelecionado = selecionados.find((v) => v.id === item.id);
     if (jaSelecionado) {
       flowLog('select.item.remove', { titulo, itemId: item.id, itemLabel: getCandidateName(item) || item.nome || item.sigla || item.id });
-      commitSelection(selecionados.filter((v) => v.id !== item.id));
+      await commitSelection(selecionados.filter((v) => v.id !== item.id));
       return;
     }
 
@@ -209,6 +236,7 @@ export default function SelectBase({
     if (hasSelectionLimit && effectiveLimit > 1 && selecionados.length >= effectiveLimit) {
       flowWarn('select.limit-reached', { titulo, limiteSelecao: effectiveLimit, itemId: item.id });
       if (onLimiteAtingido) onLimiteAtingido(item, selecionados);
+      else if (isSenateOffice) setModalSubstituirSenador({ aberto: true, item });
       else setModalLimiteSelecao({ aberto: true });
       return;
     }
@@ -224,23 +252,85 @@ export default function SelectBase({
     }
 
     flowLog('select.item.add', { titulo, itemId: item.id, itemLabel: getCandidateName(item) || item.nome || item.sigla || item.id });
-    efetivarSelecao(item);
+    await efetivarSelecao(item);
   };
 
   const handleStateSelect = (item) => {
+    if (salvandoSelecao) return;
+
     const nextSelection = [item];
-    commitSelection(nextSelection, { completed: true });
     if (onConfirmar) {
-      queueMicrotask(() => onConfirmar(nextSelection));
+      setSalvandoSelecao(true);
+      onConfirmar(nextSelection)
+        .then(() => setSelecionados(nextSelection))
+        .catch((error) => {
+          setModalErroSalvar({
+            aberto: true,
+            mensagem: error?.message || 'Não foi possível salvar o estado. Tente novamente.'
+          });
+        })
+        .finally(() => setSalvandoSelecao(false));
     }
   };
 
-  const handleSubNavigation = (item) => {
-    if (onSubNavigationSelect) onSubNavigationSelect(item, selecionados);
+  const handleSubNavigation = async (item) => {
+    if (!onSubNavigationSelect) return;
+
+    try {
+      await onSubNavigationSelect(item, selecionados);
+    } catch (error) {
+      setModalErroSalvar({
+        aberto: true,
+        mensagem: error?.message || 'Não foi possível salvar sua escolha antes de trocar o filtro.'
+      });
+    }
   };
 
-  const handleHeaderBack = () => {
-    if (onVoltar) onVoltar(selecionados);
+  const handleHeaderBack = async () => {
+    if (!onVoltar) return;
+
+    try {
+      await onVoltar(selecionados);
+    } catch (error) {
+      setModalErroSalvar({
+        aberto: true,
+        mensagem: error?.message || 'Não foi possível salvar sua escolha antes de voltar.'
+      });
+    }
+  };
+
+  const handleUndoDeputyChoice = () => {
+    setModalEscolhaDeputado({ aberto: false, item: null });
+  };
+
+  const handleConfirmDeputyChoice = async () => {
+    const itemToSelect = modalEscolhaDeputado.item;
+    if (!itemToSelect || !onConfirmar || salvandoSelecao) return;
+
+    try {
+      setSalvandoSelecao(true);
+      await onConfirmar([itemToSelect]);
+      setSelecionados([itemToSelect]);
+      setModalEscolhaDeputado({ aberto: false, item: null });
+    } catch (error) {
+      setModalErroSalvar({
+        aberto: true,
+        mensagem: error?.message || 'Não foi possível salvar sua escolha. Tente novamente.'
+      });
+    } finally {
+      setSalvandoSelecao(false);
+    }
+  };
+
+  const handleReplaceSenator = async (indexToReplace) => {
+    const itemToSelect = modalSubstituirSenador.item;
+    if (!itemToSelect) return;
+
+    const nextSelecionados = selecionados.map((selectedItem, index) => (
+      index === indexToReplace ? itemToSelect : selectedItem
+    ));
+    setModalSubstituirSenador({ aberto: false, item: null });
+    await commitSelection(nextSelecionados, { autoConfirm: autoAvancarAoSelecionar, completed: nextSelecionados.length === effectiveLimit });
   };
 
   const handleSearchChange = (event) => {
@@ -304,6 +394,7 @@ export default function SelectBase({
                     className={`state-card ${isSelected ? 'is-selected' : ''}`}
                     type="button"
                     onClick={() => handleStateSelect(item)}
+                    disabled={salvandoSelecao}
                   >
                     {renderItem ? renderItem(item) : <span>{item.sigla || item.nome}</span>}
                   </button>
@@ -322,6 +413,7 @@ export default function SelectBase({
     const currentTitle = isSenateOffice ? 'Meus candidatos' : 'Meu candidato';
     const currentEmptyTitle = isSenateOffice ? 'Nenhum senador selecionado' : 'Nenhum candidato selecionado';
     const currentEmptyCopy = isSenateOffice ? 'Escolha 2 candidatos abaixo' : 'Escolha um candidato abaixo';
+    const senateSlots = [selecionados[0] || null, selecionados[1] || null];
     const selectedBestChanceCandidate = Boolean(
       featuredCandidate?.id && selecionados.some((candidate) => candidate.id === featuredCandidate.id)
     );
@@ -339,7 +431,31 @@ export default function SelectBase({
             </div>
           </div>
 
-          {selecionados.length > 0 ? (
+          {isSenateOffice ? (
+            <div className="candidate-current-list candidate-current-list--double">
+              {senateSlots.map((candidate, index) => (
+                <div className="candidate-slot" key={`senator-slot-${index + 1}`}>
+                  <span className="candidate-slot__label">Senador {index + 1}</span>
+                  {candidate ? (
+                    <CandidateCard
+                      candidate={candidate}
+                      summary
+                      actionLabel="Remover"
+                      selected
+                      featuredMetrics={featuredMetricsByCandidateId.get(candidate.id)}
+                      showAssessmentSubtitle={false}
+                      onSelect={() => handleSelect(candidate)}
+                    />
+                  ) : (
+                    <div className="no-data candidate-empty-card candidate-empty-card--slot">
+                      <strong>Ainda não escolhido</strong>
+                      <span>Escolha um senador abaixo</span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : selecionados.length > 0 ? (
             <div className={`candidate-current-list ${isSenateOffice ? 'candidate-current-list--double' : ''}`}>
               {selecionados.map((candidate) => (
                 <CandidateCard
@@ -532,6 +648,48 @@ export default function SelectBase({
         onConfirm={() => {
           setModalLimiteSelecao({ aberto: false });
         }}
+      />
+
+      <ConfirmModal
+        isOpen={modalEscolhaDeputado.aberto}
+        titulo="CANDIDATO ESCOLHIDO"
+        mensagem={(
+          <span className="choice-confirm-copy">
+            <strong>Esse foi o candidato escolhido?</strong>
+            <small>Caso mude de ideia você pode voltar e alterar.</small>
+          </span>
+        )}
+        textoConfirmar="SIM"
+        textoCancelar="NÃO"
+        tipo="choice-saved"
+        onConfirm={handleConfirmDeputyChoice}
+        onCancel={handleUndoDeputyChoice}
+      />
+
+      <ConfirmModal
+        isOpen={modalSubstituirSenador.aberto}
+        titulo="SUBSTITUIR SENADOR"
+        mensagem="Você já escolheu 2 senadores. Escolha qual posição deseja substituir."
+        tipo="choice-saved"
+        onCancel={() => setModalSubstituirSenador({ aberto: false, item: null })}
+      >
+        <div className="senator-replace-actions">
+          <button type="button" onClick={() => handleReplaceSenator(0)} disabled={salvandoSelecao}>
+            Substituir Senador 1
+          </button>
+          <button type="button" onClick={() => handleReplaceSenator(1)} disabled={salvandoSelecao}>
+            Substituir Senador 2
+          </button>
+        </div>
+      </ConfirmModal>
+
+      <ConfirmModal
+        isOpen={modalErroSalvar.aberto}
+        titulo="NÃO FOI POSSÍVEL SALVAR"
+        mensagem={modalErroSalvar.mensagem}
+        textoConfirmar="OK, ENTENDI"
+        mostrarCancelar={false}
+        onConfirm={() => setModalErroSalvar({ aberto: false, mensagem: '' })}
       />
     </div>
   );

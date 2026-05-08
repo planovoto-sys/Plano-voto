@@ -13,6 +13,7 @@ const OFFICE_LIMITS = {
   deputado_federal: 1,
   senadores: 2,
 };
+const BALLOT_FLOW_STEP_IDS = ['deputado_federal', 'senadores_1', 'senadores_2'];
 const VALID_STATES = new Set([
   'AC',
   'AL',
@@ -41,6 +42,36 @@ const VALID_STATES = new Set([
   'SE',
   'SP',
   'TO',
+]);
+
+const STATE_NAME_TO_CODE = new Map([
+  ['ACRE', 'AC'],
+  ['ALAGOAS', 'AL'],
+  ['AMAPA', 'AP'],
+  ['AMAZONAS', 'AM'],
+  ['BAHIA', 'BA'],
+  ['CEARA', 'CE'],
+  ['DISTRITOFEDERAL', 'DF'],
+  ['ESPIRITOSANTO', 'ES'],
+  ['GOIAS', 'GO'],
+  ['MARANHAO', 'MA'],
+  ['MATOGROSSO', 'MT'],
+  ['MATOGROSSODOSUL', 'MS'],
+  ['MINASGERAIS', 'MG'],
+  ['PARA', 'PA'],
+  ['PARAIBA', 'PB'],
+  ['PARANA', 'PR'],
+  ['PERNAMBUCO', 'PE'],
+  ['PIAUI', 'PI'],
+  ['RIODEJANEIRO', 'RJ'],
+  ['RIOGRANDEDONORTE', 'RN'],
+  ['RIOGRANDEDOSUL', 'RS'],
+  ['RONDONIA', 'RO'],
+  ['RORAIMA', 'RR'],
+  ['SANTACATARINA', 'SC'],
+  ['SAOPAULO', 'SP'],
+  ['SERGIPE', 'SE'],
+  ['TOCANTINS', 'TO'],
 ]);
 
 const makeReceiptCode = (electionId, voteId) => (
@@ -98,11 +129,46 @@ const normalizeOfficeName = (value) => (
     .toLowerCase()
 );
 
+const makeVoteId = (electionId, userId) => (
+  createHash('sha256')
+    .update(`${electionId}:${userId}`)
+    .digest('hex')
+);
+
 const normalizeState = (value) => (
   asString(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
     .replace(/[\s\u00A0]+/g, '')
     .toUpperCase()
 );
+
+const normalizeStateCode = (value) => {
+  const normalizedState = normalizeState(value);
+  if (!normalizedState || normalizedState === 'TODOS' || VALID_STATES.has(normalizedState)) {
+    return normalizedState;
+  }
+
+  return STATE_NAME_TO_CODE.get(normalizedState) || normalizedState;
+};
+
+const getCandidateStateCode = (candidateData = {}) => {
+  const directState = normalizeStateCode(
+    candidateData.Estado ||
+    candidateData.estado ||
+    candidateData.UF ||
+    candidateData.uf ||
+    candidateData.Sigla ||
+    candidateData.sigla
+  );
+
+  if (directState === 'TODOS' || VALID_STATES.has(directState)) return directState;
+
+  const partyState = normalizeStateCode(candidateData.Partido || candidateData.partido);
+  if (VALID_STATES.has(partyState)) return partyState;
+
+  return '';
+};
 
 const assertCandidateOffice = (candidateId, candidateData, expectedOffice) => {
   const actualOffice = candidateData.Cargo || candidateData.cargo;
@@ -111,12 +177,364 @@ const assertCandidateOffice = (candidateId, candidateData, expectedOffice) => {
   }
 };
 
-const assertCandidateState = (candidateId, candidateData, expectedState) => {
-  const actualState = normalizeState(candidateData.Estado || candidateData.estado || 'TODOS');
+const assertCandidateState = (candidateId, candidateData, expectedState, { requireState = false } = {}) => {
+  const actualState = getCandidateStateCode(candidateData);
+  if (requireState && !actualState) {
+    throw new HttpsError('invalid-argument', `Candidato ${candidateId} nao possui estado definido.`);
+  }
+
   if (actualState && actualState !== 'TODOS' && actualState !== expectedState) {
     throw new HttpsError('invalid-argument', `Candidato ${candidateId} nao pertence ao estado informado.`);
   }
 };
+
+const asArray = (value) => {
+  if (!value) return [];
+  return Array.isArray(value) ? value : [value];
+};
+
+const emptySelections = () => ({
+  deputado_federal: [],
+  senadores: [],
+});
+
+const emptyCandidateGroups = () => ({
+  deputado_federal: [],
+  senadores_1: [],
+  senadores_2: [],
+});
+
+const emptyCompletedSteps = () => ({
+  deputado_federal: false,
+  senadores_1: false,
+  senadores_2: false,
+});
+
+const normalizeStoredCandidate = (candidate) => {
+  if (!candidate?.id) return null;
+
+  return {
+    id: candidate.id,
+    nome: candidate.nome || candidate.Nome || '',
+    partido: candidate.partido || candidate.Partido || '',
+    cargo: candidate.cargo || candidate.Cargo || '',
+    numero: candidate.numero || candidate.Numero || null,
+    estado: normalizeStateCode(candidate.estado || candidate.Estado || candidate.UF || candidate.uf || '') || null,
+    classificacao: candidate.classificacao || candidate.ClassificacaoOficial || candidate['Classificação'] || candidate.Classificacao || null,
+    nota_final: Number(candidate.nota_final ?? candidate.notaFinal ?? candidate['Nota candidato'] ?? candidate['Nota partido'] ?? 0) || 0,
+    chance: Number(candidate.chance ?? candidate.Chance ?? 0) || 0,
+    selected_by_users: Number(candidate.selected_by_users ?? candidate.selectedByUsers ?? 0) || 0,
+    average_elected_votes: Number(candidate.average_elected_votes ?? candidate.averageElectedVotes ?? 0) || 0,
+    ranking_total: Number(candidate.ranking_total ?? candidate.rankingTotal ?? 0) || 0,
+  };
+};
+
+const createEmptyBallotDraft = (userId, estado) => ({
+  schema_version: BALLOT_SCHEMA_VERSION,
+  election_id: ACTIVE_ELECTION_ID,
+  user_id: userId,
+  estado,
+  selections: emptySelections(),
+  candidate_groups: emptyCandidateGroups(),
+  completed_steps: emptyCompletedSteps(),
+  active_candidate_ids: [],
+  updated_at: null,
+});
+
+const normalizeDraft = (rawDraft, userId, estado = null) => {
+  const normalizedState = normalizeStateCode(rawDraft?.estado ?? estado);
+  const baseDraft = createEmptyBallotDraft(userId, normalizedState || null);
+  if (!rawDraft || typeof rawDraft !== 'object') return baseDraft;
+
+  const candidateGroups = emptyCandidateGroups();
+  BALLOT_FLOW_STEP_IDS.forEach((stepId) => {
+    candidateGroups[stepId] = asArray(rawDraft.candidate_groups?.[stepId])
+      .map(normalizeStoredCandidate)
+      .filter(Boolean)
+      .slice(0, 1);
+  });
+
+  const selections = {
+    deputado_federal: candidateGroups.deputado_federal.slice(0, 1),
+    senadores: [candidateGroups.senadores_1[0], candidateGroups.senadores_2[0]].filter(Boolean).slice(0, 2),
+  };
+  const completedSteps = {
+    deputado_federal: candidateGroups.deputado_federal.length > 0,
+    senadores_1: candidateGroups.senadores_1.length > 0,
+    senadores_2: candidateGroups.senadores_2.length > 0,
+  };
+  const activeCandidateIds = [
+    ...selections.deputado_federal,
+    ...selections.senadores,
+  ].map((candidate) => candidate.id);
+
+  return {
+    ...baseDraft,
+    ...rawDraft,
+    schema_version: BALLOT_SCHEMA_VERSION,
+    election_id: ACTIVE_ELECTION_ID,
+    user_id: userId,
+    estado: normalizedState || null,
+    selections,
+    candidate_groups: candidateGroups,
+    completed_steps: completedSteps,
+    active_candidate_ids: activeCandidateIds,
+  };
+};
+
+const getActiveCandidateIdCounts = (draft) => {
+  const counts = new Map();
+  const normalizedDraft = normalizeDraft(draft, draft?.user_id || '');
+  normalizedDraft.active_candidate_ids.forEach((candidateId) => {
+    counts.set(candidateId, (counts.get(candidateId) || 0) + 1);
+  });
+  return counts;
+};
+
+const updateActiveTallies = (transaction, electionId, oldDraft, newDraft, updatedAt) => {
+  const oldCounts = getActiveCandidateIdCounts(oldDraft);
+  const newCounts = getActiveCandidateIdCounts(newDraft);
+  const candidateIds = new Set([...oldCounts.keys(), ...newCounts.keys()]);
+
+  candidateIds.forEach((candidateId) => {
+    const delta = (newCounts.get(candidateId) || 0) - (oldCounts.get(candidateId) || 0);
+    if (delta === 0) return;
+
+    transaction.set(db.doc(`elections/${electionId}/candidate_tallies/${candidateId}`), {
+      schema_version: BALLOT_SCHEMA_VERSION,
+      election_id: electionId,
+      candidate_id: candidateId,
+      active_selections: FieldValue.increment(delta),
+      updated_at: updatedAt,
+    }, { merge: true });
+  });
+};
+
+const assertElectionPayload = (payload) => {
+  const electionId = asString(payload.election_id) || ACTIVE_ELECTION_ID;
+  if (electionId !== ACTIVE_ELECTION_ID) {
+    throw new HttpsError('invalid-argument', 'Eleicao invalida.');
+  }
+
+  if (Number(payload.schema_version) !== BALLOT_SCHEMA_VERSION) {
+    throw new HttpsError('invalid-argument', 'Versao do voto invalida.');
+  }
+
+  return electionId;
+};
+
+const assertStepKey = (value) => {
+  const stepKey = asString(value);
+  if (!BALLOT_FLOW_STEP_IDS.includes(stepKey)) {
+    throw new HttpsError('invalid-argument', 'Etapa de voto invalida.');
+  }
+
+  return stepKey;
+};
+
+const getStepOffice = (stepKey) => (
+  stepKey === 'deputado_federal' ? 'Deputado Federal' : 'Senador'
+);
+
+const buildDraftResponse = (draft) => ({
+  draft: {
+    ...draft,
+    updated_at: new Date().toISOString(),
+  },
+});
+
+export const saveBallotState = onCall({
+  region: FUNCTIONS_REGION,
+  cors: true,
+  enforceAppCheck: true,
+}, async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
+  }
+
+  const payload = request.data || {};
+  const electionId = assertElectionPayload(payload);
+  const estado = normalizeStateCode(payload.estado);
+  if (!VALID_STATES.has(estado)) {
+    throw new HttpsError('invalid-argument', 'Estado invalido.');
+  }
+
+  const userId = request.auth.uid;
+  const updatedAt = FieldValue.serverTimestamp();
+  const draftRef = db.doc(`elections/${electionId}/ballot_drafts/${userId}`);
+  const userRef = db.doc(`users/${userId}`);
+  let responseDraft = null;
+
+  await db.runTransaction(async (transaction) => {
+    const draftSnap = await transaction.get(draftRef);
+    const previousDraft = normalizeDraft(draftSnap.exists ? draftSnap.data() : null, userId, estado);
+    const nextDraft = previousDraft.estado === estado
+      ? normalizeDraft({
+        ...previousDraft,
+        estado,
+        updated_at: updatedAt,
+      }, userId, estado)
+      : {
+        ...createEmptyBallotDraft(userId, estado),
+        updated_at: updatedAt,
+      };
+
+    updateActiveTallies(transaction, electionId, previousDraft, nextDraft, updatedAt);
+    transaction.set(draftRef, nextDraft, { merge: false });
+    transaction.set(userRef, {
+      estado,
+      role: 'voter',
+      schema_version: 1,
+      updated_at: updatedAt,
+      candidatos_escolhidos: FieldValue.delete(),
+    }, { merge: true });
+
+    responseDraft = normalizeDraft(nextDraft, userId, estado);
+  });
+
+  return buildDraftResponse(responseDraft);
+});
+
+export const saveBallotStepSelection = onCall({
+  region: FUNCTIONS_REGION,
+  cors: true,
+  enforceAppCheck: true,
+}, async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
+  }
+
+  const payload = request.data || {};
+  const electionId = assertElectionPayload(payload);
+  const stepKey = assertStepKey(payload.step_key);
+  const estado = normalizeStateCode(payload.estado);
+  if (!VALID_STATES.has(estado)) {
+    throw new HttpsError('invalid-argument', 'Estado invalido.');
+  }
+
+  const candidateIds = asArray(payload.candidate_ids)
+    .map((candidateId) => assertValidId(candidateId, 'Candidato'))
+    .slice(0, 1);
+  const userId = request.auth.uid;
+  const updatedAt = FieldValue.serverTimestamp();
+  const draftRef = db.doc(`elections/${electionId}/ballot_drafts/${userId}`);
+  const candidateRefs = candidateIds.map((candidateId) => db.doc(`candidatos/${candidateId}`));
+  let responseDraft = null;
+
+  await db.runTransaction(async (transaction) => {
+    const draftSnap = await transaction.get(draftRef);
+    const previousDraft = normalizeDraft(draftSnap.exists ? draftSnap.data() : null, userId, estado);
+
+    if (previousDraft.estado && previousDraft.estado !== estado) {
+      throw new HttpsError('failed-precondition', 'Estado ativo diferente do estado informado.');
+    }
+
+    const candidateSnaps = [];
+    for (const candidateRef of candidateRefs) {
+      candidateSnaps.push(await transaction.get(candidateRef));
+    }
+
+    const candidateSnapshots = candidateSnaps.map((candidateSnap, index) => {
+      if (!candidateSnap.exists) {
+        throw new HttpsError('invalid-argument', `Candidato ${candidateIds[index]} nao encontrado.`);
+      }
+
+      const data = candidateSnap.data();
+      assertCandidateOffice(candidateIds[index], data, getStepOffice(stepKey));
+      assertCandidateState(candidateIds[index], data, estado, { requireState: stepKey !== 'deputado_federal' });
+      return normalizeStoredCandidate(buildCandidateSnapshot(candidateIds[index], data));
+    });
+
+    const nextDraft = normalizeDraft({
+      ...previousDraft,
+      estado,
+      candidate_groups: {
+        ...previousDraft.candidate_groups,
+        [stepKey]: candidateSnapshots,
+      },
+      updated_at: updatedAt,
+    }, userId, estado);
+
+    const senatorIds = [
+      nextDraft.candidate_groups.senadores_1[0]?.id,
+      nextDraft.candidate_groups.senadores_2[0]?.id,
+    ].filter(Boolean);
+    if (new Set(senatorIds).size !== senatorIds.length) {
+      throw new HttpsError('invalid-argument', 'O mesmo senador nao pode ser escolhido duas vezes.');
+    }
+
+    updateActiveTallies(transaction, electionId, previousDraft, nextDraft, updatedAt);
+    transaction.set(draftRef, {
+      ...nextDraft,
+      updated_at: updatedAt,
+    }, { merge: false });
+
+    responseDraft = nextDraft;
+  });
+
+  return buildDraftResponse(responseDraft);
+});
+
+export const deleteUserElectionData = onCall({
+  region: FUNCTIONS_REGION,
+  cors: true,
+  enforceAppCheck: true,
+}, async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
+  }
+
+  const payload = request.data || {};
+  const electionId = assertElectionPayload(payload);
+  const userId = request.auth.uid;
+  const updatedAt = FieldValue.serverTimestamp();
+  const draftRef = db.doc(`elections/${electionId}/ballot_drafts/${userId}`);
+  const userRef = db.doc(`users/${userId}`);
+  const voteRef = db.doc(`elections/${electionId}/votes/${makeVoteId(electionId, userId)}`);
+  const eligibilityRef = db.doc(`elections/${electionId}/eligibility/${userId}`);
+
+  await db.runTransaction(async (transaction) => {
+    const draftSnap = await transaction.get(draftRef);
+    const voteSnap = await transaction.get(voteRef);
+    const eligibilitySnap = await transaction.get(eligibilityRef);
+    const previousDraft = normalizeDraft(draftSnap.exists ? draftSnap.data() : null, userId);
+    const emptyDraft = createEmptyBallotDraft(userId, null);
+    const legacyVoteCandidateIds = voteSnap.exists
+      ? asArray(voteSnap.data().candidate_ids).map(asString).filter(Boolean)
+      : [];
+
+    updateActiveTallies(transaction, electionId, previousDraft, emptyDraft, updatedAt);
+    legacyVoteCandidateIds.forEach((candidateId) => {
+      transaction.set(db.doc(`elections/${electionId}/candidate_tallies/${candidateId}`), {
+        schema_version: BALLOT_SCHEMA_VERSION,
+        election_id: electionId,
+        candidate_id: candidateId,
+        total_votes: FieldValue.increment(-1),
+        updated_at: updatedAt,
+      }, { merge: true });
+    });
+
+    transaction.delete(draftRef);
+    if (voteSnap.exists) transaction.delete(voteRef);
+    if (eligibilitySnap.exists) {
+      transaction.update(eligibilityRef, {
+        has_voted: FieldValue.delete(),
+        vote_id: FieldValue.delete(),
+        receipt_code: FieldValue.delete(),
+        voted_at: FieldValue.delete(),
+        updated_at: updatedAt,
+      });
+    }
+
+    transaction.set(userRef, {
+      estado: FieldValue.delete(),
+      candidatos_escolhidos: FieldValue.delete(),
+      updated_at: updatedAt,
+    }, { merge: true });
+  });
+
+  return { ok: true };
+});
 
 export const castAnonymousVote = onCall({
   region: FUNCTIONS_REGION,
@@ -129,7 +547,7 @@ export const castAnonymousVote = onCall({
 
   const payload = request.data || {};
   const electionId = asString(payload.election_id) || ACTIVE_ELECTION_ID;
-  const estado = normalizeState(payload.estado);
+  const estado = normalizeStateCode(payload.estado);
 
   if (electionId !== ACTIVE_ELECTION_ID) {
     throw new HttpsError('invalid-argument', 'Eleicao invalida.');
@@ -155,16 +573,21 @@ export const castAnonymousVote = onCall({
   const userId = request.auth.uid;
   const submittedAt = FieldValue.serverTimestamp();
   const eligibilityRef = db.doc(`elections/${electionId}/eligibility/${userId}`);
-  const voteRef = db.collection(`elections/${electionId}/votes`).doc();
+  const voteRef = db.doc(`elections/${electionId}/votes/${makeVoteId(electionId, userId)}`);
   const auditRef = db.collection(`elections/${electionId}/audit_events`).doc();
   const candidateRefs = candidateIds.map((candidateId) => db.doc(`candidatos/${candidateId}`));
   const receiptCode = makeReceiptCode(electionId, voteRef.id);
 
   await db.runTransaction(async (transaction) => {
     const eligibilitySnap = await transaction.get(eligibilityRef);
+    const voteSnap = await transaction.get(voteRef);
 
     if (!eligibilitySnap.exists) {
       throw new HttpsError('failed-precondition', 'VOTER_NOT_ENROLLED');
+    }
+
+    if (voteSnap.exists) {
+      throw new HttpsError('already-exists', 'VOTE_ALREADY_CAST');
     }
 
     const eligibility = eligibilitySnap.data();
@@ -215,6 +638,8 @@ export const castAnonymousVote = onCall({
       schema_version: BALLOT_SCHEMA_VERSION,
       election_id: electionId,
       has_voted: true,
+      vote_id: voteRef.id,
+      receipt_code: receiptCode,
       voted_at: submittedAt,
       updated_at: submittedAt,
     });

@@ -5,12 +5,9 @@ import { AVERAGE_ELECTED_VOTES_BY_OFFICE } from '@/constants/candidates';
 import { STATE_NAMES } from '@/constants/states';
 import { useUser } from '@/hooks/useUser';
 import {
-    castAnonymousVote,
+    fetchRemoteBallotDraft,
     getBallotCandidateGroups,
     getBallotProgress,
-    getVotingErrorMessage,
-    readBallotDraft,
-    saveLastVoteReceipt,
     saveBallotStepSelection
 } from '@/services/voting/votingService';
 import {
@@ -30,7 +27,7 @@ import {
     getDisplayCandidate,
     parseNumeric
 } from '@/utils/candidateMetrics';
-import { normalizeState } from '@/utils/search';
+import { getCandidateStateCode, normalizeStateCode } from '@/utils/state';
 import AppFooter from '@/components/layout/AppFooter';
 import BottomNavigation from '@/components/navigation/BottomNavigation';
 import { BackIcon, ShareSolidIcon } from '@/components/icons/AppIcons';
@@ -40,15 +37,7 @@ import './Resultado.css';
 const getCandidateId = (candidate) => candidate?.id || null;
 
 const enrichCandidate = (candidate, tally, officeKey, rankingTotal) => {
-    const selectedByUsers = parseNumeric(
-        tally?.total_votes,
-        tally?.total_selections,
-        candidate.total_selecoes,
-        candidate.selecoes_recebidas,
-        candidate.selecionado_por,
-        candidate.selecionados,
-        candidate.votos_recebidos
-    );
+    const selectedByUsers = parseNumeric(tally?.active_selections, candidate.active_selections);
     const averageElectedVotes = AVERAGE_ELECTED_VOTES_BY_OFFICE[officeKey] || 3;
     const chance = calculateCandidateChance(selectedByUsers, averageElectedVotes);
 
@@ -63,9 +52,10 @@ const enrichCandidate = (candidate, tally, officeKey, rankingTotal) => {
 };
 
 const rankCandidates = (candidates, tallies, officeKey, estado) => {
-    const normalizedState = normalizeState(estado);
+    const normalizedState = normalizeStateCode(estado);
     const filteredCandidates = candidates.filter((candidate) => {
-        const candidateState = normalizeState(candidate.Estado || candidate.estado || 'TODOS');
+        const candidateState = getCandidateStateCode(candidate, { allowPartyFallback: officeKey === 'senadores' });
+        if (!candidateState) return officeKey !== 'senadores';
         return candidateState === 'TODOS' || candidateState === normalizedState;
     });
 
@@ -99,7 +89,7 @@ const loadRankedCandidates = async (officeName, officeKey, estado) => {
     let tallies = readCachedTallies(candidateIds);
 
     try {
-        tallies = await fetchCandidateTallies(candidateIds);
+        tallies = await fetchCandidateTallies(candidateIds, { forceRefresh: true });
     } catch {
         // As chances em cache ou zeradas ainda permitem comparar por nota.
     }
@@ -160,15 +150,13 @@ function VoteCard({ candidate, fallbackName, defaultNumber, tone = 'neutral' }) 
 }
 
 export default function Resultado() {
-    const { user, userData, userEligibility, loading: userLoading } = useUser();
+    const { user, userData, loading: userLoading } = useUser();
     const navigate = useNavigate();
     const shareSvgRef = useRef(null);
     const [draft, setDraft] = useState(null);
     const [rankedCandidates, setRankedCandidates] = useState({ deputadoFederal: [], senadores: [] });
     const [openComparison, setOpenComparison] = useState(null);
-    const [submitStatus, setSubmitStatus] = useState({ type: '', message: '' });
     const [shareStatus, setShareStatus] = useState({ type: '', message: '' });
-    const [submitting, setSubmitting] = useState(false);
     const [sharing, setSharing] = useState(false);
     const [loading, setLoading] = useState(true);
 
@@ -177,15 +165,27 @@ export default function Resultado() {
 
         let cancelled = false;
 
-        queueMicrotask(() => {
-            if (cancelled) return;
-
+        const loadDraft = async () => {
             if (!user?.uid) {
                 navigate('/', { replace: true });
                 return;
             }
 
-            const currentDraft = readBallotDraft(user.uid, userData?.estado);
+            let currentDraft = null;
+            try {
+                currentDraft = await fetchRemoteBallotDraft(user.uid, userData?.estado);
+            } catch (error) {
+                flowWarn('result.remote-draft.fetch-error', { userId: user.uid, message: error?.message });
+                setShareStatus({
+                    type: 'error',
+                    message: 'Não foi possível carregar suas escolhas salvas. Tente novamente.'
+                });
+                setLoading(false);
+                return;
+            }
+
+            if (cancelled) return;
+
             const progress = getBallotProgress(currentDraft);
 
             if (!progress.hasEstado) {
@@ -203,7 +203,9 @@ export default function Resultado() {
             flowLog('result.summary.load', { userId: user.uid });
             setDraft(currentDraft);
             setLoading(false);
-        });
+        };
+
+        loadDraft();
 
         return () => {
             cancelled = true;
@@ -217,7 +219,7 @@ export default function Resultado() {
     const deputado = groups.deputado_federal?.[0] || null;
     const senador1 = groups.senadores_1?.[0] || null;
     const senador2 = groups.senadores_2?.[0] || null;
-    const estadoSigla = draft?.estado || userData?.estado || '';
+    const estadoSigla = normalizeStateCode(draft?.estado || userData?.estado || '');
     const estadoNome = STATE_NAMES[estadoSigla] || estadoSigla || 'Estado não selecionado';
 
     useEffect(() => {
@@ -290,52 +292,36 @@ export default function Resultado() {
         return scores.reduce((total, score) => total + score, 0) / scores.length;
     }, [deputado, senador1, senador2]);
 
-    const handleSwapCandidate = (section) => {
+    const handleSwapCandidate = async (section) => {
         if (!user?.uid || !draft?.estado || !section.recommendation) return;
 
-        const updatedDraft = saveBallotStepSelection(
-            user.uid,
-            section.stepKey,
-            [section.recommendation],
-            draft.estado,
-            { markCompleted: true }
-        );
+        try {
+            const updatedDraft = await saveBallotStepSelection(
+                user.uid,
+                section.stepKey,
+                [section.recommendation],
+                draft.estado,
+                { markCompleted: true }
+            );
 
-        setDraft(updatedDraft);
-        setOpenComparison(null);
-        flowLog('result.recommendation.swap', {
-            userId: user.uid,
-            stepKey: section.stepKey,
-            candidateId: getCandidateId(section.recommendation)
-        });
+            setDraft(updatedDraft);
+            setOpenComparison(null);
+            setShareStatus({ type: 'success', message: 'Escolha atualizada com sucesso.' });
+            flowLog('result.recommendation.swap', {
+                userId: user.uid,
+                stepKey: section.stepKey,
+                candidateId: getCandidateId(section.recommendation)
+            });
+        } catch (error) {
+            setShareStatus({
+                type: 'error',
+                message: error?.message || 'Não foi possível trocar o candidato agora.'
+            });
+        }
     };
 
     const navigateToStep = (path) => {
         navigate(path, { state: { bypassVoteRedirect: true } });
-    };
-
-    const handleConfirmVote = async () => {
-        if (!user?.uid || !draft) return;
-
-        setSubmitting(true);
-        setSubmitStatus({ type: '', message: '' });
-        setShareStatus({ type: '', message: '' });
-
-        try {
-            const receipt = await castAnonymousVote({ user, estado: draft.estado, draft });
-            saveLastVoteReceipt(user.uid, receipt, draft);
-            setSubmitStatus({
-                type: 'success',
-                message: `Voto confirmado. Recibo ${receipt.receiptCode}.`
-            });
-        } catch (error) {
-            setSubmitStatus({
-                type: 'error',
-                message: getVotingErrorMessage(error)
-            });
-        } finally {
-            setSubmitting(false);
-        }
     };
 
     const handleEditChoices = () => {
@@ -376,9 +362,14 @@ export default function Resultado() {
         }
     };
 
-    const voteAlreadyConfirmed = userEligibility?.has_voted === true || submitStatus.type === 'success';
-
     if (loading || userLoading) return <div className="loading">CARREGANDO...</div>;
+    if (!draft) {
+        return (
+            <div className="loading" role="status" aria-live="polite">
+                {shareStatus.message || 'Não foi possível carregar suas escolhas salvas.'}
+            </div>
+        );
+    }
 
     return (
         <div className="resultado-page prototype-page">
@@ -396,8 +387,8 @@ export default function Resultado() {
                 </div>
 
                 <div className="app-page-header__copy">
-                    <h1>MEU VOTO</h1>
-                    <p>Confirme seus candidatos antes de votar</p>
+                    <h1>FINALIZAÇÃO</h1>
+                    <p>Resumo das escolhas salvas</p>
                 </div>
 
                 <div className="app-page-header__side">
@@ -409,7 +400,7 @@ export default function Resultado() {
                 <div className="resultado-review-grid">
                     <div className="resultado-review-heading">
                         <h2>Resumo do seu voto</h2>
-                        <p>Revise suas escolhas antes de finalizar.</p>
+                        <p>Suas escolhas são salvas automaticamente em cada etapa.</p>
                     </div>
 
                     <section className="vote-review-section vote-review-section--state">
@@ -498,35 +489,23 @@ export default function Resultado() {
                     })}
 
                     <section className="vote-final-actions" aria-live="polite">
-                        {submitStatus.message && (
-                            <p className={`vote-submit-message vote-submit-message--${submitStatus.type}`}>
-                                {submitStatus.message}
-                            </p>
-                        )}
+                        <p className="vote-submit-message vote-submit-message--success">
+                            Escolhas salvas automaticamente.
+                        </p>
                         {shareStatus.message && (
                             <p className={`vote-submit-message vote-submit-message--${shareStatus.type}`}>
                                 {shareStatus.message}
                             </p>
                         )}
-                        <button
-                            className="vote-confirm-button"
-                            type="button"
-                            onClick={handleConfirmVote}
-                            disabled={submitting || voteAlreadyConfirmed}
-                        >
-                            {voteAlreadyConfirmed ? 'Voto confirmado' : submitting ? 'Confirmando...' : 'Confirmar meu voto'}
-                        </button>
-                        {voteAlreadyConfirmed && (
-                            <div className="vote-post-confirm-actions">
-                                <button className="vote-secondary-action" type="button" onClick={handleEditChoices}>
-                                    Editar escolhas
-                                </button>
-                                <button className="vote-secondary-action vote-secondary-action--share" type="button" onClick={handleShareVote} disabled={sharing}>
-                                    <ShareSolidIcon />
-                                    <span>{sharing ? 'Preparando...' : 'Compartilhar'}</span>
-                                </button>
-                            </div>
-                        )}
+                        <div className="vote-post-confirm-actions">
+                            <button className="vote-secondary-action" type="button" onClick={handleEditChoices}>
+                                Editar escolhas
+                            </button>
+                            <button className="vote-secondary-action vote-secondary-action--share" type="button" onClick={handleShareVote} disabled={sharing}>
+                                <ShareSolidIcon />
+                                <span>{sharing ? 'Preparando...' : 'Compartilhar'}</span>
+                            </button>
+                        </div>
                     </section>
                 </div>
                 <div className="share-preview-hidden" aria-hidden="true">

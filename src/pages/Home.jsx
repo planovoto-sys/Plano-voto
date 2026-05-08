@@ -1,28 +1,27 @@
-import { useDeferredValue, useEffect, useState, useMemo } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { deleteField, doc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { useDeferredValue, useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { BRAZILIAN_STATES } from '@/constants/states';
+import { BALLOT_ROUTES } from '@/constants/ballot';
 import { useUser } from '@/hooks/useUser';
-import { db } from '@/services/firebase/firebase';
 import {
   clearVoteReceipt,
   draftHasBallotSelections,
+  fetchRemoteBallotDraft,
   getBallotEstado,
   getBallotSelectionCounts,
   readBallotDraft,
-  resetBallotForState,
   saveBallotState
 } from '@/services/voting/votingService';
 import { flowError, flowLog, flowWarn } from '@/utils/debugFlow';
 import { normalizeSearch } from '@/utils/search';
+import { normalizeStateCode } from '@/utils/state';
 import ConfirmModal from '@/components/feedback/ConfirmModal';
 import TourModal from '@/components/feedback/TourModal';
 import SelectBase from '@/components/selection/SelectBase';
 
 export default function Home() {
-  const { user, userData, userEligibility, loading: userLoading } = useUser();
+  const { user, userData, loading: userLoading } = useUser();
   const navigate = useNavigate();
-  const location = useLocation();
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [pendingEstado, setPendingEstado] = useState(null);
@@ -30,15 +29,7 @@ export default function Home() {
   const buscaDiferida = useDeferredValue(busca);
   
   const [isTourOpen, setIsTourOpen] = useState(false);
-  const estadoSelecionado = user?.uid ? getBallotEstado(user.uid, userData?.estado) : userData?.estado;
-  const bypassVoteRedirect = location.state?.bypassVoteRedirect === true;
-
-  useEffect(() => {
-    if (!bypassVoteRedirect && user?.uid && userEligibility?.has_voted) {
-      flowLog('home.redirect.result-after-vote', { userId: user.uid });
-      navigate('/finalizacao', { replace: true });
-    }
-  }, [bypassVoteRedirect, user?.uid, userEligibility?.has_voted, navigate]);
+  const estadoSelecionado = normalizeStateCode(user?.uid ? getBallotEstado(user.uid, userData?.estado) : userData?.estado);
 
   const tourSteps = [
     { target: '.app-help-action', title: 'AJUDA', content: 'Abre este guia sempre que você quiser revisar a tela.' },
@@ -97,7 +88,7 @@ export default function Home() {
         return;
       }
     }
-    executarMudanca(novoEstado);
+    await executarMudanca(novoEstado);
   };
 
   const executarMudanca = async (novoEstado) => {
@@ -115,34 +106,19 @@ export default function Home() {
 
     setLoading(true); setModalOpen(false);
     try {
-      const userRef = doc(db, "users", user.uid);
       const estadoAtual = readBallotDraft(user.uid, estadoSelecionado).estado || estadoSelecionado || null;
-      const estadoPatch = {
-        estado: novoEstado,
-        role: userData?.role || 'voter',
-        schema_version: 1,
-        updated_at: serverTimestamp(),
-        candidatos_escolhidos: deleteField()
-      };
 
-      if (estadoAtual && estadoAtual !== novoEstado) {
-        resetBallotForState(user.uid, novoEstado);
+      await saveBallotState(user.uid, novoEstado);
+      await fetchRemoteBallotDraft(user.uid, novoEstado);
+
+      if (estadoAtual !== novoEstado) {
         clearVoteReceipt(user.uid);
-      } else {
-        saveBallotState(user.uid, novoEstado);
       }
 
-      updateDoc(userRef, estadoPatch)
-        .then(() => {
-          flowLog('home.change-state.firestore-success', { userId: user.uid, novoEstado });
-        })
-        .catch((error) => {
-          flowError('home.change-state.firestore-error', error, { userId: user.uid, novoEstado });
-        });
-
       flowLog('home.change-state.saved', { novoEstado });
+      navigate(BALLOT_ROUTES.deputadoFederal, { state: { bypassVoteRedirect: true } });
     } catch (e) {
-      flowError('home.change-state.local-error', e, { novoEstado });
+      flowError('home.change-state.error', e, { novoEstado });
       if (import.meta.env.DEV) {
         console.error("Erro ao salvar estado: ", e);
       }
