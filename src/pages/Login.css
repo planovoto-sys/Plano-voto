@@ -114,10 +114,6 @@
   transform: scale(0.99);
 }
 
-.login-footer {
-  display: none;
-}
-
 @media (max-width: 420px) {
   .login-header h1 {
     font-size: 29px;
@@ -197,7 +193,7 @@
 @media (min-width: 768px) {
   .login-wrapper {
     display: grid;
-    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto minmax(0, 1fr);
     background: var(--desktop-bg);
   }
 
@@ -296,25 +292,6 @@
     background: var(--desktop-primary-strong);
   }
 
-  .login-footer {
-    min-height: 54px;
-    border-top: 1px solid var(--desktop-border);
-    background: #ffffff;
-    color: #6a746f;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 18px;
-    padding: 10px var(--screen-gutter);
-    font-size: 13px;
-    font-weight: 600;
-  }
-
-  .login-footer strong {
-    color: var(--text-main);
-    font-size: 15px;
-    letter-spacing: 0.5px;
-  }
 }
 
 @media (min-width: 768px) and (max-width: 940px) {

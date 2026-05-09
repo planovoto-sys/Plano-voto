@@ -224,14 +224,183 @@ body {
 .loading {
   width: 100%;
   height: var(--app-height);
-  display: flex;
+  position: relative;
+  display: grid;
   align-items: center;
   justify-content: center;
-  background: var(--page-bg);
-  color: var(--text-main);
-  font-size: 18px;
+  overflow: hidden;
+  background:
+    linear-gradient(120deg, rgba(36, 89, 61, 0.96), rgba(18, 53, 37, 0.98) 48%, rgba(244, 248, 245, 0.98));
+  color: #ffffff;
+}
+
+.loading::before,
+.loading::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.loading::before {
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 18px),
+    linear-gradient(100deg, transparent 0 34%, rgba(255, 255, 255, 0.2) 48%, transparent 62% 100%);
+  opacity: 0.55;
+  transform: translateX(-18%);
+  animation: loadingSweep 1800ms ease-in-out infinite;
+}
+
+.loading::after {
+  inset: auto 0 0;
+  height: 42%;
+  background: linear-gradient(180deg, transparent, rgba(23, 59, 42, 0.32));
+}
+
+.loading-intro {
+  position: relative;
+  z-index: 1;
+  width: min(78vw, 360px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  isolation: isolate;
+}
+
+.loading-intro__ring,
+.loading-intro__scan {
+  position: absolute;
+  inset: 6%;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.loading-intro__ring {
+  border: 2px solid rgba(255, 255, 255, 0.26);
+  box-shadow:
+    inset 0 0 34px rgba(255, 255, 255, 0.1),
+    0 0 40px rgba(114, 213, 82, 0.22);
+  animation: loadingPulse 1400ms ease-in-out infinite;
+}
+
+.loading-intro__ring::before,
+.loading-intro__ring::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+}
+
+.loading-intro__ring::before {
+  inset: 15%;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.loading-intro__ring::after {
+  inset: -4%;
+  border-top: 3px solid rgba(114, 213, 82, 0.92);
+  border-right: 3px solid transparent;
+  border-bottom: 3px solid rgba(255, 255, 255, 0.4);
+  border-left: 3px solid transparent;
+  animation: loadingSpin 1600ms cubic-bezier(0.6, 0.02, 0.3, 1) infinite;
+}
+
+.loading-intro__scan {
+  inset: 18%;
+  background: linear-gradient(100deg, transparent 0 36%, rgba(255, 255, 255, 0.42) 50%, transparent 64% 100%);
+  opacity: 0.36;
+  transform: translateX(-38%) skewX(-12deg);
+  animation: loadingInnerSweep 1400ms ease-in-out infinite;
+}
+
+.loading-intro__brand,
+.loading-intro__caption {
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: clip;
+  white-space: nowrap;
+}
+
+.loading-intro__brand {
+  color: #ffffff;
+  font-size: 36px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0;
+  text-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+}
+
+.loading-intro__caption {
+  align-self: end;
+  margin-bottom: 24%;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: 1px;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+@keyframes loadingSpin {
+  0% {
+    transform: rotate(-34deg) scale(0.94);
+    opacity: 0.44;
+  }
+
+  48% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: rotate(326deg) scale(1);
+    opacity: 0.62;
+  }
+}
+
+@keyframes loadingPulse {
+  0%,
+  100% {
+    transform: scale(0.98);
+    opacity: 0.78;
+  }
+
+  50% {
+    transform: scale(1.03);
+    opacity: 1;
+  }
+}
+
+@keyframes loadingSweep {
+  0%,
+  100% {
+    transform: translateX(-36%);
+  }
+
+  50% {
+    transform: translateX(18%);
+  }
+}
+
+@keyframes loadingInnerSweep {
+  0%,
+  100% {
+    transform: translateX(-42%) skewX(-12deg);
+  }
+
+  50% {
+    transform: translateX(42%) skewX(-12deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading::before,
+  .loading-intro__ring,
+  .loading-intro__ring::after,
+  .loading-intro__scan {
+    animation: none;
+  }
 }
 
 .no-data {
@@ -316,6 +485,14 @@ body {
     --screen-gutter: 18px;
   }
 
+  .loading-intro__brand {
+    font-size: 31px;
+  }
+
+  .loading-intro__caption {
+    font-size: 10px;
+  }
+
   .prototype-header h1 {
     font-size: 27px;
     letter-spacing: 0;
@@ -369,6 +546,18 @@ body {
 @media (max-width: 320px) {
   :root {
     --screen-gutter: 10px;
+  }
+
+  .loading-intro {
+    width: min(82vw, 260px);
+  }
+
+  .loading-intro__brand {
+    font-size: 26px;
+  }
+
+  .loading-intro__caption {
+    font-size: 9px;
   }
 
   .prototype-header {
@@ -503,7 +692,20 @@ body {
   }
 
   .loading {
-    background: var(--desktop-bg);
+    background:
+      linear-gradient(120deg, rgba(36, 89, 61, 0.96), rgba(18, 53, 37, 0.98) 48%, rgba(244, 248, 245, 0.98));
+  }
+
+  .loading-intro {
+    width: min(48vw, 400px);
+  }
+
+  .loading-intro__brand {
+    font-size: 46px;
+  }
+
+  .loading-intro__caption {
+    font-size: 12px;
   }
 
   .no-data {

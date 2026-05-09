@@ -2,7 +2,6 @@ import React from 'react';
 import { signInWithPopup } from 'firebase/auth';
 import { auth, firebaseReady, googleProvider } from '@/services/firebase/firebase';
 import { flowError, flowLog } from '@/utils/debugFlow';
-import AppFooter from '@/components/layout/AppFooter';
 import './Login.css';
 
 function Login() {
@@ -49,11 +48,7 @@ function Login() {
         </section>
 
         <button className="btn-comecar" type="button" onClick={handleGoogleLogin}>COMEÇAR</button>
-
-        <AppFooter className="app-footer--login-scroll" />
       </main>
-
-      <AppFooter className="app-footer--login-fixed" />
     </div>
   );
 }
