@@ -4,6 +4,11 @@ import { CANDIDATE_ROUTES } from '@/constants/candidateRoutes';
 import { BALLOT_ROUTES } from '@/constants/ballot';
 import { useUser } from '@/hooks/useUser';
 import PrivacyConsent from '@/components/privacy/PrivacyConsent';
+import {
+  fetchRemoteBallotDraft,
+  getBallotProgress,
+  readBallotDraft
+} from '@/services/voting/votingService';
 
 const loadLogin = () => import('@/pages/Login');
 const loadHome = () => import('@/pages/Home');
@@ -42,8 +47,60 @@ function LoadingScreen() {
   );
 }
 
+const getResumeNotice = (progress) => {
+  if (!progress?.hasEstado) return '';
+  if (!progress.hasDeputadoFederal) return 'Você ainda não selecionou seu deputado federal';
+  if (!progress.hasSenadores) return 'Você ainda não selecionou seus senadores';
+  return '';
+};
+
+function AuthenticatedEntryRedirect({ user, estado }) {
+  const [redirect, setRedirect] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const resolveRedirect = async () => {
+      let draft = readBallotDraft(user.uid, estado);
+
+      try {
+        draft = await fetchRemoteBallotDraft(user.uid, draft.estado || estado);
+      } catch {
+        // Se a leitura remota falhar, o rascunho local ainda posiciona o usuario no fluxo correto.
+      }
+
+      if (cancelled) return;
+
+      const progress = getBallotProgress(draft);
+      setRedirect({
+        to: progress.nextRoute,
+        notice: getResumeNotice(progress)
+      });
+    };
+
+    resolveRedirect();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [estado, user.uid]);
+
+  if (!redirect) return <LoadingScreen />;
+
+  return (
+    <Navigate
+      to={redirect.to}
+      replace
+      state={{
+        bypassVoteRedirect: true,
+        flowNotice: redirect.notice
+      }}
+    />
+  );
+}
+
 function App() {
-  const { user, loading } = useUser();
+  const { user, userData, loading } = useUser();
   const [introReady, setIntroReady] = useState(false);
   const privateRoute = (element) => (user ? element : <Navigate to="/" replace />);
   const privateRedirect = (to) => (
@@ -86,7 +143,7 @@ function App() {
       ) : (
         <Suspense fallback={<LoadingScreen />}>
           <Routes>
-            <Route path="/" element={!user ? <Login /> : <Navigate to="/home" replace />} />
+            <Route path="/" element={!user ? <Login /> : <AuthenticatedEntryRedirect user={user} estado={userData?.estado} />} />
             <Route path="/home" element={privateRoute(<Home />)} />
 
             <Route path="/escolher-deputado-federal" element={privateRoute(renderCandidateRoute(CANDIDATE_ROUTES.deputadoFederal))} />

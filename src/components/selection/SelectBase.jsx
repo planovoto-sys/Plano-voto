@@ -14,6 +14,11 @@ import './SelectBase.css';
 
 const INITIAL_CANDIDATE_RENDER_LIMIT = 80;
 const CANDIDATE_RENDER_INCREMENT = 80;
+const SAVE_FEEDBACK_DELAY_MS = 900;
+
+const wait = (delayMs) => new Promise((resolve) => {
+  window.setTimeout(resolve, delayMs);
+});
 
 const getScreenCopy = ({ variant, titulo, subtitulo }) => {
   if (variant === 'home-state') {
@@ -81,10 +86,10 @@ export default function SelectBase({
   const [modalAltaChance, setModalAltaChance] = useState({ aberto: false, item: null });
   const [modalCandidatoRepetido, setModalCandidatoRepetido] = useState({ aberto: false, item: null });
   const [modalLimiteSelecao, setModalLimiteSelecao] = useState({ aberto: false });
-  const [modalEscolhaDeputado, setModalEscolhaDeputado] = useState({ aberto: false, item: null });
   const [modalSubstituirSenador, setModalSubstituirSenador] = useState({ aberto: false, item: null });
   const [modalErroSalvar, setModalErroSalvar] = useState({ aberto: false, mensagem: '' });
   const [salvandoSelecao, setSalvandoSelecao] = useState(false);
+  const [selecaoSalvaConfirmada, setSelecaoSalvaConfirmada] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -157,17 +162,23 @@ export default function SelectBase({
 
   const hasMoreCandidates = visibleSecondaryCandidates.length < dados.length;
 
-  const commitSelection = async (nextSelecionados, { autoConfirm = false, completed = false } = {}) => {
+  const commitSelection = async (nextSelecionados, { autoConfirm = false, completed = false, showSavedFeedback = false } = {}) => {
     const previousSelecionados = selecionados;
     setSelecionados(nextSelecionados);
+    setSelecaoSalvaConfirmada(false);
 
     try {
       setSalvandoSelecao(true);
-      if (onSelectionChange) await onSelectionChange(nextSelecionados);
+      if (onSelectionChange) await onSelectionChange(nextSelecionados, { completed });
 
       if (completed && onSelecaoCompleta) {
         await onSelecaoCompleta(nextSelecionados);
         return true;
+      }
+
+      if (showSavedFeedback) {
+        setSelecaoSalvaConfirmada(true);
+        await wait(SAVE_FEEDBACK_DELAY_MS);
       }
 
       if (autoConfirm && onConfirmar) {
@@ -177,7 +188,7 @@ export default function SelectBase({
           limiteSelecao: effectiveLimit,
           selecionados: nextSelecionados.map((selectedItem) => selectedItem.id)
         });
-        await onConfirmar(nextSelecionados);
+        await onConfirmar(nextSelecionados, { alreadySaved: Boolean(onSelectionChange) });
       }
 
       return true;
@@ -197,8 +208,7 @@ export default function SelectBase({
     if (!item) return false;
 
     if (isDeputyOffice) {
-      setModalEscolhaDeputado({ aberto: true, item });
-      return true;
+      return commitSelection([item], { autoConfirm: true, completed: true, showSavedFeedback: true });
     }
 
     if (effectiveLimit === 1) {
@@ -299,29 +309,6 @@ export default function SelectBase({
     }
   };
 
-  const handleUndoDeputyChoice = () => {
-    setModalEscolhaDeputado({ aberto: false, item: null });
-  };
-
-  const handleConfirmDeputyChoice = async () => {
-    const itemToSelect = modalEscolhaDeputado.item;
-    if (!itemToSelect || !onConfirmar || salvandoSelecao) return;
-
-    try {
-      setSalvandoSelecao(true);
-      await onConfirmar([itemToSelect]);
-      setSelecionados([itemToSelect]);
-      setModalEscolhaDeputado({ aberto: false, item: null });
-    } catch (error) {
-      setModalErroSalvar({
-        aberto: true,
-        mensagem: error?.message || 'Não foi possível salvar sua escolha. Tente novamente.'
-      });
-    } finally {
-      setSalvandoSelecao(false);
-    }
-  };
-
   const handleReplaceSenator = async (indexToReplace) => {
     const itemToSelect = modalSubstituirSenador.item;
     if (!itemToSelect) return;
@@ -415,6 +402,8 @@ export default function SelectBase({
     const currentEmptyCopy = isSenateOffice ? 'Escolha 2 candidatos abaixo' : 'Escolha um candidato abaixo';
     const senateSlots = [selecionados[0] || null, selecionados[1] || null];
     const senateSelectionComplete = isSenateOffice && selecionados.length === effectiveLimit;
+    const showCandidateSaveStatus = (isDeputyOffice && selecionados.length > 0) || senateSelectionComplete;
+    const isSaveStatusSaving = salvandoSelecao && !selecaoSalvaConfirmada;
     const selectedBestChanceCandidate = Boolean(
       featuredCandidate?.id && selecionados.some((candidate) => candidate.id === featuredCandidate.id)
     );
@@ -478,9 +467,9 @@ export default function SelectBase({
             </div>
           )}
 
-          {senateSelectionComplete && (
-            <div className={`candidate-save-status ${salvandoSelecao ? 'is-saving' : 'is-saved'}`} role="status" aria-live="polite">
-              <strong>{salvandoSelecao ? 'Salvando escolhas...' : 'Todos os dados foram salvos'}</strong>
+          {showCandidateSaveStatus && (
+            <div className={`candidate-save-status ${isSaveStatusSaving ? 'is-saving' : 'is-saved'}`} role="status" aria-live="polite">
+              <strong>{isSaveStatusSaving ? 'Salvando escolhas...' : 'Todos os dados foram salvos'}</strong>
               <span>Se você trocar algum candidato, a escolha anterior será substituída automaticamente.</span>
             </div>
           )}
@@ -656,22 +645,6 @@ export default function SelectBase({
         onConfirm={() => {
           setModalLimiteSelecao({ aberto: false });
         }}
-      />
-
-      <ConfirmModal
-        isOpen={modalEscolhaDeputado.aberto}
-        titulo="CANDIDATO ESCOLHIDO"
-        mensagem={(
-          <span className="choice-confirm-copy">
-            <strong>Esse foi o candidato escolhido?</strong>
-            <small>Caso mude de ideia você pode voltar e alterar.</small>
-          </span>
-        )}
-        textoConfirmar="SIM"
-        textoCancelar="NÃO"
-        tipo="choice-saved"
-        onConfirm={handleConfirmDeputyChoice}
-        onCancel={handleUndoDeputyChoice}
       />
 
       <ConfirmModal

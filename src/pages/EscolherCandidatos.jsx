@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useDeferredValue } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { AVERAGE_ELECTED_VOTES_BY_OFFICE, CANDIDATE_FILTERS } from '@/constants/candidates';
 import { useUser } from '@/hooks/useUser';
 import {
@@ -20,8 +20,17 @@ import { calculateCandidateChance, parseNumeric } from '@/utils/candidateMetrics
 import { normalizeSearch } from '@/utils/search';
 import { getCandidateStateCode, normalizeStateCode } from '@/utils/state';
 import ConfirmModal from '@/components/feedback/ConfirmModal';
+import FlowToast from '@/components/feedback/FlowToast';
 import TourModal from '@/components/feedback/TourModal';
 import SelectBase from '@/components/selection/SelectBase';
+
+const buildSelectionIdCounts = (candidates) => (
+  candidates.reduce((counts, candidate) => {
+    if (!candidate?.id) return counts;
+    counts.set(candidate.id, (counts.get(candidate.id) || 0) + 1);
+    return counts;
+  }, new Map())
+);
 
 export default function EscolherCandidatos({
   cargo,
@@ -35,6 +44,7 @@ export default function EscolherCandidatos({
 }) {
   const { user, userData, loading: userLoading } = useUser();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [todosCandidatos, setTodosCandidatos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -343,12 +353,54 @@ export default function EscolherCandidatos({
     }
   };
 
-  const handleSelectionChange = async (listaAtualizada) => {
-    await persistirEtapa(listaAtualizada);
-    setSelecionadosNaTela(listaAtualizada);
+  const applyLocalChanceDelta = (listaAnterior, listaAtualizada) => {
+    const previousCounts = buildSelectionIdCounts(listaAnterior);
+    const nextCounts = buildSelectionIdCounts(listaAtualizada);
+
+    const adjustCandidateChance = (candidate) => {
+      const delta = (nextCounts.get(candidate.id) || 0) - (previousCounts.get(candidate.id) || 0);
+      if (delta === 0) return candidate;
+
+      const selectedByUsers = Math.max(
+        0,
+        parseNumeric(candidate.selectedByUsers, candidate.selected_by_users, candidate.active_selections) + delta
+      );
+      const averageElectedVotes = parseNumeric(
+        candidate.averageElectedVotes,
+        candidate.average_elected_votes,
+        AVERAGE_ELECTED_VOTES_BY_OFFICE[chaveBanco],
+        3
+      );
+      const chance = calculateCandidateChance(selectedByUsers, averageElectedVotes);
+
+      return {
+        ...candidate,
+        selectedByUsers,
+        selected_by_users: selectedByUsers,
+        active_selections: selectedByUsers,
+        chance
+      };
+    };
+
+    setTodosCandidatos((currentCandidates) => currentCandidates.map(adjustCandidateChance));
+    return listaAtualizada.map(adjustCandidateChance);
   };
 
-  const handleAvancar = async (listaFinalDaTela) => {
+  const handleSelectionChange = async (listaAtualizada, options = {}) => {
+    const listaAnterior = selecionadosNaTela;
+    const listaAtualizadaComChance = applyLocalChanceDelta(listaAnterior, listaAtualizada);
+    setSelecionadosNaTela(listaAtualizadaComChance);
+
+    try {
+      return await persistirEtapa(listaAtualizadaComChance, { markCompleted: options.completed === true });
+    } catch (error) {
+      const listaRestaurada = applyLocalChanceDelta(listaAtualizadaComChance, listaAnterior);
+      setSelecionadosNaTela(listaRestaurada);
+      throw error;
+    }
+  };
+
+  const handleAvancar = async (listaFinalDaTela, options = {}) => {
     if (isSenadoresUnificados) {
       if (listaFinalDaTela.length < 2) return false;
 
@@ -361,10 +413,12 @@ export default function EscolherCandidatos({
       return true;
     }
 
-    const draftAtualizado = await persistirEtapa(listaFinalDaTela, { markCompleted: true });
-    if (!draftAtualizado) return false;
+    if (!options.alreadySaved) {
+      const draftAtualizado = await persistirEtapa(listaFinalDaTela, { markCompleted: true });
+      if (!draftAtualizado) return false;
+      setSelecionadosNaTela(listaFinalDaTela);
+    }
 
-    setSelecionadosNaTela(listaFinalDaTela);
     flowLog('candidates.step.next', {
       cargo,
       chaveGrupo,
@@ -387,6 +441,7 @@ export default function EscolherCandidatos({
 
   return (
     <>
+      <FlowToast key={`${location.key}-${location.state?.flowNotice || ''}`} message={location.state?.flowNotice || ''} />
       <TourModal steps={tourSteps} isOpen={isTourOpen} onClose={() => setIsTourOpen(false)} />
       <SelectBase
         titulo={titulo}
