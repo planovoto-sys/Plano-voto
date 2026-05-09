@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect } from 'react';
+import React, { lazy, Suspense, useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { CANDIDATE_ROUTES } from '@/constants/candidateRoutes';
 import { BALLOT_ROUTES } from '@/constants/ballot';
@@ -44,10 +44,16 @@ function LoadingScreen() {
 
 function App() {
   const { user, loading } = useUser();
+  const [introReady, setIntroReady] = useState(false);
   const privateRoute = (element) => (user ? element : <Navigate to="/" replace />);
   const privateRedirect = (to) => (
     user ? <Navigate to={to} replace state={{ bypassVoteRedirect: true }} /> : <Navigate to="/" replace />
   );
+
+  useEffect(() => {
+    const introTimer = window.setTimeout(() => setIntroReady(true), 1500);
+    return () => window.clearTimeout(introTimer);
+  }, []);
 
   useEffect(() => {
     if (loading) return undefined;
@@ -75,7 +81,7 @@ function App() {
 
   return (
     <BrowserRouter>
-      {loading ? (
+      {loading || !introReady ? (
         <LoadingScreen />
       ) : (
         <Suspense fallback={<LoadingScreen />}>
