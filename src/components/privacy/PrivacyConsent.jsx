@@ -1,31 +1,24 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  acceptOnlyNecessaryPrivacyPreferences,
+  hasSavedPrivacyPreferences
+} from '@/services/privacy/privacyPreferences';
 import './PrivacyConsent.css';
 
-const CONSENT_STORAGE_KEY = 'meuvoto:privacy-consent:v1';
-
-const readStoredConsent = () => {
-  if (typeof window === 'undefined') return true;
-
-  try {
-    return window.localStorage.getItem(CONSENT_STORAGE_KEY) === 'accepted';
-  } catch {
-    return false;
-  }
-};
-
 export default function PrivacyConsent() {
-  const [accepted, setAccepted] = useState(readStoredConsent);
+  const navigate = useNavigate();
+  const [accepted, setAccepted] = useState(hasSavedPrivacyPreferences);
   const [expanded, setExpanded] = useState(false);
 
   const acceptPolicy = () => {
-    try {
-      window.localStorage.setItem(CONSENT_STORAGE_KEY, 'accepted');
-      window.localStorage.setItem(`${CONSENT_STORAGE_KEY}:accepted-at`, new Date().toISOString());
-    } catch {
-      // O aviso some na sessao atual mesmo quando o navegador bloqueia armazenamento.
-    }
-
+    acceptOnlyNecessaryPrivacyPreferences();
     setAccepted(true);
+  };
+
+  const openCustomization = () => {
+    setAccepted(true);
+    navigate('/cookies');
   };
 
   if (accepted) return null;
@@ -57,6 +50,9 @@ export default function PrivacyConsent() {
       <div className="privacy-consent__actions">
         <button className="privacy-consent__secondary" type="button" onClick={() => setExpanded((value) => !value)}>
           {expanded ? 'Ocultar' : 'Ver detalhes'}
+        </button>
+        <button className="privacy-consent__secondary" type="button" onClick={openCustomization}>
+          Personalizar
         </button>
         <button className="privacy-consent__primary" type="button" onClick={acceptPolicy}>
           Entendi

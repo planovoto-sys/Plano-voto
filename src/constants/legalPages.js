@@ -4,16 +4,24 @@ export const LEGAL_PAGE_CONTENT = {
     subtitle: 'Entenda como usamos cookies, armazenamento local e recursos do navegador.',
     sections: [
       {
-        heading: 'Uso de cookies',
-        body: 'O Meu Voto utiliza cookies e tecnologias semelhantes apenas quando necessários para autenticação, segurança, funcionamento da PWA, preferências e melhoria da experiência.'
+        heading: 'Resumo',
+        body: 'Usamos cookies e tecnologias semelhantes para manter o app funcionando, preservar login, salvar preferências, melhorar desempenho e, somente se você autorizar, permitir medições opcionais de uso e integrações futuras.'
+      },
+      {
+        heading: 'Cookies necessários',
+        body: 'São essenciais para autenticação, segurança, funcionamento da PWA, cache técnico, rascunho de escolhas e preferências mínimas do fluxo. Esses recursos não podem ser desligados pela tela de preferências porque o app depende deles para funcionar.'
+      },
+      {
+        heading: 'Cookies opcionais',
+        body: 'Categorias opcionais, como análise de uso, personalização, marketing, parceiros ou uso comercial agregado, só devem ser ativadas quando houver permissão salva pelo usuário. Se uma integração futura exigir novo tipo de dado, a descrição deverá ser atualizada antes da coleta.'
       },
       {
         heading: 'Armazenamento local',
-        body: 'Algumas escolhas temporárias podem ser salvas no navegador para manter o fluxo de votação estável mesmo em redes lentas ou instáveis. Esses dados são usados somente para continuar a experiência do usuário.'
+        body: 'Algumas informações ficam salvas no próprio navegador, como aceite de privacidade, preferências de filtro, estado selecionado, rascunho do fluxo e cache de dados públicos de candidatos. Limpar os dados do navegador pode apagar essas preferências.'
       },
       {
-        heading: 'Permissões do navegador',
-        body: 'A aplicação pode usar recursos de PWA, cache e armazenamento local para carregar telas com mais rapidez. Nenhuma permissão sensível é solicitada sem necessidade clara para o funcionamento.'
+        heading: 'Alteração e revogação',
+        body: 'Você pode alterar suas permissões nesta página. A revogação vale para usos futuros neste dispositivo e não apaga automaticamente dados que precisem ser mantidos por obrigação legal, segurança, auditoria ou prevenção de fraude.'
       }
     ]
   },
@@ -22,16 +30,48 @@ export const LEGAL_PAGE_CONTENT = {
     subtitle: 'Como protegemos informações e mantemos transparência no uso dos dados.',
     sections: [
       {
-        heading: 'Dados utilizados',
-        body: 'O sistema pode utilizar dados básicos de autenticação, estado selecionado, progresso do fluxo e escolhas necessárias para registrar ou revisar o voto dentro da aplicação.'
+        heading: 'Quem somos',
+        body: 'O meuvoto.org é uma aplicação criada para ajudar usuários a organizar escolhas eleitorais de forma simples e rastreável dentro do próprio fluxo do app. Solicitações sobre privacidade podem ser enviadas para plano.voto@gmail.com.'
       },
       {
-        heading: 'Finalidade',
-        body: 'As informações são usadas para autenticar o usuário, exibir candidatos compatíveis com o estado escolhido, prevenir duplicidade de voto e melhorar a estabilidade do sistema.'
+        heading: 'Dados que podemos tratar',
+        body: 'Podemos tratar dados básicos de autenticação, como nome, email e imagem do perfil fornecidos pelo provedor de login; estado selecionado; progresso do fluxo; escolhas de candidatos dentro da aplicação; registros técnicos de segurança; preferências salvas no navegador; e dados públicos de candidatos usados para exibição e comparação.'
       },
       {
-        heading: 'Proteção',
-        body: 'As regras de acesso, validações e mecanismos de segurança são revisados para reduzir riscos de acesso indevido, alteração não autorizada e exposição desnecessária de informações.'
+        heading: 'Dados sensíveis',
+        body: 'Escolhas eleitorais e preferências políticas podem revelar opinião política, que é dado pessoal sensível na LGPD. Por isso, o projeto deve tratar essas informações com maior cuidado, finalidade clara, controle de acesso e limitação de uso.'
+      },
+      {
+        heading: 'Finalidades',
+        body: 'Usamos dados para autenticar o usuário, recuperar o fluxo em andamento, exibir candidatos compatíveis com o estado, impedir duplicidades, atualizar chances agregadas, melhorar estabilidade, proteger contra fraude e cumprir obrigações legais ou solicitações válidas de autoridades.'
+      },
+      {
+        heading: 'Compartilhamento',
+        body: 'Dados podem ser compartilhados com provedores técnicos necessários ao funcionamento, como Firebase/Google, hospedagem, autenticação, banco de dados e serviços de segurança. Não compartilhamos escolhas individuais de voto para publicidade comportamental.'
+      },
+      {
+        heading: 'Uso comercial futuro',
+        body: 'Se o projeto criar uma fonte de receita com dados, isso deverá ocorrer de forma transparente, preferencialmente com informações agregadas ou anonimizadas. A venda, cessão ou uso comercial de dados pessoais identificáveis, especialmente escolhas políticas, não deve ocorrer sem base legal adequada, consentimento específico quando aplicável e revisão jurídica.'
+      },
+      {
+        heading: 'Retenção',
+        body: 'Mantemos dados pelo tempo necessário para entregar o serviço, preservar segurança, permitir auditoria, prevenir abuso e cumprir obrigações legais. Rascunhos e preferências locais podem ser apagados pelo próprio usuário ao limpar dados do navegador ou excluir a conta.'
+      },
+      {
+        heading: 'Segurança',
+        body: 'Usamos regras de acesso, autenticação, validações de etapa, controle de estado, registros técnicos e medidas administrativas para reduzir acesso indevido, alteração não autorizada, duplicidade e exposição desnecessária.'
+      },
+      {
+        heading: 'Direitos do usuário',
+        body: 'O usuário pode solicitar confirmação de tratamento, acesso, correção, anonimização, bloqueio, eliminação, portabilidade quando aplicável, informação sobre compartilhamento, revisão de consentimento e exclusão de dados, observadas as exceções legais.'
+      },
+      {
+        heading: 'Menores de idade',
+        body: 'O app não é direcionado a crianças. Se houver uso por adolescentes ou público que exija proteção especial, o tratamento deverá observar regras específicas, interesse superior do menor e controles adicionais.'
+      },
+      {
+        heading: 'Atualizações',
+        body: 'Esta política pode ser atualizada para refletir novas funcionalidades, integrações, categorias de cookies, modelos de negócio ou exigências legais. Mudanças relevantes devem ser comunicadas de forma clara ao usuário.'
       }
     ]
   },
@@ -40,16 +80,40 @@ export const LEGAL_PAGE_CONTENT = {
     subtitle: 'Direitos do usuário e princípios de tratamento de dados pessoais.',
     sections: [
       {
-        heading: 'Princípios',
-        body: 'O Meu Voto busca tratar dados com finalidade definida, necessidade, transparência, segurança e prevenção, respeitando os princípios previstos na Lei Geral de Proteção de Dados.'
+        heading: 'O que é a LGPD',
+        body: 'A Lei Geral de Proteção de Dados Pessoais estabelece regras para coleta, uso, armazenamento, compartilhamento e eliminação de dados pessoais, buscando proteger liberdade, privacidade e desenvolvimento da personalidade.'
       },
       {
-        heading: 'Direitos do usuário',
-        body: 'O usuário pode solicitar informações sobre seus dados, correções ou orientações relacionadas ao tratamento pelo canal oficial de contato do projeto.'
+        heading: 'Princípios adotados',
+        body: 'O meuvoto.org deve seguir princípios como finalidade, adequação, necessidade, livre acesso, qualidade dos dados, transparência, segurança, prevenção, não discriminação e responsabilização.'
       },
       {
-        heading: 'Contato',
-        body: 'Solicitações relacionadas à privacidade e proteção de dados podem ser enviadas para plano.voto@gmail.com.'
+        heading: 'Bases legais',
+        body: 'Dependendo da operação, o tratamento pode se apoiar em execução do serviço solicitado pelo usuário, cumprimento de obrigação legal, exercício regular de direitos, prevenção à fraude, legítimo interesse com avaliação adequada ou consentimento específico para usos opcionais.'
+      },
+      {
+        heading: 'Consentimento',
+        body: 'Quando uma operação depender de consentimento, ele deve ser livre, informado, destacado e revogável. Cookies opcionais, publicidade, parceiros e uso comercial de dados exigem transparência reforçada e opção real de recusa.'
+      },
+      {
+        heading: 'Dados pessoais sensíveis',
+        body: 'Dados que revelem opinião política exigem atenção especial. O tratamento deve ser limitado ao necessário para o funcionamento do app e não deve ser usado para discriminação, manipulação política, publicidade abusiva ou venda de perfis individuais.'
+      },
+      {
+        heading: 'Compartilhamento e operadores',
+        body: 'Serviços técnicos que hospedam, autenticam, armazenam ou protegem dados podem atuar como operadores ou parceiros de tecnologia. O projeto deve limitar o compartilhamento ao necessário e manter registros claros sobre finalidade e responsabilidade.'
+      },
+      {
+        heading: 'Direitos dos titulares',
+        body: 'O titular pode pedir confirmação de tratamento, acesso, correção, anonimização, bloqueio ou eliminação de dados desnecessários, informação sobre compartilhamento, revogação de consentimento e revisão de decisões quando aplicável.'
+      },
+      {
+        heading: 'Incidentes e segurança',
+        body: 'Em caso de incidente com risco relevante aos titulares, o projeto deverá avaliar impactos, adotar contenção, registrar evidências e observar as comunicações exigidas pela LGPD e pela Autoridade Nacional de Proteção de Dados.'
+      },
+      {
+        heading: 'Canal de atendimento',
+        body: 'Solicitações relacionadas à privacidade e proteção de dados podem ser enviadas para plano.voto@gmail.com. Recomenda-se informar o email usado no login e descrever o pedido de forma objetiva.'
       }
     ]
   },

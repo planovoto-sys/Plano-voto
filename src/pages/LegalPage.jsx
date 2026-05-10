@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { LEGAL_PAGE_CONTENT } from '@/constants/legalPages';
 import AppFooter from '@/components/layout/AppFooter';
+import CookiePreferences from '@/components/privacy/CookiePreferences';
 import './LegalPage.css';
 
 export default function LegalPage({ type }) {
@@ -27,10 +28,16 @@ export default function LegalPage({ type }) {
             {content.sections.map((section) => (
               <section className="legal-section" key={section.heading}>
                 <h2>{section.heading}</h2>
-                <p>{section.body}</p>
+                {Array.isArray(section.body) ? (
+                  section.body.map((paragraph) => <p key={paragraph}>{paragraph}</p>)
+                ) : (
+                  <p>{section.body}</p>
+                )}
               </section>
             ))}
           </div>
+
+          {type === 'cookies' && <CookiePreferences />}
         </section>
       </main>
 
