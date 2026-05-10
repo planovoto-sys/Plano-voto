@@ -3,6 +3,7 @@ import ConfirmModal from '@/components/feedback/ConfirmModal';
 import AppFooter from '@/components/layout/AppFooter';
 import BottomNavigation from '@/components/navigation/BottomNavigation';
 import { BackIcon, InfoIcon } from '@/components/icons/AppIcons';
+import ShareChoicePanel from '@/components/share/ShareChoicePanel';
 import { flowLog, flowWarn } from '@/utils/debugFlow';
 import {
   getCandidateChance,
@@ -78,6 +79,7 @@ export default function SelectBase({
   onHelpClick,
   variant = '',
   emptyMessage = 'Nenhum resultado encontrado.',
+  shareData = null,
   renderItem
 }) {
   const [selecionados, setSelecionados] = useState(selecaoInicial);
@@ -472,6 +474,10 @@ export default function SelectBase({
               <strong>{isSaveStatusSaving ? 'Salvando escolhas...' : 'Todos os dados foram salvos'}</strong>
               <span>Se você trocar algum candidato, a escolha anterior será substituída automaticamente.</span>
             </div>
+          )}
+
+          {isSenateOffice && senateSelectionComplete && shareData && (
+            <ShareChoicePanel shareData={shareData} />
           )}
         </section>
 

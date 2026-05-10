@@ -30,6 +30,35 @@ export function ClearIcon({ className = 'app-icon' }) {
   );
 }
 
+export function ShareIcon({ className = 'app-icon' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M8.3 12.35 15.8 8.1M8.3 11.65l7.5 4.25" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" />
+      <circle cx="6" cy="13" r="2.65" fill="none" stroke="currentColor" strokeWidth="2.25" />
+      <circle cx="18" cy="7" r="2.65" fill="none" stroke="currentColor" strokeWidth="2.25" />
+      <circle cx="18" cy="17" r="2.65" fill="none" stroke="currentColor" strokeWidth="2.25" />
+    </svg>
+  );
+}
+
+export function CopyIcon({ className = 'app-icon' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="8" y="7" width="10" height="12" rx="2" fill="none" stroke="currentColor" strokeWidth="2.2" />
+      <path d="M6 15.5H5.8A2.8 2.8 0 0 1 3 12.7V6.8A2.8 2.8 0 0 1 5.8 4h7.1A2.1 2.1 0 0 1 15 6.1V6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function DownloadIcon({ className = 'app-icon' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 4v10M7.6 10.1 12 14.5l4.4-4.4" fill="none" stroke="currentColor" strokeWidth="2.35" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M5 18.4h14" fill="none" stroke="currentColor" strokeWidth="2.35" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function SearchIcon({ className = 'app-icon' }) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden="true">

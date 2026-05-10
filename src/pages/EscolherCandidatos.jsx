@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useDeferredValue } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AVERAGE_ELECTED_VOTES_BY_OFFICE, CANDIDATE_FILTERS } from '@/constants/candidates';
+import { STATE_NAMES } from '@/constants/states';
 import { useUser } from '@/hooks/useUser';
 import {
   fetchRemoteBallotDraft,
@@ -53,6 +54,7 @@ export default function EscolherCandidatos({
   const buscaDiferida = useDeferredValue(busca);
   const [filtroLista, setFiltroLista] = useState('reeleger');
   const [selecionadosNaTela, setSelecionadosNaTela] = useState([]);
+  const [ballotDraft, setBallotDraft] = useState(null);
   const [modalAviso, setModalAviso] = useState({ aberto: false, mensagem: '' });
   const [isTourOpen, setIsTourOpen] = useState(false);
 
@@ -195,6 +197,7 @@ export default function EscolherCandidatos({
     const restoreSelection = async () => {
       if (!userId || todosCandidatos.length === 0) {
         setSelecionadosNaTela([]);
+        setBallotDraft(null);
         return;
       }
 
@@ -206,6 +209,7 @@ export default function EscolherCandidatos({
       }
 
       if (cancelled) return;
+      setBallotDraft(draft);
 
       const gruposDaTela = isSenadoresUnificados ? chaveGrupos : [chaveGrupo];
       const idsSalvos = gruposDaTela
@@ -230,14 +234,14 @@ export default function EscolherCandidatos({
   const selectedCandidateIdsInOtherSteps = useMemo(() => {
     if (!userId) return new Set();
 
-    const draft = readBallotDraft(userId, estadoDoFluxo);
+    const draft = ballotDraft || readBallotDraft(userId, estadoDoFluxo);
     const gruposDaTela = new Set(isSenadoresUnificados ? chaveGrupos : [chaveGrupo]);
     const ids = Object.entries(draft.candidate_groups || {})
       .filter(([stepId]) => !gruposDaTela.has(stepId))
       .flatMap(([, candidates]) => candidates.map((candidate) => candidate.id));
 
     return new Set(ids);
-  }, [chaveGrupo, chaveGrupos, estadoDoFluxo, isSenadoresUnificados, userId]);
+  }, [ballotDraft, chaveGrupo, chaveGrupos, estadoDoFluxo, isSenadoresUnificados, userId]);
 
   const listaExibida = useMemo(() => {
     let disponiveis = candidatosDoEstado;
@@ -336,13 +340,18 @@ export default function EscolherCandidatos({
     }
 
     try {
+      let draftAtualizado;
+
       if (isSenadoresUnificados) {
         const [primeiroSenador, segundoSenador] = listaFinalDaTela.slice(0, 2);
         await saveBallotStepSelection(userId, 'senadores_1', primeiroSenador ? [primeiroSenador] : [], estadoDoFluxo, { markCompleted });
-        return await saveBallotStepSelection(userId, 'senadores_2', segundoSenador ? [segundoSenador] : [], estadoDoFluxo, { markCompleted });
+        draftAtualizado = await saveBallotStepSelection(userId, 'senadores_2', segundoSenador ? [segundoSenador] : [], estadoDoFluxo, { markCompleted });
+      } else {
+        draftAtualizado = await saveBallotStepSelection(userId, chaveGrupo, listaFinalDaTela, estadoDoFluxo, { markCompleted });
       }
 
-      return await saveBallotStepSelection(userId, chaveGrupo, listaFinalDaTela, estadoDoFluxo, { markCompleted });
+      setBallotDraft(draftAtualizado);
+      return draftAtualizado;
     } catch (error) {
       flowError('candidates.persist.error', error, { cargo, chaveGrupo });
       setModalAviso({
@@ -439,6 +448,21 @@ export default function EscolherCandidatos({
     setFiltroLista(item.mode);
   };
 
+  const shareData = useMemo(() => {
+    if (!isSenadoresUnificados || selecionadosNaTela.length < 2 || !estadoDoFluxo) return null;
+
+    const draft = ballotDraft || (userId ? readBallotDraft(userId, estadoDoFluxo) : null);
+    const deputado = draft?.candidate_groups?.deputado_federal?.[0] || null;
+    if (!deputado) return null;
+
+    return {
+      estadoSigla: estadoDoFluxo,
+      estadoNome: STATE_NAMES[estadoDoFluxo] || estadoDoFluxo,
+      deputado,
+      senadores: selecionadosNaTela.slice(0, 2)
+    };
+  }, [ballotDraft, estadoDoFluxo, isSenadoresUnificados, selecionadosNaTela, userId]);
+
   return (
     <>
       <FlowToast key={`${location.key}-${location.state?.flowNotice || ''}`} message={location.state?.flowNotice || ''} />
@@ -465,6 +489,7 @@ export default function EscolherCandidatos({
         subNavigationItems={CANDIDATE_FILTERS}
         activeSubNavigationId={filtroLista}
         onSubNavigationSelect={handleSubNavigation}
+        shareData={shareData}
       />
 
       <ConfirmModal

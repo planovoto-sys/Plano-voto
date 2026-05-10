@@ -110,7 +110,8 @@ const normalizeStoredCandidate = (candidate) => {
     chance: Number(candidate.chance ?? candidate.Chance ?? 0) || 0,
     selected_by_users: Number(candidate.selected_by_users ?? candidate.selectedByUsers ?? 0) || 0,
     average_elected_votes: Number(candidate.average_elected_votes ?? candidate.averageElectedVotes ?? 0) || 0,
-    ranking_total: Number(candidate.ranking_total ?? candidate.rankingTotal ?? 0) || 0
+    ranking_total: Number(candidate.ranking_total ?? candidate.rankingTotal ?? 0) || 0,
+    temNotaCandidato: candidate.temNotaCandidato ?? candidate.tem_nota_candidato ?? null
   };
 };
 
