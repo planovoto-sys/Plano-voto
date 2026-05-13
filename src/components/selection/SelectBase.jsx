@@ -103,6 +103,7 @@ export default function SelectBase({
   const candidateSearchInputRef = useRef(null);
   const lastScrollTopRef = useRef(0);
   const [continueVisible, setContinueVisible] = useState(true);
+  const [senateChoicesSaved, setSenateChoicesSaved] = useState(false);
   const [modalMalAvaliado, setModalMalAvaliado] = useState({ aberto: false, item: null });
   const [modalAltaChance, setModalAltaChance] = useState({ aberto: false, item: null });
   const [modalCandidatoRepetido, setModalCandidatoRepetido] = useState({ aberto: false, item: null });
@@ -154,6 +155,23 @@ export default function SelectBase({
   const hasSelectionLimit = Number.isFinite(effectiveLimit) && effectiveLimit > 0;
   const visibleRows = Number.isFinite(linhasVisiveis) ? linhasVisiveis : 5;
   const screenCopy = getScreenCopy({ variant, titulo, subtitulo });
+  const selectedSignature = useMemo(() => (
+    selecionados.map((candidate) => candidate.id).filter(Boolean).sort().join('|')
+  ), [selecionados]);
+  const showSavedSenateSharePanel = isSenateOffice && senateChoicesSaved && hasRequiredSelection && Boolean(shareData);
+
+  useEffect(() => {
+    if (!isSenateOffice) return undefined;
+
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) setSenateChoicesSaved(false);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isSenateOffice, selectedSignature]);
 
   const featuredCandidate = useMemo(() => {
     if (!isCandidateOffice) return null;
@@ -437,6 +455,8 @@ export default function SelectBase({
           aberto: true,
           mensagem: isSenateOffice ? 'Escolha pelo menos 2 senadores para continuar.' : 'Escolha pelo menos uma opção para continuar.'
         });
+      } else if (isSenateOffice) {
+        setSenateChoicesSaved(true);
       }
     } catch (error) {
       setModalErroSalvar({
@@ -586,8 +606,6 @@ export default function SelectBase({
 
   const renderCandidateList = () => {
     const currentTitle = isSenateOffice ? 'Meus candidatos' : 'Meu candidato';
-    const senateSelectionComplete = isSenateOffice && selecionados.length >= requiredSelectionCount;
-
     return (
       <div className="candidate-flow nv-container" id="tour-lista">
         {selectedPreviewCandidates.length > 0 && (
@@ -621,9 +639,6 @@ export default function SelectBase({
               ))}
             </div>
 
-            {isSenateOffice && senateSelectionComplete && shareData && (
-              <ShareChoicePanel shareData={shareData} />
-            )}
           </section>
         )}
 
@@ -750,14 +765,18 @@ export default function SelectBase({
       </main>
 
       <div className={`select-base__continue-shell ${continueVisible ? '' : 'is-hidden'}`}>
-        <button
-          className="select-base__continue nv-touch"
-          type="button"
-          onClick={handleContinue}
-          disabled={salvandoSelecao || !hasRequiredSelection}
-        >
-          CONTINUAR
-        </button>
+        {showSavedSenateSharePanel ? (
+          <ShareChoicePanel shareData={shareData} className="share-choice-panel--continue" />
+        ) : (
+          <button
+            className="select-base__continue nv-touch"
+            type="button"
+            onClick={handleContinue}
+            disabled={salvandoSelecao || !hasRequiredSelection}
+          >
+            {isSenateOffice ? 'SALVAR' : 'CONTINUAR'}
+          </button>
+        )}
       </div>
 
       <BottomNavigation currentStep={currentStep} placement="footer" />

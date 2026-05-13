@@ -78,7 +78,7 @@ function SharePreview({ templateId, analysis }) {
   );
 }
 
-export default function ShareChoicePanel({ shareData }) {
+export default function ShareChoicePanel({ shareData, className = '' }) {
   const [isOpen, setIsOpen] = useState(false);
   const [templateId, setTemplateId] = useState('perfil');
   const [status, setStatus] = useState('');
@@ -113,7 +113,7 @@ export default function ShareChoicePanel({ shareData }) {
   if (!shareData) return null;
 
   return (
-    <section className="share-choice-panel nv-no-overflow" aria-labelledby="share-choice-title">
+    <section className={`share-choice-panel nv-no-overflow ${className}`.trim()} aria-labelledby="share-choice-title">
       <div className="share-choice-panel__copy">
         <strong id="share-choice-title">Compartilhe sem revelar suas escolhas</strong>
         <span>Escolha um modelo com perfil, placar ou privacidade. Nenhum nome de candidato aparece.</span>

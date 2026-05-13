@@ -60,6 +60,41 @@
   white-space: nowrap;
 }
 
+.share-choice-panel--continue {
+  width: 100%;
+  min-height: 80px;
+  margin-top: 0;
+  border: 0;
+  border-radius: 9px;
+  background: linear-gradient(90deg, #ffdf59 0%, #ff8b49 100%);
+  color: #000000;
+  padding: 13px 14px;
+  box-shadow: none;
+}
+
+.share-choice-panel--continue .share-choice-panel__copy strong,
+.share-choice-panel--continue .share-choice-panel__copy span {
+  color: #000000;
+}
+
+.share-choice-panel--continue .share-choice-panel__copy strong {
+  font-size: 16px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.share-choice-panel--continue .share-choice-panel__copy span {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.share-choice-panel--continue .share-choice-panel__button {
+  height: 46px;
+  border: 2px solid rgba(0, 0, 0, 0.14);
+  background: rgba(255, 255, 255, 0.78);
+  color: #000000;
+}
+
 .share-choice-panel__button svg,
 .share-modal__actions svg,
 .share-modal__close svg {
@@ -357,6 +392,12 @@
     width: 100%;
   }
 
+  .share-choice-panel--continue {
+    min-height: 92px;
+    gap: 8px;
+    padding: 12px;
+  }
+
   .share-modal {
     align-items: flex-end;
     padding: 10px;
@@ -382,5 +423,24 @@
 
   .share-modal__actions {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .share-choice-panel--continue {
+    width: min(100%, var(--content-max-width, 1180px));
+    min-height: 58px;
+    border-radius: 8px;
+    padding: 10px 14px;
+  }
+
+  .share-choice-panel--continue .share-choice-panel__button {
+    height: 42px;
+  }
+}
+
+@media (min-width: 1536px) {
+  .share-choice-panel--continue {
+    width: min(100%, var(--content-wide-width, 1360px));
   }
 }
