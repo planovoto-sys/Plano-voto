@@ -162,6 +162,33 @@ body {
   display: none;
 }
 
+.app-page-header__brand {
+  display: none;
+  min-width: 0;
+}
+
+.app-page-header__brand-flame {
+  width: 28px;
+  height: 32px;
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
+.app-page-header__brand strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #111111;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1;
+  text-overflow: clip;
+  white-space: nowrap;
+}
+
+.app-page-header__brand span {
+  color: #686868;
+}
+
 .app-page-header__actions {
   width: auto;
   min-height: 0;
@@ -689,6 +716,8 @@ body {
   }
 
   .prototype-page > .app-page-header {
+    position: relative;
+    z-index: 20;
     min-height: auto;
     margin: 0;
     border-radius: 0;
@@ -696,10 +725,10 @@ body {
     background: #ffffff;
     color: var(--text-main);
     display: grid;
-    grid-template-columns: minmax(64px, auto) minmax(260px, 0.55fr) auto minmax(0, 1.45fr);
+    grid-template-columns: 44px minmax(190px, 0.72fr) 44px minmax(0, 1.28fr);
     align-items: center;
-    gap: 18px;
-    padding: 14px var(--screen-gutter);
+    gap: 12px;
+    padding: 12px var(--screen-gutter);
     text-align: center;
   }
 
@@ -727,7 +756,7 @@ body {
     grid-column: 2;
     grid-row: 1;
     justify-self: center;
-    max-width: min(100%, 20rem);
+    max-width: min(100%, 22rem);
   }
 
   .app-page-header__side {
@@ -806,12 +835,59 @@ body {
   :root {
     --screen-gutter: clamp(36px, 4vw, 72px);
   }
+
+  .prototype-page > .app-page-header {
+    grid-template-columns: 44px minmax(240px, 0.72fr) 44px minmax(0, 1.28fr);
+    min-height: 74px;
+    padding-top: 13px;
+    padding-bottom: 13px;
+    box-shadow: 0 1px 0 rgba(17, 17, 17, 0.02), 0 12px 28px rgba(34, 36, 38, 0.04);
+  }
+
+  .prototype-page > .app-page-header h1 {
+    font-size: 24px;
+    letter-spacing: 1.6px;
+  }
 }
 
 @media (min-width: 1180px) {
   .prototype-page > .app-page-header {
     padding-left: clamp(64px, 7vw, 112px);
     padding-right: clamp(64px, 7vw, 112px);
+  }
+}
+
+@media (min-width: 1280px) {
+  .prototype-page > .app-page-header {
+    grid-template-columns: minmax(166px, 0.58fr) 44px minmax(250px, 0.7fr) 44px minmax(0, 1.35fr);
+    gap: 16px;
+  }
+
+  .app-page-header__brand {
+    grid-column: 1;
+    grid-row: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-self: start;
+    gap: 8px;
+  }
+
+  .app-header-back-button {
+    grid-column: 2;
+  }
+
+  .app-page-header__copy {
+    grid-column: 3;
+    justify-self: start;
+    text-align: left;
+  }
+
+  .app-page-header__actions {
+    grid-column: 4;
+  }
+
+  .app-page-header__side {
+    grid-column: 5;
   }
 }
 

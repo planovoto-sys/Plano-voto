@@ -276,9 +276,35 @@
   }
 }
 
+@media (min-width: 1024px) {
+  .legal-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+
+  .legal-main {
+    padding-top: 48px;
+  }
+
+  .legal-panel {
+    width: min(100%, 1060px);
+  }
+
+  .legal-section-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 32px;
+    row-gap: 28px;
+  }
+
+  .legal-section:first-child {
+    grid-column: 1 / -1;
+  }
+}
+
 @media (min-width: 1536px) {
   .legal-panel {
-    width: min(100%, 1040px);
+    width: min(100%, 1120px);
   }
 }
 

@@ -554,7 +554,7 @@ export default function SelectBase({
     const estadoSelecionado = selecionados[0] || null;
 
     return (
-      <div className="state-selection-flow nv-container">
+      <div className={`state-selection-flow nv-container ${estadoSelecionado ? 'has-current-state' : ''}`}>
         {estadoSelecionado && (
           <section className="state-current-section" aria-label="Meu estado">
             <div className="prototype-section-heading">
@@ -604,7 +604,7 @@ export default function SelectBase({
   const renderCandidateList = () => {
     const currentTitle = isSenateOffice ? 'Meus candidatos' : 'Meu candidato';
     return (
-      <div className="candidate-flow nv-container" id="tour-lista">
+      <div className={`candidate-flow nv-container ${selectedPreviewCandidates.length > 0 ? 'has-current-selection' : ''} ${isSenateOffice ? 'candidate-flow--senate' : 'candidate-flow--single'}`} id="tour-lista">
         {selectedPreviewCandidates.length > 0 && (
           <section className="candidate-current-section">
             <div className="prototype-section-heading prototype-section-heading--current">
@@ -730,6 +730,11 @@ export default function SelectBase({
           <BackIcon />
           <span>Voltar</span>
         </button>
+
+        <div className="app-page-header__brand" aria-hidden="true">
+          <ChanceFlame className="app-page-header__brand-flame" size={30} />
+          <strong>nossovoto<span>.org</span></strong>
+        </div>
 
         <div className="app-page-header__copy">
           <h1>{screenCopy.title}</h1>

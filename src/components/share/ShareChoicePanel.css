@@ -439,8 +439,14 @@
   }
 }
 
+@media (min-width: 1024px) {
+  .share-choice-panel--continue {
+    width: min(100%, 620px);
+  }
+}
+
 @media (min-width: 1536px) {
   .share-choice-panel--continue {
-    width: min(100%, var(--content-wide-width, 1360px));
+    width: min(100%, 660px);
   }
 }
