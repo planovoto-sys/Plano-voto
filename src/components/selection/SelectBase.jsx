@@ -200,6 +200,57 @@ export default function SelectBase({
       .slice(0, displayLimit);
   }, [isCandidateOffice, isSenateOffice, selecionados]);
 
+  const currentSelectionSubtitle = useMemo(() => {
+    if (!isCandidateOffice || selectedPreviewCandidates.length === 0) return null;
+
+    const hasLowScore = selectedPreviewCandidates.some((candidate) => {
+      const score = getCandidateSystemScore(candidate);
+      return score > 0 && score < 7;
+    });
+    const allHighViability = selectedPreviewCandidates.every((candidate) => getCandidateChance(candidate) >= 100);
+    const hasFeaturedCandidate = selectedPreviewCandidates.some((candidate) => (
+      candidate.isChanceFeatured || featuredMetricsByCandidateId.get(candidate.id)?.chance
+    ));
+    const allCurrentlyViable = selectedPreviewCandidates.every((candidate) => (
+      getCandidateSystemScore(candidate) > 7 &&
+      getCandidateChance(candidate) > 0 &&
+      getCandidateChance(candidate) < 100
+    ));
+
+    if (hasLowScore) {
+      return {
+        prefix: 'Atenção: ',
+        highlight: isSenateOffice ? 'revise candidatos mal avaliados' : 'revise candidato mal avaliado'
+      };
+    }
+
+    if (allHighViability) {
+      return {
+        prefix: 'Escolha registrada: ',
+        highlight: isSenateOffice ? 'candidatos com alta viabilidade' : 'candidato com alta viabilidade'
+      };
+    }
+
+    if (hasFeaturedCandidate) {
+      return {
+        prefix: 'Boa escolha: ',
+        highlight: isSenateOffice ? 'uma das opções mais viáveis 🔥' : 'candidato mais viável 🔥'
+      };
+    }
+
+    if (allCurrentlyViable) {
+      return {
+        prefix: 'Boa escolha: ',
+        highlight: isSenateOffice ? 'candidatos com boa viabilidade 🔥' : 'candidato com boa viabilidade 🔥'
+      };
+    }
+
+    return {
+      prefix: isSenateOffice ? 'Compare suas escolhas com os ' : 'Compare sua escolha com o ',
+      highlight: isSenateOffice ? 'candidatos mais viáveis 🔥' : 'candidato mais viável 🔥'
+    };
+  }, [featuredMetricsByCandidateId, isCandidateOffice, isSenateOffice, selectedPreviewCandidates]);
+
   const commitSelection = async (nextSelecionados, { autoConfirm = false, completed = false } = {}) => {
     const previousSelecionados = selecionados;
     setSelecionados(nextSelecionados);
@@ -477,10 +528,12 @@ export default function SelectBase({
           <section className="candidate-current-section">
             <div className="prototype-section-heading prototype-section-heading--current">
               <h2>{currentTitle}</h2>
-              <p>
-                {isSenateOffice ? 'Considere selecionar os candidatos ' : 'Considere selecionar o candidato '}
-                <span className="candidate-current-highlight">{isSenateOffice ? 'mais viáveis 🔥' : 'mais viável 🔥'}</span>
-              </p>
+              {currentSelectionSubtitle && (
+                <p>
+                  {currentSelectionSubtitle.prefix}
+                  <span className="candidate-current-highlight">{currentSelectionSubtitle.highlight}</span>
+                </p>
+              )}
             </div>
 
             <div className={`candidate-current-list ${isSenateOffice ? 'candidate-current-list--double' : ''}`}>

@@ -558,7 +558,7 @@
   width: auto;
   height: auto;
   pointer-events: none;
-  font-size: 40px;
+  font-size: 34px;
   line-height: 1;
   text-shadow: 0 2px 4px rgba(255, 139, 73, 0.18);
   transform: rotate(8deg);
@@ -684,7 +684,7 @@
   .candidate-viability__flame {
     top: -22px;
     right: -13px;
-    font-size: 34px;
+    font-size: 29px;
   }
 
   .select-base__continue {
