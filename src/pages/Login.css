@@ -33,7 +33,7 @@
 }
 
 .login-brand__flame {
-  width: clamp(39px, 12vw, 62px);
+  width: clamp(31px, 9.6vw, 48px);
   height: auto;
   flex: 0 0 auto;
   object-fit: contain;
