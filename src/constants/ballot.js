@@ -6,7 +6,12 @@ export const DELETE_USER_ELECTION_DATA_FUNCTION_NAME = import.meta.env.VITE_DELE
 
 export const BALLOT_SCHEMA_VERSION = 1;
 
-export const OFFICE_LIMITS = {
+export const OFFICE_MINIMUM_SELECTIONS = {
+  deputado_federal: 1,
+  senadores: 2
+};
+
+export const OFFICE_DISPLAY_LIMITS = {
   deputado_federal: 1,
   senadores: 2
 };

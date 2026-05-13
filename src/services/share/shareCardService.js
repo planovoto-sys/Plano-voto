@@ -3,7 +3,7 @@ import {
   getCandidateSystemScore
 } from '@/utils/candidateMetrics';
 
-const APP_SHARE_URL = import.meta.env.VITE_PUBLIC_APP_URL || 'https://meuvoto.org';
+const APP_SHARE_URL = import.meta.env.VITE_PUBLIC_APP_URL || 'https://nossovoto.org';
 const SHARE_YEAR = '2026';
 
 export const SHARE_CARD_TEMPLATES = [
@@ -17,7 +17,7 @@ export const SHARE_CARD_TEMPLATES = [
     id: 'placar',
     label: 'Placar eleitoral',
     shortLabel: 'Placar',
-    description: 'Resume nota e chance em faixas seguras.'
+    description: 'Resume nota e viabilidade em faixas seguras.'
   },
   {
     id: 'blindado',
@@ -81,15 +81,15 @@ const getProfile = ({ averageScore, averageChance, renovationRatio, mandateRatio
   if (averageChance >= 70 && averageScore >= 7) {
     return {
       title: 'Estratégico',
-      summary: 'Você combinou chance real de eleição com avaliação positiva.',
-      priorities: ['Mais chance de eleição', 'Boa avaliação', 'Menor risco de desperdiçar voto']
+      summary: 'Você combinou viabilidade real de eleição com avaliação positiva.',
+      priorities: ['Mais viabilidade de eleição', 'Boa avaliação', 'Menor risco de desperdiçar voto']
     };
   }
 
   if (averageScore >= 8.2) {
     return {
       title: 'Técnico',
-      summary: 'Você priorizou avaliação forte antes de olhar só para chance.',
+      summary: 'Você priorizou avaliação forte antes de olhar só para viabilidade.',
       priorities: ['Nota alta', 'Critério técnico', 'Comparação objetiva']
     };
   }
@@ -97,8 +97,8 @@ const getProfile = ({ averageScore, averageChance, renovationRatio, mandateRatio
   if (averageChance >= 80) {
     return {
       title: 'Voto útil',
-      summary: 'Você concentrou suas escolhas em nomes com chance elevada.',
-      priorities: ['Chance alta', 'Decisão pragmática', 'Segurança eleitoral']
+      summary: 'Você concentrou suas escolhas em nomes com viabilidade elevada.',
+      priorities: ['Viabilidade alta', 'Decisão pragmática', 'Segurança eleitoral']
     };
   }
 
@@ -113,8 +113,8 @@ const getProfile = ({ averageScore, averageChance, renovationRatio, mandateRatio
   if (averageScore >= 7 && averageChance >= 35) {
     return {
       title: 'Equilibrado',
-      summary: 'Você misturou avaliação e chance sem depender de um único critério.',
-      priorities: ['Equilíbrio', 'Boa avaliação', 'Chance moderada']
+      summary: 'Você misturou avaliação e viabilidade sem depender de um único critério.',
+      priorities: ['Equilíbrio', 'Boa avaliação', 'Viabilidade moderada']
     };
   }
 
@@ -172,11 +172,11 @@ const getTemplateLines = (templateId, analysis) => {
       'MEU PLACAR ELEITORAL',
       `Estado: ${analysis.estadoNome}`,
       '',
-      `Deputado Federal: Nota ${analysis.deputado ? getShareScoreBand(analysis.deputado) : 'Pendente'} · Chance ${analysis.deputado ? getShareChanceBand(analysis.deputado) : 'Pendente'}`,
-      `Senador 1: Nota ${analysis.senadores[0] ? getShareScoreBand(analysis.senadores[0]) : 'Pendente'} · Chance ${analysis.senadores[0] ? getShareChanceBand(analysis.senadores[0]) : 'Pendente'}`,
-      `Senador 2: Nota ${analysis.senadores[1] ? getShareScoreBand(analysis.senadores[1]) : 'Pendente'} · Chance ${analysis.senadores[1] ? getShareChanceBand(analysis.senadores[1]) : 'Pendente'}`,
+      `Deputado Federal: Nota ${analysis.deputado ? getShareScoreBand(analysis.deputado) : 'Pendente'} · Viabilidade ${analysis.deputado ? getShareChanceBand(analysis.deputado) : 'Pendente'}`,
+      `Senador 1: Nota ${analysis.senadores[0] ? getShareScoreBand(analysis.senadores[0]) : 'Pendente'} · Viabilidade ${analysis.senadores[0] ? getShareChanceBand(analysis.senadores[0]) : 'Pendente'}`,
+      `Senador 2: Nota ${analysis.senadores[1] ? getShareScoreBand(analysis.senadores[1]) : 'Pendente'} · Viabilidade ${analysis.senadores[1] ? getShareChanceBand(analysis.senadores[1]) : 'Pendente'}`,
       '',
-      `Resultado: foco em chance ${analysis.chanceBand.toLowerCase()} e avaliação ${analysis.scoreBand.toLowerCase()}.`,
+      `Resultado: foco em viabilidade ${analysis.chanceBand.toLowerCase()} e avaliação ${analysis.scoreBand.toLowerCase()}.`,
       'Candidatos ocultos.'
     ];
   }
@@ -324,7 +324,7 @@ const drawShareCanvas = (templateId, analysis, canvas) => {
 
   context.fillStyle = '#4a4a4a';
   context.font = '900 34px Montserrat, Arial, sans-serif';
-  context.fillText('meuvoto.org', 118, 142);
+  context.fillText('nossovoto.org', 118, 142);
 
   context.strokeStyle = '#e8ebee';
   context.lineWidth = 3;
@@ -353,10 +353,10 @@ const drawShareCanvas = (templateId, analysis, canvas) => {
       ? [
           { text: 'MEU PLACAR ELEITORAL', font: '900 62px Montserrat, Arial, sans-serif', color: '#111111', lineHeight: 72 },
           { text: `Estado: ${analysis.estadoNome}`, font: '700 32px Montserrat, Arial, sans-serif', color: '#69746f', lineHeight: 44, after: 56 },
-          { text: `Deputado Federal · Nota ${analysis.deputado ? getShareScoreBand(analysis.deputado) : 'Pendente'} · Chance ${analysis.deputado ? getShareChanceBand(analysis.deputado) : 'Pendente'}`, font: '800 32px Montserrat, Arial, sans-serif', color: '#4a4a4a', lineHeight: 46 },
-          { text: `Senador 1 · Nota ${analysis.senadores[0] ? getShareScoreBand(analysis.senadores[0]) : 'Pendente'} · Chance ${analysis.senadores[0] ? getShareChanceBand(analysis.senadores[0]) : 'Pendente'}`, font: '800 32px Montserrat, Arial, sans-serif', color: '#4a4a4a', lineHeight: 46 },
-          { text: `Senador 2 · Nota ${analysis.senadores[1] ? getShareScoreBand(analysis.senadores[1]) : 'Pendente'} · Chance ${analysis.senadores[1] ? getShareChanceBand(analysis.senadores[1]) : 'Pendente'}`, font: '800 32px Montserrat, Arial, sans-serif', color: '#4a4a4a', lineHeight: 46, after: 48 },
-          { text: `Resultado: foco em chance ${analysis.chanceBand.toLowerCase()} e avaliação ${analysis.scoreBand.toLowerCase()}.`, font: '900 38px Montserrat, Arial, sans-serif', color: '#111111', lineHeight: 50 },
+          { text: `Deputado Federal · Nota ${analysis.deputado ? getShareScoreBand(analysis.deputado) : 'Pendente'} · Viabilidade ${analysis.deputado ? getShareChanceBand(analysis.deputado) : 'Pendente'}`, font: '800 32px Montserrat, Arial, sans-serif', color: '#4a4a4a', lineHeight: 46 },
+          { text: `Senador 1 · Nota ${analysis.senadores[0] ? getShareScoreBand(analysis.senadores[0]) : 'Pendente'} · Viabilidade ${analysis.senadores[0] ? getShareChanceBand(analysis.senadores[0]) : 'Pendente'}`, font: '800 32px Montserrat, Arial, sans-serif', color: '#4a4a4a', lineHeight: 46 },
+          { text: `Senador 2 · Nota ${analysis.senadores[1] ? getShareScoreBand(analysis.senadores[1]) : 'Pendente'} · Viabilidade ${analysis.senadores[1] ? getShareChanceBand(analysis.senadores[1]) : 'Pendente'}`, font: '800 32px Montserrat, Arial, sans-serif', color: '#4a4a4a', lineHeight: 46, after: 48 },
+          { text: `Resultado: foco em viabilidade ${analysis.chanceBand.toLowerCase()} e avaliação ${analysis.scoreBand.toLowerCase()}.`, font: '900 38px Montserrat, Arial, sans-serif', color: '#111111', lineHeight: 50 },
           { text: 'Candidatos ocultos.', font: '700 30px Montserrat, Arial, sans-serif', color: '#69746f', lineHeight: 40 }
         ]
       : templateId === 'blindado'
@@ -411,7 +411,7 @@ export const downloadShareImage = async (templateId, shareData) => {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `meuvoto-${templateId}.png`;
+  link.download = `nossovoto-${templateId}.png`;
   document.body.appendChild(link);
   link.click();
   link.remove();
@@ -439,12 +439,12 @@ export const copyShareText = async (templateId, shareData) => {
 
 export const shareTemplate = async (templateId, shareData) => {
   const text = buildShareText(templateId, shareData);
-  const title = 'Meu resultado no meuvoto.org';
+  const title = 'Meu resultado no nossovoto.org';
 
   if (navigator.share) {
     try {
       const blob = await createShareImageBlob(templateId, shareData);
-      const file = new File([blob], `meuvoto-${templateId}.png`, { type: 'image/png' });
+      const file = new File([blob], `nossovoto-${templateId}.png`, { type: 'image/png' });
       if (navigator.canShare?.({ files: [file] })) {
         await navigator.share({ title, text, files: [file] });
         return 'shared';

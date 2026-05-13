@@ -10,26 +10,21 @@ import {
   getCandidateTone
 } from '@/utils/candidateMetrics';
 
-function MetricCircle({ label, value, tone, featured = false }) {
-  const numericValue = Number(String(value).replace(',', '.')) || 0;
-  const maxValue = label === 'Chance' ? 100 : 10;
-  const progress = Math.max(0, Math.min(100, (numericValue / maxValue) * 100));
+function ViabilityMeter({ value, tone, featured = false }) {
+  const numericValue = Number(value) || 0;
+  const progress = Math.max(0, Math.min(100, numericValue));
 
   return (
     <span
-      className={`metric-badge ${featured ? 'metric-badge--featured' : ''}`}
+      className={`candidate-viability candidate-viability--${tone} ${featured ? 'candidate-viability--featured' : ''}`}
       style={{ '--metric-progress': progress }}
     >
-      <span className={`metric-circle metric-circle--${tone} ${featured ? 'metric-circle--featured' : ''}`}>
-        <small>{label}</small>
-        <strong>{value}</strong>
+      <span className="candidate-viability__circle">
+        <strong>{numericValue}<small>%</small></strong>
+        <span>viável</span>
       </span>
       {featured && (
-        <ChanceFlame
-          className="metric-badge__flame"
-          color="var(--metric-feature-color)"
-          size={32}
-        />
+        <span className="candidate-viability__flame" aria-hidden="true">🔥</span>
       )}
     </span>
   );
@@ -46,13 +41,33 @@ const getSingleLineSize = (value, sizes) => {
   return sizes.base;
 };
 
+const getAssessment = ({ isFireFeatured, isViabilityComplete, systemScore }) => {
+  if (isFireFeatured && systemScore > 7) {
+    return { label: 'Mais viável', icon: 'fire' };
+  }
+
+  if (systemScore >= 7) {
+    if (isViabilityComplete) {
+      return { label: 'Não precisa de mais votos', icon: 'info' };
+    }
+
+    return { label: 'Precisa de mais votos', icon: 'info' };
+  }
+
+  if (systemScore > 0 && systemScore < 7) {
+    return { label: 'Mal avaliado', icon: 'error' };
+  }
+
+  return { label: 'Sem nota', icon: 'info' };
+};
+
 export default function CandidateCard({
   candidate,
   highlight = false,
   selected = false,
   onSelect,
   featuredMetrics = {},
-  showAssessmentSubtitle = false,
+  showAssessmentSubtitle = true,
   summary = false,
   actionLabel = ''
 }) {
@@ -65,31 +80,24 @@ export default function CandidateCard({
   const hasCandidateScore = candidateScore > 0;
   const hasPartyScore = !hasCandidateScore && partyScore > 0;
   const visibleScore = hasCandidateScore ? candidateScore : partyScore;
-  const visibleScoreLabel = hasCandidateScore ? 'Nota' : 'Partido';
   const isBlocked = candidate.isAlreadyChosen;
-  const isFireFeatured = Boolean(featuredMetrics.chance);
-  const isChanceComplete = chance >= 100;
+  const isFireFeatured = Boolean(featuredMetrics.chance || candidate.isChanceFeatured);
+  const isViabilityComplete = chance >= 100;
   const systemScore = getCandidateSystemScore(candidate);
-  const assessmentSubtitle = (() => {
-    if (!showAssessmentSubtitle) return '';
-    if (isChanceComplete) return 'Grandes chances, não precisa de mais voto';
-    if (isFireFeatured && systemScore >= 7) return 'Candidato Bem avaliado com maior Chance';
-    if (systemScore >= 7) return 'Candidato Bem avaliado';
-    if (systemScore > 0 && systemScore < 7) return 'Candidato Mal Avaliado';
-    return '';
-  })();
+  const assessment = getAssessment({ isFireFeatured, isViabilityComplete, systemScore });
+  const metricTone = isFireFeatured ? 'featured' : tone;
   const textFitStyle = {
-    '--candidate-name-size': `${getSingleLineSize(name, { base: 20, lg: 15.5, md: 12.8, sm: 10.8, xs: 8.8, xxs: 7.6 })}px`,
-    '--candidate-name-mobile-size': `${getSingleLineSize(name, { base: 16, lg: 12.8, md: 10.2, sm: 8.7, xs: 7.6, xxs: 6.9 })}px`,
-    '--candidate-name-narrow-size': `${getSingleLineSize(name, { base: 14, lg: 11.4, md: 9.2, sm: 7.8, xs: 6.9, xxs: 6.3 })}px`,
-    '--candidate-name-tiny-size': `${getSingleLineSize(name, { base: 13.4, lg: 10.8, md: 8.6, sm: 7.2, xs: 6.4, xxs: 5.9 })}px`,
-    '--candidate-assessment-size': `${getSingleLineSize(assessmentSubtitle, { base: 10, lg: 9, md: 8.2, sm: 7.5, xs: 6.8, xxs: 6.2 })}px`,
-    '--candidate-assessment-mobile-size': `${getSingleLineSize(assessmentSubtitle, { base: 8.4, lg: 7.8, md: 7.2, sm: 6.7, xs: 6.1, xxs: 5.8 })}px`
+    '--candidate-name-size': `${getSingleLineSize(name, { base: 20, lg: 17, md: 14.4, sm: 12.2, xs: 10.4, xxs: 9.2 })}px`,
+    '--candidate-name-mobile-size': `${getSingleLineSize(name, { base: 18, lg: 15.2, md: 12.8, sm: 10.8, xs: 9.2, xxs: 8.2 })}px`,
+    '--candidate-name-narrow-size': `${getSingleLineSize(name, { base: 16, lg: 13.6, md: 11.2, sm: 9.6, xs: 8.2, xxs: 7.4 })}px`,
+    '--candidate-name-tiny-size': `${getSingleLineSize(name, { base: 15, lg: 12.6, md: 10.4, sm: 8.8, xs: 7.7, xxs: 7 })}px`,
+    '--candidate-assessment-size': `${getSingleLineSize(assessment.label, { base: 10, lg: 9.4, md: 8.7, sm: 8, xs: 7.2, xxs: 6.6 })}px`,
+    '--candidate-assessment-mobile-size': `${getSingleLineSize(assessment.label, { base: 8.4, lg: 8, md: 7.4, sm: 6.9, xs: 6.3, xxs: 5.9 })}px`
   };
 
   return (
     <button
-      className={`prototype-candidate-card candidate-card--${tone} ${highlight ? 'is-highlight' : ''} ${selected ? 'is-selected' : ''} ${summary ? 'is-summary' : ''} ${isFireFeatured ? 'is-fire-featured' : ''} ${isChanceComplete ? 'is-chance-complete' : ''} ${isBlocked ? 'is-blocked' : ''}`}
+      className={`prototype-candidate-card candidate-card--${tone} ${highlight ? 'is-highlight' : ''} ${selected ? 'is-selected' : ''} ${summary ? 'is-summary' : ''} ${isFireFeatured ? 'is-fire-featured' : ''} ${isViabilityComplete ? 'is-viability-complete' : ''} ${isBlocked ? 'is-blocked' : ''}`}
       style={textFitStyle}
       type="button"
       onClick={onSelect}
@@ -98,23 +106,25 @@ export default function CandidateCard({
       aria-disabled={candidate.isAlreadyChosen ? 'true' : undefined}
     >
       <span className="candidate-card__identity">
-        {highlight && <span className="candidate-card__badge">Destaque</span>}
-        {summary && actionLabel && <span className="candidate-card__badge candidate-card__badge--action">{actionLabel}</span>}
-        {!highlight && !hasCandidateScore && !candidate.isAlreadyChosen && <span className="candidate-card__badge candidate-card__badge--new">Sem nota</span>}
-        {candidate.isAlreadyChosen && <span className="candidate-card__badge candidate-card__badge--neutral">Já escolhido</span>}
         <span className="candidate-card__name-row">
           <strong>{name}</strong>
+          {!summary && (
+            <span className={`candidate-card__action ${selected ? 'is-selected' : ''}`} aria-hidden="true">
+              {selected ? '✓' : '+'}
+            </span>
+          )}
         </span>
         <small>{party}</small>
-        {assessmentSubtitle && (
-          <span className="candidate-card__assessment">{assessmentSubtitle}</span>
+        {showAssessmentSubtitle && (
+          <span className={`candidate-card__assessment candidate-card__assessment--${assessment.icon}`}>
+            {assessment.icon === 'fire' && <ChanceFlame size={14} color="currentColor" />}
+            {assessment.icon !== 'fire' && <i aria-hidden="true">{assessment.icon === 'error' ? '×' : '!'}</i>}
+            <span>Nota {(hasCandidateScore || hasPartyScore) ? formatScore(visibleScore) : '--'} | {assessment.label}</span>
+          </span>
         )}
       </span>
 
-      <span className="candidate-card__metrics">
-        <MetricCircle label={hasPartyScore ? visibleScoreLabel : 'Nota'} value={(hasCandidateScore || hasPartyScore) ? formatScore(visibleScore) : '--'} tone={tone} />
-        <MetricCircle label="Chance" value={chance} tone={tone} featured={featuredMetrics.chance} />
-      </span>
+      <ViabilityMeter value={chance} tone={metricTone} featured={isFireFeatured} />
     </button>
   );
 }

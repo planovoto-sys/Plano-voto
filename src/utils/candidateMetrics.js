@@ -85,17 +85,19 @@ export const getCandidateTone = (candidate, fallback = 'neutral') => {
   const score = getCandidateSystemScore(candidate);
   const chance = getCandidateChance(candidate);
 
-  if (candidate.isAlreadyChosen || chance >= 100) return 'neutral';
+  if (candidate.isAlreadyChosen) return 'neutral';
+  if (score > 0 && score < 7) return 'danger';
+  if (chance >= 100) return 'neutral';
   if (score <= 0) return 'new';
-  if (score < 7) return 'danger';
   return 'success';
 };
 
 export const getCandidateScoreTone = (candidate, fallback = 'neutral') => {
   if (!candidate) return fallback;
-  if (getCandidateChance(candidate) >= 100) return 'neutral';
   if (getCandidateScore(candidate) <= 0) return 'new';
-  return getCandidateScore(candidate) < 7 ? 'danger' : 'success';
+  if (getCandidateScore(candidate) < 7) return 'danger';
+  if (getCandidateChance(candidate) >= 100) return 'neutral';
+  return 'success';
 };
 
 export const getDisplayCandidate = (candidate, fallbackName, defaultNumber) => ({

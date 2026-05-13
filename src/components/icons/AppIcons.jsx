@@ -114,3 +114,9 @@ export function OptionsNavIcon({ className = 'app-icon' }) {
     </svg>
   );
 }
+
+export function NossoVotoNavIcon({ className = 'app-icon' }) {
+  return (
+    <span className={className} aria-hidden="true">🔥</span>
+  );
+}

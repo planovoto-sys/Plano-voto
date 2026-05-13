@@ -1,5 +1,6 @@
 import React from 'react';
 import { signInWithPopup } from 'firebase/auth';
+import { ChanceFlame } from '@/components/icons/ChanceFlame';
 import { auth, firebaseReady, googleProvider } from '@/services/firebase/firebase';
 import { flowError, flowLog } from '@/utils/debugFlow';
 import './Login.css';
@@ -26,15 +27,11 @@ function Login() {
 
   return (
     <div className="login-wrapper">
-      <header className="login-header prototype-header">
-        <h1>meuvoto.org</h1>
-      </header>
-
       <main className="login-main">
-        <section className="login-copy-block">
-          <h2>Assista ao vídeo</h2>
-          <p>E entenda como meuvoto.org pode te ajudar a votar melhor</p>
-        </section>
+        <h1 className="login-brand" aria-label="nossovoto.org">
+          <ChanceFlame className="login-brand__flame" size={62} />
+          <span>nossovoto<em>.org</em></span>
+        </h1>
 
         <div className="video-card">
           <button className="play-button" type="button" aria-label="Reproduzir vídeo">
@@ -42,12 +39,10 @@ function Login() {
           </button>
         </div>
 
-        <section className="login-copy-block login-copy-block--start">
-          <h2>Clique em começar</h2>
-          <p>Após assistir ao vídeo</p>
-        </section>
-
-        <button className="btn-comecar" type="button" onClick={handleGoogleLogin}>COMEÇAR</button>
+        <button className="btn-comecar" type="button" onClick={handleGoogleLogin}>
+          <strong>COMEÇAR</strong>
+          <span>Veja o vídeo antes de começar</span>
+        </button>
       </main>
     </div>
   );

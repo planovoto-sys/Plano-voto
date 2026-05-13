@@ -13,7 +13,7 @@ export default function AppFooter({ className = '' }) {
     <footer className={`app-footer ${className}`.trim()}>
       <div className="app-footer__inner">
         <div className="app-footer__brand">
-          <strong>meuvoto.org</strong>
+          <strong>nossovoto.org</strong>
           <span>Voto consciente, simples e organizado.</span>
         </div>
 

@@ -31,7 +31,7 @@ export const LEGAL_PAGE_CONTENT = {
     sections: [
       {
         heading: 'Quem somos',
-        body: 'O meuvoto.org é uma aplicação criada para ajudar usuários a organizar escolhas eleitorais de forma simples e rastreável dentro do próprio fluxo do app. Solicitações sobre privacidade podem ser enviadas para plano.voto@gmail.com.'
+        body: 'O nossovoto.org é uma aplicação criada para ajudar usuários a organizar escolhas eleitorais de forma simples e rastreável dentro do próprio fluxo do app. Solicitações sobre privacidade podem ser enviadas para plano.voto@gmail.com.'
       },
       {
         heading: 'Dados que podemos tratar',
@@ -43,7 +43,7 @@ export const LEGAL_PAGE_CONTENT = {
       },
       {
         heading: 'Finalidades',
-        body: 'Usamos dados para autenticar o usuário, recuperar o fluxo em andamento, exibir candidatos compatíveis com o estado, impedir duplicidades, atualizar chances agregadas, melhorar estabilidade, proteger contra fraude e cumprir obrigações legais ou solicitações válidas de autoridades.'
+        body: 'Usamos dados para autenticar o usuário, recuperar o fluxo em andamento, exibir candidatos compatíveis com o estado, impedir duplicidades, atualizar viabilidade agregada, melhorar estabilidade, proteger contra fraude e cumprir obrigações legais ou solicitações válidas de autoridades.'
       },
       {
         heading: 'Compartilhamento',
@@ -85,7 +85,7 @@ export const LEGAL_PAGE_CONTENT = {
       },
       {
         heading: 'Princípios adotados',
-        body: 'O meuvoto.org deve seguir princípios como finalidade, adequação, necessidade, livre acesso, qualidade dos dados, transparência, segurança, prevenção, não discriminação e responsabilização.'
+        body: 'O nossovoto.org deve seguir princípios como finalidade, adequação, necessidade, livre acesso, qualidade dos dados, transparência, segurança, prevenção, não discriminação e responsabilização.'
       },
       {
         heading: 'Bases legais',
@@ -119,11 +119,11 @@ export const LEGAL_PAGE_CONTENT = {
   },
   sobre: {
     title: 'Sobre nós',
-    subtitle: 'Conheça o propósito do projeto Meu Voto.',
+    subtitle: 'Conheça o propósito do projeto Nosso Voto.',
     sections: [
       {
         heading: 'O projeto',
-        body: 'O Meu Voto nasceu para ajudar pessoas a organizarem suas escolhas eleitorais de forma simples, consciente e acessível.'
+        body: 'O Nosso Voto nasceu para ajudar pessoas a organizarem suas escolhas eleitorais de forma simples, consciente e acessível.'
       },
       {
         heading: 'Objetivo',

@@ -20,11 +20,11 @@ function SharePreview({ templateId, analysis }) {
         <span className="share-preview-card__eyebrow">MEU PLACAR ELEITORAL</span>
         <h3>{analysis.estadoNome}</h3>
         <div className="share-score-list">
-          <span>Deputado Federal <strong>Nota {analysis.deputadoScoreBand} · Chance {analysis.deputadoChanceBand}</strong></span>
-          <span>Senador 1 <strong>Nota {analysis.senatorOneScoreBand} · Chance {analysis.senatorOneChanceBand}</strong></span>
-          <span>Senador 2 <strong>Nota {analysis.senatorTwoScoreBand} · Chance {analysis.senatorTwoChanceBand}</strong></span>
+          <span>Deputado Federal <strong>Nota {analysis.deputadoScoreBand} · Viabilidade {analysis.deputadoChanceBand}</strong></span>
+          <span>Senador 1 <strong>Nota {analysis.senatorOneScoreBand} · Viabilidade {analysis.senatorOneChanceBand}</strong></span>
+          <span>Senador 2 <strong>Nota {analysis.senatorTwoScoreBand} · Viabilidade {analysis.senatorTwoChanceBand}</strong></span>
         </div>
-        <p>Foco em chance {analysis.chanceBand.toLowerCase()} e avaliação {analysis.scoreBand.toLowerCase()}.</p>
+        <p>Foco em viabilidade {analysis.chanceBand.toLowerCase()} e avaliação {analysis.scoreBand.toLowerCase()}.</p>
         <small>Candidatos ocultos</small>
       </article>
     );

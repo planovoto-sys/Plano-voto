@@ -1,19 +1,19 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { signOut } from 'firebase/auth';
 import { BALLOT_ROUTES } from '@/constants/ballot';
+import { STATE_NAMES } from '@/constants/states';
 import { useUser } from '@/hooks/useUser';
 import { auth } from '@/services/firebase/firebase';
 import {
-  clearVoteReceipt,
   getBallotEstado,
   getBallotProgress,
-  readBallotDraft,
-  resetBallotForState
+  readBallotDraft
 } from '@/services/voting/votingService';
 import {
   DeputadoNavIcon,
   EstadoNavIcon,
-  OptionsNavIcon,
+  NossoVotoNavIcon,
   SenadoNavIcon
 } from '@/components/icons/AppIcons';
 import './BottomNavigation.css';
@@ -26,7 +26,7 @@ const PROGRESS_ITEMS = [
 
 const NAV_ITEMS = [
   ...PROGRESS_ITEMS,
-  { id: 'opcoes', label: 'opções', path: null, Icon: OptionsNavIcon }
+  { id: 'nossovoto', label: 'nossovoto', path: null, Icon: NossoVotoNavIcon, brand: true }
 ];
 
 const STEP_BY_PATH = {
@@ -45,54 +45,55 @@ export default function BottomNavigation({ currentStep, placement = 'footer' }) 
   const { user, userData } = useUser();
   const navigate = useNavigate();
   const location = useLocation();
-  const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const draft = user?.uid ? readBallotDraft(user.uid, userData?.estado) : null;
   const estadoSelecionado = user?.uid ? getBallotEstado(user.uid, userData?.estado) : userData?.estado;
   const progress = draft ? getBallotProgress(draft) : null;
   const activeStep = currentStep || STEP_BY_PATH[location.pathname] || 'estado';
+  const estadoNome = estadoSelecionado ? STATE_NAMES[estadoSelecionado] || estadoSelecionado : '';
+  const profileName = userData?.name || user?.displayName || 'Usuário';
+  const profileEmail = userData?.email || user?.email || '';
+  const profileImage = userData?.profile_image || user?.photoURL || '';
+  const profileInitial = profileName.trim().charAt(0).toUpperCase() || 'N';
+
+  useEffect(() => {
+    if (!drawerOpen) return undefined;
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setDrawerOpen(false);
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [drawerOpen]);
 
   const enabledByStep = {
     estado: true,
     deputado: Boolean(estadoSelecionado),
     senador: Boolean(estadoSelecionado) && Boolean(progress?.hasDeputadoFederal),
-    opcoes: true
+    nossovoto: true
   };
 
   const handleNavigate = (item, isDisabled) => {
-    if (item.id === 'opcoes') {
-      setIsOptionsOpen(true);
+    if (isDisabled) return;
+    if (item.brand) {
+      setDrawerOpen((open) => !open);
       return;
     }
-
-    if (isDisabled || !item.path) return;
+    if (!item.path) return;
     navigate(item.path, { state: { bypassVoteRedirect: true } });
   };
 
+  const handleChangeState = () => {
+    setDrawerOpen(false);
+    navigate(BALLOT_ROUTES.estado, { state: { bypassVoteRedirect: true } });
+  };
+
   const handleLogout = async () => {
-    await auth.signOut();
-    setIsOptionsOpen(false);
-    navigate('/');
-  };
-
-  const closeOptions = () => setIsOptionsOpen(false);
-
-  const navigateFromOptions = (path) => {
-    closeOptions();
-    navigate(path, { state: { bypassVoteRedirect: true } });
-  };
-
-  const handleClearChoices = async () => {
-    if (user?.uid && estadoSelecionado) {
-      try {
-        await resetBallotForState(user.uid, estadoSelecionado);
-        clearVoteReceipt(user.uid);
-      } catch (error) {
-        console.warn('Nao foi possivel limpar as escolhas agora.', error);
-      }
-    }
-
-    navigateFromOptions(BALLOT_ROUTES.estado);
+    setDrawerOpen(false);
+    await signOut(auth);
+    navigate('/', { replace: true });
   };
 
   const NavigationShell = placement === 'header' ? 'div' : 'footer';
@@ -100,77 +101,88 @@ export default function BottomNavigation({ currentStep, placement = 'footer' }) 
   const activeIndex = PROGRESS_ITEMS.findIndex((item) => item.id === activeStep);
 
   return (
-    <>
-      <NavigationShell className={`app-page-footer app-page-footer--${placement}`}>
-        <nav className="bottom-step-nav" aria-label="Etapas do voto">
-          {visibleItems.map((item) => {
-            const StepIcon = item.Icon;
-            const isActive = activeStep === item.id;
-            const isDisabled = !isActive && !enabledByStep[item.id];
-            const itemIndex = PROGRESS_ITEMS.findIndex((progressItem) => progressItem.id === item.id);
-            const isProgressItem = itemIndex > -1;
-            const isComplete = isProgressItem && activeIndex > itemIndex;
-            const isFuture = isProgressItem && itemIndex > activeIndex;
+    <NavigationShell className={`app-page-footer app-page-footer--${placement}`}>
+      <nav className="bottom-step-nav" aria-label="Etapas do voto">
+        {visibleItems.map((item) => {
+          const StepIcon = item.Icon;
+          const isActive = item.brand ? drawerOpen : activeStep === item.id;
+          const isDisabled = !isActive && !enabledByStep[item.id];
+          const itemIndex = PROGRESS_ITEMS.findIndex((progressItem) => progressItem.id === item.id);
+          const isProgressItem = itemIndex > -1;
+          const isComplete = isProgressItem && activeIndex > itemIndex;
+          const isFuture = isProgressItem && itemIndex > activeIndex;
 
-            return (
-              <button
-                key={item.id}
-                className={[
-                  'bottom-step-nav__item',
-                  isActive ? 'is-active' : '',
-                  isComplete ? 'is-complete' : '',
-                  isFuture ? 'is-future' : ''
-                ].filter(Boolean).join(' ')}
-                type="button"
-                onClick={() => handleNavigate(item, isDisabled)}
-                aria-current={isActive ? 'page' : undefined}
-                aria-disabled={isDisabled}
-                disabled={isDisabled}
-              >
-                <StepIcon className="bottom-step-nav__icon" />
-                <span>{item.label}</span>
-              </button>
-            );
-          })}
-        </nav>
-      </NavigationShell>
+          return (
+            <button
+              key={item.id}
+              className={[
+                'bottom-step-nav__item',
+                item.brand ? 'bottom-step-nav__item--brand' : '',
+                isActive ? 'is-active' : '',
+                isComplete ? 'is-complete' : '',
+                isFuture ? 'is-future' : ''
+              ].filter(Boolean).join(' ')}
+              type="button"
+              onClick={() => handleNavigate(item, isDisabled)}
+              aria-current={!item.brand && isActive ? 'page' : undefined}
+              aria-disabled={isDisabled}
+              aria-haspopup={item.brand ? 'dialog' : undefined}
+              aria-expanded={item.brand ? drawerOpen : undefined}
+              aria-controls={item.brand ? `nossovoto-menu-${placement}` : undefined}
+              disabled={isDisabled}
+            >
+              <StepIcon className="bottom-step-nav__icon" />
+              <span className="bottom-step-nav__label">{item.label}</span>
+            </button>
+          );
+        })}
+      </nav>
 
-      {isOptionsOpen && (
-        <div className="options-drawer-shell" role="dialog" aria-modal="true" aria-label="Opções">
-          <button className="options-drawer-backdrop" type="button" aria-label="Fechar menu" onClick={closeOptions}></button>
-          <aside className="options-drawer">
+      {drawerOpen && (
+        <div className="options-drawer-shell">
+          <button
+            className="options-drawer-backdrop"
+            type="button"
+            aria-label="Fechar menu nossovoto"
+            onClick={() => setDrawerOpen(false)}
+          />
+          <section
+            className="options-drawer"
+            id={`nossovoto-menu-${placement}`}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menu nossovoto"
+          >
             <div className="options-drawer__profile">
-              {user?.photoURL ? (
-                <img src={user.photoURL} alt="" />
+              {profileImage ? (
+                <img src={profileImage} alt="" referrerPolicy="no-referrer" />
               ) : (
-                <span>{(userData?.name || user?.displayName || 'U').slice(0, 1).toUpperCase()}</span>
+                <span aria-hidden="true">{profileInitial}</span>
               )}
-              <strong>{userData?.name || user?.displayName || 'Usuário'}</strong>
-              <small>{userData?.email || user?.email || 'meuvoto.org'}</small>
+              <strong>{profileName}</strong>
+              {profileEmail && <small>{profileEmail}</small>}
             </div>
 
             <div className="options-drawer__info">
               <div className="options-drawer__state-copy">
-                <span>Estado eleitoral</span>
-                <strong>{estadoSelecionado || 'Não selecionado'}</strong>
+                <span>Meu estado</span>
+                <strong>{estadoSelecionado ? `${estadoNome} (${estadoSelecionado})` : 'Não selecionado'}</strong>
               </div>
-              <button className="options-drawer__state-action" type="button" onClick={() => navigateFromOptions(BALLOT_ROUTES.estado)}>
+              <button
+                className="options-drawer__state-action"
+                type="button"
+                onClick={handleChangeState}
+              >
                 Alterar
-              </button>
-            </div>
-
-            <div className="options-drawer__actions">
-              <button type="button" onClick={handleClearChoices}>
-                Limpar escolhas
               </button>
             </div>
 
             <button className="options-drawer__logout" type="button" onClick={handleLogout}>
               Sair
             </button>
-          </aside>
+          </section>
         </div>
       )}
-    </>
+    </NavigationShell>
   );
 }

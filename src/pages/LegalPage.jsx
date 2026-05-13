@@ -11,7 +11,7 @@ export default function LegalPage({ type }) {
   return (
     <div className="legal-page">
       <header className="legal-header">
-        <Link to="/" className="legal-header__brand">meuvoto.org</Link>
+        <Link to="/" className="legal-header__brand">nossovoto.org</Link>
         <button className="legal-header__back" type="button" onClick={() => navigate(-1)}>
           ← Voltar
         </button>

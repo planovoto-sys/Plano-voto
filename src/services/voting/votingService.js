@@ -20,7 +20,7 @@ import {
   CAST_VOTE_FUNCTION_NAME,
   DELETE_USER_ELECTION_DATA_FUNCTION_NAME,
   LEGACY_FLOW_STEP_ALIASES,
-  OFFICE_LIMITS,
+  OFFICE_MINIMUM_SELECTIONS,
   SAVE_BALLOT_STATE_FUNCTION_NAME,
   SAVE_BALLOT_STEP_FUNCTION_NAME
 } from '@/constants/ballot';
@@ -115,6 +115,15 @@ const normalizeStoredCandidate = (candidate) => {
   };
 };
 
+const uniqueCandidatesById = (candidates) => {
+  const seenIds = new Set();
+  return candidates.filter((candidate) => {
+    if (!candidate?.id || seenIds.has(candidate.id)) return false;
+    seenIds.add(candidate.id);
+    return true;
+  });
+};
+
 const normalizeDraft = (rawDraft, estado = null) => {
   const baseDraft = createEmptyBallotDraft(estado);
   if (!rawDraft || typeof rawDraft !== 'object') return baseDraft;
@@ -123,11 +132,10 @@ const normalizeDraft = (rawDraft, estado = null) => {
   const candidateGroups = emptyCandidateGroups();
   const completedSteps = emptyCompletedSteps();
 
-  Object.keys(OFFICE_LIMITS).forEach((officeKey) => {
+  Object.keys(OFFICE_MINIMUM_SELECTIONS).forEach((officeKey) => {
     rawSelections[officeKey] = asArray(rawDraft.selections?.[officeKey])
       .map(normalizeStoredCandidate)
-      .filter(Boolean)
-      .slice(0, OFFICE_LIMITS[officeKey]);
+      .filter(Boolean);
   });
 
   BALLOT_FLOW_STEP_IDS.forEach((stepId) => {
@@ -139,25 +147,34 @@ const normalizeDraft = (rawDraft, estado = null) => {
 
     candidateGroups[stepId] = rawCandidates
       .map(normalizeStoredCandidate)
-      .filter(Boolean)
-      .slice(0, 1);
+      .filter(Boolean);
   });
+
+  candidateGroups.deputado_federal = uniqueCandidatesById([
+    ...candidateGroups.deputado_federal,
+    ...rawSelections.deputado_federal
+  ]);
+  candidateGroups.senadores_1 = uniqueCandidatesById([
+    ...candidateGroups.senadores_1,
+    ...candidateGroups.senadores_2,
+    ...rawSelections.senadores
+  ]);
+  candidateGroups.senadores_2 = [];
 
   const hasGroupedCandidates = Object.values(candidateGroups).some((items) => items.length > 0);
   if (!hasGroupedCandidates) {
-    candidateGroups.deputado_federal = rawSelections.deputado_federal.slice(0, 1);
-    candidateGroups.senadores_1 = rawSelections.senadores.slice(0, 1);
-    candidateGroups.senadores_2 = rawSelections.senadores.slice(1, 2);
+    candidateGroups.deputado_federal = rawSelections.deputado_federal;
+    candidateGroups.senadores_1 = rawSelections.senadores;
   }
 
   const selections = {
-    deputado_federal: candidateGroups.deputado_federal.slice(0, 1),
-    senadores: [candidateGroups.senadores_1[0], candidateGroups.senadores_2[0]].filter(Boolean).slice(0, 2)
+    deputado_federal: candidateGroups.deputado_federal,
+    senadores: candidateGroups.senadores_1
   };
 
-  BALLOT_FLOW_STEP_IDS.forEach((stepId) => {
-    completedSteps[stepId] = candidateGroups[stepId].length > 0;
-  });
+  completedSteps.deputado_federal = candidateGroups.deputado_federal.length >= OFFICE_MINIMUM_SELECTIONS.deputado_federal;
+  completedSteps.senadores_1 = candidateGroups.senadores_1.length >= 1;
+  completedSteps.senadores_2 = candidateGroups.senadores_1.length >= OFFICE_MINIMUM_SELECTIONS.senadores;
 
   return {
     ...baseDraft,
@@ -262,8 +279,7 @@ const getDraftActiveCandidateIds = (draft) => {
   const normalizedDraft = normalizeDraft(draft);
   return [
     ...normalizedDraft.candidate_groups.deputado_federal,
-    ...normalizedDraft.candidate_groups.senadores_1,
-    ...normalizedDraft.candidate_groups.senadores_2
+    ...normalizedDraft.candidate_groups.senadores_1
   ].map((candidate) => candidate.id).filter(Boolean);
 };
 
@@ -359,8 +375,7 @@ const saveBallotStateDirectly = async (userId, estado) => {
 const saveBallotStepSelectionDirectly = async (userId, stepKey, candidates, estado = null) => {
   const normalizedCandidates = asArray(candidates)
     .map(normalizeStoredCandidate)
-    .filter(Boolean)
-    .slice(0, 1);
+    .filter(Boolean);
   const currentDraft = readBallotDraft(userId, estado);
   const activeEstado = normalizeStateCode(estado ?? currentDraft.estado);
 
@@ -395,17 +410,15 @@ const saveBallotStepSelectionDirectly = async (userId, stepKey, candidates, esta
       estado: activeEstado,
       candidate_groups: {
         ...previousDraft.candidate_groups,
-        [stepKey]: candidateSnapshots
+        [stepKey]: candidateSnapshots,
+        ...(stepKey.startsWith('senadores') ? { senadores_2: [] } : {})
       },
       updated_at: new Date().toISOString()
     }, activeEstado);
-    const senatorIds = [
-      nextDraft.candidate_groups.senadores_1[0]?.id,
-      nextDraft.candidate_groups.senadores_2[0]?.id
-    ].filter(Boolean);
+    const senatorIds = nextDraft.candidate_groups.senadores_1.map((candidate) => candidate.id).filter(Boolean);
 
     if (new Set(senatorIds).size !== senatorIds.length) {
-      throw new VotingError('DUPLICATED_CANDIDATE', 'O mesmo senador não pode ser escolhido duas vezes.');
+      throw new VotingError('DUPLICATED_CANDIDATE', 'O mesmo senador não pode ser escolhido mais de uma vez.');
     }
 
     responseDraft = nextDraft;
@@ -461,22 +474,19 @@ export const saveBallotState = async (userId, estado) => {
 export const resetBallotForState = (userId, estado) => saveBallotState(userId, estado);
 
 export const saveBallotOfficeSelection = async (userId, officeKey, candidates, estado = null) => {
-  if (!OFFICE_LIMITS[officeKey]) {
+  if (!OFFICE_MINIMUM_SELECTIONS[officeKey]) {
     throw new VotingError('INVALID_OFFICE', 'Cargo inválido para esta eleição.');
   }
 
   const normalizedCandidates = asArray(candidates)
     .map(normalizeStoredCandidate)
-    .filter(Boolean)
-    .slice(0, OFFICE_LIMITS[officeKey]);
+    .filter(Boolean);
 
   if (officeKey === 'deputado_federal') {
     return saveBallotStepSelection(userId, 'deputado_federal', normalizedCandidates, estado, { markCompleted: true });
   }
 
-  const [senador1, senador2] = normalizedCandidates;
-  await saveBallotStepSelection(userId, 'senadores_1', senador1 ? [senador1] : [], estado, { markCompleted: true });
-  return saveBallotStepSelection(userId, 'senadores_2', senador2 ? [senador2] : [], estado, { markCompleted: true });
+  return saveBallotStepSelection(userId, 'senadores_1', normalizedCandidates, estado, { markCompleted: true });
 };
 
 export const saveBallotStepSelection = async (userId, stepKey, candidates, estado = null, options = {}) => {
@@ -562,19 +572,18 @@ export const hasBallotSelections = (userId) => {
 export const getBallotSelectionCounts = (draft) => {
   const normalizedDraft = normalizeDraft(draft);
   const deputadoFederal = normalizedDraft.candidate_groups.deputado_federal.length;
-  const senador1 = normalizedDraft.candidate_groups.senadores_1.length;
-  const senador2 = normalizedDraft.candidate_groups.senadores_2.length;
-  const total = deputadoFederal + senador1 + senador2;
+  const senadores = normalizedDraft.candidate_groups.senadores_1.length;
+  const total = deputadoFederal + senadores;
 
   return {
     deputadoFederal,
-    senadores: senador1 + senador2,
+    senadores,
     deputadoFederalReeleger: deputadoFederal,
     deputadoFederalRenovar: 0,
-    senador1,
-    senador2,
-    senadoresReeleger: senador1,
-    senadoresRenovar: senador2,
+    senador1: senadores > 0 ? 1 : 0,
+    senador2: senadores > 1 ? 1 : 0,
+    senadoresReeleger: senadores,
+    senadoresRenovar: 0,
     total
   };
 };
@@ -584,12 +593,11 @@ export const draftHasBallotSelections = (draft) => getBallotSelectionCounts(draf
 export const getBallotProgress = (draft) => {
   const normalizedDraft = normalizeDraft(draft);
   const hasEstado = Boolean(normalizedDraft.estado);
-  const isStepComplete = (stepId) => (
-    normalizedDraft.candidate_groups?.[stepId]?.length > 0
-  );
-  const hasDeputadoFederal = isStepComplete('deputado_federal');
-  const hasSenador1 = isStepComplete('senadores_1');
-  const hasSenador2 = isStepComplete('senadores_2');
+  const deputadoCount = normalizedDraft.candidate_groups?.deputado_federal?.length || 0;
+  const senatorCount = normalizedDraft.candidate_groups?.senadores_1?.length || 0;
+  const hasDeputadoFederal = deputadoCount >= OFFICE_MINIMUM_SELECTIONS.deputado_federal;
+  const hasSenador1 = senatorCount >= 1;
+  const hasSenador2 = senatorCount >= OFFICE_MINIMUM_SELECTIONS.senadores;
   const hasSenadores = hasSenador1 && hasSenador2;
 
   return {
@@ -632,8 +640,8 @@ export const getBallotCandidateGroups = (draft) => normalizeDraft(draft).candida
 
 export const validateCompleteBallot = (draft) => {
   const normalizedDraft = normalizeDraft(draft);
-  const missingOffices = Object.entries(OFFICE_LIMITS)
-    .filter(([officeKey, limit]) => normalizedDraft.selections[officeKey].length !== limit)
+  const missingOffices = Object.entries(OFFICE_MINIMUM_SELECTIONS)
+    .filter(([officeKey, minimum]) => normalizedDraft.selections[officeKey].length < minimum)
     .map(([officeKey]) => officeKey);
 
   if (missingOffices.length > 0) {
@@ -749,7 +757,7 @@ export const castAnonymousVote = async ({ user, estado, draft }) => {
     election_id: ACTIVE_ELECTION_ID,
     estado: estado ?? normalizedDraft.estado ?? null,
     offices: {
-      deputado_federal: normalizedDraft.selections.deputado_federal[0].id,
+      deputado_federal: normalizedDraft.selections.deputado_federal.map((candidate) => candidate.id),
       senadores: normalizedDraft.selections.senadores.map((candidate) => candidate.id)
     },
     candidate_ids: candidateIds
@@ -770,7 +778,7 @@ export const castAnonymousVote = async ({ user, estado, draft }) => {
 export const getVotingErrorMessage = (error) => {
   const messages = {
     AUTH_REQUIRED: 'Faça login novamente para confirmar seu voto.',
-    INCOMPLETE_BALLOT: 'Complete a escolha de deputado federal e dos 2 senadores antes de finalizar.',
+    INCOMPLETE_BALLOT: 'Escolha pelo menos 1 deputado federal e 2 senadores antes de finalizar.',
     DUPLICATED_CANDIDATE: 'O mesmo candidato não pode ser usado mais de uma vez no mesmo voto.',
     VOTE_ALREADY_CAST: 'Seu voto já foi registrado. Por segurança, ele não pode ser alterado.',
     VOTER_NOT_ELIGIBLE: 'Seu cadastro não está habilitado para votar nesta eleição.',

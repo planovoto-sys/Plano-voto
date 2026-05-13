@@ -9,7 +9,7 @@ const db = getFirestore();
 const ACTIVE_ELECTION_ID = 'congresso-2026';
 const BALLOT_SCHEMA_VERSION = 1;
 const FUNCTIONS_REGION = 'southamerica-east1';
-const OFFICE_LIMITS = {
+const OFFICE_MINIMUM_SELECTIONS = {
   deputado_federal: 1,
   senadores: 2,
 };
@@ -92,12 +92,13 @@ const assertValidId = (value, label) => {
   return id;
 };
 
-const assertStringList = (value, size, label) => {
-  if (!Array.isArray(value) || value.length !== size) {
+const assertStringList = (value, { min = 1, exact = null } = {}, label) => {
+  const rawList = Array.isArray(value) ? value : asString(value) ? [value] : [];
+  if ((exact !== null && rawList.length !== exact) || rawList.length < min) {
     throw new HttpsError('invalid-argument', `${label} invalido.`);
   }
 
-  const ids = value.map((item) => assertValidId(item, label));
+  const ids = rawList.map((item) => assertValidId(item, label));
   if (new Set(ids).size !== ids.length) {
     throw new HttpsError('invalid-argument', `${label} duplicado.`);
   }
@@ -229,6 +230,15 @@ const normalizeStoredCandidate = (candidate) => {
   };
 };
 
+const uniqueCandidatesById = (candidates) => {
+  const seenIds = new Set();
+  return candidates.filter((candidate) => {
+    if (!candidate?.id || seenIds.has(candidate.id)) return false;
+    seenIds.add(candidate.id);
+    return true;
+  });
+};
+
 const createEmptyBallotDraft = (userId, estado) => ({
   schema_version: BALLOT_SCHEMA_VERSION,
   election_id: ACTIVE_ELECTION_ID,
@@ -250,18 +260,28 @@ const normalizeDraft = (rawDraft, userId, estado = null) => {
   BALLOT_FLOW_STEP_IDS.forEach((stepId) => {
     candidateGroups[stepId] = asArray(rawDraft.candidate_groups?.[stepId])
       .map(normalizeStoredCandidate)
-      .filter(Boolean)
-      .slice(0, 1);
+      .filter(Boolean);
   });
 
+  candidateGroups.deputado_federal = uniqueCandidatesById([
+    ...candidateGroups.deputado_federal,
+    ...asArray(rawDraft.selections?.deputado_federal).map(normalizeStoredCandidate).filter(Boolean),
+  ]);
+  candidateGroups.senadores_1 = uniqueCandidatesById([
+    ...candidateGroups.senadores_1,
+    ...candidateGroups.senadores_2,
+    ...asArray(rawDraft.selections?.senadores).map(normalizeStoredCandidate).filter(Boolean),
+  ]);
+  candidateGroups.senadores_2 = [];
+
   const selections = {
-    deputado_federal: candidateGroups.deputado_federal.slice(0, 1),
-    senadores: [candidateGroups.senadores_1[0], candidateGroups.senadores_2[0]].filter(Boolean).slice(0, 2),
+    deputado_federal: candidateGroups.deputado_federal,
+    senadores: candidateGroups.senadores_1,
   };
   const completedSteps = {
-    deputado_federal: candidateGroups.deputado_federal.length > 0,
-    senadores_1: candidateGroups.senadores_1.length > 0,
-    senadores_2: candidateGroups.senadores_2.length > 0,
+    deputado_federal: candidateGroups.deputado_federal.length >= OFFICE_MINIMUM_SELECTIONS.deputado_federal,
+    senadores_1: candidateGroups.senadores_1.length >= 1,
+    senadores_2: candidateGroups.senadores_1.length >= OFFICE_MINIMUM_SELECTIONS.senadores,
   };
   const activeCandidateIds = [
     ...selections.deputado_federal,
@@ -414,7 +434,7 @@ export const saveBallotStepSelection = onCall({
 
   const candidateIds = asArray(payload.candidate_ids)
     .map((candidateId) => assertValidId(candidateId, 'Candidato'))
-    .slice(0, 1);
+    .filter(Boolean);
   const userId = request.auth.uid;
   const updatedAt = FieldValue.serverTimestamp();
   const draftRef = db.doc(`elections/${electionId}/ballot_drafts/${userId}`);
@@ -451,16 +471,14 @@ export const saveBallotStepSelection = onCall({
       candidate_groups: {
         ...previousDraft.candidate_groups,
         [stepKey]: candidateSnapshots,
+        ...(stepKey.startsWith('senadores') ? { senadores_2: [] } : {}),
       },
       updated_at: updatedAt,
     }, userId, estado);
 
-    const senatorIds = [
-      nextDraft.candidate_groups.senadores_1[0]?.id,
-      nextDraft.candidate_groups.senadores_2[0]?.id,
-    ].filter(Boolean);
+    const senatorIds = nextDraft.candidate_groups.senadores_1.map((candidate) => candidate.id).filter(Boolean);
     if (new Set(senatorIds).size !== senatorIds.length) {
-      throw new HttpsError('invalid-argument', 'O mesmo senador nao pode ser escolhido duas vezes.');
+      throw new HttpsError('invalid-argument', 'O mesmo senador nao pode ser escolhido mais de uma vez.');
     }
 
     updateActiveTallies(transaction, electionId, previousDraft, nextDraft, updatedAt);
@@ -561,12 +579,27 @@ export const castAnonymousVote = onCall({
     throw new HttpsError('invalid-argument', 'Versao do voto invalida.');
   }
 
-  const deputadoFederal = assertValidId(payload.offices?.deputado_federal, 'Deputado federal');
-  const senadores = assertStringList(payload.offices?.senadores, OFFICE_LIMITS.senadores, 'Senadores');
-  const candidateIds = assertStringList(payload.candidate_ids, 3, 'Candidatos');
-  const expectedCandidateIds = [deputadoFederal, ...senadores];
+  const deputadosFederais = assertStringList(
+    payload.offices?.deputado_federal,
+    { min: OFFICE_MINIMUM_SELECTIONS.deputado_federal },
+    'Deputado federal'
+  );
+  const senadores = assertStringList(
+    payload.offices?.senadores,
+    { min: OFFICE_MINIMUM_SELECTIONS.senadores },
+    'Senadores'
+  );
+  const candidateIds = assertStringList(
+    payload.candidate_ids,
+    { min: OFFICE_MINIMUM_SELECTIONS.deputado_federal + OFFICE_MINIMUM_SELECTIONS.senadores },
+    'Candidatos'
+  );
+  const expectedCandidateIds = [...deputadosFederais, ...senadores];
 
-  if (candidateIds.some((candidateId) => !expectedCandidateIds.includes(candidateId))) {
+  if (
+    candidateIds.some((candidateId) => !expectedCandidateIds.includes(candidateId)) ||
+    expectedCandidateIds.some((candidateId) => !candidateIds.includes(candidateId))
+  ) {
     throw new HttpsError('invalid-argument', 'Candidatos inconsistentes com os cargos selecionados.');
   }
 
@@ -611,9 +644,14 @@ export const castAnonymousVote = onCall({
     });
 
     const candidateData = candidateSnaps.map((candidateSnap) => candidateSnap.data());
-    assertCandidateOffice(deputadoFederal, candidateData[0], 'Deputado Federal');
-    assertCandidateOffice(senadores[0], candidateData[1], 'Senador');
-    assertCandidateOffice(senadores[1], candidateData[2], 'Senador');
+    deputadosFederais.forEach((candidateId) => {
+      const index = candidateIds.indexOf(candidateId);
+      assertCandidateOffice(candidateId, candidateData[index], 'Deputado Federal');
+    });
+    senadores.forEach((candidateId) => {
+      const index = candidateIds.indexOf(candidateId);
+      assertCandidateOffice(candidateId, candidateData[index], 'Senador');
+    });
     candidateData.forEach((candidate, index) => {
       assertCandidateState(candidateIds[index], candidate, estado);
     });
@@ -623,7 +661,7 @@ export const castAnonymousVote = onCall({
       election_id: electionId,
       estado,
       offices: {
-        deputado_federal: deputadoFederal,
+        deputado_federal: deputadosFederais,
         senadores,
       },
       candidate_ids: candidateIds,
