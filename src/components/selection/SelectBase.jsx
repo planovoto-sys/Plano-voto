@@ -77,6 +77,7 @@ export default function SelectBase({
   variant = '',
   emptyMessage = 'Nenhum resultado encontrado.',
   shareData = null,
+  featuredCandidateId = null,
   renderItem
 }) {
   const navigate = useNavigate();
@@ -122,7 +123,13 @@ export default function SelectBase({
   const screenCopy = getScreenCopy({ variant, titulo, subtitulo });
 
   const featuredCandidate = useMemo(() => {
-    if (!isCandidateOffice || dados.length === 0) return null;
+    if (!isCandidateOffice) return null;
+
+    if (featuredCandidateId) {
+      return { id: featuredCandidateId };
+    }
+
+    if (dados.length === 0) return null;
 
     const eligibleCandidates = dados.filter((candidate) => (
       getCandidateName(candidate) &&
@@ -148,20 +155,20 @@ export default function SelectBase({
 
       return getCandidateName(a).localeCompare(getCandidateName(b));
     })[0];
-  }, [dados, isCandidateOffice]);
+  }, [dados, featuredCandidateId, isCandidateOffice]);
 
   const featuredMetricsByCandidateId = useMemo(() => {
-    if (!isCandidateOffice || dados.length === 0) return new Map();
+    if (!isCandidateOffice) return new Map();
 
     const metricsById = new Map();
-    dados.forEach((candidate) => {
+    [...dados, ...selecionados].forEach((candidate) => {
       metricsById.set(candidate.id, {
         chance: Boolean(featuredCandidate && candidate.id === featuredCandidate.id)
       });
     });
 
     return metricsById;
-  }, [dados, featuredCandidate, isCandidateOffice]);
+  }, [dados, featuredCandidate, isCandidateOffice, selecionados]);
 
   const visibleSecondaryCandidates = useMemo(() => (
     dados.slice(0, candidateRenderLimit)

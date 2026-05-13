@@ -125,6 +125,29 @@ const getFeaturedSelectionCandidates = (candidates, limit) => {
     .slice(0, limit);
 };
 
+const compareByViabilityScoreAndName = (a, b) => {
+  const chanceDiff = getCandidateChance(b) - getCandidateChance(a);
+  if (chanceDiff !== 0) return chanceDiff;
+
+  const scoreDiff = getCandidateSystemScore(b) - getCandidateSystemScore(a);
+  if (scoreDiff !== 0) return scoreDiff;
+
+  return getCandidateName(a).localeCompare(getCandidateName(b));
+};
+
+const getFeaturedCandidateId = (candidates) => {
+  const featuredCandidate = [...candidates]
+    .filter((candidate) => (
+      !candidate.isAlreadyChosen &&
+      getCandidateSystemScore(candidate) > 7 &&
+      getCandidateChance(candidate) > 0 &&
+      getCandidateChance(candidate) < 100
+    ))
+    .sort(compareByViabilityScoreAndName)[0];
+
+  return featuredCandidate?.id || null;
+};
+
 export default function EscolherCandidatos({
   cargo,
   titulo,
@@ -335,6 +358,15 @@ export default function EscolherCandidatos({
     return new Set(ids);
   }, [ballotDraft, chaveGrupo, chaveGrupos, estadoDoFluxo, isSenadoresUnificados, userId]);
 
+  const featuredCandidateId = useMemo(() => {
+    const candidatesWithState = candidatosDoEstado.map((candidate) => ({
+      ...candidate,
+      isAlreadyChosen: selectedCandidateIdsInOtherSteps.has(candidate.id)
+    }));
+
+    return getFeaturedCandidateId(candidatesWithState);
+  }, [candidatosDoEstado, selectedCandidateIdsInOtherSteps]);
+
   const listaExibida = useMemo(() => {
     let disponiveis = candidatosDoEstado;
 
@@ -363,38 +395,15 @@ export default function EscolherCandidatos({
       isAlreadyChosen: selectedCandidateIdsInOtherSteps.has(candidate.id)
     }));
 
-    const desempatarPorNome = (a, b) => (a.Nome || '').localeCompare(b.Nome || '');
-    const notaSistema = (candidate) => {
-      const score = Number(candidate.notaFinal ?? candidate.nota_final ?? candidate['Nota partido'] ?? 0);
-      return Number.isFinite(score) ? score : 0;
-    };
-
-    const desempatarPorChanceNotaNome = (a, b) => {
-      const chanceDiff = b.chance - a.chance;
-      if (chanceDiff !== 0) return chanceDiff;
-
-      const scoreDiff = notaSistema(b) - notaSistema(a);
-      if (scoreDiff !== 0) return scoreDiff;
-
-      return desempatarPorNome(a, b);
-    };
-
-    const candidatoFoguinho = [...listaComEstado]
-      .filter((candidate) => (
-        !candidate.isAlreadyChosen &&
-        notaSistema(candidate) > 7 &&
-        candidate.chance > 0 &&
-        candidate.chance < 100
-      ))
-      .sort(desempatarPorChanceNotaNome)[0];
-    const foguinhoId = candidatoFoguinho?.id || null;
+    const desempatarPorNome = (a, b) => getCandidateName(a).localeCompare(getCandidateName(b));
 
     const grupoVisual = (candidate) => {
-      const score = notaSistema(candidate);
+      const score = getCandidateSystemScore(candidate);
+      const chance = getCandidateChance(candidate);
 
-      if (candidate.id === foguinhoId) return 0;
-      if (score >= 7 && candidate.chance < 100) return 1;
-      if (score >= 7 && candidate.chance >= 100) return 2;
+      if (candidate.id === featuredCandidateId) return 0;
+      if (score >= 7 && chance < 100) return 1;
+      if (score >= 7 && chance >= 100) return 2;
       if (score > 0 && score < 7) return 3;
       return 4;
     };
@@ -402,7 +411,7 @@ export default function EscolherCandidatos({
     return listaComEstado
       .map((candidate) => ({
         ...candidate,
-        isChanceFeatured: candidate.id === foguinhoId
+        isChanceFeatured: candidate.id === featuredCandidateId
       }))
       .sort((a, b) => {
         const blockedDiff = Number(a.isAlreadyChosen) - Number(b.isAlreadyChosen);
@@ -411,15 +420,15 @@ export default function EscolherCandidatos({
         const groupDiff = grupoVisual(a) - grupoVisual(b);
         if (groupDiff !== 0) return groupDiff;
 
-        const chanceDiff = b.chance - a.chance;
+        const chanceDiff = getCandidateChance(b) - getCandidateChance(a);
         if (chanceDiff !== 0) return chanceDiff;
 
-        const scoreDiff = notaSistema(b) - notaSistema(a);
+        const scoreDiff = getCandidateSystemScore(b) - getCandidateSystemScore(a);
         if (scoreDiff !== 0) return scoreDiff;
 
         return desempatarPorNome(a, b);
       });
-  }, [candidatosDoEstado, filtroLista, buscaDiferida, selectedCandidateIdsInOtherSteps, selecionadosNaTela]);
+  }, [candidatosDoEstado, featuredCandidateId, filtroLista, buscaDiferida, selectedCandidateIdsInOtherSteps, selecionadosNaTela]);
 
   const persistirEtapa = async (listaFinalDaTela, { markCompleted = false } = {}) => {
     if (!userId) {
@@ -587,6 +596,7 @@ export default function EscolherCandidatos({
         subNavigationItems={CANDIDATE_FILTERS}
         activeSubNavigationId={filtroLista}
         onSubNavigationSelect={handleSubNavigation}
+        featuredCandidateId={featuredCandidateId}
         shareData={shareData}
       />
 
