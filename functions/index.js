@@ -256,6 +256,13 @@ const normalizeDraft = (rawDraft, userId, estado = null) => {
   const baseDraft = createEmptyBallotDraft(userId, normalizedState || null);
   if (!rawDraft || typeof rawDraft !== 'object') return baseDraft;
 
+  const rawSelections = emptySelections();
+  Object.keys(rawSelections).forEach((officeKey) => {
+    rawSelections[officeKey] = asArray(rawDraft.selections?.[officeKey])
+      .map(normalizeStoredCandidate)
+      .filter(Boolean);
+  });
+
   const candidateGroups = emptyCandidateGroups();
   BALLOT_FLOW_STEP_IDS.forEach((stepId) => {
     candidateGroups[stepId] = asArray(rawDraft.candidate_groups?.[stepId])
@@ -263,16 +270,19 @@ const normalizeDraft = (rawDraft, userId, estado = null) => {
       .filter(Boolean);
   });
 
-  candidateGroups.deputado_federal = uniqueCandidatesById([
-    ...candidateGroups.deputado_federal,
-    ...asArray(rawDraft.selections?.deputado_federal).map(normalizeStoredCandidate).filter(Boolean),
-  ]);
-  candidateGroups.senadores_1 = uniqueCandidatesById([
-    ...candidateGroups.senadores_1,
-    ...candidateGroups.senadores_2,
-    ...asArray(rawDraft.selections?.senadores).map(normalizeStoredCandidate).filter(Boolean),
-  ]);
-  candidateGroups.senadores_2 = [];
+  const hasGroupedCandidates = Object.values(candidateGroups).some((items) => items.length > 0);
+  if (hasGroupedCandidates) {
+    candidateGroups.deputado_federal = uniqueCandidatesById(candidateGroups.deputado_federal);
+    candidateGroups.senadores_1 = uniqueCandidatesById([
+      ...candidateGroups.senadores_1,
+      ...candidateGroups.senadores_2,
+    ]);
+    candidateGroups.senadores_2 = [];
+  } else {
+    candidateGroups.deputado_federal = rawSelections.deputado_federal;
+    candidateGroups.senadores_1 = rawSelections.senadores;
+    candidateGroups.senadores_2 = [];
+  }
 
   const selections = {
     deputado_federal: candidateGroups.deputado_federal,
@@ -311,20 +321,34 @@ const getActiveCandidateIdCounts = (draft) => {
   return counts;
 };
 
-const updateActiveTallies = (transaction, electionId, oldDraft, newDraft, updatedAt) => {
+const updateActiveTallies = async (transaction, electionId, oldDraft, newDraft, updatedAt) => {
   const oldCounts = getActiveCandidateIdCounts(oldDraft);
   const newCounts = getActiveCandidateIdCounts(newDraft);
   const candidateIds = new Set([...oldCounts.keys(), ...newCounts.keys()]);
+  const changes = [];
 
   candidateIds.forEach((candidateId) => {
     const delta = (newCounts.get(candidateId) || 0) - (oldCounts.get(candidateId) || 0);
     if (delta === 0) return;
+    changes.push({
+      candidateId,
+      delta,
+      ref: db.doc(`elections/${electionId}/candidate_tallies/${candidateId}`),
+    });
+  });
 
-    transaction.set(db.doc(`elections/${electionId}/candidate_tallies/${candidateId}`), {
+  const tallySnaps = [];
+  for (const change of changes) {
+    tallySnaps.push(await transaction.get(change.ref));
+  }
+
+  changes.forEach((change, index) => {
+    const currentActiveSelections = Number(tallySnaps[index].data()?.active_selections || 0) || 0;
+    transaction.set(change.ref, {
       schema_version: BALLOT_SCHEMA_VERSION,
       election_id: electionId,
-      candidate_id: candidateId,
-      active_selections: FieldValue.increment(delta),
+      candidate_id: change.candidateId,
+      active_selections: Math.max(0, currentActiveSelections + change.delta),
       updated_at: updatedAt,
     }, { merge: true });
   });
@@ -399,7 +423,7 @@ export const saveBallotState = onCall({
         updated_at: updatedAt,
       };
 
-    updateActiveTallies(transaction, electionId, previousDraft, nextDraft, updatedAt);
+    await updateActiveTallies(transaction, electionId, previousDraft, nextDraft, updatedAt);
     transaction.set(draftRef, nextDraft, { merge: false });
     transaction.set(userRef, {
       estado,
@@ -481,7 +505,7 @@ export const saveBallotStepSelection = onCall({
       throw new HttpsError('invalid-argument', 'O mesmo senador nao pode ser escolhido mais de uma vez.');
     }
 
-    updateActiveTallies(transaction, electionId, previousDraft, nextDraft, updatedAt);
+    await updateActiveTallies(transaction, electionId, previousDraft, nextDraft, updatedAt);
     transaction.set(draftRef, {
       ...nextDraft,
       updated_at: updatedAt,
@@ -521,7 +545,7 @@ export const deleteUserElectionData = onCall({
       ? asArray(voteSnap.data().candidate_ids).map(asString).filter(Boolean)
       : [];
 
-    updateActiveTallies(transaction, electionId, previousDraft, emptyDraft, updatedAt);
+    await updateActiveTallies(transaction, electionId, previousDraft, emptyDraft, updatedAt);
     legacyVoteCandidateIds.forEach((candidateId) => {
       transaction.set(db.doc(`elections/${electionId}/candidate_tallies/${candidateId}`), {
         schema_version: BALLOT_SCHEMA_VERSION,

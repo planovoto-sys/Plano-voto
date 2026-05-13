@@ -13,6 +13,7 @@ import {
 import {
   fetchCandidatesByOffice,
   fetchCandidateTallies,
+  invalidateCandidateTalliesCache,
   readCachedCandidatesByOffice,
   readCachedTallies
 } from '@/services/candidates/candidateService';
@@ -30,14 +31,6 @@ import ConfirmModal from '@/components/feedback/ConfirmModal';
 import FlowToast from '@/components/feedback/FlowToast';
 import TourModal from '@/components/feedback/TourModal';
 import SelectBase from '@/components/selection/SelectBase';
-
-const buildSelectionIdCounts = (candidates) => (
-  candidates.reduce((counts, candidate) => {
-    if (!candidate?.id) return counts;
-    counts.set(candidate.id, (counts.get(candidate.id) || 0) + 1);
-    return counts;
-  }, new Map())
-);
 
 const getCandidateElectionFilter = (candidate) => {
   const values = [
@@ -146,6 +139,14 @@ const getFeaturedCandidateId = (candidates) => {
     .sort(compareByViabilityScoreAndName)[0];
 
   return featuredCandidate?.id || null;
+};
+
+const getChangedSelectionIds = (previousCandidates, nextCandidates) => {
+  const previousIds = new Set(previousCandidates.map((candidate) => candidate.id).filter(Boolean));
+  const nextIds = new Set(nextCandidates.map((candidate) => candidate.id).filter(Boolean));
+
+  return [...new Set([...previousIds, ...nextIds])]
+    .filter((candidateId) => previousIds.has(candidateId) !== nextIds.has(candidateId));
 };
 
 export default function EscolherCandidatos({
@@ -464,18 +465,14 @@ export default function EscolherCandidatos({
     }
   };
 
-  const applyLocalChanceDelta = (listaAnterior, listaAtualizada) => {
-    const previousCounts = buildSelectionIdCounts(listaAnterior);
-    const nextCounts = buildSelectionIdCounts(listaAtualizada);
+  const applyServerTallies = (tallies, candidatesToUpdate = []) => {
+    if (!tallies || tallies.size === 0) return candidatesToUpdate;
 
-    const adjustCandidateChance = (candidate) => {
-      const delta = (nextCounts.get(candidate.id) || 0) - (previousCounts.get(candidate.id) || 0);
-      if (delta === 0) return candidate;
+    const applyTally = (candidate) => {
+      const tally = tallies.get(candidate.id);
+      if (!tally) return candidate;
 
-      const selectedByUsers = Math.max(
-        0,
-        parseNumeric(candidate.selectedByUsers, candidate.selected_by_users, candidate.active_selections) + delta
-      );
+      const selectedByUsers = Math.max(0, parseNumeric(tally.active_selections, 0));
       const averageElectedVotes = parseNumeric(
         candidate.averageElectedVotes,
         candidate.average_elected_votes,
@@ -493,20 +490,41 @@ export default function EscolherCandidatos({
       };
     };
 
-    setTodosCandidatos((currentCandidates) => currentCandidates.map(adjustCandidateChance));
-    return listaAtualizada.map(adjustCandidateChance);
+    setTodosCandidatos((currentCandidates) => currentCandidates.map(applyTally));
+    return candidatesToUpdate.map(applyTally);
+  };
+
+  const refreshChangedTallies = async (candidateIds, candidatesToUpdate = []) => {
+    const idsToRefresh = [...new Set(candidateIds)].filter(Boolean);
+    if (idsToRefresh.length === 0) return candidatesToUpdate;
+
+    invalidateCandidateTalliesCache(idsToRefresh);
+
+    try {
+      const tallies = await fetchCandidateTallies(idsToRefresh, { forceRefresh: true });
+      return applyServerTallies(tallies, candidatesToUpdate);
+    } catch (error) {
+      flowWarn('candidates.tallies.refresh-after-save-error', {
+        cargo,
+        chaveGrupo,
+        message: error?.message
+      });
+      return candidatesToUpdate;
+    }
   };
 
   const handleSelectionChange = async (listaAtualizada, options = {}) => {
     const listaAnterior = selecionadosNaTela;
-    const listaAtualizadaComChance = applyLocalChanceDelta(listaAnterior, listaAtualizada);
-    setSelecionadosNaTela(listaAtualizadaComChance);
+    const changedCandidateIds = getChangedSelectionIds(listaAnterior, listaAtualizada);
+    setSelecionadosNaTela(listaAtualizada);
 
     try {
-      return await persistirEtapa(listaAtualizadaComChance, { markCompleted: options.completed === true });
+      const draftAtualizado = await persistirEtapa(listaAtualizada, { markCompleted: options.completed === true });
+      const listaComTalliesAtualizados = await refreshChangedTallies(changedCandidateIds, listaAtualizada);
+      setSelecionadosNaTela(listaComTalliesAtualizados);
+      return draftAtualizado;
     } catch (error) {
-      const listaRestaurada = applyLocalChanceDelta(listaAtualizadaComChance, listaAnterior);
-      setSelecionadosNaTela(listaRestaurada);
+      setSelecionadosNaTela(listaAnterior);
       throw error;
     }
   };

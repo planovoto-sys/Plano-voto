@@ -5,7 +5,6 @@ import {
   doc,
   getDoc,
   getDocs,
-  increment,
   query,
   runTransaction,
   serverTimestamp,
@@ -150,21 +149,18 @@ const normalizeDraft = (rawDraft, estado = null) => {
       .filter(Boolean);
   });
 
-  candidateGroups.deputado_federal = uniqueCandidatesById([
-    ...candidateGroups.deputado_federal,
-    ...rawSelections.deputado_federal
-  ]);
-  candidateGroups.senadores_1 = uniqueCandidatesById([
-    ...candidateGroups.senadores_1,
-    ...candidateGroups.senadores_2,
-    ...rawSelections.senadores
-  ]);
-  candidateGroups.senadores_2 = [];
-
   const hasGroupedCandidates = Object.values(candidateGroups).some((items) => items.length > 0);
   if (!hasGroupedCandidates) {
     candidateGroups.deputado_federal = rawSelections.deputado_federal;
     candidateGroups.senadores_1 = rawSelections.senadores;
+    candidateGroups.senadores_2 = [];
+  } else {
+    candidateGroups.deputado_federal = uniqueCandidatesById(candidateGroups.deputado_federal);
+    candidateGroups.senadores_1 = uniqueCandidatesById([
+      ...candidateGroups.senadores_1,
+      ...candidateGroups.senadores_2
+    ]);
+    candidateGroups.senadores_2 = [];
   }
 
   const selections = {
@@ -290,20 +286,34 @@ const countCandidateIds = (candidateIds) => (
   }, new Map())
 );
 
-const updateActiveTalliesInTransaction = (transaction, oldDraft, newDraft, updatedAt) => {
+const updateActiveTalliesInTransaction = async (transaction, oldDraft, newDraft, updatedAt) => {
   const oldCounts = countCandidateIds(getDraftActiveCandidateIds(oldDraft));
   const newCounts = countCandidateIds(getDraftActiveCandidateIds(newDraft));
   const candidateIds = new Set([...oldCounts.keys(), ...newCounts.keys()]);
+  const changes = [];
 
   candidateIds.forEach((candidateId) => {
     const delta = (newCounts.get(candidateId) || 0) - (oldCounts.get(candidateId) || 0);
     if (delta === 0) return;
+    changes.push({
+      candidateId,
+      delta,
+      ref: doc(db, 'elections', ACTIVE_ELECTION_ID, 'candidate_tallies', candidateId)
+    });
+  });
 
-    transaction.set(doc(db, 'elections', ACTIVE_ELECTION_ID, 'candidate_tallies', candidateId), {
+  const tallySnaps = [];
+  for (const change of changes) {
+    tallySnaps.push(await transaction.get(change.ref));
+  }
+
+  changes.forEach((change, index) => {
+    const currentActiveSelections = Number(tallySnaps[index].data()?.active_selections || 0) || 0;
+    transaction.set(change.ref, {
       schema_version: BALLOT_SCHEMA_VERSION,
       election_id: ACTIVE_ELECTION_ID,
-      candidate_id: candidateId,
-      active_selections: increment(delta),
+      candidate_id: change.candidateId,
+      active_selections: Math.max(0, currentActiveSelections + change.delta),
       updated_at: updatedAt
     }, { merge: true });
   });
@@ -358,7 +368,7 @@ const saveBallotStateDirectly = async (userId, estado) => {
       updated_at: new Date().toISOString()
     }, activeEstado);
 
-    updateActiveTalliesInTransaction(transaction, previousDraft, responseDraft, updatedAt);
+    await updateActiveTalliesInTransaction(transaction, previousDraft, responseDraft, updatedAt);
     transaction.set(draftRef, prepareDraftForFirestore(responseDraft, userId, updatedAt), { merge: false });
     transaction.set(userRef, {
       estado: activeEstado,
@@ -422,7 +432,7 @@ const saveBallotStepSelectionDirectly = async (userId, stepKey, candidates, esta
     }
 
     responseDraft = nextDraft;
-    updateActiveTalliesInTransaction(transaction, previousDraft, responseDraft, updatedAt);
+    await updateActiveTalliesInTransaction(transaction, previousDraft, responseDraft, updatedAt);
     transaction.set(draftRef, prepareDraftForFirestore(responseDraft, userId, updatedAt), { merge: false });
   });
 
