@@ -9,16 +9,16 @@ export default function LegalPage({ type }) {
   const content = LEGAL_PAGE_CONTENT[type] || LEGAL_PAGE_CONTENT.cookies;
 
   return (
-    <div className="legal-page">
-      <header className="legal-header">
+    <div className="legal-page nv-screen">
+      <header className="legal-header nv-container">
         <Link to="/" className="legal-header__brand">nossovoto.org</Link>
-        <button className="legal-header__back" type="button" onClick={() => navigate(-1)}>
+        <button className="legal-header__back nv-touch" type="button" onClick={() => navigate(-1)}>
           ← Voltar
         </button>
       </header>
 
-      <main className="legal-main">
-        <section className="legal-panel">
+      <main className="legal-main nv-scroll">
+        <section className="legal-panel nv-container">
           <div className="legal-panel__heading">
             <h1>{content.title}</h1>
             <p>{content.subtitle}</p>

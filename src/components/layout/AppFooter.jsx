@@ -10,8 +10,8 @@ const footerLinks = [
 
 export default function AppFooter({ className = '' }) {
   return (
-    <footer className={`app-footer ${className}`.trim()}>
-      <div className="app-footer__inner">
+    <footer className={`app-footer nv-no-overflow ${className}`.trim()}>
+      <div className="app-footer__inner nv-container">
         <div className="app-footer__brand">
           <strong>nossovoto.org</strong>
           <span>Voto consciente, simples e organizado.</span>

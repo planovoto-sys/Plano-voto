@@ -20,8 +20,10 @@
   --tone-danger: #ff575f;
   --tone-danger-bg: #fff0f0;
   --tone-neutral: #a9a9a9;
-  --bottom-nav-height: 72px;
+  --bottom-nav-height: 64px;
   --screen-gutter: 20px;
+  --content-max-width: 1180px;
+  --content-wide-width: 1360px;
   --panel-radius: 12px;
   --metric-progress: 0;
   --candidate-name-size: 20px;
@@ -61,7 +63,7 @@ body {
 }
 
 #root {
-  width: min(100vw, var(--app-width));
+  width: min(100%, var(--app-width));
   height: var(--app-height);
   min-height: 0;
   overflow: hidden;
@@ -150,8 +152,10 @@ body {
 
 .app-page-header__copy {
   min-width: 0;
+  max-width: min(100%, 17.5rem);
   grid-column: 2;
   grid-row: 1;
+  justify-self: center;
 }
 
 .app-page-header__side {
@@ -242,7 +246,7 @@ body {
 .prototype-page > .app-page-header h1 {
   margin: 0;
   color: var(--text-main);
-  font-size: 28px;
+  font-size: clamp(21px, 5.6vw, 25px);
   font-weight: 800;
   line-height: 1;
   letter-spacing: 0;
@@ -473,7 +477,7 @@ body {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: conic-gradient(from -90deg, currentColor calc(var(--metric-progress, 0) * 1%), rgba(169, 169, 169, 0.22) 0);
+  background: conic-gradient(from 0deg, currentColor calc(var(--metric-progress, 0) * 1%), rgba(169, 169, 169, 0.22) 0);
   -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 4px));
   mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 4px));
 }
@@ -527,7 +531,7 @@ body {
   }
 
   .prototype-page > .app-page-header h1 {
-    font-size: 25px;
+    font-size: 23px;
   }
 
   .loading-intro__brand {
@@ -570,7 +574,7 @@ body {
   }
 
   .prototype-page > .app-page-header h1 {
-    font-size: 22px;
+    font-size: 21px;
   }
 
   .app-header-back-button,
@@ -609,7 +613,7 @@ body {
   }
 
   .prototype-page > .app-page-header h1 {
-    font-size: 20px;
+    font-size: 19px;
   }
 
   .loading-intro {
@@ -637,9 +641,27 @@ body {
   }
 }
 
+@media (min-width: 421px) and (max-width: 479px) {
+  .prototype-page > .app-page-header h1 {
+    font-size: 23px;
+  }
+}
+
+@media (min-width: 480px) and (max-width: 767px) {
+  :root {
+    --screen-gutter: 24px;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 767px) {
+  :root {
+    --screen-gutter: 28px;
+  }
+}
+
 @media (min-width: 768px) {
   :root {
-    --app-width: 100vw;
+    --app-width: 100%;
     --bottom-nav-height: 0px;
     --screen-gutter: clamp(28px, 4vw, 64px);
   }
@@ -653,7 +675,7 @@ body {
   }
 
   #root {
-    width: 100vw;
+    width: 100%;
     max-width: none;
     height: 100dvh;
     background: var(--desktop-bg);
@@ -683,7 +705,7 @@ body {
 
   .prototype-page > .app-page-header h1 {
     color: var(--text-main);
-    font-size: 28px;
+    font-size: 26px;
     letter-spacing: 0;
   }
 
@@ -705,6 +727,7 @@ body {
     grid-column: 2;
     grid-row: 1;
     justify-self: center;
+    max-width: min(100%, 20rem);
   }
 
   .app-page-header__side {
@@ -779,9 +802,27 @@ body {
   }
 }
 
+@media (min-width: 1024px) {
+  :root {
+    --screen-gutter: clamp(36px, 4vw, 72px);
+  }
+}
+
 @media (min-width: 1180px) {
   .prototype-page > .app-page-header {
     padding-left: clamp(64px, 7vw, 112px);
     padding-right: clamp(64px, 7vw, 112px);
+  }
+}
+
+@media (min-width: 1536px) {
+  :root {
+    --screen-gutter: clamp(72px, 7vw, 128px);
+  }
+}
+
+@media (min-width: 1920px) {
+  :root {
+    --screen-gutter: clamp(96px, 8vw, 160px);
   }
 }

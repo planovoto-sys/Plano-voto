@@ -24,7 +24,7 @@ function ViabilityMeter({ value, tone, featured = false }) {
         <span>viável</span>
       </span>
       {featured && (
-        <span className="candidate-viability__flame" aria-hidden="true">🔥</span>
+        <ChanceFlame className="candidate-viability__flame" size={30} />
       )}
     </span>
   );
@@ -55,7 +55,7 @@ const getAssessment = ({ isFireFeatured, isViabilityComplete, systemScore }) => 
   }
 
   if (systemScore > 0 && systemScore < 7) {
-    return { label: 'Mal avaliado', icon: 'error' };
+    return { label: 'Mal avaliado', icon: systemScore < 6 ? 'error' : 'info' };
   }
 
   return { label: 'Sem nota', icon: 'info' };
@@ -69,7 +69,8 @@ export default function CandidateCard({
   featuredMetrics = {},
   showAssessmentSubtitle = true,
   summary = false,
-  actionLabel = ''
+  actionLabel = '',
+  disabled = false
 }) {
   const tone = getCandidateTone(candidate);
   const name = getCandidateName(candidate);
@@ -97,10 +98,11 @@ export default function CandidateCard({
 
   return (
     <button
-      className={`prototype-candidate-card candidate-card--${tone} ${highlight ? 'is-highlight' : ''} ${selected ? 'is-selected' : ''} ${summary ? 'is-summary' : ''} ${isFireFeatured ? 'is-fire-featured' : ''} ${isViabilityComplete ? 'is-viability-complete' : ''} ${isBlocked ? 'is-blocked' : ''}`}
+      className={`prototype-candidate-card nv-touch nv-no-overflow candidate-card--${tone} ${highlight ? 'is-highlight' : ''} ${selected ? 'is-selected' : ''} ${summary ? 'is-summary' : ''} ${isFireFeatured ? 'is-fire-featured' : ''} ${isViabilityComplete ? 'is-viability-complete' : ''} ${isBlocked ? 'is-blocked' : ''}`}
       style={textFitStyle}
       type="button"
       onClick={onSelect}
+      disabled={disabled}
       title={summary ? `${actionLabel || 'Candidato selecionado'}: ${name}` : name}
       aria-pressed={selected}
       aria-disabled={candidate.isAlreadyChosen ? 'true' : undefined}
@@ -117,8 +119,11 @@ export default function CandidateCard({
         <small>{party}</small>
         {showAssessmentSubtitle && (
           <span className={`candidate-card__assessment candidate-card__assessment--${assessment.icon}`}>
-            {assessment.icon === 'fire' && <ChanceFlame size={14} color="currentColor" />}
-            {assessment.icon !== 'fire' && <i aria-hidden="true">{assessment.icon === 'error' ? '×' : '!'}</i>}
+            <i className="candidate-card__assessment-icon" aria-hidden="true">
+              {assessment.icon === 'fire'
+                ? <ChanceFlame size={13} color="currentColor" />
+                : (assessment.icon === 'error' ? 'X' : '!')}
+            </i>
             <span>Nota {(hasCandidateScore || hasPartyScore) ? formatScore(visibleScore) : '--'} | {assessment.label}</span>
           </span>
         )}

@@ -61,7 +61,7 @@
 
 @media (min-width: 768px) {
   .app-footer__inner {
-    width: min(100%, 1180px);
+    width: min(100%, var(--content-max-width, 1180px));
     margin: 0 auto;
     grid-template-columns: minmax(260px, 1.1fr) minmax(190px, 0.7fr) minmax(230px, 0.8fr);
     gap: 30px;
@@ -71,6 +71,12 @@
   .app-footer--scroll-content {
     display: block;
     margin: clamp(42px, 6vw, 72px) calc(var(--screen-gutter) * -1) -36px;
+  }
+}
+
+@media (min-width: 1536px) {
+  .app-footer__inner {
+    width: min(100%, var(--content-wide-width, 1360px));
   }
 }
 

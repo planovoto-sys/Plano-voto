@@ -26,20 +26,20 @@ function Login() {
   };
 
   return (
-    <div className="login-wrapper">
-      <main className="login-main">
+    <div className="login-wrapper nv-screen">
+      <main className="login-main nv-container-narrow">
         <h1 className="login-brand" aria-label="nossovoto.org">
           <ChanceFlame className="login-brand__flame" size={62} />
           <span>nossovoto<em>.org</em></span>
         </h1>
 
         <div className="video-card">
-          <button className="play-button" type="button" aria-label="Reproduzir vídeo">
+          <button className="play-button nv-touch" type="button" aria-label="Reproduzir vídeo">
             <div className="play-icon"></div>
           </button>
         </div>
 
-        <button className="btn-comecar" type="button" onClick={handleGoogleLogin}>
+        <button className="btn-comecar nv-touch" type="button" onClick={handleGoogleLogin}>
           <strong>COMEÇAR</strong>
           <span>Veja o vídeo antes de começar</span>
         </button>

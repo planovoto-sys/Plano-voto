@@ -1,3 +1,5 @@
+import { ChanceFlame } from './ChanceFlame';
+
 export function MenuIcon({ className = 'app-icon' }) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
@@ -117,6 +119,6 @@ export function OptionsNavIcon({ className = 'app-icon' }) {
 
 export function NossoVotoNavIcon({ className = 'app-icon' }) {
   return (
-    <span className={className} aria-hidden="true">🔥</span>
+    <ChanceFlame className={className} size={26} />
   );
 }

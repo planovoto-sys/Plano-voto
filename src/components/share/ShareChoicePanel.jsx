@@ -113,25 +113,25 @@ export default function ShareChoicePanel({ shareData }) {
   if (!shareData) return null;
 
   return (
-    <section className="share-choice-panel" aria-labelledby="share-choice-title">
+    <section className="share-choice-panel nv-no-overflow" aria-labelledby="share-choice-title">
       <div className="share-choice-panel__copy">
         <strong id="share-choice-title">Compartilhe sem revelar suas escolhas</strong>
         <span>Escolha um modelo com perfil, placar ou privacidade. Nenhum nome de candidato aparece.</span>
       </div>
-      <button className="share-choice-panel__button" type="button" onClick={() => setIsOpen(true)}>
+      <button className="share-choice-panel__button nv-touch" type="button" onClick={() => setIsOpen(true)}>
         <ShareIcon />
         <span>Compartilhar</span>
       </button>
 
       {isOpen && (
-        <div className="share-modal" role="dialog" aria-modal="true" aria-labelledby="share-modal-title">
-          <div className="share-modal__content">
+        <div className="share-modal nv-no-overflow" role="dialog" aria-modal="true" aria-labelledby="share-modal-title">
+          <div className="share-modal__content nv-no-overflow">
             <header className="share-modal__header">
               <div>
                 <span>Escolha o que compartilhar</span>
                 <h2 id="share-modal-title">{activeTemplate.label}</h2>
               </div>
-              <button className="share-modal__close" type="button" onClick={() => setIsOpen(false)} aria-label="Fechar">
+              <button className="share-modal__close nv-touch" type="button" onClick={() => setIsOpen(false)} aria-label="Fechar">
                 <ClearIcon />
               </button>
             </header>
@@ -141,7 +141,7 @@ export default function ShareChoicePanel({ shareData }) {
                 <button
                   key={template.id}
                   type="button"
-                  className={template.id === templateId ? 'is-active' : ''}
+                  className={`nv-touch ${template.id === templateId ? 'is-active' : ''}`}
                   onClick={() => {
                     setTemplateId(template.id);
                     setStatus('');
@@ -156,15 +156,15 @@ export default function ShareChoicePanel({ shareData }) {
             <SharePreview templateId={templateId} analysis={analysis} />
 
             <div className="share-modal__actions">
-              <button type="button" onClick={() => runAction(() => shareTemplate(templateId, shareData))}>
+              <button className="nv-touch" type="button" onClick={() => runAction(() => shareTemplate(templateId, shareData))}>
                 <ShareIcon />
                 <span>Compartilhar</span>
               </button>
-              <button type="button" onClick={() => runAction(() => copyShareText(templateId, shareData).then(() => 'copied'))}>
+              <button className="nv-touch" type="button" onClick={() => runAction(() => copyShareText(templateId, shareData).then(() => 'copied'))}>
                 <CopyIcon />
                 <span>Copiar texto</span>
               </button>
-              <button type="button" onClick={() => runAction(() => downloadShareImage(templateId, shareData).then(() => 'shared'))}>
+              <button className="nv-touch" type="button" onClick={() => runAction(() => downloadShareImage(templateId, shareData).then(() => 'shared'))}>
                 <DownloadIcon />
                 <span>Imagem</span>
               </button>

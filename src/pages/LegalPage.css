@@ -276,6 +276,12 @@
   }
 }
 
+@media (min-width: 1536px) {
+  .legal-panel {
+    width: min(100%, 1040px);
+  }
+}
+
 @media (max-width: 620px) {
   .cookie-option {
     align-items: start;

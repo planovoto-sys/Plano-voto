@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import ConfirmModal from '@/components/feedback/ConfirmModal';
 import AppFooter from '@/components/layout/AppFooter';
 import BottomNavigation from '@/components/navigation/BottomNavigation';
+import { ChanceFlame } from '@/components/icons/ChanceFlame';
 import { BackIcon, InfoIcon, SearchIcon } from '@/components/icons/AppIcons';
 import ShareChoicePanel from '@/components/share/ShareChoicePanel';
 import { flowLog, flowWarn } from '@/utils/debugFlow';
@@ -19,7 +20,7 @@ const INITIAL_CANDIDATE_RENDER_LIMIT = 80;
 const getScreenCopy = ({ variant, titulo, subtitulo }) => {
   if (variant === 'home-state') {
     return {
-      title: 'DEPUTADO FEDERAL',
+      title: 'ESTADO',
       subtitle: ''
     };
   }
@@ -48,6 +49,21 @@ const getSubNavLabel = (item) => {
   if (item.mode === 'selecionados' || item.id?.includes('selecionados')) return 'Selecionados';
   if (item.mode === 'renovar' || item.id?.includes('renovar')) return 'À renovação';
   return 'À reeleição';
+};
+
+const haveSameSelectionIds = (currentItems = [], nextItems = []) => {
+  if (currentItems.length !== nextItems.length) return false;
+
+  const getSignature = (item) => [
+    item.id,
+    getCandidateChance(item),
+    getCandidateSystemScore(item),
+    item.isChanceFeatured ? 1 : 0
+  ].join(':');
+
+  const currentIds = currentItems.map(getSignature).sort();
+  const nextIds = nextItems.map(getSignature).sort();
+  return currentIds.every((id, index) => id === nextIds[index]);
 };
 
 export default function SelectBase({
@@ -85,6 +101,8 @@ export default function SelectBase({
   const [candidateRenderLimit, setCandidateRenderLimit] = useState(INITIAL_CANDIDATE_RENDER_LIMIT);
   const [candidateSearchOpen, setCandidateSearchOpen] = useState(false);
   const candidateSearchInputRef = useRef(null);
+  const lastScrollTopRef = useRef(0);
+  const [continueVisible, setContinueVisible] = useState(true);
   const [modalMalAvaliado, setModalMalAvaliado] = useState({ aberto: false, item: null });
   const [modalAltaChance, setModalAltaChance] = useState({ aberto: false, item: null });
   const [modalCandidatoRepetido, setModalCandidatoRepetido] = useState({ aberto: false, item: null });
@@ -98,7 +116,9 @@ export default function SelectBase({
 
     queueMicrotask(() => {
       if (!cancelled) {
-        setSelecionados(selecaoInicial);
+        setSelecionados((currentItems) => (
+          haveSameSelectionIds(currentItems, selecaoInicial) ? currentItems : selecaoInicial
+        ));
       }
     });
 
@@ -112,6 +132,19 @@ export default function SelectBase({
       candidateSearchInputRef.current?.focus();
     }
   }, [candidateSearchOpen]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    lastScrollTopRef.current = 0;
+    queueMicrotask(() => {
+      if (!cancelled) setContinueVisible(true);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeSubNavigationId, valorBusca, variant]);
 
   const isHomeState = variant === 'home-state';
   const isCandidateOffice = variant === 'office-deputado' || variant === 'office-senado';
@@ -227,36 +260,58 @@ export default function SelectBase({
     if (hasLowScore) {
       return {
         prefix: 'Atenção: ',
-        highlight: isSenateOffice ? 'revise candidatos mal avaliados' : 'revise candidato mal avaliado'
+        highlight: isSenateOffice ? 'revise as notas' : 'revise a nota',
+        showFire: false
       };
     }
 
     if (allHighViability) {
       return {
-        prefix: 'Escolha registrada: ',
-        highlight: isSenateOffice ? 'candidatos com alta viabilidade' : 'candidato com alta viabilidade'
+        prefix: 'Salvo: ',
+        highlight: 'alta viabilidade',
+        showFire: false
       };
     }
 
     if (hasFeaturedCandidate) {
       return {
         prefix: 'Boa escolha: ',
-        highlight: isSenateOffice ? 'uma das opções mais viáveis 🔥' : 'candidato mais viável 🔥'
+        highlight: isSenateOffice ? 'mais viáveis' : 'mais viável',
+        showFire: true
       };
     }
 
     if (allCurrentlyViable) {
       return {
         prefix: 'Boa escolha: ',
-        highlight: isSenateOffice ? 'candidatos com boa viabilidade 🔥' : 'candidato com boa viabilidade 🔥'
+        highlight: 'boa viabilidade',
+        showFire: true
       };
     }
 
     return {
-      prefix: isSenateOffice ? 'Compare suas escolhas com os ' : 'Compare sua escolha com o ',
-      highlight: isSenateOffice ? 'candidatos mais viáveis 🔥' : 'candidato mais viável 🔥'
+      prefix: 'Dica: ',
+      highlight: isSenateOffice ? 'compare destaques' : 'compare o destaque',
+      showFire: true
     };
   }, [featuredMetricsByCandidateId, isCandidateOffice, isSenateOffice, selectedPreviewCandidates]);
+
+  const revealContinue = () => setContinueVisible(true);
+
+  const handleScroll = (event) => {
+    const currentTop = event.currentTarget.scrollTop;
+    const diff = currentTop - lastScrollTopRef.current;
+
+    if (Math.abs(diff) < 8) return;
+
+    if (currentTop < 20 || diff < 0) {
+      setContinueVisible(true);
+    } else if (diff > 0) {
+      setContinueVisible(false);
+    }
+
+    lastScrollTopRef.current = currentTop;
+  };
 
   const commitSelection = async (nextSelecionados, { autoConfirm = false, completed = false } = {}) => {
     const previousSelecionados = selecionados;
@@ -271,7 +326,7 @@ export default function SelectBase({
         return true;
       }
 
-    if (autoConfirm && onConfirmar) {
+      if (autoConfirm && onConfirmar) {
         flowLog('select.confirm.auto', {
           titulo,
           totalSelecionados: nextSelecionados.length,
@@ -316,6 +371,7 @@ export default function SelectBase({
 
   const handleSelect = async (item) => {
     if (salvandoSelecao) return;
+    revealContinue();
 
     const jaSelecionado = selecionados.find((v) => v.id === item.id);
     if (jaSelecionado) {
@@ -354,6 +410,7 @@ export default function SelectBase({
   const handleStateSelect = (item) => {
     if (salvandoSelecao) return;
 
+    revealContinue();
     setSelecionados([item]);
   };
 
@@ -394,6 +451,7 @@ export default function SelectBase({
   const handleSubNavigation = async (item) => {
     if (!onSubNavigationSelect) return;
 
+    revealContinue();
     try {
       await onSubNavigationSelect(item, selecionados);
     } catch (error) {
@@ -432,6 +490,7 @@ export default function SelectBase({
   };
 
   const handleSearchChange = (event) => {
+    revealContinue();
     if (onChangeBusca) onChangeBusca(event.target.value);
   };
 
@@ -478,7 +537,7 @@ export default function SelectBase({
     const estadoSelecionado = selecionados[0] || null;
 
     return (
-      <div className="state-selection-flow">
+      <div className="state-selection-flow nv-container">
         {estadoSelecionado && (
           <section className="state-current-section" aria-label="Meu estado">
             <div className="prototype-section-heading">
@@ -500,14 +559,14 @@ export default function SelectBase({
 
           {renderSearchField('select-search-field--state')}
 
-          <div className="state-card-list" id="tour-lista" style={{ '--visible-rows': visibleRows }}>
+          <div className="state-card-list nv-card-grid" id="tour-lista" style={{ '--visible-rows': visibleRows }}>
             {dados.length > 0 ? (
               dados.map((item) => {
                 const isSelected = selecionados.some((selectedItem) => selectedItem.id === item.id);
                 return (
                   <button
                     key={item.id}
-                    className={`state-card ${isSelected ? 'is-selected' : ''}`}
+                    className={`state-card nv-touch ${isSelected ? 'is-selected' : ''}`}
                     type="button"
                     onClick={() => handleStateSelect(item)}
                     disabled={salvandoSelecao}
@@ -530,7 +589,7 @@ export default function SelectBase({
     const senateSelectionComplete = isSenateOffice && selecionados.length >= requiredSelectionCount;
 
     return (
-      <div className="candidate-flow" id="tour-lista">
+      <div className="candidate-flow nv-container" id="tour-lista">
         {selectedPreviewCandidates.length > 0 && (
           <section className="candidate-current-section">
             <div className="prototype-section-heading prototype-section-heading--current">
@@ -539,6 +598,9 @@ export default function SelectBase({
                 <p>
                   {currentSelectionSubtitle.prefix}
                   <span className="candidate-current-highlight">{currentSelectionSubtitle.highlight}</span>
+                  {currentSelectionSubtitle.showFire && (
+                    <ChanceFlame className="candidate-current-highlight__flame" size={12} />
+                  )}
                 </p>
               )}
             </div>
@@ -553,6 +615,7 @@ export default function SelectBase({
                   selected
                   featuredMetrics={featuredMetricsByCandidateId.get(candidate.id)}
                   showAssessmentSubtitle
+                  disabled={salvandoSelecao}
                   onSelect={() => handleSelect(candidate)}
                 />
               ))}
@@ -578,7 +641,7 @@ export default function SelectBase({
                     <button
                       key={item.id}
                       type="button"
-                      className={`candidate-filter-tabs__item ${item.id === activeSubNavigationId ? 'is-active' : ''}`}
+                      className={`candidate-filter-tabs__item nv-touch ${item.id === activeSubNavigationId ? 'is-active' : ''}`}
                       onClick={() => handleSubNavigation(item)}
                       title={item.mode === 'selecionados' ? 'Candidatos selecionados' : item.mode === 'renovar' ? 'Renovação: candidatos sem nota' : 'Reeleição: candidatos com nota'}
                     >
@@ -589,11 +652,11 @@ export default function SelectBase({
               )}
               {mostrarBusca && (
                 <button
-                  className={`candidate-search-button ${candidateSearchIsOpen ? 'is-active' : ''}`}
+                  className={`candidate-search-button nv-touch ${candidateSearchIsOpen ? 'is-active' : ''}`}
                   type="button"
                   onClick={() => {
+                    revealContinue();
                     setCandidateSearchOpen(true);
-                    window.requestAnimationFrame(() => candidateSearchInputRef.current?.focus());
                   }}
                   aria-expanded={candidateSearchIsOpen}
                   aria-label="Pesquisar candidatos"
@@ -606,7 +669,7 @@ export default function SelectBase({
             {renderCandidateSearchControl()}
           </div>
 
-          <div className="candidate-card-list">
+          <div className="candidate-card-list nv-card-grid">
             {dados.length > 0 ? (
               visibleSecondaryCandidates.map((candidate) => (
                 <CandidateCard
@@ -615,6 +678,7 @@ export default function SelectBase({
                   selected={selecionados.some((item) => item.id === candidate.id)}
                   featuredMetrics={featuredMetricsByCandidateId.get(candidate.id)}
                   showAssessmentSubtitle
+                  disabled={salvandoSelecao}
                   onSelect={() => handleSelect(candidate)}
                 />
               ))
@@ -625,9 +689,12 @@ export default function SelectBase({
 
           {hasMoreCandidates && (
             <button
-              className="candidate-load-more"
+              className="candidate-load-more nv-touch"
               type="button"
-              onClick={() => setCandidateRenderLimit(dados.length)}
+              onClick={() => {
+                revealContinue();
+                setCandidateRenderLimit(dados.length);
+              }}
             >
               Mostrar todos
             </button>
@@ -637,13 +704,13 @@ export default function SelectBase({
     );
   };
 
-  if (carregando) return <div className="loading" role="status" aria-live="polite">CARREGANDO...</div>;
+  if (carregando) return <div className="loading nv-screen" role="status" aria-live="polite">CARREGANDO...</div>;
 
   return (
-    <div className={`select-base-container prototype-page variant-${variant}`}>
+    <div className={`select-base-container prototype-page nv-screen variant-${variant}`}>
       <header className="prototype-header app-page-header">
         <button
-          className="app-header-back-button"
+          className="app-header-back-button nv-touch"
           type="button"
           onClick={handleHeaderBack}
           aria-label="Voltar"
@@ -660,7 +727,7 @@ export default function SelectBase({
         <div className="app-page-header__actions">
           {onHelpClick && (
             <button
-              className="app-header-icon-action app-help-action"
+              className="app-header-icon-action app-help-action nv-touch"
               type="button"
               onClick={onHelpClick}
               aria-label="Ajuda"
@@ -677,14 +744,14 @@ export default function SelectBase({
         </div>
       </header>
 
-      <main className="prototype-scroll select-base__scroll">
+      <main className="prototype-scroll select-base__scroll nv-scroll" onScroll={handleScroll}>
         {isHomeState ? renderStateList() : renderCandidateList()}
         <AppFooter className="app-footer--scroll-content" />
       </main>
 
-      <div className="select-base__continue-shell">
+      <div className={`select-base__continue-shell ${continueVisible ? '' : 'is-hidden'}`}>
         <button
-          className="select-base__continue"
+          className="select-base__continue nv-touch"
           type="button"
           onClick={handleContinue}
           disabled={salvandoSelecao || !hasRequiredSelection}

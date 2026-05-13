@@ -16,6 +16,7 @@ import {
   NossoVotoNavIcon,
   SenadoNavIcon
 } from '@/components/icons/AppIcons';
+import { getCandidateName } from '@/utils/candidateMetrics';
 import './BottomNavigation.css';
 
 const PROGRESS_ITEMS = [
@@ -41,6 +42,16 @@ const STEP_BY_PATH = {
   '/escolher-senadores/renovar': 'senador'
 };
 
+const formatCandidateSummary = (candidates = []) => {
+  const names = candidates
+    .map((candidate) => getCandidateName(candidate))
+    .filter(Boolean);
+
+  if (names.length === 0) return 'Nenhum selecionado';
+  if (names.length <= 2) return names.join(', ');
+  return `${names[0]}, +${names.length - 1}`;
+};
+
 export default function BottomNavigation({ currentStep, placement = 'footer' }) {
   const { user, userData } = useUser();
   const navigate = useNavigate();
@@ -56,6 +67,8 @@ export default function BottomNavigation({ currentStep, placement = 'footer' }) 
   const profileEmail = userData?.email || user?.email || '';
   const profileImage = userData?.profile_image || user?.photoURL || '';
   const profileInitial = profileName.trim().charAt(0).toUpperCase() || 'N';
+  const deputadoFederalResumo = draft?.candidate_groups?.deputado_federal || draft?.selections?.deputado_federal || [];
+  const senadoresResumo = draft?.candidate_groups?.senadores_1 || draft?.selections?.senadores || [];
 
   useEffect(() => {
     if (!drawerOpen) return undefined;
@@ -85,9 +98,9 @@ export default function BottomNavigation({ currentStep, placement = 'footer' }) 
     navigate(item.path, { state: { bypassVoteRedirect: true } });
   };
 
-  const handleChangeState = () => {
+  const handleSummaryNavigate = (path) => {
     setDrawerOpen(false);
-    navigate(BALLOT_ROUTES.estado, { state: { bypassVoteRedirect: true } });
+    navigate(path, { state: { bypassVoteRedirect: true } });
   };
 
   const handleLogout = async () => {
@@ -101,7 +114,7 @@ export default function BottomNavigation({ currentStep, placement = 'footer' }) 
   const activeIndex = PROGRESS_ITEMS.findIndex((item) => item.id === activeStep);
 
   return (
-    <NavigationShell className={`app-page-footer app-page-footer--${placement}`}>
+    <NavigationShell className={`app-page-footer app-page-footer--${placement} nv-no-overflow`}>
       <nav className="bottom-step-nav" aria-label="Etapas do voto">
         {visibleItems.map((item) => {
           const StepIcon = item.Icon;
@@ -117,6 +130,7 @@ export default function BottomNavigation({ currentStep, placement = 'footer' }) 
               key={item.id}
               className={[
                 'bottom-step-nav__item',
+                'nv-touch',
                 item.brand ? 'bottom-step-nav__item--brand' : '',
                 isActive ? 'is-active' : '',
                 isComplete ? 'is-complete' : '',
@@ -139,7 +153,7 @@ export default function BottomNavigation({ currentStep, placement = 'footer' }) 
       </nav>
 
       {drawerOpen && (
-        <div className="options-drawer-shell">
+        <div className="options-drawer-shell nv-no-overflow">
           <button
             className="options-drawer-backdrop"
             type="button"
@@ -147,7 +161,7 @@ export default function BottomNavigation({ currentStep, placement = 'footer' }) 
             onClick={() => setDrawerOpen(false)}
           />
           <section
-            className="options-drawer"
+            className="options-drawer nv-no-overflow"
             id={`nossovoto-menu-${placement}`}
             role="dialog"
             aria-modal="true"
@@ -163,21 +177,36 @@ export default function BottomNavigation({ currentStep, placement = 'footer' }) 
               {profileEmail && <small>{profileEmail}</small>}
             </div>
 
-            <div className="options-drawer__info">
-              <div className="options-drawer__state-copy">
+            <div className="options-drawer__summary" aria-label="Resumo do voto">
+              <button
+                className="options-drawer__summary-item nv-touch"
+                type="button"
+                onClick={() => handleSummaryNavigate(BALLOT_ROUTES.estado)}
+              >
                 <span>Meu estado</span>
                 <strong>{estadoSelecionado ? `${estadoNome} (${estadoSelecionado})` : 'Não selecionado'}</strong>
-              </div>
+              </button>
+
               <button
-                className="options-drawer__state-action"
+                className="options-drawer__summary-item nv-touch"
                 type="button"
-                onClick={handleChangeState}
+                onClick={() => handleSummaryNavigate(BALLOT_ROUTES.deputadoFederal)}
               >
-                Alterar
+                <span>Deputado federal</span>
+                <strong>{formatCandidateSummary(deputadoFederalResumo)}</strong>
+              </button>
+
+              <button
+                className="options-drawer__summary-item nv-touch"
+                type="button"
+                onClick={() => handleSummaryNavigate(BALLOT_ROUTES.senadores)}
+              >
+                <span>Senadores</span>
+                <strong>{formatCandidateSummary(senadoresResumo)}</strong>
               </button>
             </div>
 
-            <button className="options-drawer__logout" type="button" onClick={handleLogout}>
+            <button className="options-drawer__logout nv-touch" type="button" onClick={handleLogout}>
               Sair
             </button>
           </section>

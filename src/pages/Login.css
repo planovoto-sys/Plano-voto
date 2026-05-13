@@ -24,8 +24,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  font-size: clamp(33px, 8.4vw, 43px);
+  gap: clamp(6px, 2vw, 10px);
+  font-size: clamp(26px, 8.2vw, 43px);
   font-weight: 900;
   line-height: 1;
   letter-spacing: 0;
@@ -33,7 +33,7 @@
 }
 
 .login-brand__flame {
-  width: clamp(49px, 12.5vw, 62px);
+  width: clamp(39px, 12vw, 62px);
   height: auto;
   flex: 0 0 auto;
 }
@@ -41,7 +41,6 @@
 .login-brand span {
   display: block;
   min-width: 0;
-  overflow: hidden;
   text-overflow: clip;
 }
 
