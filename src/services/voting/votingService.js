@@ -757,7 +757,6 @@ export const castAnonymousVote = async ({ user, estado, draft }) => {
     estado: estado ?? normalizedDraft.estado ?? null,
     functionName: CAST_VOTE_FUNCTION_NAME,
     functionsRegion,
-    appCheckConfigured: Boolean(import.meta.env.VITE_RECAPTCHA_V3_SITE_KEY),
     candidateIds
   });
 
@@ -797,12 +796,12 @@ export const getVotingErrorMessage = (error) => {
     FUNCTION_UNREACHABLE: 'Não foi possível conectar ao servidor de votação. Verifique a implantação da Cloud Function e tente novamente.',
     'functions/not-found': 'Servidor de votação indisponível. Configure a Cloud Function de registro de voto.',
     not_found: 'Servidor de votação indisponível. Configure a Cloud Function de registro de voto.',
-    'functions/internal': 'Servidor de votação indisponível ou sem configuração de acesso. Verifique região, deploy e App Check.',
-    internal: 'Servidor de votação indisponível ou sem configuração de acesso. Verifique região, deploy e App Check.',
+    'functions/internal': 'Servidor de votação indisponível ou sem configuração de acesso. Verifique região e deploy.',
+    internal: 'Servidor de votação indisponível ou sem configuração de acesso. Verifique região e deploy.',
     'functions/unavailable': 'Servidor de votação temporariamente indisponível. Tente novamente em instantes.',
     unavailable: 'Servidor de votação temporariamente indisponível. Tente novamente em instantes.',
-    'functions/unauthenticated': 'Faça login novamente e verifique a configuração do App Check.',
-    unauthenticated: 'Faça login novamente e verifique a configuração do App Check.',
+    'functions/unauthenticated': 'Faça login novamente para continuar.',
+    unauthenticated: 'Faça login novamente para continuar.',
     'functions/already-exists': 'Seu voto já foi registrado. Por segurança, ele não pode ser alterado.',
     already_exists: 'Seu voto já foi registrado. Por segurança, ele não pode ser alterado.',
     'functions/permission-denied': 'Você não tem permissão para votar nesta eleição.',

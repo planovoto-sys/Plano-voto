@@ -155,6 +155,7 @@ export default function SelectBase({
   const hasSelectionLimit = Number.isFinite(effectiveLimit) && effectiveLimit > 0;
   const visibleRows = Number.isFinite(linhasVisiveis) ? linhasVisiveis : 5;
   const screenCopy = getScreenCopy({ variant, titulo, subtitulo });
+  const hasRequiredSelection = selecionados.length >= requiredSelectionCount;
   const selectedSignature = useMemo(() => (
     selecionados.map((candidate) => candidate.id).filter(Boolean).sort().join('|')
   ), [selecionados]);
@@ -431,10 +432,6 @@ export default function SelectBase({
     revealContinue();
     setSelecionados([item]);
   };
-
-  const hasRequiredSelection = (() => {
-    return selecionados.length >= requiredSelectionCount;
-  })();
 
   const handleContinue = async () => {
     if (salvandoSelecao || !onConfirmar) return;

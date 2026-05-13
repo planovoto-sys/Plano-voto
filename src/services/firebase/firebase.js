@@ -1,5 +1,4 @@
 import { initializeApp } from "firebase/app";
-import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
 import { getFirestore } from "firebase/firestore";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFunctions } from "firebase/functions";
@@ -37,21 +36,6 @@ if (!firebaseReady) {
 
 const app = initializeApp(firebaseReady ? firebaseConfig : localPreviewConfig);
 export const functionsRegion = import.meta.env.VITE_FIREBASE_FUNCTIONS_REGION || 'southamerica-east1';
-const appCheckSiteKey = import.meta.env.VITE_RECAPTCHA_V3_SITE_KEY;
-const appCheckDebugToken = import.meta.env.VITE_APPCHECK_DEBUG_TOKEN;
-
-if (firebaseReady && appCheckSiteKey && typeof window !== 'undefined') {
-  if (import.meta.env.DEV && appCheckDebugToken) {
-    window.FIREBASE_APPCHECK_DEBUG_TOKEN = appCheckDebugToken === 'true' ? true : appCheckDebugToken;
-  }
-
-  initializeAppCheck(app, {
-    provider: new ReCaptchaV3Provider(appCheckSiteKey),
-    isTokenAutoRefreshEnabled: true,
-  });
-} else if (firebaseReady) {
-  console.warn("Firebase App Check nao configurado. A Cloud Function de voto exige App Check; defina VITE_RECAPTCHA_V3_SITE_KEY antes de confirmar votos.");
-}
 
 export const db = getFirestore(app);
 export const auth = getAuth(app);

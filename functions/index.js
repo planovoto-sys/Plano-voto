@@ -390,7 +390,6 @@ const buildDraftResponse = (draft) => ({
 export const saveBallotState = onCall({
   region: FUNCTIONS_REGION,
   cors: true,
-  enforceAppCheck: true,
 }, async (request) => {
   if (!request.auth?.uid) {
     throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
@@ -442,7 +441,6 @@ export const saveBallotState = onCall({
 export const saveBallotStepSelection = onCall({
   region: FUNCTIONS_REGION,
   cors: true,
-  enforceAppCheck: true,
 }, async (request) => {
   if (!request.auth?.uid) {
     throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
@@ -520,7 +518,6 @@ export const saveBallotStepSelection = onCall({
 export const deleteUserElectionData = onCall({
   region: FUNCTIONS_REGION,
   cors: true,
-  enforceAppCheck: true,
 }, async (request) => {
   if (!request.auth?.uid) {
     throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
@@ -581,7 +578,6 @@ export const deleteUserElectionData = onCall({
 export const castAnonymousVote = onCall({
   region: FUNCTIONS_REGION,
   cors: true,
-  enforceAppCheck: true,
 }, async (request) => {
   if (!request.auth?.uid) {
     throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
