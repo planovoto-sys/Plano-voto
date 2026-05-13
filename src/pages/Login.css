@@ -36,6 +36,7 @@
   width: clamp(39px, 12vw, 62px);
   height: auto;
   flex: 0 0 auto;
+  object-fit: contain;
 }
 
 .login-brand span {

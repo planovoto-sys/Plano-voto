@@ -69,6 +69,7 @@
   height: 14px;
   flex: 0 0 auto;
   color: #ff8b49;
+  object-fit: contain;
 }
 
 .select-search-field {
@@ -503,11 +504,13 @@
   box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 18%, transparent);
 }
 
-.candidate-card__assessment-icon svg {
+.candidate-card__assessment-icon svg,
+.candidate-card__assessment-icon img {
   width: 10px;
   height: 12px;
   flex: 0 0 auto;
   color: currentColor;
+  object-fit: contain;
 }
 
 .candidate-card__assessment span {
@@ -584,7 +587,8 @@
   width: 30px;
   height: 35px;
   pointer-events: none;
-  text-shadow: 0 2px 4px rgba(255, 139, 73, 0.18);
+  filter: drop-shadow(0 2px 4px rgba(255, 139, 73, 0.22));
+  object-fit: contain;
   transform: rotate(8deg);
 }
 
