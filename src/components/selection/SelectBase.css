@@ -197,6 +197,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding-top: 8px;
 }
 
 .candidate-list-tools {
@@ -211,6 +212,7 @@
   align-items: center;
   gap: 5px;
   min-width: 0;
+  padding-right: clamp(24px, 8vw, 38px);
 }
 
 .candidate-filter-tabs {
@@ -329,6 +331,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding-top: 10px;
 }
 
 .candidate-load-more {
@@ -350,6 +353,7 @@
   --candidate-card-pad-right: 10px;
   --candidate-metric-size: 56px;
   --metric-feature-color: #ff8b49;
+  position: relative;
   width: 100%;
   min-height: 80px;
   border: 0;
@@ -581,11 +585,11 @@
 
 .candidate-viability__flame {
   position: absolute;
-  top: -20px;
-  right: -11px;
-  z-index: 1;
-  width: 30px;
-  height: 35px;
+  top: -18px;
+  right: -9px;
+  z-index: 3;
+  width: 34px;
+  height: 40px;
   pointer-events: none;
   filter: drop-shadow(0 2px 4px rgba(255, 139, 73, 0.22));
   object-fit: contain;
@@ -680,6 +684,7 @@
 
   .candidate-list-tools__row {
     gap: 4px;
+    padding-right: 24px;
   }
 
   .candidate-filter-tabs {
@@ -727,10 +732,10 @@
   }
 
   .candidate-viability__flame {
-    top: -18px;
-    right: -10px;
-    width: 26px;
-    height: 31px;
+    top: -16px;
+    right: -7px;
+    width: 30px;
+    height: 35px;
   }
 
   .select-base__continue {

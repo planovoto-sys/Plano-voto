@@ -23,9 +23,6 @@ function ViabilityMeter({ value, tone, featured = false }) {
         <strong>{numericValue}<small>%</small></strong>
         <span>viável</span>
       </span>
-      {featured && (
-        <ChanceFlame className="candidate-viability__flame" size={30} />
-      )}
     </span>
   );
 }
@@ -107,6 +104,10 @@ export default function CandidateCard({
       aria-pressed={selected}
       aria-disabled={candidate.isAlreadyChosen ? 'true' : undefined}
     >
+      {isFireFeatured && (
+        <ChanceFlame className="candidate-viability__flame" size={34} />
+      )}
+
       <span className="candidate-card__identity">
         <span className="candidate-card__name-row">
           <strong>{name}</strong>
