@@ -1,12 +1,12 @@
 .my-plan-page {
-  background: #ffffff;
+  background: #fffaf5;
 }
 
 .my-plan-header {
   flex: 0 0 auto;
   min-height: 68px;
-  border-bottom: 1px solid var(--nav-line);
-  background: #ffffff;
+  border-bottom: 1px solid #f1dfd3;
+  background: #fffaf5;
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr) 44px;
   align-items: center;
@@ -62,8 +62,14 @@
   object-fit: contain;
 }
 
-.my-plan-header__brand span {
+.my-plan-header__brand-text {
+  min-width: 0;
+  color: #111111;
+}
+
+.my-plan-header__brand-text em {
   color: #686868;
+  font-style: normal;
 }
 
 .my-plan-header__brand small {
@@ -75,6 +81,9 @@
 }
 
 .my-plan-scroll {
+  background:
+    linear-gradient(180deg, rgba(255, 139, 73, 0.08) 0, rgba(255, 255, 255, 0) 190px),
+    #fffdfb;
   padding: 22px var(--screen-gutter) 0;
 }
 
@@ -93,7 +102,7 @@
 .my-plan-state,
 .my-plan-share-disabled,
 .my-plan-qr {
-  border: 1px solid var(--nav-line);
+  border: 1px solid #f1dfd3;
   border-radius: 8px;
   background: #ffffff;
 }
@@ -111,8 +120,8 @@
   width: 58px;
   height: 58px;
   border-radius: 50%;
-  background: #eef1f4;
-  color: #111111;
+  background: #fff0e4;
+  color: #f26f2e;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -155,6 +164,8 @@
 .my-plan-state {
   display: grid;
   gap: 5px;
+  border-color: #dcefd7;
+  background: #f7fff4;
   padding: 14px;
 }
 
@@ -165,11 +176,12 @@
 }
 
 .my-plan-meter {
+  --my-plan-meter-color: #ff8b49;
   min-width: 0;
   min-height: 174px;
-  border: 1px solid var(--nav-line);
+  border: 1px solid #f1dfd3;
   border-radius: 8px;
-  background: #f8f9fa;
+  background: #fff8f1;
   display: grid;
   align-content: start;
   justify-items: center;
@@ -184,11 +196,17 @@
   border-radius: 50%;
   background:
     radial-gradient(circle at center, #ffffff 0 59%, transparent 60%),
-    conic-gradient(#111111 calc(var(--my-plan-meter-value) * 1%), rgba(169, 169, 169, 0.25) 0);
-  color: #111111;
+    conic-gradient(var(--my-plan-meter-color) calc(var(--my-plan-meter-value) * 1%), rgba(169, 169, 169, 0.25) 0);
+  color: var(--my-plan-meter-color);
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+
+.my-plan-meter--score {
+  --my-plan-meter-color: #72d552;
+  border-color: #dcefd7;
+  background: #f7fff4;
 }
 
 .my-plan-meter__gauge strong {
@@ -264,9 +282,9 @@
   display: grid;
   gap: 10px;
   min-width: 0;
-  border: 1px solid var(--nav-line);
+  border: 1px solid #f1dfd3;
   border-radius: 8px;
-  background: #f8f9fa;
+  background: #fffaf5;
   padding: 10px;
 }
 
@@ -274,8 +292,7 @@
   display: flex;
   min-width: 0;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+  justify-content: flex-start;
   padding: 0 2px;
 }
 
@@ -287,22 +304,6 @@
   font-weight: 900;
   line-height: 1.15;
   text-transform: uppercase;
-}
-
-.my-plan-office__header span {
-  min-width: 28px;
-  height: 24px;
-  border: 1px solid rgba(255, 139, 73, 0.22);
-  border-radius: 999px;
-  background: #fff3e8;
-  color: #f26f2e;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 8px;
-  font-size: 12px;
-  font-weight: 900;
-  line-height: 1;
 }
 
 .my-plan-office-candidates {
@@ -344,31 +345,55 @@
 }
 
 .my-plan-candidate {
+  --candidate-plan-progress-color: currentColor;
   min-width: 0;
-  min-height: 88px;
-  border: 1px solid var(--nav-line);
-  border-radius: 8px;
-  background: #ffffff;
+  min-height: 84px;
+  border: 1px solid transparent;
+  border-radius: 9px;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 56px 58px;
+  grid-template-columns: minmax(0, 1fr) 58px;
   align-items: center;
-  gap: 10px;
-  padding: 12px;
+  gap: 8px;
+  padding: 10px 10px 10px 14px;
+}
+
+.my-plan-candidate--success {
+  border-color: var(--tone-success);
+  background: var(--tone-success-bg);
+  color: var(--tone-success);
+}
+
+.my-plan-candidate--neutral {
+  border-color: transparent;
+  background: var(--card-bg);
+  color: var(--tone-neutral);
+}
+
+.my-plan-candidate--danger {
+  border-color: transparent;
+  background: var(--tone-danger-bg);
+  color: var(--tone-danger);
+}
+
+.my-plan-candidate--new {
+  border-color: var(--nav-line);
+  background: #ffffff;
+  color: #69746f;
 }
 
 .my-plan-candidate__identity {
   min-width: 0;
   display: grid;
-  gap: 4px;
+  gap: 3px;
 }
 
 .my-plan-candidate__identity strong,
 .my-plan-candidate--empty strong {
   max-width: 100%;
   overflow: hidden;
-  color: var(--text-strong);
-  font-size: 16px;
-  font-weight: 900;
+  color: currentColor;
+  font-size: 18px;
+  font-weight: 800;
   line-height: 1.05;
   text-overflow: clip;
   text-transform: uppercase;
@@ -376,45 +401,52 @@
   overflow-wrap: anywhere;
 }
 
-.my-plan-candidate__identity span,
-.my-plan-candidate--empty span {
-  color: var(--text-muted);
+.my-plan-candidate__identity small,
+.my-plan-candidate--empty small {
+  color: currentColor;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.15;
   text-transform: uppercase;
 }
 
-.my-plan-candidate__metrics {
-  display: grid;
-  grid-template-columns: 56px;
-  gap: 6px;
-  margin: 0;
-}
-
-.my-plan-candidate__metrics div {
-  min-width: 0;
-  border-radius: 8px;
-  background: #f8f9fa;
-  display: grid;
-  gap: 2px;
-  padding: 8px 5px;
-  text-align: center;
-}
-
-.my-plan-candidate__metrics dt {
-  color: var(--text-muted);
-  font-size: 8.5px;
+.my-plan-candidate__assessment {
+  width: fit-content;
+  max-width: 100%;
+  min-height: 20px;
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 15%, white);
+  color: currentColor;
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 4px;
+  margin-top: 3px;
+  padding: 3px 7px;
+  font-size: 9.5px;
   font-weight: 800;
   line-height: 1;
 }
 
-.my-plan-candidate__metrics dd {
-  margin: 0;
-  color: var(--text-strong);
-  font-size: 13px;
+.my-plan-candidate__assessment i {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  color: currentColor;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-style: normal;
+  font-size: 10px;
   font-weight: 900;
   line-height: 1;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 18%, transparent);
+}
+
+.my-plan-candidate__assessment span {
+  min-width: 0;
+  line-height: 1.12;
 }
 
 .my-plan-candidate-viability {
@@ -422,9 +454,9 @@
   height: 58px;
   border-radius: 50%;
   background:
-    radial-gradient(circle at center, #ffffff 0 58%, transparent 59%),
-    conic-gradient(currentColor calc(var(--candidate-plan-progress) * 1%), rgba(169, 169, 169, 0.28) 0);
-  color: var(--tone-success);
+    radial-gradient(circle at center, color-mix(in srgb, currentColor 4%, white) 0 58%, transparent 59%),
+    conic-gradient(var(--candidate-plan-progress-color) calc(var(--candidate-plan-progress) * 1%), rgba(169, 169, 169, 0.28) 0);
+  color: currentColor;
   display: inline-flex;
   flex-direction: column;
   align-items: center;
@@ -453,7 +485,8 @@
 }
 
 .my-plan-candidate--empty {
-  border-style: dashed;
+  border: 1px dashed #f1c9aa;
+  background: #fffdfb;
   color: var(--text-muted);
 }
 
@@ -462,8 +495,7 @@
   gap: 4px;
 }
 
-.my-plan-candidate--empty button,
-.my-plan-office-row button {
+.my-plan-candidate--empty button {
   min-height: 36px;
   border: 1px solid #111111;
   border-radius: 999px;
@@ -474,44 +506,6 @@
   font-size: 12px;
   font-weight: 900;
   cursor: pointer;
-}
-
-.my-plan-office-summary {
-  display: grid;
-  gap: 8px;
-}
-
-.my-plan-office-row {
-  min-width: 0;
-  min-height: 64px;
-  border: 1px solid var(--nav-line);
-  border-radius: 8px;
-  background: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 10px 12px;
-}
-
-.my-plan-office-row div {
-  min-width: 0;
-  display: grid;
-  gap: 3px;
-}
-
-.my-plan-office-row span {
-  color: var(--text-muted);
-  font-size: 12px;
-  font-weight: 750;
-  line-height: 1.1;
-}
-
-.my-plan-office-row strong {
-  color: var(--text-strong);
-  font-size: 18px;
-  font-weight: 900;
-  line-height: 1;
 }
 
 .my-plan-actions {
@@ -618,10 +612,6 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .my-plan-candidate__metrics {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
   .my-plan-candidate-viability {
     justify-self: center;
     width: 62px;
@@ -631,12 +621,13 @@
 
 @media (min-width: 768px) {
   .my-plan-page {
-    background: var(--desktop-bg);
+    background: #fffaf5;
   }
 
   .my-plan-header {
     min-height: 74px;
-    border-bottom-color: var(--desktop-border);
+    border-bottom-color: #f1dfd3;
+    background: #fffaf5;
     padding: 0 var(--screen-gutter);
   }
 
@@ -680,12 +671,14 @@
 
   .my-plan-profile,
   .my-plan-state,
-  .my-plan-candidate,
-  .my-plan-office-row,
   .my-plan-share-disabled,
   .my-plan-qr {
     border-color: var(--desktop-border);
     box-shadow: 0 12px 28px rgba(34, 36, 38, 0.06);
+  }
+
+  .my-plan-candidate {
+    box-shadow: 0 12px 28px rgba(34, 36, 38, 0.045);
   }
 
   .my-plan-meter {

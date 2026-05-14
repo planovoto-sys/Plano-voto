@@ -26,6 +26,7 @@ import {
   calculateCandidateChance,
   formatScore,
   getCandidateChance,
+  getCandidateTone,
   getCandidateName,
   getCandidateParty,
   getCandidateSystemScore
@@ -46,7 +47,21 @@ const getAverageScore = (candidates) => (
   average(candidates.map((candidate) => getCandidateSystemScore(candidate)).filter((score) => score > 0))
 );
 
-const getCandidateNumber = (candidate = {}) => candidate.Numero || candidate.numero || candidate.number || '';
+const getCandidateNumber = (candidate = {}) => {
+  const value = candidate.Numero ?? candidate.numero ?? candidate.number ?? '';
+  const normalizedValue = String(value).trim();
+  return normalizedValue || '000000';
+};
+
+const getCandidateAssessment = (candidate = {}) => {
+  const score = getCandidateSystemScore(candidate);
+  const chance = getCandidateChance(candidate);
+
+  if (score >= 7 && chance >= 100) return { label: 'Não precisa de mais votos', icon: 'info' };
+  if (score >= 7) return { label: 'Precisa de mais votos', icon: 'info' };
+  if (score > 0) return { label: 'Mal avaliado', icon: score < 6 ? 'error' : 'info' };
+  return { label: 'Sem nota', icon: 'info' };
+};
 
 const getCandidateOfficeKey = (candidate = {}) => {
   const officeName = String(candidate.Cargo || candidate.cargo || '').toLowerCase();
@@ -108,11 +123,11 @@ const mergeCandidateDetails = (storedCandidate, fetchedCandidate, tally) => {
   };
 };
 
-function MetricThermometer({ title, value, displayValue, caption }) {
+function MetricThermometer({ title, value, displayValue, caption, tone = 'viability' }) {
   const progress = clampPercent(value);
 
   return (
-    <article className="my-plan-meter" style={{ '--my-plan-meter-value': progress }}>
+    <article className={`my-plan-meter my-plan-meter--${tone}`} style={{ '--my-plan-meter-value': progress }}>
       <span className="my-plan-meter__gauge" aria-hidden="true">
         <strong>{displayValue}</strong>
       </span>
@@ -139,9 +154,9 @@ function CandidateSummaryCard({ candidate, fallbackTitle, onEdit }) {
   if (!candidate) {
     return (
       <article className="my-plan-candidate my-plan-candidate--empty">
-        <div>
+        <div className="my-plan-candidate__identity">
           <strong>{fallbackTitle}</strong>
-          <span>Pendente</span>
+          <small>Nº 000000 | Pendente</small>
         </div>
         <button type="button" onClick={onEdit}>Escolher</button>
       </article>
@@ -153,37 +168,20 @@ function CandidateSummaryCard({ candidate, fallbackTitle, onEdit }) {
   const number = getCandidateNumber(candidate);
   const score = getCandidateSystemScore(candidate);
   const chance = getCandidateChance(candidate);
+  const tone = getCandidateTone(candidate);
+  const assessment = getCandidateAssessment(candidate);
 
   return (
-    <article className="my-plan-candidate">
+    <article className={`my-plan-candidate my-plan-candidate--${tone}`}>
       <div className="my-plan-candidate__identity">
         <strong>{name || fallbackTitle}</strong>
-        <span>{number ? `Nº ${number} | ` : ''}{party || 'Partido não informado'}</span>
+        <small>Nº {number} | {party || 'Partido não informado'}</small>
+        <span className={`my-plan-candidate__assessment my-plan-candidate__assessment--${assessment.icon}`}>
+          <i aria-hidden="true">{assessment.icon === 'error' ? 'X' : '!'}</i>
+          <span>Nota {score > 0 ? formatScore(score) : '--'} | {assessment.label}</span>
+        </span>
       </div>
-      <dl className="my-plan-candidate__metrics">
-        <div>
-          <dt>Nota</dt>
-          <dd>{score > 0 ? formatScore(score) : '--'}</dd>
-        </div>
-      </dl>
       <CandidateViability value={chance} />
-    </article>
-  );
-}
-
-function OfficeViabilityRow({ label, candidates, route, onEdit }) {
-  const averageChance = getAverageChance(candidates);
-  const completed = candidates.length > 0;
-
-  return (
-    <article className="my-plan-office-row">
-      <div>
-        <span>{label}</span>
-        <strong>{completed ? `${Math.round(averageChance)}%` : 'Pendente'}</strong>
-      </div>
-      <button type="button" onClick={() => onEdit(route)}>
-        Editar
-      </button>
     </article>
   );
 }
@@ -380,7 +378,7 @@ export default function MeuPlano() {
         <div className="my-plan-header__brand">
           <strong>
             <ChanceFlame className="my-plan-header__flame" size={24} />
-            nossoVoto<span>.org</span>
+            <span className="my-plan-header__brand-text">nossoVoto<em>.org</em></span>
           </strong>
           <small>Meu plano</small>
         </div>
@@ -413,12 +411,14 @@ export default function MeuPlano() {
               value={averageChance}
               displayValue={`${Math.round(averageChance)}%`}
               caption="Indicador médio de viabilidade dos candidatos escolhidos."
+              tone="viability"
             />
             <MetricThermometer
               title="Média das notas"
               value={scoreMeterValue}
               displayValue={averageScore > 0 ? formatScore(averageScore) : '--'}
               caption="Média das notas disponíveis no sistema."
+              tone="score"
             />
             <p className="my-plan-meters__note">
               Esses termômetros são indicadores neutros baseados nos dados disponíveis. Eles ajudam a revisar o plano, mas não são recomendação absoluta de voto.
@@ -435,7 +435,6 @@ export default function MeuPlano() {
               <div className="my-plan-office">
                 <div className="my-plan-office__header">
                   <h3>Deputado Federal</h3>
-                  <span>{deputadosFederais.length || 0}</span>
                 </div>
                 <div className="my-plan-office-candidates" id="my-plan-deputados-list">
                   {deputadosFederais.length > 0 ? visibleDeputadosFederais.map((candidate, index) => (
@@ -469,7 +468,6 @@ export default function MeuPlano() {
               <div className="my-plan-office">
                 <div className="my-plan-office__header">
                   <h3>Senadores</h3>
-                  <span>{senadores.length || 0}</span>
                 </div>
                 <div className="my-plan-office-candidates my-plan-senators" id="my-plan-senadores-list">
                   {senadores.length > 0 ? visibleSenadores.map((candidate, index) => (
@@ -500,27 +498,6 @@ export default function MeuPlano() {
                   </button>
                 )}
               </div>
-            </div>
-          </section>
-
-          <section className="my-plan-section" aria-labelledby="my-plan-summary-title">
-            <div className="my-plan-section__heading">
-              <h2 id="my-plan-summary-title">Resumo por cargo</h2>
-              <p>Média de viabilidade dos cargos selecionados.</p>
-            </div>
-            <div className="my-plan-office-summary">
-              <OfficeViabilityRow
-                label="Deputado Federal"
-                candidates={deputadosFederais}
-                route={BALLOT_ROUTES.deputadoFederal}
-                onEdit={handleEdit}
-              />
-              <OfficeViabilityRow
-                label="Senadores"
-                candidates={senadores}
-                route={BALLOT_ROUTES.senadores}
-                onEdit={handleEdit}
-              />
             </div>
           </section>
 
