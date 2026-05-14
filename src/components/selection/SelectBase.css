@@ -624,6 +624,10 @@
   transition: max-height 180ms ease, padding 180ms ease, opacity 160ms ease, transform 180ms ease, border-color 180ms ease;
 }
 
+.select-base__continue-shell.has-share-panel {
+  max-height: 220px;
+}
+
 .select-base__desktop-action {
   display: none;
 }

@@ -834,7 +834,7 @@ export default function SelectBase({
         <AppFooter className="app-footer--scroll-content" />
       </main>
 
-      <div className={`select-base__continue-shell ${continueVisible ? '' : 'is-hidden'}`}>
+      <div className={`select-base__continue-shell ${showSavedSenateSharePanel ? 'has-share-panel' : ''} ${continueVisible ? '' : 'is-hidden'}`}>
         {renderContinueContent()}
       </div>
 
