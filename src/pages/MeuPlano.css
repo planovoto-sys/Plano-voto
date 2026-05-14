@@ -308,36 +308,39 @@
 .my-plan-office-candidates {
   display: grid;
   gap: 10px;
-  max-height: 300px;
   min-height: 102px;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  padding-right: 2px;
-  scrollbar-color: #ff8b49 #eceff2;
-  scrollbar-width: thin;
-}
-
-.my-plan-office-candidates:focus-visible {
-  outline: 2px solid rgba(255, 139, 73, 0.44);
-  outline-offset: 3px;
-}
-
-.my-plan-office-candidates::-webkit-scrollbar {
-  width: 7px;
-}
-
-.my-plan-office-candidates::-webkit-scrollbar-track {
-  border-radius: 999px;
-  background: #eceff2;
-}
-
-.my-plan-office-candidates::-webkit-scrollbar-thumb {
-  border-radius: 999px;
-  background: #ff8b49;
 }
 
 .my-plan-senators {
   grid-template-columns: minmax(0, 1fr);
+}
+
+.my-plan-office__toggle {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid rgba(255, 139, 73, 0.28);
+  border-radius: 8px;
+  background: #fff7ef;
+  color: #f26f2e;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.15;
+  cursor: pointer;
+}
+
+.my-plan-office__toggle:hover {
+  border-color: rgba(255, 139, 73, 0.46);
+  background: #fff1e4;
+}
+
+.my-plan-office__toggle:focus-visible {
+  outline: 2px solid rgba(255, 139, 73, 0.5);
+  outline-offset: 3px;
 }
 
 .my-plan-candidate {
@@ -718,10 +721,6 @@
 
   .my-plan-office {
     border-color: var(--desktop-border);
-  }
-
-  .my-plan-office-candidates {
-    max-height: 344px;
   }
 
   .my-plan-qr {

@@ -194,6 +194,7 @@ export default function MeuPlano() {
   const localDraft = user?.uid ? readBallotDraft(user.uid, userData?.estado) : null;
   const [remoteDraftState, setRemoteDraftState] = useState({ userId: null, draft: null, loading: false });
   const [candidateDetailsState, setCandidateDetailsState] = useState({ signature: '', candidatesById: new Map(), loading: false });
+  const [expandedCandidateGroups, setExpandedCandidateGroups] = useState({ deputados: false, senadores: false });
   const [qrCodeUrl, setQrCodeUrl] = useState('');
   const [planUrl] = useState(() => getPlanUrl());
 
@@ -326,6 +327,12 @@ export default function MeuPlano() {
   const averageChance = getAverageChance(selectedCandidates);
   const averageScore = getAverageScore(selectedCandidates);
   const scoreMeterValue = averageScore * 10;
+  const showAllDeputados = expandedCandidateGroups.deputados;
+  const showAllSenadores = expandedCandidateGroups.senadores;
+  const visibleDeputadosFederais = showAllDeputados ? deputadosFederais : deputadosFederais.slice(0, 1);
+  const visibleSenadores = showAllSenadores ? senadores : senadores.slice(0, 2);
+  const hasMoreDeputados = deputadosFederais.length > 1;
+  const hasMoreSenadores = senadores.length > 2;
   const profileName = userData?.name || user?.displayName || 'Usuário';
   const profileEmail = userData?.email || user?.email || '';
   const profileImage = userData?.profile_image || user?.photoURL || '';
@@ -341,6 +348,13 @@ export default function MeuPlano() {
 
   const handleEdit = (route = BALLOT_ROUTES.deputadoFederal) => {
     navigate(route, { state: { bypassVoteRedirect: true } });
+  };
+
+  const toggleCandidateGroup = (group) => {
+    setExpandedCandidateGroups((currentGroups) => ({
+      ...currentGroups,
+      [group]: !currentGroups[group]
+    }));
   };
 
   const handleLogout = async () => {
@@ -423,12 +437,8 @@ export default function MeuPlano() {
                   <h3>Deputado Federal</h3>
                   <span>{deputadosFederais.length || 0}</span>
                 </div>
-                <div
-                  className="my-plan-office-candidates"
-                  aria-label="Deputados federais escolhidos"
-                  tabIndex={0}
-                >
-                  {deputadosFederais.length > 0 ? deputadosFederais.map((candidate, index) => (
+                <div className="my-plan-office-candidates" id="my-plan-deputados-list">
+                  {deputadosFederais.length > 0 ? visibleDeputadosFederais.map((candidate, index) => (
                     <CandidateSummaryCard
                       key={candidate.id || `deputado-${index}`}
                       candidate={candidate}
@@ -443,6 +453,17 @@ export default function MeuPlano() {
                     />
                   )}
                 </div>
+                {hasMoreDeputados && (
+                  <button
+                    className="my-plan-office__toggle"
+                    type="button"
+                    aria-expanded={showAllDeputados}
+                    aria-controls="my-plan-deputados-list"
+                    onClick={() => toggleCandidateGroup('deputados')}
+                  >
+                    {showAllDeputados ? 'Mostrar menos deputados' : `Ver todos os deputados (${deputadosFederais.length})`}
+                  </button>
+                )}
               </div>
 
               <div className="my-plan-office">
@@ -450,12 +471,8 @@ export default function MeuPlano() {
                   <h3>Senadores</h3>
                   <span>{senadores.length || 0}</span>
                 </div>
-                <div
-                  className="my-plan-office-candidates my-plan-senators"
-                  aria-label="Senadores escolhidos"
-                  tabIndex={0}
-                >
-                  {senadores.length > 0 ? senadores.map((candidate, index) => (
+                <div className="my-plan-office-candidates my-plan-senators" id="my-plan-senadores-list">
+                  {senadores.length > 0 ? visibleSenadores.map((candidate, index) => (
                     <CandidateSummaryCard
                       key={candidate.id || `senador-${index}`}
                       candidate={candidate}
@@ -471,6 +488,17 @@ export default function MeuPlano() {
                     />
                   ))}
                 </div>
+                {hasMoreSenadores && (
+                  <button
+                    className="my-plan-office__toggle"
+                    type="button"
+                    aria-expanded={showAllSenadores}
+                    aria-controls="my-plan-senadores-list"
+                    onClick={() => toggleCandidateGroup('senadores')}
+                  >
+                    {showAllSenadores ? 'Mostrar menos senadores' : `Ver todos os senadores (${senadores.length})`}
+                  </button>
+                )}
               </div>
             </div>
           </section>
