@@ -9,6 +9,8 @@ const footerLinks = [
 ];
 
 export default function AppFooter({ className = '' }) {
+  const currentYear = new Date().getFullYear();
+
   return (
     <footer className={`app-footer nv-no-overflow ${className}`.trim()}>
       <div className="app-footer__inner nv-container">
@@ -29,6 +31,10 @@ export default function AppFooter({ className = '' }) {
         <div className="app-footer__contact">
           <strong>Contato</strong>
           <a href="mailto:plano.voto@gmail.com">Email: plano.voto@gmail.com</a>
+        </div>
+
+        <div className="app-footer__copyright">
+          <span>© {currentYear} nossovoto.org. Todos os direitos reservados.</span>
         </div>
       </div>
     </footer>

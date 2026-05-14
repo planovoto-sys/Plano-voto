@@ -25,6 +25,14 @@
   min-width: 0;
 }
 
+.prototype-section-heading__copy {
+  min-width: 0;
+}
+
+.candidate-current-selected-toggle {
+  display: none;
+}
+
 .prototype-section-heading h2 {
   margin: 0;
   color: var(--text-strong);
@@ -1092,14 +1100,50 @@
   }
 
   .candidate-list-tools {
-    position: sticky;
-    top: 0;
-    z-index: 8;
+    position: static;
+    top: auto;
+    z-index: auto;
     width: 100%;
     max-width: none;
     margin-bottom: 2px;
     padding-bottom: 14px;
-    background: linear-gradient(180deg, var(--desktop-bg) 0%, var(--desktop-bg) 78%, rgba(244, 244, 244, 0) 100%);
+    background: transparent;
+  }
+
+  .prototype-section-heading--current {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .candidate-current-selected-toggle {
+    min-height: 38px;
+    border: 1px solid var(--desktop-border);
+    border-radius: 999px;
+    background: #ffffff;
+    color: #25323a;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    padding: 0 16px;
+    font-family: var(--font-family);
+    font-size: 12px;
+    font-weight: 850;
+    cursor: pointer;
+    transition: border-color 160ms ease, background-color 160ms ease, transform 160ms ease;
+  }
+
+  .candidate-current-selected-toggle:hover,
+  .candidate-current-selected-toggle.is-active {
+    border-color: #111111;
+    background: #fff7ef;
+    transform: translateY(-1px);
+  }
+
+  .candidate-filter-tabs__item--selected {
+    display: none;
   }
 
   .candidate-list-tools__row {
@@ -1233,10 +1277,18 @@
 
   .select-base__desktop-action {
     width: min(100%, var(--content-max-width, 1180px));
-    margin: clamp(30px, 4vw, 52px) auto clamp(24px, 3vw, 42px);
+    position: sticky;
+    bottom: clamp(18px, 3vh, 30px);
+    z-index: 18;
+    margin: clamp(24px, 3.4vw, 42px) auto clamp(24px, 3vw, 42px);
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
     flex: 0 0 auto;
+    pointer-events: none;
+  }
+
+  .select-base__desktop-action > * {
+    pointer-events: auto;
   }
 
   .select-base__continue {

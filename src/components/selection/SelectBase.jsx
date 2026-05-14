@@ -16,6 +16,7 @@ import CandidateCard from './CandidateCard';
 import './SelectBase.css';
 
 const INITIAL_CANDIDATE_RENDER_LIMIT = 80;
+const DESKTOP_LAYOUT_QUERY = '(min-width: 1024px)';
 
 const getScreenCopy = ({ variant, titulo, subtitulo }) => {
   if (variant === 'home-state') {
@@ -111,6 +112,9 @@ export default function SelectBase({
   const [modalSubstituirSenador, setModalSubstituirSenador] = useState({ aberto: false, item: null });
   const [modalErroSalvar, setModalErroSalvar] = useState({ aberto: false, mensagem: '' });
   const [salvandoSelecao, setSalvandoSelecao] = useState(false);
+  const [isDesktopLayout, setIsDesktopLayout] = useState(() => (
+    typeof window !== 'undefined' && window.matchMedia(DESKTOP_LAYOUT_QUERY).matches
+  ));
 
   useEffect(() => {
     let cancelled = false;
@@ -127,6 +131,17 @@ export default function SelectBase({
       cancelled = true;
     };
   }, [selecaoInicial]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    const mediaQuery = window.matchMedia(DESKTOP_LAYOUT_QUERY);
+    const handleChange = () => setIsDesktopLayout(mediaQuery.matches);
+
+    handleChange();
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
 
   useEffect(() => {
     if (candidateSearchOpen) {
@@ -259,18 +274,31 @@ export default function SelectBase({
       .slice(0, displayLimit);
   }, [isCandidateOffice, isSenateOffice, selecionados]);
 
-  const currentSelectionSubtitle = useMemo(() => {
-    if (!isCandidateOffice || selectedPreviewCandidates.length === 0) return null;
+  const selectedSubNavigationItem = useMemo(() => (
+    subNavigationItems.find((item) => item.mode === 'selecionados' || item.id?.includes('selecionados')) || null
+  ), [subNavigationItems]);
 
-    const hasLowScore = selectedPreviewCandidates.some((candidate) => {
+  const showSelectedInCurrentSection = Boolean(
+    isDesktopLayout &&
+    isCandidateOffice &&
+    selectedSubNavigationItem &&
+    activeSubNavigationId === selectedSubNavigationItem.id
+  );
+
+  const currentSectionCandidates = showSelectedInCurrentSection ? selecionados : selectedPreviewCandidates;
+
+  const currentSelectionSubtitle = useMemo(() => {
+    if (!isCandidateOffice || currentSectionCandidates.length === 0) return null;
+
+    const hasLowScore = currentSectionCandidates.some((candidate) => {
       const score = getCandidateSystemScore(candidate);
       return score > 0 && score < 7;
     });
-    const allHighViability = selectedPreviewCandidates.every((candidate) => getCandidateChance(candidate) >= 100);
-    const hasFeaturedCandidate = selectedPreviewCandidates.some((candidate) => (
+    const allHighViability = currentSectionCandidates.every((candidate) => getCandidateChance(candidate) >= 100);
+    const hasFeaturedCandidate = currentSectionCandidates.some((candidate) => (
       candidate.isChanceFeatured || featuredMetricsByCandidateId.get(candidate.id)?.chance
     ));
-    const allCurrentlyViable = selectedPreviewCandidates.every((candidate) => (
+    const allCurrentlyViable = currentSectionCandidates.every((candidate) => (
       getCandidateSystemScore(candidate) > 7 &&
       getCandidateChance(candidate) > 0 &&
       getCandidateChance(candidate) < 100
@@ -313,7 +341,7 @@ export default function SelectBase({
       highlight: isSenateOffice ? 'compare destaques' : 'compare o destaque',
       showFire: true
     };
-  }, [featuredMetricsByCandidateId, isCandidateOffice, isSenateOffice, selectedPreviewCandidates]);
+  }, [currentSectionCandidates, featuredMetricsByCandidateId, isCandidateOffice, isSenateOffice]);
 
   const revealContinue = () => setContinueVisible(true);
 
@@ -602,26 +630,38 @@ export default function SelectBase({
   };
 
   const renderCandidateList = () => {
-    const currentTitle = isSenateOffice ? 'Meus candidatos' : 'Meu candidato';
+    const currentTitle = isSenateOffice || showSelectedInCurrentSection ? 'Meus candidatos' : 'Meu candidato';
+    const hasCurrentCandidates = currentSectionCandidates.length > 0;
     return (
-      <div className={`candidate-flow nv-container ${selectedPreviewCandidates.length > 0 ? 'has-current-selection' : ''} ${isSenateOffice ? 'candidate-flow--senate' : 'candidate-flow--single'}`} id="tour-lista">
-        {selectedPreviewCandidates.length > 0 && (
+      <div className={`candidate-flow nv-container ${hasCurrentCandidates ? 'has-current-selection' : ''} ${isSenateOffice ? 'candidate-flow--senate' : 'candidate-flow--single'} ${showSelectedInCurrentSection ? 'is-showing-all-selected' : ''}`} id="tour-lista">
+        {hasCurrentCandidates && (
           <section className="candidate-current-section">
             <div className="prototype-section-heading prototype-section-heading--current">
-              <h2>{currentTitle}</h2>
-              {currentSelectionSubtitle && (
-                <p>
-                  {currentSelectionSubtitle.prefix}
-                  <span className="candidate-current-highlight">{currentSelectionSubtitle.highlight}</span>
-                  {currentSelectionSubtitle.showFire && (
-                    <ChanceFlame className="candidate-current-highlight__flame" size={12} />
-                  )}
-                </p>
+              <div className="prototype-section-heading__copy">
+                <h2>{currentTitle}</h2>
+                {currentSelectionSubtitle && (
+                  <p>
+                    {currentSelectionSubtitle.prefix}
+                    <span className="candidate-current-highlight">{currentSelectionSubtitle.highlight}</span>
+                    {currentSelectionSubtitle.showFire && (
+                      <ChanceFlame className="candidate-current-highlight__flame" size={12} />
+                    )}
+                  </p>
+                )}
+              </div>
+              {selectedSubNavigationItem && (
+                <button
+                  className={`candidate-current-selected-toggle nv-touch ${showSelectedInCurrentSection ? 'is-active' : ''}`}
+                  type="button"
+                  onClick={() => handleSubNavigation(selectedSubNavigationItem)}
+                >
+                  {getSubNavLabel(selectedSubNavigationItem)}
+                </button>
               )}
             </div>
 
             <div className={`candidate-current-list ${isSenateOffice ? 'candidate-current-list--double' : ''}`}>
-              {selectedPreviewCandidates.map((candidate) => (
+              {currentSectionCandidates.map((candidate) => (
                 <CandidateCard
                   key={candidate.id}
                   candidate={candidate}
@@ -653,7 +693,7 @@ export default function SelectBase({
                     <button
                       key={item.id}
                       type="button"
-                      className={`candidate-filter-tabs__item nv-touch ${item.id === activeSubNavigationId ? 'is-active' : ''}`}
+                      className={`candidate-filter-tabs__item nv-touch ${item.id === activeSubNavigationId ? 'is-active' : ''} ${item.mode === 'selecionados' || item.id?.includes('selecionados') ? 'candidate-filter-tabs__item--selected' : ''}`}
                       onClick={() => handleSubNavigation(item)}
                       title={item.mode === 'selecionados' ? 'Candidatos selecionados' : item.mode === 'renovar' ? 'Renovação: candidatos sem nota' : 'Reeleição: candidatos com nota'}
                     >
