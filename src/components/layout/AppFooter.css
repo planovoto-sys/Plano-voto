@@ -91,11 +91,10 @@
 
 @media (min-width: 1024px) {
   .app-footer--scroll-content {
-    width: auto;
-    margin: 0 calc(var(--screen-gutter) * -1) -28px;
-    border: 0;
-    border-top: 1px solid var(--desktop-border);
-    border-radius: 0;
+    width: min(100%, var(--content-max-width, 1180px));
+    margin: 0 auto 0;
+    border: 1px solid var(--desktop-border);
+    border-radius: 8px 8px 0 0;
     overflow: hidden;
     box-shadow: none;
   }
@@ -112,7 +111,7 @@
   }
 
   .app-footer--scroll-content {
-    width: auto;
+    width: min(100%, var(--content-wide-width, 1360px));
   }
 
   .app-footer--scroll-content .app-footer__inner {

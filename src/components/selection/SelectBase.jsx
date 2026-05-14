@@ -115,6 +115,7 @@ export default function SelectBase({
   const [isDesktopLayout, setIsDesktopLayout] = useState(() => (
     typeof window !== 'undefined' && window.matchMedia(DESKTOP_LAYOUT_QUERY).matches
   ));
+  const [showAllSelectedInCurrentSection, setShowAllSelectedInCurrentSection] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -282,7 +283,8 @@ export default function SelectBase({
     isDesktopLayout &&
     isCandidateOffice &&
     selectedSubNavigationItem &&
-    activeSubNavigationId === selectedSubNavigationItem.id
+    showAllSelectedInCurrentSection &&
+    selecionados.length > 0
   );
 
   const currentSectionCandidates = showSelectedInCurrentSection ? selecionados : selectedPreviewCandidates;
@@ -653,7 +655,10 @@ export default function SelectBase({
                 <button
                   className={`candidate-current-selected-toggle nv-touch ${showSelectedInCurrentSection ? 'is-active' : ''}`}
                   type="button"
-                  onClick={() => handleSubNavigation(selectedSubNavigationItem)}
+                  onClick={() => {
+                    revealContinue();
+                    setShowAllSelectedInCurrentSection((currentValue) => !currentValue);
+                  }}
                 >
                   {getSubNavLabel(selectedSubNavigationItem)}
                 </button>
@@ -708,6 +713,11 @@ export default function SelectBase({
                   type="button"
                   onClick={() => {
                     revealContinue();
+                    if (candidateSearchIsOpen) {
+                      if (valorBusca && onChangeBusca) onChangeBusca('');
+                      setCandidateSearchOpen(false);
+                      return;
+                    }
                     setCandidateSearchOpen(true);
                   }}
                   aria-expanded={candidateSearchIsOpen}
