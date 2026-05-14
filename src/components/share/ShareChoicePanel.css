@@ -111,7 +111,7 @@
 .share-modal {
   position: fixed;
   inset: 0;
-  z-index: 40;
+  z-index: 1200;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -411,11 +411,11 @@
 
   .share-modal {
     align-items: flex-end;
-    padding: 10px;
+    padding: calc(10px + env(safe-area-inset-top, 0px)) 10px calc(10px + env(safe-area-inset-bottom, 0px));
   }
 
   .share-modal__content {
-    max-height: calc(100dvh - 20px);
+    max-height: calc(100dvh - 20px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
     padding: 14px;
   }
 

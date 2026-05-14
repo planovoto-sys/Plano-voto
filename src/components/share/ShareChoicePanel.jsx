@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { ClearIcon, CopyIcon, DownloadIcon, ShareIcon } from '@/components/icons/AppIcons';
 import {
   copyShareText,
@@ -100,6 +101,23 @@ export default function ShareChoicePanel({ shareData, className = '' }) {
 
   const activeTemplate = SHARE_CARD_TEMPLATES.find((template) => template.id === templateId) || SHARE_CARD_TEMPLATES[0];
 
+  useEffect(() => {
+    if (!isOpen || typeof document === 'undefined') return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setIsOpen(false);
+    };
+
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen]);
+
   const runAction = async (action) => {
     setStatus('');
     try {
@@ -112,6 +130,58 @@ export default function ShareChoicePanel({ shareData, className = '' }) {
 
   if (!shareData) return null;
 
+  const shareModal = isOpen ? (
+    <div className="share-modal nv-no-overflow" role="dialog" aria-modal="true" aria-labelledby="share-modal-title">
+      <div className="share-modal__content nv-no-overflow">
+        <header className="share-modal__header">
+          <div>
+            <span>Escolha o que compartilhar</span>
+            <h2 id="share-modal-title">{activeTemplate.label}</h2>
+          </div>
+          <button className="share-modal__close nv-touch" type="button" onClick={() => setIsOpen(false)} aria-label="Fechar">
+            <ClearIcon />
+          </button>
+        </header>
+
+        <div className="share-template-tabs" role="tablist" aria-label="Modelos de compartilhamento">
+          {SHARE_CARD_TEMPLATES.map((template) => (
+            <button
+              key={template.id}
+              type="button"
+              className={`nv-touch ${template.id === templateId ? 'is-active' : ''}`}
+              onClick={() => {
+                setTemplateId(template.id);
+                setStatus('');
+              }}
+            >
+              {template.shortLabel}
+            </button>
+          ))}
+        </div>
+
+        <p className="share-template-description">{activeTemplate.description}</p>
+        <SharePreview templateId={templateId} analysis={analysis} />
+
+        <div className="share-modal__actions">
+          <button className="nv-touch" type="button" onClick={() => runAction(() => shareTemplate(templateId, shareData))}>
+            <ShareIcon />
+            <span>Compartilhar</span>
+          </button>
+          <button className="nv-touch" type="button" onClick={() => runAction(() => copyShareText(templateId, shareData).then(() => 'copied'))}>
+            <CopyIcon />
+            <span>Copiar texto</span>
+          </button>
+          <button className="nv-touch" type="button" onClick={() => runAction(() => downloadShareImage(templateId, shareData).then(() => 'shared'))}>
+            <DownloadIcon />
+            <span>Imagem</span>
+          </button>
+        </div>
+
+        {status && <p className="share-modal__status" role="status">{status}</p>}
+      </div>
+    </div>
+  ) : null;
+
   return (
     <section className={`share-choice-panel nv-no-overflow ${className}`.trim()} aria-labelledby="share-choice-title">
       <div className="share-choice-panel__copy">
@@ -123,57 +193,7 @@ export default function ShareChoicePanel({ shareData, className = '' }) {
         <span>Compartilhar</span>
       </button>
 
-      {isOpen && (
-        <div className="share-modal nv-no-overflow" role="dialog" aria-modal="true" aria-labelledby="share-modal-title">
-          <div className="share-modal__content nv-no-overflow">
-            <header className="share-modal__header">
-              <div>
-                <span>Escolha o que compartilhar</span>
-                <h2 id="share-modal-title">{activeTemplate.label}</h2>
-              </div>
-              <button className="share-modal__close nv-touch" type="button" onClick={() => setIsOpen(false)} aria-label="Fechar">
-                <ClearIcon />
-              </button>
-            </header>
-
-            <div className="share-template-tabs" role="tablist" aria-label="Modelos de compartilhamento">
-              {SHARE_CARD_TEMPLATES.map((template) => (
-                <button
-                  key={template.id}
-                  type="button"
-                  className={`nv-touch ${template.id === templateId ? 'is-active' : ''}`}
-                  onClick={() => {
-                    setTemplateId(template.id);
-                    setStatus('');
-                  }}
-                >
-                  {template.shortLabel}
-                </button>
-              ))}
-            </div>
-
-            <p className="share-template-description">{activeTemplate.description}</p>
-            <SharePreview templateId={templateId} analysis={analysis} />
-
-            <div className="share-modal__actions">
-              <button className="nv-touch" type="button" onClick={() => runAction(() => shareTemplate(templateId, shareData))}>
-                <ShareIcon />
-                <span>Compartilhar</span>
-              </button>
-              <button className="nv-touch" type="button" onClick={() => runAction(() => copyShareText(templateId, shareData).then(() => 'copied'))}>
-                <CopyIcon />
-                <span>Copiar texto</span>
-              </button>
-              <button className="nv-touch" type="button" onClick={() => runAction(() => downloadShareImage(templateId, shareData).then(() => 'shared'))}>
-                <DownloadIcon />
-                <span>Imagem</span>
-              </button>
-            </div>
-
-            {status && <p className="share-modal__status" role="status">{status}</p>}
-          </div>
-        </div>
-      )}
+      {shareModal && (typeof document === 'undefined' ? shareModal : createPortal(shareModal, document.body))}
     </section>
   );
 }
