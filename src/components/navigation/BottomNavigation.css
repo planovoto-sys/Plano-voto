@@ -581,6 +581,23 @@
   }
 }
 
+@media (min-width: 1101px) and (max-width: 1279px) {
+  .app-page-footer--header .bottom-step-nav {
+    grid-template-columns: repeat(4, 52px);
+    gap: 5px;
+  }
+
+  .app-page-footer--header .bottom-step-nav__item {
+    width: 52px;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .app-page-footer--header .bottom-step-nav__label {
+    display: none;
+  }
+}
+
 @media (min-width: 1536px) {
   .app-page-footer--header .bottom-step-nav {
     grid-template-columns: repeat(4, minmax(118px, auto));

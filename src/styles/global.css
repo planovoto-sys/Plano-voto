@@ -944,6 +944,45 @@ body {
   }
 }
 
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .prototype-page > .app-page-header {
+    gap: 10px;
+    padding-left: clamp(28px, 3.2vw, 44px);
+    padding-right: clamp(28px, 3.2vw, 44px);
+  }
+
+  .app-page-header__brand {
+    gap: 6px;
+  }
+
+  .app-page-header__brand-flame {
+    width: 24px;
+    height: 28px;
+  }
+
+  .app-page-header__brand strong {
+    font-size: 17px;
+  }
+
+  .app-page-header__copy {
+    width: min(24vw, 260px);
+    max-width: min(100%, 260px);
+  }
+
+  .prototype-page > .app-page-header h1 {
+    font-size: clamp(19px, 2vw, 22px);
+    letter-spacing: 1.05px;
+  }
+
+  .app-header-back-button,
+  .app-help-action {
+    min-width: 78px;
+    padding-inline: 10px 12px;
+    gap: 6px;
+    font-size: 12px;
+  }
+}
+
 @media (min-width: 1180px) {
   .prototype-page > .app-page-header {
     padding-left: clamp(64px, 7vw, 112px);

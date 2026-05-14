@@ -16,6 +16,7 @@
 .app-footer__links,
 .app-footer__contact,
 .app-footer__copyright {
+  min-width: 0;
   display: grid;
   gap: 9px;
   align-content: start;
@@ -36,11 +37,13 @@
 
 .app-footer span,
 .app-footer a {
+  max-width: 100%;
   color: #69746f;
   font-size: 13px;
   font-weight: 600;
   line-height: 1.35;
   text-decoration: none;
+  overflow-wrap: anywhere;
 }
 
 .app-footer a {

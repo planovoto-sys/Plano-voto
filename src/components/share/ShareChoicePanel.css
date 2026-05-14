@@ -17,23 +17,25 @@
 }
 
 .share-choice-panel__copy strong {
-  overflow: hidden;
+  overflow: visible;
   color: var(--text-strong);
   font-size: 13px;
   font-weight: 900;
   line-height: 1.1;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .share-choice-panel__copy span {
-  overflow: hidden;
+  overflow: visible;
   color: var(--text-main);
   font-size: 11px;
   font-weight: 600;
   line-height: 1.25;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .share-choice-panel__button,
@@ -364,7 +366,8 @@
   padding: 0 10px;
   font-size: 12px;
   font-weight: 900;
-  white-space: nowrap;
+  text-align: center;
+  white-space: normal;
 }
 
 .share-modal__actions button:nth-child(2),
