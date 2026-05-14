@@ -855,12 +855,18 @@ body {
   }
 
   .app-page-header__copy {
-    grid-column: 3;
+    grid-column: 1 / -1;
     grid-row: 1;
+    position: absolute;
+    top: 50%;
+    left: 50%;
     display: block;
-    justify-self: start;
-    max-width: min(100%, 280px);
-    text-align: left;
+    justify-self: center;
+    width: min(34vw, 360px);
+    max-width: min(100%, 360px);
+    text-align: center;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
   }
 
   .app-page-header__side {
@@ -961,9 +967,10 @@ body {
   }
 
   .app-page-header__copy {
-    grid-column: 3;
+    grid-column: 1 / -1;
     display: block;
-    max-width: min(100%, 320px);
+    width: min(32vw, 380px);
+    max-width: min(100%, 380px);
   }
 
   .app-page-header__actions {
