@@ -607,6 +607,10 @@
   transition: max-height 180ms ease, padding 180ms ease, opacity 160ms ease, transform 180ms ease, border-color 180ms ease;
 }
 
+.select-base__desktop-action {
+  display: none;
+}
+
 .select-base__continue-shell.is-hidden {
   max-height: 0;
   padding-top: 0;
@@ -1004,7 +1008,7 @@
   .candidate-flow.has-current-selection > .candidate-current-section {
     grid-column: 1;
     position: sticky;
-    top: 22px;
+    top: 0;
     align-self: start;
   }
 
@@ -1224,11 +1228,15 @@
   }
 
   .select-base__continue-shell {
+    display: none;
+  }
+
+  .select-base__desktop-action {
+    width: min(100%, var(--content-max-width, 1180px));
+    margin: clamp(30px, 4vw, 52px) auto clamp(24px, 3vw, 42px);
+    display: flex;
     justify-content: flex-end;
-    max-height: 84px;
-    padding: 12px var(--screen-gutter) 16px;
-    background: rgba(244, 244, 244, 0.96);
-    box-shadow: 0 -14px 30px rgba(34, 36, 38, 0.05);
+    flex: 0 0 auto;
   }
 
   .select-base__continue {
@@ -1246,7 +1254,8 @@
 
 @media (min-width: 1280px) {
   .candidate-flow,
-  .state-selection-flow {
+  .state-selection-flow,
+  .select-base__desktop-action {
     width: min(100%, 1240px);
   }
 
@@ -1269,7 +1278,8 @@
 
 @media (min-width: 1536px) {
   .candidate-flow,
-  .state-selection-flow {
+  .state-selection-flow,
+  .select-base__desktop-action {
     width: min(100%, var(--content-wide-width, 1360px));
   }
 
@@ -1284,7 +1294,8 @@
 
 @media (min-width: 1920px) {
   .candidate-flow,
-  .state-selection-flow {
+  .state-selection-flow,
+  .select-base__desktop-action {
     width: min(100%, 1440px);
   }
 }

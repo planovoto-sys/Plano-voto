@@ -716,6 +716,21 @@ export default function SelectBase({
     );
   };
 
+  const renderContinueContent = () => (
+    showSavedSenateSharePanel ? (
+      <ShareChoicePanel shareData={shareData} className="share-choice-panel--continue" />
+    ) : (
+      <button
+        className="select-base__continue nv-touch"
+        type="button"
+        onClick={handleContinue}
+        disabled={salvandoSelecao || !hasRequiredSelection}
+      >
+        {isSenateOffice ? 'SALVAR' : 'CONTINUAR'}
+      </button>
+    )
+  );
+
   if (carregando) return <div className="loading nv-screen" role="status" aria-live="polite">CARREGANDO...</div>;
 
   return (
@@ -763,22 +778,14 @@ export default function SelectBase({
 
       <main className="prototype-scroll select-base__scroll nv-scroll" onScroll={handleScroll}>
         {isHomeState ? renderStateList() : renderCandidateList()}
+        <div className="select-base__desktop-action">
+          {renderContinueContent()}
+        </div>
         <AppFooter className="app-footer--scroll-content" />
       </main>
 
       <div className={`select-base__continue-shell ${continueVisible ? '' : 'is-hidden'}`}>
-        {showSavedSenateSharePanel ? (
-          <ShareChoicePanel shareData={shareData} className="share-choice-panel--continue" />
-        ) : (
-          <button
-            className="select-base__continue nv-touch"
-            type="button"
-            onClick={handleContinue}
-            disabled={salvandoSelecao || !hasRequiredSelection}
-          >
-            {isSenateOffice ? 'SALVAR' : 'CONTINUAR'}
-          </button>
-        )}
+        {renderContinueContent()}
       </div>
 
       <BottomNavigation currentStep={currentStep} placement="footer" />
