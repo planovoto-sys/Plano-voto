@@ -482,7 +482,7 @@ export default function SelectBase({
           aberto: true,
           mensagem: isSenateOffice ? 'Escolha pelo menos 2 senadores para continuar.' : 'Escolha pelo menos uma opção para continuar.'
         });
-      } else if (isSenateOffice) {
+      } else if (isSenateOffice && confirmed !== 'navigated') {
         setSenateChoicesSaved(true);
       }
     } catch (error) {

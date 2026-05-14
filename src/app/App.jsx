@@ -14,11 +14,13 @@ const loadLogin = () => import('@/pages/Login');
 const loadHome = () => import('@/pages/Home');
 const loadEscolherCandidatos = () => import('@/pages/EscolherCandidatos');
 const loadLegalPage = () => import('@/pages/LegalPage');
+const loadMeuPlano = () => import('@/pages/MeuPlano');
 
 const Login = lazy(loadLogin);
 const Home = lazy(loadHome);
 const EscolherCandidatos = lazy(loadEscolherCandidatos);
 const LegalPage = lazy(loadLegalPage);
+const MeuPlano = lazy(loadMeuPlano);
 
 const renderCandidateRoute = (config) => (
   <EscolherCandidatos
@@ -116,7 +118,7 @@ function App() {
     if (loading) return undefined;
 
     const preloadRoutes = user
-      ? [loadHome, loadEscolherCandidatos]
+      ? [loadHome, loadEscolherCandidatos, loadMeuPlano]
       : [loadLogin];
 
     const preload = () => {
@@ -156,11 +158,13 @@ function App() {
             <Route path="/escolher-senador-2" element={privateRedirect(BALLOT_ROUTES.senadores)} />
             <Route path="/escolher-senadores/reeleger" element={privateRedirect(BALLOT_ROUTES.senadores)} />
             <Route path="/escolher-senadores/renovar" element={privateRedirect(BALLOT_ROUTES.senadores)} />
+            <Route path={BALLOT_ROUTES.meuPlano} element={privateRoute(<MeuPlano />)} />
+            <Route path="/meu-nossovoto" element={privateRedirect(BALLOT_ROUTES.meuPlano)} />
 
-            <Route path="/meu-voto" element={privateRedirect(BALLOT_ROUTES.estado)} />
-            <Route path="/meuvoto" element={privateRedirect(BALLOT_ROUTES.estado)} />
-            <Route path="/resultado" element={privateRedirect(BALLOT_ROUTES.senadores)} />
-            <Route path="/finalizacao" element={privateRedirect(BALLOT_ROUTES.senadores)} />
+            <Route path="/meu-voto" element={privateRedirect(BALLOT_ROUTES.meuPlano)} />
+            <Route path="/meuvoto" element={privateRedirect(BALLOT_ROUTES.meuPlano)} />
+            <Route path="/resultado" element={privateRedirect(BALLOT_ROUTES.meuPlano)} />
+            <Route path="/finalizacao" element={privateRedirect(BALLOT_ROUTES.meuPlano)} />
             <Route path="/cookies" element={<LegalPage type="cookies" />} />
             <Route path="/politica-de-privacidade" element={<LegalPage type="privacidade" />} />
             <Route path="/lgpd" element={<LegalPage type="lgpd" />} />

@@ -1,0 +1,646 @@
+.my-plan-page {
+  background: #ffffff;
+}
+
+.my-plan-header {
+  flex: 0 0 auto;
+  min-height: 68px;
+  border-bottom: 1px solid var(--nav-line);
+  background: #ffffff;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  align-items: center;
+  padding: 0 14px;
+}
+
+.my-plan-header__back {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #111111;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+}
+
+.my-plan-header__back .app-icon {
+  width: 30px;
+  height: 30px;
+}
+
+.my-plan-header__brand {
+  min-width: 0;
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+}
+
+.my-plan-header__brand strong {
+  max-width: 100%;
+  overflow: hidden;
+  color: #111111;
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.my-plan-header__brand span {
+  color: #686868;
+}
+
+.my-plan-header__brand small {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.my-plan-scroll {
+  padding: 22px var(--screen-gutter) 0;
+}
+
+.my-plan-shell {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+}
+
+.my-plan-hero {
+  display: grid;
+  gap: 12px;
+}
+
+.my-plan-profile,
+.my-plan-state,
+.my-plan-share-disabled,
+.my-plan-qr {
+  border: 1px solid var(--nav-line);
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.my-plan-profile {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  align-items: center;
+  gap: 13px;
+  padding: 14px;
+}
+
+.my-plan-profile img,
+.my-plan-profile > span {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: #eef1f4;
+  color: #111111;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  object-fit: cover;
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.my-plan-profile div,
+.my-plan-state {
+  min-width: 0;
+}
+
+.my-plan-profile strong,
+.my-plan-state strong {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--text-strong);
+  font-size: 17px;
+  font-weight: 900;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.my-plan-profile small,
+.my-plan-state span {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.my-plan-state {
+  display: grid;
+  gap: 5px;
+  padding: 14px;
+}
+
+.my-plan-meters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.my-plan-meter {
+  min-width: 0;
+  min-height: 174px;
+  border: 1px solid var(--nav-line);
+  border-radius: 8px;
+  background: #f8f9fa;
+  display: grid;
+  align-content: start;
+  justify-items: center;
+  gap: 10px;
+  padding: 13px 9px;
+  text-align: center;
+}
+
+.my-plan-meter__gauge {
+  width: 82px;
+  height: 82px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at center, #ffffff 0 59%, transparent 60%),
+    conic-gradient(#111111 calc(var(--my-plan-meter-value) * 1%), rgba(169, 169, 169, 0.25) 0);
+  color: #111111;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.my-plan-meter__gauge strong {
+  max-width: 68px;
+  overflow: hidden;
+  font-size: 19px;
+  font-weight: 900;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.my-plan-meter h3 {
+  margin: 0;
+  color: var(--text-strong);
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.my-plan-meter p {
+  margin: 5px 0 0;
+  color: var(--text-main);
+  font-size: 10.5px;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.my-plan-meters__note {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.my-plan-section {
+  display: grid;
+  gap: 13px;
+  min-width: 0;
+}
+
+.my-plan-section__heading {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.my-plan-section__heading h2,
+.my-plan-office h3 {
+  margin: 0;
+  color: var(--text-strong);
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.my-plan-section__heading p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.my-plan-office {
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+}
+
+.my-plan-office h3 {
+  margin-left: 2px;
+  color: var(--text-main);
+  font-size: 13px;
+  text-transform: uppercase;
+}
+
+.my-plan-senators {
+  display: grid;
+  gap: 10px;
+}
+
+.my-plan-candidate {
+  min-width: 0;
+  min-height: 88px;
+  border: 1px solid var(--nav-line);
+  border-radius: 8px;
+  background: #ffffff;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+}
+
+.my-plan-candidate__identity {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.my-plan-candidate__identity strong,
+.my-plan-candidate--empty strong {
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--text-strong);
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1.05;
+  text-overflow: clip;
+  text-transform: uppercase;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.my-plan-candidate__identity span,
+.my-plan-candidate--empty span {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+
+.my-plan-candidate__metrics {
+  display: grid;
+  grid-template-columns: repeat(2, 54px);
+  gap: 6px;
+  margin: 0;
+}
+
+.my-plan-candidate__metrics div {
+  min-width: 0;
+  border-radius: 8px;
+  background: #f8f9fa;
+  display: grid;
+  gap: 2px;
+  padding: 8px 5px;
+  text-align: center;
+}
+
+.my-plan-candidate__metrics dt {
+  color: var(--text-muted);
+  font-size: 8.5px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.my-plan-candidate__metrics dd {
+  margin: 0;
+  color: var(--text-strong);
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.my-plan-candidate--empty {
+  border-style: dashed;
+  color: var(--text-muted);
+}
+
+.my-plan-candidate--empty div {
+  display: grid;
+  gap: 4px;
+}
+
+.my-plan-candidate--empty button,
+.my-plan-office-row button {
+  min-height: 36px;
+  border: 1px solid #111111;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #111111;
+  padding: 0 13px;
+  font-family: var(--font-family);
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.my-plan-office-summary {
+  display: grid;
+  gap: 8px;
+}
+
+.my-plan-office-row {
+  min-width: 0;
+  min-height: 64px;
+  border: 1px solid var(--nav-line);
+  border-radius: 8px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+}
+
+.my-plan-office-row div {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.my-plan-office-row span {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.1;
+}
+
+.my-plan-office-row strong {
+  color: var(--text-strong);
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.my-plan-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.my-plan-share-panel {
+  margin-top: 0;
+  border-color: rgba(255, 139, 73, 0.4);
+  background: linear-gradient(90deg, #ffdf59 0%, #ff8b49 100%);
+}
+
+.my-plan-share-panel .share-choice-panel__copy strong,
+.my-plan-share-panel .share-choice-panel__copy span {
+  color: #000000;
+}
+
+.my-plan-share-panel .share-choice-panel__button {
+  min-height: 46px;
+  background: #111111;
+}
+
+.my-plan-share-disabled {
+  display: grid;
+  gap: 5px;
+  padding: 14px;
+}
+
+.my-plan-share-disabled strong {
+  color: var(--text-strong);
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.my-plan-share-disabled span {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.my-plan-edit-action,
+.my-plan-logout {
+  width: 100%;
+  min-height: 52px;
+  border-radius: 999px;
+  font-family: var(--font-family);
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.my-plan-edit-action {
+  border: 0;
+  background: #111111;
+  color: #ffffff;
+}
+
+.my-plan-logout {
+  border: 1px solid #111111;
+  background: #ffffff;
+  color: var(--text-strong);
+}
+
+.my-plan-qr {
+  display: none;
+}
+
+@media (max-width: 360px) {
+  .my-plan-scroll {
+    padding-top: 18px;
+  }
+
+  .my-plan-shell {
+    gap: 20px;
+  }
+
+  .my-plan-meter {
+    min-height: 168px;
+    padding-inline: 7px;
+  }
+
+  .my-plan-meter__gauge {
+    width: 74px;
+    height: 74px;
+  }
+
+  .my-plan-meter__gauge strong {
+    max-width: 60px;
+    font-size: 16px;
+  }
+
+  .my-plan-meter h3 {
+    font-size: 11px;
+  }
+
+  .my-plan-meter p {
+    font-size: 9.5px;
+  }
+
+  .my-plan-candidate {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .my-plan-candidate__metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 768px) {
+  .my-plan-page {
+    background: var(--desktop-bg);
+  }
+
+  .my-plan-header {
+    min-height: 74px;
+    border-bottom-color: var(--desktop-border);
+    padding: 0 var(--screen-gutter);
+  }
+
+  .my-plan-header__back {
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    background: #f8faf9;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.07);
+  }
+
+  .my-plan-header__brand strong {
+    font-size: 25px;
+  }
+
+  .my-plan-scroll {
+    padding: 30px var(--screen-gutter) 0;
+  }
+
+  .my-plan-shell {
+    width: min(100%, 1180px);
+    margin: 0 auto;
+    grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+    align-items: start;
+    gap: 26px;
+  }
+
+  .my-plan-hero,
+  .my-plan-meters,
+  .my-plan-section,
+  .my-plan-actions {
+    grid-column: 1;
+  }
+
+  .my-plan-hero {
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 0.64fr);
+  }
+
+  .my-plan-profile,
+  .my-plan-state,
+  .my-plan-candidate,
+  .my-plan-office-row,
+  .my-plan-share-disabled,
+  .my-plan-qr {
+    border-color: var(--desktop-border);
+    box-shadow: 0 12px 28px rgba(34, 36, 38, 0.06);
+  }
+
+  .my-plan-meter {
+    min-height: 150px;
+    grid-template-columns: 92px minmax(0, 1fr);
+    align-items: center;
+    justify-items: start;
+    padding: 16px;
+    text-align: left;
+  }
+
+  .my-plan-meter__gauge {
+    width: 92px;
+    height: 92px;
+  }
+
+  .my-plan-meter h3 {
+    font-size: 17px;
+  }
+
+  .my-plan-meter p {
+    font-size: 12px;
+  }
+
+  .my-plan-meters__note {
+    font-size: 12px;
+  }
+
+  .my-plan-senators {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .my-plan-qr {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    position: sticky;
+    top: 98px;
+    display: grid;
+    justify-items: center;
+    gap: 16px;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .my-plan-qr strong {
+    display: block;
+    color: var(--text-strong);
+    font-size: 18px;
+    font-weight: 900;
+    line-height: 1.1;
+  }
+
+  .my-plan-qr span {
+    display: block;
+    margin-top: 6px;
+    color: var(--text-main);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+
+  .my-plan-qr img {
+    width: 180px;
+    height: 180px;
+    border: 1px solid var(--nav-line);
+    border-radius: 8px;
+    background: #ffffff;
+    padding: 8px;
+  }
+
+  .my-plan-logout,
+  .my-plan-shell > .app-footer {
+    grid-column: 1 / -1;
+  }
+
+  .my-plan-logout {
+    width: min(100%, 420px);
+    justify-self: center;
+  }
+}
+
+@media (min-width: 1180px) {
+  .my-plan-shell {
+    grid-template-columns: minmax(0, 1fr) 340px;
+  }
+}

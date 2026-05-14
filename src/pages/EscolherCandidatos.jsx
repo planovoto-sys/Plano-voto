@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useDeferredValue } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { BALLOT_ROUTES } from '@/constants/ballot';
 import { AVERAGE_ELECTED_VOTES_BY_OFFICE, CANDIDATE_FILTERS } from '@/constants/candidates';
 import { STATE_NAMES } from '@/constants/states';
 import { useUser } from '@/hooks/useUser';
@@ -544,7 +545,8 @@ export default function EscolherCandidatos({
         chaveGrupo,
         totalSelecionados: listaFinalDaTela.length
       });
-      return true;
+      navigate(proximaRota || BALLOT_ROUTES.meuPlano, { state: { bypassVoteRedirect: true } });
+      return 'navigated';
     }
 
     if (!options.alreadySaved) {

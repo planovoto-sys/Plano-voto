@@ -21,7 +21,8 @@ export const BALLOT_ROUTES = {
   deputadoFederal: '/escolher-deputado-federal',
   senadores: '/escolher-senadores',
   senador1: '/escolher-senador-1',
-  senador2: '/escolher-senador-2'
+  senador2: '/escolher-senador-2',
+  meuPlano: '/meu-plano'
 };
 
 export const BALLOT_FLOW_STEPS = [

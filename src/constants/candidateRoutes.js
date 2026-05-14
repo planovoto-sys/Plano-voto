@@ -18,6 +18,6 @@ export const CANDIDATE_ROUTES = {
     titulo: 'Senadores',
     subtitulo: 'Selecione todos os candidatos que aceita votar',
     rotaAnterior: BALLOT_ROUTES.deputadoFederal,
-    proximaRota: null
+    proximaRota: BALLOT_ROUTES.meuPlano
   }
 };
