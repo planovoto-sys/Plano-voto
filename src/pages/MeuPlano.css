@@ -238,8 +238,7 @@
   min-width: 0;
 }
 
-.my-plan-section__heading h2,
-.my-plan-office h3 {
+.my-plan-section__heading h2 {
   margin: 0;
   color: var(--text-strong);
   font-size: 18px;
@@ -255,27 +254,90 @@
   line-height: 1.25;
 }
 
-.my-plan-office {
+.my-plan-candidate-groups {
   display: grid;
-  gap: 9px;
+  gap: 12px;
   min-width: 0;
 }
 
-.my-plan-office h3 {
-  margin-left: 2px;
+.my-plan-office {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  border: 1px solid var(--nav-line);
+  border-radius: 8px;
+  background: #f8f9fa;
+  padding: 10px;
+}
+
+.my-plan-office__header {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 2px;
+}
+
+.my-plan-office__header h3 {
+  min-width: 0;
+  margin: 0;
   color: var(--text-main);
   font-size: 13px;
+  font-weight: 900;
+  line-height: 1.15;
   text-transform: uppercase;
 }
 
-.my-plan-senators {
-  display: grid;
-  gap: 10px;
+.my-plan-office__header span {
+  min-width: 28px;
+  height: 24px;
+  border: 1px solid rgba(255, 139, 73, 0.22);
+  border-radius: 999px;
+  background: #fff3e8;
+  color: #f26f2e;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
 }
 
 .my-plan-office-candidates {
   display: grid;
   gap: 10px;
+  max-height: 300px;
+  min-height: 102px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 2px;
+  scrollbar-color: #ff8b49 #eceff2;
+  scrollbar-width: thin;
+}
+
+.my-plan-office-candidates:focus-visible {
+  outline: 2px solid rgba(255, 139, 73, 0.44);
+  outline-offset: 3px;
+}
+
+.my-plan-office-candidates::-webkit-scrollbar {
+  width: 7px;
+}
+
+.my-plan-office-candidates::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: #eceff2;
+}
+
+.my-plan-office-candidates::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #ff8b49;
+}
+
+.my-plan-senators {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .my-plan-candidate {
@@ -649,8 +711,17 @@
     font-size: 12px;
   }
 
-  .my-plan-senators {
+  .my-plan-candidate-groups {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  .my-plan-office {
+    border-color: var(--desktop-border);
+  }
+
+  .my-plan-office-candidates {
+    max-height: 344px;
   }
 
   .my-plan-qr {

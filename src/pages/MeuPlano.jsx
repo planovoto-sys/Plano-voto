@@ -417,44 +417,60 @@ export default function MeuPlano() {
               <p>Revise os nomes salvos por cargo.</p>
             </div>
 
-            <div className="my-plan-office">
-              <h3>Deputado Federal</h3>
-              <div className="my-plan-office-candidates">
-                {deputadosFederais.length > 0 ? deputadosFederais.map((candidate, index) => (
-                  <CandidateSummaryCard
-                    key={candidate.id || `deputado-${index}`}
-                    candidate={candidate}
-                    fallbackTitle={`Deputado Federal ${index + 1}`}
-                    onEdit={() => handleEdit(BALLOT_ROUTES.deputadoFederal)}
-                  />
-                )) : (
-                  <CandidateSummaryCard
-                    candidate={null}
-                    fallbackTitle="Deputado Federal"
-                    onEdit={() => handleEdit(BALLOT_ROUTES.deputadoFederal)}
-                  />
-                )}
+            <div className="my-plan-candidate-groups">
+              <div className="my-plan-office">
+                <div className="my-plan-office__header">
+                  <h3>Deputado Federal</h3>
+                  <span>{deputadosFederais.length || 0}</span>
+                </div>
+                <div
+                  className="my-plan-office-candidates"
+                  aria-label="Deputados federais escolhidos"
+                  tabIndex={0}
+                >
+                  {deputadosFederais.length > 0 ? deputadosFederais.map((candidate, index) => (
+                    <CandidateSummaryCard
+                      key={candidate.id || `deputado-${index}`}
+                      candidate={candidate}
+                      fallbackTitle={`Deputado Federal ${index + 1}`}
+                      onEdit={() => handleEdit(BALLOT_ROUTES.deputadoFederal)}
+                    />
+                  )) : (
+                    <CandidateSummaryCard
+                      candidate={null}
+                      fallbackTitle="Deputado Federal"
+                      onEdit={() => handleEdit(BALLOT_ROUTES.deputadoFederal)}
+                    />
+                  )}
+                </div>
               </div>
-            </div>
 
-            <div className="my-plan-office">
-              <h3>Senadores</h3>
-              <div className="my-plan-office-candidates my-plan-senators">
-                {senadores.length > 0 ? senadores.map((candidate, index) => (
-                  <CandidateSummaryCard
-                    key={candidate.id || `senador-${index}`}
-                    candidate={candidate}
-                    fallbackTitle={`Senador ${index + 1}`}
-                    onEdit={() => handleEdit(BALLOT_ROUTES.senadores)}
-                  />
-                )) : [0, 1].map((index) => (
-                  <CandidateSummaryCard
-                    key={`senador-${index}`}
-                    candidate={null}
-                    fallbackTitle={`Senador ${index + 1}`}
-                    onEdit={() => handleEdit(BALLOT_ROUTES.senadores)}
-                  />
-                ))}
+              <div className="my-plan-office">
+                <div className="my-plan-office__header">
+                  <h3>Senadores</h3>
+                  <span>{senadores.length || 0}</span>
+                </div>
+                <div
+                  className="my-plan-office-candidates my-plan-senators"
+                  aria-label="Senadores escolhidos"
+                  tabIndex={0}
+                >
+                  {senadores.length > 0 ? senadores.map((candidate, index) => (
+                    <CandidateSummaryCard
+                      key={candidate.id || `senador-${index}`}
+                      candidate={candidate}
+                      fallbackTitle={`Senador ${index + 1}`}
+                      onEdit={() => handleEdit(BALLOT_ROUTES.senadores)}
+                    />
+                  )) : [0, 1].map((index) => (
+                    <CandidateSummaryCard
+                      key={`senador-${index}`}
+                      candidate={null}
+                      fallbackTitle={`Senador ${index + 1}`}
+                      onEdit={() => handleEdit(BALLOT_ROUTES.senadores)}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </section>
