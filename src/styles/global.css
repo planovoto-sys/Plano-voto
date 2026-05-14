@@ -1023,6 +1023,24 @@ body {
   }
 }
 
+@media (min-width: 1280px) and (max-width: 1439px) {
+  .prototype-page > .app-page-header {
+    gap: 12px;
+    padding-left: clamp(48px, 5vw, 72px);
+    padding-right: clamp(48px, 5vw, 72px);
+  }
+
+  .app-page-header__copy {
+    width: min(28vw, 340px);
+  }
+
+  .app-header-back-button,
+  .app-help-action {
+    min-width: 84px;
+    padding-inline: 10px 12px;
+  }
+}
+
 @media (min-width: 1536px) {
   :root {
     --screen-gutter: clamp(72px, 7vw, 128px);

@@ -13,6 +13,8 @@
 
 .modal-container {
   width: min(100%, 360px);
+  max-height: calc(100dvh - 40px);
+  overflow: auto;
   border-radius: 12px;
   background: #ffffff;
   padding: 24px 20px 20px;
@@ -27,6 +29,7 @@
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: 1px;
+  overflow-wrap: anywhere;
 }
 
 .modal-message {
@@ -35,15 +38,18 @@
   font-size: 15px;
   font-weight: 500;
   line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .modal-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
 .btn-modal {
   flex: 1 1 0;
+  min-width: min(100%, 126px);
   min-height: 48px;
   border: 1px solid #e8edf0;
   border-radius: 999px;
@@ -52,6 +58,7 @@
   font-family: var(--font-family);
   font-size: 14px;
   font-weight: 700;
+  white-space: normal;
   cursor: pointer;
 }
 
@@ -126,6 +133,7 @@
   }
 
   .btn-modal {
+    min-width: 100%;
     font-size: 12px;
   }
 }

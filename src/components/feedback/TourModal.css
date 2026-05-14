@@ -51,6 +51,7 @@
     position: fixed;
     left: 20px;
     right: 20px;
+    width: auto;
     max-width: 460px;
     max-height: calc(100dvh - 34px);
     margin: 0 auto;
@@ -81,6 +82,7 @@
     color: #1a1a1a;
     margin-bottom: 12px;
     text-transform: uppercase;
+    overflow-wrap: anywhere;
 }
 
 .tour-content {
@@ -89,6 +91,7 @@
     color: #555;
     line-height: 1.5;
     margin-bottom: 25px;
+    overflow-wrap: anywhere;
 }
 
 .tour-content a {
@@ -145,6 +148,7 @@
 }
 
 .tour-btn-sec {
+    min-width: 0;
     min-height: 42px;
     border: 1px solid #dfe3e6;
     border-radius: 10px;
@@ -158,6 +162,8 @@
     padding: 0 14px;
     cursor: pointer;
     text-transform: uppercase;
+    text-align: center;
+    white-space: normal;
 }
 
 .tour-btn-sec:disabled {
@@ -166,6 +172,7 @@
 }
 
 .tour-btn-pri {
+    min-width: 0;
     min-height: 42px;
     background: var(--desktop-primary, #24593d);
     color: #fff;
@@ -179,7 +186,32 @@
     font-size: 0.85rem;
     cursor: pointer;
     text-transform: uppercase;
+    text-align: center;
+    white-space: normal;
     box-shadow: 0 10px 22px rgba(36, 89, 61, 0.2);
+}
+
+@media (max-width: 430px) {
+    .tour-footer {
+        grid-template-columns: minmax(0, 1fr);
+        row-gap: 12px;
+    }
+
+    .tour-footer-left,
+    .tour-footer-right {
+        justify-content: stretch;
+    }
+
+    .tour-footer-left,
+    .tour-footer-right,
+    .tour-btn-sec,
+    .tour-btn-pri {
+        width: 100%;
+    }
+
+    .tour-dots {
+        order: -1;
+    }
 }
 
 @media (max-width: 360px) {

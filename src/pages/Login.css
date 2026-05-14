@@ -10,7 +10,8 @@
   width: 100%;
   height: 100%;
   min-height: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   gap: 18px;
@@ -25,7 +26,7 @@
   align-items: center;
   justify-content: center;
   gap: clamp(6px, 2vw, 10px);
-  font-size: clamp(26px, 8.2vw, 43px);
+  font-size: clamp(20px, 7vw, 43px);
   font-weight: 900;
   line-height: 1;
   letter-spacing: 0;
@@ -33,7 +34,7 @@
 }
 
 .login-brand__flame {
-  width: clamp(31px, 9.6vw, 48px);
+  width: clamp(24px, 8vw, 48px);
   height: auto;
   flex: 0 0 auto;
   object-fit: contain;
@@ -104,23 +105,24 @@
 .btn-comecar span {
   display: block;
   max-width: 100%;
-  overflow: hidden;
+  overflow: visible;
   text-align: center;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .btn-comecar strong {
   font-size: clamp(25px, 6.1vw, 31px);
   font-weight: 900;
-  line-height: 1;
+  line-height: 1.05;
   letter-spacing: 1.7px;
 }
 
 .btn-comecar span {
   font-size: clamp(14px, 3.4vw, 17px);
   font-weight: 500;
-  line-height: 1;
+  line-height: 1.15;
   letter-spacing: 1px;
 }
 

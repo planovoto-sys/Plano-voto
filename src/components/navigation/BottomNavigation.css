@@ -581,7 +581,7 @@
   }
 }
 
-@media (min-width: 1101px) and (max-width: 1279px) {
+@media (min-width: 1101px) and (max-width: 1679px) {
   .app-page-footer--header .bottom-step-nav {
     grid-template-columns: repeat(4, 52px);
     gap: 5px;

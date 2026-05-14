@@ -40,9 +40,10 @@
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: 1px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .prototype-section-heading p {
@@ -52,13 +53,15 @@
   font-weight: 500;
   line-height: 1.15;
   letter-spacing: 1px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .prototype-section-heading--current p {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 3px;
   overflow: visible;
@@ -204,14 +207,14 @@
 .candidate-current-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding-top: 8px;
+  gap: 18px;
+  padding-top: 12px;
 }
 
 .candidate-list-tools {
   display: grid;
   gap: 8px;
-  margin: 0 0 12px;
+  margin: 0 0 16px;
   min-width: 0;
 }
 
@@ -340,8 +343,8 @@
 .candidate-card-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding-top: 18px;
+  gap: 18px;
+  padding-top: 22px;
 }
 
 .candidate-load-more {
@@ -419,7 +422,7 @@
 .candidate-card__identity {
   min-width: 0;
   max-width: 100%;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -439,7 +442,7 @@
   display: block;
   min-width: 0;
   max-width: 100%;
-  overflow: hidden;
+  overflow: visible;
   color: currentColor;
   font-size: var(--candidate-name-size, 20px);
   font-weight: 800;
@@ -599,11 +602,11 @@
 
 .candidate-viability__flame {
   position: absolute;
-  top: -15px;
-  right: -7px;
+  top: -10px;
+  right: -6px;
   z-index: 3;
-  width: 30px;
-  height: 36px;
+  width: 28px;
+  height: 34px;
   pointer-events: none;
   filter: drop-shadow(0 2px 4px rgba(255, 139, 73, 0.22));
   object-fit: contain;
@@ -750,10 +753,10 @@
   }
 
   .candidate-viability__flame {
-    top: -13px;
-    right: -6px;
-    width: 27px;
-    height: 32px;
+    top: -9px;
+    right: -5px;
+    width: 25px;
+    height: 30px;
   }
 
   .select-base__continue {
@@ -852,8 +855,8 @@
   .candidate-card-list {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
-    gap: 14px;
-    padding-top: 18px;
+    gap: 22px;
+    padding-top: 22px;
   }
 
   .candidate-list-tools {
@@ -991,8 +994,7 @@
   }
 
   .state-selection-flow.has-current-state .state-current-section {
-    position: sticky;
-    top: 18px;
+    position: static;
   }
 }
 
@@ -1022,8 +1024,7 @@
 
   .candidate-flow.has-current-selection > .candidate-current-section {
     grid-column: 1;
-    position: sticky;
-    top: 0;
+    position: static;
     align-self: start;
   }
 
@@ -1047,8 +1048,7 @@
 
   .state-selection-flow.has-current-state > .state-current-section {
     grid-column: 1;
-    position: sticky;
-    top: 22px;
+    position: static;
   }
 
   .state-selection-flow.has-current-state > .state-selection-panel {
@@ -1098,8 +1098,8 @@
   }
 
   .candidate-current-list {
-    gap: 14px;
-    padding-top: 8px;
+    gap: 22px;
+    padding-top: 12px;
   }
 
   .candidate-flow.has-current-selection .candidate-current-list--double {
@@ -1112,8 +1112,8 @@
     z-index: auto;
     width: 100%;
     max-width: none;
-    margin-bottom: 2px;
-    padding-bottom: 14px;
+    margin-bottom: 8px;
+    padding-bottom: 18px;
     background: transparent;
   }
 
@@ -1134,6 +1134,7 @@
     align-items: center;
     justify-content: center;
     flex: 0 0 auto;
+    max-width: 100%;
     padding: 0 16px;
     font-family: var(--font-family);
     font-size: 12px;
@@ -1194,8 +1195,8 @@
 
   .candidate-card-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
-    padding-top: 14px;
+    gap: 22px;
+    padding-top: 22px;
   }
 
   .candidate-flow:not(.has-current-selection) .candidate-card-list {
@@ -1227,13 +1228,11 @@
   }
 
   .candidate-list-section .candidate-card__identity strong {
-    display: -webkit-box;
-    overflow: hidden;
+    display: block;
+    overflow: visible;
     font-size: clamp(18px, 1.25vw, 22px);
     line-height: 1.05;
     white-space: normal;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
   }
 
   .candidate-list-section .candidate-card__identity small {
@@ -1255,10 +1254,10 @@
   }
 
   .candidate-viability__flame {
-    top: -16px;
-    right: -8px;
-    width: 32px;
-    height: 38px;
+    top: -11px;
+    right: -7px;
+    width: 30px;
+    height: 36px;
   }
 
   .candidate-current-section .prototype-candidate-card {
