@@ -43,11 +43,23 @@
   max-width: 100%;
   overflow: hidden;
   color: #111111;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
   font-size: 22px;
   font-weight: 900;
   line-height: 1;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.my-plan-header__flame {
+  width: 20px;
+  height: 24px;
+  flex: 0 0 auto;
+  color: #ff8b49;
+  object-fit: contain;
 }
 
 .my-plan-header__brand span {
@@ -261,6 +273,11 @@
   gap: 10px;
 }
 
+.my-plan-office-candidates {
+  display: grid;
+  gap: 10px;
+}
+
 .my-plan-candidate {
   min-width: 0;
   min-height: 88px;
@@ -268,7 +285,7 @@
   border-radius: 8px;
   background: #ffffff;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) 56px 58px;
   align-items: center;
   gap: 10px;
   padding: 12px;
@@ -305,7 +322,7 @@
 
 .my-plan-candidate__metrics {
   display: grid;
-  grid-template-columns: repeat(2, 54px);
+  grid-template-columns: 56px;
   gap: 6px;
   margin: 0;
 }
@@ -331,6 +348,41 @@
   margin: 0;
   color: var(--text-strong);
   font-size: 13px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.my-plan-candidate-viability {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at center, #ffffff 0 58%, transparent 59%),
+    conic-gradient(currentColor calc(var(--candidate-plan-progress) * 1%), rgba(169, 169, 169, 0.28) 0);
+  color: var(--tone-success);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1;
+}
+
+.my-plan-candidate-viability strong {
+  color: currentColor;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 0.9;
+}
+
+.my-plan-candidate-viability small {
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.my-plan-candidate-viability span {
+  color: currentColor;
+  font-size: 8px;
   font-weight: 900;
   line-height: 1;
 }
@@ -502,7 +554,13 @@
   }
 
   .my-plan-candidate__metrics {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .my-plan-candidate-viability {
+    justify-self: center;
+    width: 62px;
+    height: 62px;
   }
 }
 
@@ -525,6 +583,11 @@
 
   .my-plan-header__brand strong {
     font-size: 25px;
+  }
+
+  .my-plan-header__flame {
+    width: 22px;
+    height: 27px;
   }
 
   .my-plan-scroll {

@@ -3,19 +3,27 @@ import { useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import QRCode from 'qrcode';
 import { BALLOT_ROUTES } from '@/constants/ballot';
+import { AVERAGE_ELECTED_VOTES_BY_OFFICE } from '@/constants/candidates';
 import { STATE_NAMES } from '@/constants/states';
 import { useUser } from '@/hooks/useUser';
 import { auth } from '@/services/firebase/firebase';
 import {
   fetchRemoteBallotDraft,
+  fetchCandidatesByIds,
   getBallotProgress,
   readBallotDraft
 } from '@/services/voting/votingService';
+import {
+  fetchCandidateTallies,
+  readCachedTallies
+} from '@/services/candidates/candidateService';
 import ShareChoicePanel from '@/components/share/ShareChoicePanel';
 import BottomNavigation from '@/components/navigation/BottomNavigation';
 import AppFooter from '@/components/layout/AppFooter';
 import { BackIcon } from '@/components/icons/AppIcons';
+import { ChanceFlame } from '@/components/icons/ChanceFlame';
 import {
+  calculateCandidateChance,
   formatScore,
   getCandidateChance,
   getCandidateName,
@@ -38,9 +46,66 @@ const getAverageScore = (candidates) => (
   average(candidates.map((candidate) => getCandidateSystemScore(candidate)).filter((score) => score > 0))
 );
 
+const getCandidateNumber = (candidate = {}) => candidate.Numero || candidate.numero || candidate.number || '';
+
+const getCandidateOfficeKey = (candidate = {}) => {
+  const officeName = String(candidate.Cargo || candidate.cargo || '').toLowerCase();
+  return officeName.includes('senador') ? 'senadores' : 'deputado_federal';
+};
+
 const getPlanUrl = () => {
   if (typeof window === 'undefined') return 'https://nossovoto.org/meu-plano';
   return `${window.location.origin}${BALLOT_ROUTES.meuPlano}`;
+};
+
+const getDraftOfficeCandidates = (draft, officeKey) => {
+  if (!draft) return [];
+  if (officeKey === 'deputado_federal') {
+    return draft.candidate_groups?.deputado_federal?.length
+      ? draft.candidate_groups.deputado_federal
+      : draft.selections?.deputado_federal || [];
+  }
+
+  return draft.candidate_groups?.senadores_1?.length
+    ? draft.candidate_groups.senadores_1
+    : draft.selections?.senadores || [];
+};
+
+const mergeCandidateDetails = (storedCandidate, fetchedCandidate, tally) => {
+  const mergedCandidate = {
+    ...storedCandidate,
+    ...fetchedCandidate
+  };
+  const selectedByUsers = Number(
+    tally?.active_selections ??
+    fetchedCandidate?.active_selections ??
+    fetchedCandidate?.selected_by_users ??
+    storedCandidate?.selected_by_users ??
+    storedCandidate?.selectedByUsers ??
+    0
+  );
+  const averageElectedVotes = Number(
+    fetchedCandidate?.average_elected_votes ??
+    fetchedCandidate?.averageElectedVotes ??
+    storedCandidate?.average_elected_votes ??
+    storedCandidate?.averageElectedVotes ??
+    0
+  );
+  const safeSelectedByUsers = Number.isFinite(selectedByUsers) ? selectedByUsers : 0;
+  const fallbackAverageElectedVotes = AVERAGE_ELECTED_VOTES_BY_OFFICE[getCandidateOfficeKey(mergedCandidate)] || 3;
+  const safeAverageElectedVotes = Number.isFinite(averageElectedVotes) && averageElectedVotes > 0
+    ? averageElectedVotes
+    : fallbackAverageElectedVotes;
+
+  return {
+    ...mergedCandidate,
+    selected_by_users: safeSelectedByUsers,
+    selectedByUsers: safeSelectedByUsers,
+    active_selections: safeSelectedByUsers,
+    average_elected_votes: safeAverageElectedVotes,
+    averageElectedVotes: safeAverageElectedVotes,
+    chance: calculateCandidateChance(safeSelectedByUsers, safeAverageElectedVotes)
+  };
 };
 
 function MetricThermometer({ title, value, displayValue, caption }) {
@@ -59,6 +124,17 @@ function MetricThermometer({ title, value, displayValue, caption }) {
   );
 }
 
+function CandidateViability({ value }) {
+  const progress = clampPercent(value);
+
+  return (
+    <span className="my-plan-candidate-viability" style={{ '--candidate-plan-progress': progress }} aria-label={`Viabilidade ${progress}%`}>
+      <strong>{progress}<small>%</small></strong>
+      <span>viável</span>
+    </span>
+  );
+}
+
 function CandidateSummaryCard({ candidate, fallbackTitle, onEdit }) {
   if (!candidate) {
     return (
@@ -74,6 +150,7 @@ function CandidateSummaryCard({ candidate, fallbackTitle, onEdit }) {
 
   const name = getCandidateName(candidate);
   const party = getCandidateParty(candidate);
+  const number = getCandidateNumber(candidate);
   const score = getCandidateSystemScore(candidate);
   const chance = getCandidateChance(candidate);
 
@@ -81,18 +158,15 @@ function CandidateSummaryCard({ candidate, fallbackTitle, onEdit }) {
     <article className="my-plan-candidate">
       <div className="my-plan-candidate__identity">
         <strong>{name || fallbackTitle}</strong>
-        <span>{party || 'Partido não informado'}</span>
+        <span>{number ? `Nº ${number} | ` : ''}{party || 'Partido não informado'}</span>
       </div>
       <dl className="my-plan-candidate__metrics">
         <div>
           <dt>Nota</dt>
           <dd>{score > 0 ? formatScore(score) : '--'}</dd>
         </div>
-        <div>
-          <dt>Viabilidade</dt>
-          <dd>{chance}%</dd>
-        </div>
       </dl>
+      <CandidateViability value={chance} />
     </article>
   );
 }
@@ -119,6 +193,7 @@ export default function MeuPlano() {
   const navigate = useNavigate();
   const localDraft = user?.uid ? readBallotDraft(user.uid, userData?.estado) : null;
   const [remoteDraftState, setRemoteDraftState] = useState({ userId: null, draft: null, loading: false });
+  const [candidateDetailsState, setCandidateDetailsState] = useState({ signature: '', candidatesById: new Map(), loading: false });
   const [qrCodeUrl, setQrCodeUrl] = useState('');
   const [planUrl] = useState(() => getPlanUrl());
 
@@ -172,15 +247,81 @@ export default function MeuPlano() {
   const currentDraft = remoteDraftState.userId === user?.uid && remoteDraftState.draft
     ? remoteDraftState.draft
     : localDraft;
+  const rawDeputadosFederais = getDraftOfficeCandidates(currentDraft, 'deputado_federal');
+  const rawSenadores = getDraftOfficeCandidates(currentDraft, 'senadores');
+  const selectedCandidateIds = [...rawDeputadosFederais, ...rawSenadores].map((candidate) => candidate.id).filter(Boolean);
+  const selectedCandidateSignature = selectedCandidateIds.join('|');
+  const storedCandidatesSnapshot = JSON.stringify([...rawDeputadosFederais, ...rawSenadores]);
+
+  useEffect(() => {
+    if (!selectedCandidateSignature) {
+      let cancelled = false;
+      queueMicrotask(() => {
+        if (!cancelled) {
+          setCandidateDetailsState((currentState) => (
+            currentState.signature === '' ? currentState : { signature: '', candidatesById: new Map(), loading: false }
+          ));
+        }
+      });
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    let cancelled = false;
+    const candidateIds = selectedCandidateSignature.split('|').filter(Boolean);
+    const storedCandidates = JSON.parse(storedCandidatesSnapshot || '[]');
+
+    queueMicrotask(() => {
+      if (!cancelled) {
+        setCandidateDetailsState((currentState) => ({
+          signature: selectedCandidateSignature,
+          candidatesById: currentState.signature === selectedCandidateSignature ? currentState.candidatesById : new Map(),
+          loading: true
+        }));
+      }
+    });
+
+    const cachedTallies = readCachedTallies(candidateIds);
+
+    Promise.all([
+      fetchCandidatesByIds(candidateIds),
+      fetchCandidateTallies(candidateIds, { forceRefresh: true }).catch(() => cachedTallies)
+    ]).then(([fetchedCandidates, tallies]) => {
+      if (cancelled) return;
+
+      const fetchedById = new Map(fetchedCandidates.map((candidate) => [candidate.id, candidate]));
+      const storedById = new Map(storedCandidates.map((candidate) => [candidate.id, candidate]));
+      const candidatesById = new Map(candidateIds.map((candidateId) => [
+        candidateId,
+        mergeCandidateDetails(storedById.get(candidateId), fetchedById.get(candidateId), tallies.get(candidateId))
+      ]));
+
+      setCandidateDetailsState({
+        signature: selectedCandidateSignature,
+        candidatesById,
+        loading: false
+      });
+    }).catch(() => {
+      if (!cancelled) {
+        setCandidateDetailsState({ signature: selectedCandidateSignature, candidatesById: new Map(), loading: false });
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedCandidateSignature, storedCandidatesSnapshot]);
+
+  const candidatesById = candidateDetailsState.signature === selectedCandidateSignature
+    ? candidateDetailsState.candidatesById
+    : new Map();
+  const deputadosFederais = rawDeputadosFederais.map((candidate) => candidatesById.get(candidate.id) || candidate);
+  const senadores = rawSenadores.map((candidate) => candidatesById.get(candidate.id) || candidate);
   const estadoSigla = currentDraft?.estado || userData?.estado || '';
   const estadoNome = estadoSigla ? STATE_NAMES[estadoSigla] || estadoSigla : 'Estado não selecionado';
-  const deputadoFederal = currentDraft?.candidate_groups?.deputado_federal?.[0]
-    || currentDraft?.selections?.deputado_federal?.[0]
-    || null;
-  const senadores = currentDraft?.candidate_groups?.senadores_1?.length
-    ? currentDraft.candidate_groups.senadores_1
-    : currentDraft?.selections?.senadores || [];
-  const selectedCandidates = [deputadoFederal, ...senadores].filter(Boolean);
+  const deputadoFederal = deputadosFederais[0] || null;
+  const selectedCandidates = [...deputadosFederais, ...senadores].filter(Boolean);
   const planProgress = currentDraft ? getBallotProgress(currentDraft) : null;
   const averageChance = getAverageChance(selectedCandidates);
   const averageScore = getAverageScore(selectedCandidates);
@@ -189,7 +330,7 @@ export default function MeuPlano() {
   const profileEmail = userData?.email || user?.email || '';
   const profileImage = userData?.profile_image || user?.photoURL || '';
   const profileInitial = profileName.trim().charAt(0).toUpperCase() || 'N';
-  const canSharePlan = Boolean(deputadoFederal && senadores.length >= 2 && estadoSigla);
+  const canSharePlan = Boolean(deputadosFederais.length > 0 && senadores.length >= 2 && estadoSigla);
   const shareData = canSharePlan ? {
     estadoSigla,
     estadoNome,
@@ -223,7 +364,10 @@ export default function MeuPlano() {
           <BackIcon />
         </button>
         <div className="my-plan-header__brand">
-          <strong>nossoVoto<span>.org</span></strong>
+          <strong>
+            <ChanceFlame className="my-plan-header__flame" size={24} />
+            nossoVoto<span>.org</span>
+          </strong>
           <small>Meu plano</small>
         </div>
       </header>
@@ -275,20 +419,38 @@ export default function MeuPlano() {
 
             <div className="my-plan-office">
               <h3>Deputado Federal</h3>
-              <CandidateSummaryCard
-                candidate={deputadoFederal}
-                fallbackTitle="Deputado Federal"
-                onEdit={() => handleEdit(BALLOT_ROUTES.deputadoFederal)}
-              />
+              <div className="my-plan-office-candidates">
+                {deputadosFederais.length > 0 ? deputadosFederais.map((candidate, index) => (
+                  <CandidateSummaryCard
+                    key={candidate.id || `deputado-${index}`}
+                    candidate={candidate}
+                    fallbackTitle={`Deputado Federal ${index + 1}`}
+                    onEdit={() => handleEdit(BALLOT_ROUTES.deputadoFederal)}
+                  />
+                )) : (
+                  <CandidateSummaryCard
+                    candidate={null}
+                    fallbackTitle="Deputado Federal"
+                    onEdit={() => handleEdit(BALLOT_ROUTES.deputadoFederal)}
+                  />
+                )}
+              </div>
             </div>
 
             <div className="my-plan-office">
               <h3>Senadores</h3>
-              <div className="my-plan-senators">
-                {[0, 1].map((index) => (
+              <div className="my-plan-office-candidates my-plan-senators">
+                {senadores.length > 0 ? senadores.map((candidate, index) => (
                   <CandidateSummaryCard
-                    key={senadores[index]?.id || `senador-${index}`}
-                    candidate={senadores[index]}
+                    key={candidate.id || `senador-${index}`}
+                    candidate={candidate}
+                    fallbackTitle={`Senador ${index + 1}`}
+                    onEdit={() => handleEdit(BALLOT_ROUTES.senadores)}
+                  />
+                )) : [0, 1].map((index) => (
+                  <CandidateSummaryCard
+                    key={`senador-${index}`}
+                    candidate={null}
                     fallbackTitle={`Senador ${index + 1}`}
                     onEdit={() => handleEdit(BALLOT_ROUTES.senadores)}
                   />
@@ -305,7 +467,7 @@ export default function MeuPlano() {
             <div className="my-plan-office-summary">
               <OfficeViabilityRow
                 label="Deputado Federal"
-                candidates={deputadoFederal ? [deputadoFederal] : []}
+                candidates={deputadosFederais}
                 route={BALLOT_ROUTES.deputadoFederal}
                 onEdit={handleEdit}
               />
