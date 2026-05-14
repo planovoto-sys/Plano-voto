@@ -1,12 +1,12 @@
 .my-plan-page {
-  background: #fffaf5;
+  background: #ffffff;
 }
 
 .my-plan-header {
   flex: 0 0 auto;
   min-height: 68px;
   border-bottom: 1px solid #f1dfd3;
-  background: #fffaf5;
+  background: #ffffff;
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr) 44px;
   align-items: center;
@@ -81,9 +81,7 @@
 }
 
 .my-plan-scroll {
-  background:
-    linear-gradient(180deg, rgba(255, 139, 73, 0.08) 0, rgba(255, 255, 255, 0) 190px),
-    #fffdfb;
+  background: #ffffff;
   padding: 22px var(--screen-gutter) 0;
 }
 
@@ -621,13 +619,13 @@
 
 @media (min-width: 768px) {
   .my-plan-page {
-    background: #fffaf5;
+    background: #ffffff;
   }
 
   .my-plan-header {
     min-height: 74px;
     border-bottom-color: #f1dfd3;
-    background: #fffaf5;
+    background: #ffffff;
     padding: 0 var(--screen-gutter);
   }
 
