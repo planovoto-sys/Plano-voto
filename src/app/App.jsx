@@ -2,6 +2,7 @@ import React, { lazy, Suspense, useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { CANDIDATE_ROUTES } from '@/constants/candidateRoutes';
 import { BALLOT_ROUTES } from '@/constants/ballot';
+import { useDesktopExperience } from '@/hooks/useDesktopExperience';
 import { useUser } from '@/hooks/useUser';
 import PrivacyConsent from '@/components/privacy/PrivacyConsent';
 import {
@@ -15,12 +16,14 @@ const loadHome = () => import('@/pages/Home');
 const loadEscolherCandidatos = () => import('@/pages/EscolherCandidatos');
 const loadLegalPage = () => import('@/pages/LegalPage');
 const loadMeuPlano = () => import('@/pages/MeuPlano');
+const loadContinuarPlano = () => import('@/pages/ContinuarPlano');
 
 const Login = lazy(loadLogin);
 const Home = lazy(loadHome);
 const EscolherCandidatos = lazy(loadEscolherCandidatos);
 const LegalPage = lazy(loadLegalPage);
 const MeuPlano = lazy(loadMeuPlano);
+const ContinuarPlano = lazy(loadContinuarPlano);
 
 const renderCandidateRoute = (config) => (
   <EscolherCandidatos
@@ -103,10 +106,13 @@ function AuthenticatedEntryRedirect({ user, estado }) {
 
 function App() {
   const { user, userData, loading } = useUser();
+  const isDesktopExperience = useDesktopExperience();
   const [introReady, setIntroReady] = useState(false);
-  const privateRoute = (element) => (user ? element : <Navigate to="/" replace />);
+  const publicExplorationRoute = (element) => (user || isDesktopExperience ? element : <Navigate to="/" replace />);
   const privateRedirect = (to) => (
-    user ? <Navigate to={to} replace state={{ bypassVoteRedirect: true }} /> : <Navigate to="/" replace />
+    user || isDesktopExperience
+      ? <Navigate to={to} replace state={{ bypassVoteRedirect: true }} />
+      : <Navigate to="/" replace />
   );
 
   useEffect(() => {
@@ -117,7 +123,7 @@ function App() {
   useEffect(() => {
     if (loading) return undefined;
 
-    const preloadRoutes = user
+    const preloadRoutes = user || isDesktopExperience
       ? [loadHome, loadEscolherCandidatos, loadMeuPlano]
       : [loadLogin];
 
@@ -136,7 +142,11 @@ function App() {
 
     const timeoutId = window.setTimeout(preload, 900);
     return () => window.clearTimeout(timeoutId);
-  }, [loading, user]);
+  }, [isDesktopExperience, loading, user]);
+
+  const rootElement = isDesktopExperience
+    ? <LegalPage type="sobre" />
+    : (!user ? <Login /> : <AuthenticatedEntryRedirect user={user} estado={userData?.estado} />);
 
   return (
     <BrowserRouter>
@@ -145,20 +155,22 @@ function App() {
       ) : (
         <Suspense fallback={<LoadingScreen />}>
           <Routes>
-            <Route path="/" element={!user ? <Login /> : <AuthenticatedEntryRedirect user={user} estado={userData?.estado} />} />
-            <Route path="/home" element={privateRoute(<Home />)} />
+            <Route path="/" element={rootElement} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/home" element={publicExplorationRoute(<Home />)} />
 
-            <Route path="/escolher-deputado-federal" element={privateRoute(renderCandidateRoute(CANDIDATE_ROUTES.deputadoFederal))} />
+            <Route path="/escolher-deputado-federal" element={publicExplorationRoute(renderCandidateRoute(CANDIDATE_ROUTES.deputadoFederal))} />
 
             <Route path="/escolher-deputado-federal/reeleger" element={privateRedirect(BALLOT_ROUTES.deputadoFederal)} />
             <Route path="/escolher-deputado-federal/renovar" element={privateRedirect(BALLOT_ROUTES.deputadoFederal)} />
 
-            <Route path="/escolher-senadores" element={privateRoute(renderCandidateRoute(CANDIDATE_ROUTES.senadores))} />
+            <Route path="/escolher-senadores" element={publicExplorationRoute(renderCandidateRoute(CANDIDATE_ROUTES.senadores))} />
             <Route path="/escolher-senador-1" element={privateRedirect(BALLOT_ROUTES.senadores)} />
             <Route path="/escolher-senador-2" element={privateRedirect(BALLOT_ROUTES.senadores)} />
             <Route path="/escolher-senadores/reeleger" element={privateRedirect(BALLOT_ROUTES.senadores)} />
             <Route path="/escolher-senadores/renovar" element={privateRedirect(BALLOT_ROUTES.senadores)} />
-            <Route path={BALLOT_ROUTES.meuPlano} element={privateRoute(<MeuPlano />)} />
+            <Route path={BALLOT_ROUTES.meuPlano} element={publicExplorationRoute(<MeuPlano />)} />
+            <Route path={`${BALLOT_ROUTES.continuarPlano}/:token`} element={<ContinuarPlano />} />
             <Route path="/meu-nossovoto" element={privateRedirect(BALLOT_ROUTES.meuPlano)} />
 
             <Route path="/meu-voto" element={privateRedirect(BALLOT_ROUTES.meuPlano)} />

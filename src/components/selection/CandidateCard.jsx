@@ -10,14 +10,31 @@ import {
   getCandidateTone
 } from '@/utils/candidateMetrics';
 
-function ViabilityMeter({ value, tone, featured = false }) {
+function ViabilityMeter({ value, tone, featured = false, locked = false, onLockedClick }) {
   const numericValue = Number(value) || 0;
   const progress = Math.max(0, Math.min(100, numericValue));
+  const handleLockedClick = (event) => {
+    if (!locked) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    onLockedClick?.();
+  };
+  const handleLockedKeyDown = (event) => {
+    if (!locked || !['Enter', ' '].includes(event.key)) return;
+
+    handleLockedClick(event);
+  };
 
   return (
     <span
-      className={`candidate-viability candidate-viability--${tone} ${featured ? 'candidate-viability--featured' : ''}`}
+      className={`candidate-viability candidate-viability--${tone} ${featured ? 'candidate-viability--featured' : ''} ${locked ? 'is-locked' : ''}`}
       style={{ '--metric-progress': progress }}
+      role={locked ? 'button' : undefined}
+      tabIndex={locked ? 0 : undefined}
+      aria-label={locked ? 'Campo de viabilidade bloqueado' : undefined}
+      onClick={handleLockedClick}
+      onKeyDown={handleLockedKeyDown}
     >
       <span className="candidate-viability__circle">
         <strong>{numericValue}<small>%</small></strong>
@@ -26,6 +43,16 @@ function ViabilityMeter({ value, tone, featured = false }) {
     </span>
   );
 }
+
+const getCandidateNumber = (candidate = {}) => {
+  const value = candidate.Numero ?? candidate.numero ?? candidate.number ?? '';
+  return String(value || '').trim();
+};
+
+const getCandidateOffice = (candidate = {}) => {
+  const value = candidate.Cargo ?? candidate.cargo ?? '';
+  return String(value || '').trim();
+};
 
 const getSingleLineSize = (value, sizes) => {
   const length = String(value || '').trim().length;
@@ -67,11 +94,15 @@ export default function CandidateCard({
   showAssessmentSubtitle = true,
   summary = false,
   actionLabel = '',
-  disabled = false
+  disabled = false,
+  lockPersonalizedFields = false,
+  onLockedMetricClick
 }) {
-  const tone = getCandidateTone(candidate);
+  const tone = lockPersonalizedFields ? 'visitor' : getCandidateTone(candidate);
   const name = getCandidateName(candidate);
   const party = getCandidateParty(candidate);
+  const number = getCandidateNumber(candidate);
+  const office = getCandidateOffice(candidate);
   const candidateScore = getCandidateDisplayScore(candidate);
   const partyScore = getCandidatePartyScore(candidate);
   const chance = getCandidateChance(candidate);
@@ -79,7 +110,7 @@ export default function CandidateCard({
   const hasPartyScore = !hasCandidateScore && partyScore > 0;
   const visibleScore = hasCandidateScore ? candidateScore : partyScore;
   const isBlocked = candidate.isAlreadyChosen;
-  const isFireFeatured = Boolean(featuredMetrics.chance || candidate.isChanceFeatured);
+  const isFireFeatured = !lockPersonalizedFields && Boolean(featuredMetrics.chance || candidate.isChanceFeatured);
   const isViabilityComplete = chance >= 100;
   const systemScore = getCandidateSystemScore(candidate);
   const assessment = getAssessment({ isFireFeatured, isViabilityComplete, systemScore });
@@ -92,6 +123,14 @@ export default function CandidateCard({
     '--candidate-assessment-size': `${getSingleLineSize(assessment.label, { base: 10, lg: 9.4, md: 8.7, sm: 8, xs: 7.2, xxs: 6.6 })}px`,
     '--candidate-assessment-mobile-size': `${getSingleLineSize(assessment.label, { base: 8.4, lg: 8, md: 7.4, sm: 6.9, xs: 6.3, xxs: 5.9 })}px`
   };
+  const handleLockedFieldClick = (event) => {
+    if (!lockPersonalizedFields) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    onLockedMetricClick?.();
+  };
+  const metaParts = [party, number ? `Nº ${number}` : '', office].filter(Boolean);
 
   return (
     <button
@@ -105,20 +144,31 @@ export default function CandidateCard({
       aria-disabled={candidate.isAlreadyChosen ? 'true' : undefined}
     >
       {isFireFeatured && (
-        <ChanceFlame className="candidate-viability__flame" size={34} />
+        <ChanceFlame
+          className={`candidate-viability__flame ${summary ? 'candidate-viability__flame--summary' : ''}`}
+          size={34}
+        />
       )}
 
       <span className="candidate-card__identity">
         <span className="candidate-card__name-row">
           <strong>{name}</strong>
-          {!summary && (
+          {!summary && !lockPersonalizedFields && (
             <span className={`candidate-card__action ${selected ? 'is-selected' : ''}`} aria-hidden="true">
               {selected ? '✓' : '+'}
             </span>
           )}
         </span>
-        <small>{party}</small>
-        {showAssessmentSubtitle && (
+        <small>{metaParts.join(' / ')}</small>
+        {showAssessmentSubtitle && lockPersonalizedFields ? (
+          <span
+            className="candidate-card__locked-insight"
+            onClick={handleLockedFieldClick}
+          >
+            <strong>Indicadores disponíveis após login 🔒</strong>
+            <span>Entre para ver nota, viabilidade e análise personalizada.</span>
+          </span>
+        ) : showAssessmentSubtitle && (
           <span className={`candidate-card__assessment candidate-card__assessment--${assessment.icon}`}>
             <i className="candidate-card__assessment-icon" aria-hidden="true">
               {assessment.icon === 'fire'
@@ -130,7 +180,27 @@ export default function CandidateCard({
         )}
       </span>
 
-      <ViabilityMeter value={chance} tone={metricTone} featured={isFireFeatured} />
+      {summary ? (
+        <ViabilityMeter
+          value={chance}
+          tone={metricTone}
+          featured={isFireFeatured}
+          locked={false}
+          onLockedClick={onLockedMetricClick}
+        />
+      ) : lockPersonalizedFields ? (
+        <span className={`candidate-card__action ${selected ? 'is-selected' : ''}`} aria-hidden="true">
+          {selected ? '✓' : '+'}
+        </span>
+      ) : (
+        <ViabilityMeter
+          value={chance}
+          tone={metricTone}
+          featured={isFireFeatured}
+          locked={false}
+          onLockedClick={onLockedMetricClick}
+        />
+      )}
     </button>
   );
 }

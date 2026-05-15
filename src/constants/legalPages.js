@@ -119,15 +119,31 @@ export const LEGAL_PAGE_CONTENT = {
   },
   sobre: {
     title: 'Sobre nós',
-    subtitle: 'Conheça o propósito do projeto Nosso Voto.',
+    subtitle: 'Conheça o propósito do projeto Nosso Voto e experimente o plano antes de criar uma conta.',
     sections: [
       {
-        heading: 'O projeto',
-        body: 'O Nosso Voto nasceu para ajudar pessoas a organizarem suas escolhas eleitorais de forma simples, consciente e acessível.'
+        heading: 'Objetivo do projeto',
+        body: 'O Nosso Voto nasceu para ajudar pessoas a organizar escolhas eleitorais de forma simples, consciente e acessível. A ferramenta não substitui sua pesquisa: ela cria um espaço claro para comparar nomes, montar um plano e revisar a combinação antes da decisão final.'
       },
       {
-        heading: 'Objetivo',
-        body: 'A proposta é facilitar a comparação de candidatos, apresentar informações de maneira clara e apoiar uma decisão mais bem estruturada antes da confirmação final.'
+        heading: 'Como funciona o plano',
+        body: 'O fluxo começa pelo estado em que você vota. Depois, você escolhe candidatos para deputado federal e senadores, acompanha o progresso do rascunho e chega a uma revisão com os nomes separados por cargo.'
+      },
+      {
+        heading: 'Escolha de candidatos',
+        body: 'A lista pode ser filtrada e pesquisada por nome, partido ou número. O candidato continua visível mesmo quando informações extras estão bloqueadas para visitantes, para que você consiga explorar a lista sem perder contexto.'
+      },
+      {
+        heading: 'Rascunho visitante',
+        body: 'No desktop e no tablet, você pode começar sem login. As escolhas ficam como rascunho local do navegador até que você decida entrar na conta para salvar de forma definitiva.'
+      },
+      {
+        heading: 'Continuar pelo celular',
+        body: 'Na revisão final, o desktop exibe um QR Code de continuidade. Esse QR Code usa um token temporário, expira em poucos minutos e só pode ser usado uma vez. Ele não faz login automático.'
+      },
+      {
+        heading: 'Quando o login é necessário',
+        body: 'Login é necessário para salvar o rascunho na sua conta, recuperar escolhas em outro dispositivo e acessar recursos personalizados, como campo de viabilidade, destaque especial e análise individual.'
       },
       {
         heading: 'Canal oficial',

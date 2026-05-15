@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import { initializeApp } from 'firebase-admin/app';
 import { FieldValue, getFirestore } from 'firebase-admin/firestore';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
@@ -14,6 +14,8 @@ const OFFICE_MINIMUM_SELECTIONS = {
   senadores: 2,
 };
 const BALLOT_FLOW_STEP_IDS = ['deputado_federal', 'senadores_1', 'senadores_2'];
+const PLAN_HANDOFF_TTL_MS = 10 * 60 * 1000;
+const PLAN_HANDOFF_TOKEN_BYTES = 32;
 const VALID_STATES = new Set([
   'AC',
   'AL',
@@ -80,6 +82,17 @@ const makeReceiptCode = (electionId, voteId) => (
     .digest('hex')
     .slice(0, 16)
     .toUpperCase()
+);
+
+const makePlanHandoffToken = () => (
+  randomBytes(PLAN_HANDOFF_TOKEN_BYTES)
+    .toString('base64url')
+);
+
+const hashPlanHandoffToken = (electionId, token) => (
+  createHash('sha256')
+    .update(`${electionId}:plan-handoff:${token}`)
+    .digest('hex')
 );
 
 const asString = (value) => (typeof value === 'string' ? value.trim() : '');
@@ -573,6 +586,83 @@ export const deleteUserElectionData = onCall({
   });
 
   return { ok: true };
+});
+
+export const createPlanHandoffToken = onCall({
+  region: FUNCTIONS_REGION,
+  cors: true,
+}, async (request) => {
+  const payload = request.data || {};
+  const electionId = assertElectionPayload(payload);
+  const rawDraft = payload.draft || {};
+  const estado = normalizeStateCode(rawDraft.estado || payload.estado);
+
+  if (!VALID_STATES.has(estado)) {
+    throw new HttpsError('invalid-argument', 'Estado invalido.');
+  }
+
+  const token = makePlanHandoffToken();
+  const tokenHash = hashPlanHandoffToken(electionId, token);
+  const expiresAtMs = Date.now() + PLAN_HANDOFF_TTL_MS;
+  const draft = normalizeDraft(rawDraft, request.auth?.uid || 'handoff', estado);
+
+  draft.active_candidate_ids.forEach((candidateId) => {
+    assertValidId(candidateId, 'Candidato');
+  });
+
+  await db.doc(`elections/${electionId}/plan_handoff_tokens/${tokenHash}`).set({
+    schema_version: BALLOT_SCHEMA_VERSION,
+    election_id: electionId,
+    token_hash: tokenHash,
+    draft,
+    created_by: request.auth?.uid || null,
+    created_at: FieldValue.serverTimestamp(),
+    expires_at_ms: expiresAtMs,
+    used_at: null,
+    redeemed_by: null,
+  });
+
+  return {
+    token,
+    expires_at_ms: expiresAtMs,
+    expires_in_seconds: Math.floor(PLAN_HANDOFF_TTL_MS / 1000),
+  };
+});
+
+export const redeemPlanHandoffToken = onCall({
+  region: FUNCTIONS_REGION,
+  cors: true,
+}, async (request) => {
+  const payload = request.data || {};
+  const electionId = assertElectionPayload(payload);
+  const token = assertValidId(payload.token, 'Token');
+  const tokenHash = hashPlanHandoffToken(electionId, token);
+  const tokenRef = db.doc(`elections/${electionId}/plan_handoff_tokens/${tokenHash}`);
+  let responseDraft = null;
+
+  await db.runTransaction(async (transaction) => {
+    const tokenSnap = await transaction.get(tokenRef);
+    if (!tokenSnap.exists) {
+      throw new HttpsError('not-found', 'Token nao encontrado.');
+    }
+
+    const tokenData = tokenSnap.data();
+    if (tokenData.used_at) {
+      throw new HttpsError('failed-precondition', 'Token ja utilizado.');
+    }
+
+    if (Number(tokenData.expires_at_ms || 0) <= Date.now()) {
+      throw new HttpsError('deadline-exceeded', 'Token expirado.');
+    }
+
+    responseDraft = normalizeDraft(tokenData.draft, request.auth?.uid || 'handoff', tokenData.draft?.estado);
+    transaction.update(tokenRef, {
+      used_at: FieldValue.serverTimestamp(),
+      redeemed_by: request.auth?.uid || null,
+    });
+  });
+
+  return buildDraftResponse(responseDraft);
 });
 
 export const castAnonymousVote = onCall({

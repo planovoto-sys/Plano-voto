@@ -91,6 +91,100 @@
   min-width: 0;
 }
 
+.my-plan-status {
+  border: 1px solid rgba(255, 139, 73, 0.22);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(255, 223, 89, 0.24), rgba(255, 255, 255, 0) 48%),
+    #ffffff;
+  display: grid;
+  gap: 8px;
+  padding: 20px;
+  box-shadow: 0 16px 38px rgba(34, 36, 38, 0.08);
+}
+
+.my-plan-status.is-saved {
+  border-color: rgba(36, 89, 61, 0.2);
+  background:
+    linear-gradient(135deg, rgba(114, 213, 82, 0.14), rgba(255, 255, 255, 0) 46%),
+    #ffffff;
+}
+
+.my-plan-status > span {
+  width: fit-content;
+  border: 1px solid rgba(255, 139, 73, 0.28);
+  border-radius: 999px;
+  background: #fff7ef;
+  color: #c95b18;
+  padding: 6px 11px;
+  font-size: 11px;
+  font-weight: 950;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.my-plan-status.is-saved > span {
+  border-color: rgba(36, 89, 61, 0.24);
+  background: #f7fff4;
+  color: #24593d;
+}
+
+.my-plan-status h1 {
+  margin: 0;
+  color: #111111;
+  font-size: clamp(28px, 8vw, 42px);
+  font-weight: 950;
+  line-height: 0.98;
+}
+
+.my-plan-status p {
+  max-width: 650px;
+  margin: 0;
+  color: #48544f;
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.my-plan-summary-card {
+  border: 1px solid rgba(17, 17, 17, 0.08);
+  border-radius: 8px;
+  background: #ffffff;
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  box-shadow: 0 12px 28px rgba(34, 36, 38, 0.05);
+}
+
+.my-plan-summary-card div {
+  min-width: 0;
+  border-bottom: 1px solid #edf0ef;
+  display: grid;
+  gap: 4px;
+  padding-bottom: 10px;
+}
+
+.my-plan-summary-card div:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.my-plan-summary-card span {
+  color: #69746f;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.my-plan-summary-card strong {
+  min-width: 0;
+  color: #111111;
+  font-size: 15px;
+  font-weight: 950;
+  line-height: 1.2;
+}
+
 .my-plan-hero {
   display: grid;
   gap: 12px;
@@ -379,6 +473,10 @@
   color: #69746f;
 }
 
+.my-plan-candidate--draft {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
 .my-plan-candidate__identity {
   min-width: 0;
   display: grid;
@@ -482,6 +580,24 @@
   line-height: 1;
 }
 
+.my-plan-candidate__draft-pill {
+  justify-self: end;
+  min-width: 88px;
+  min-height: 34px;
+  border: 1px solid rgba(36, 89, 61, 0.2);
+  border-radius: 999px;
+  background: #ffffff;
+  color: #24593d;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  font-size: 10px;
+  font-weight: 950;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
 .my-plan-candidate--empty {
   border: 1px dashed #f1c9aa;
   background: #fffdfb;
@@ -509,6 +625,41 @@
 .my-plan-actions {
   display: grid;
   gap: 10px;
+}
+
+.my-plan-save-invite {
+  border: 1px solid rgba(36, 89, 61, 0.24);
+  border-radius: 8px;
+  background: #f7fff4;
+  display: grid;
+  gap: 7px;
+  padding: 14px;
+}
+
+.my-plan-save-invite strong {
+  color: var(--desktop-primary-strong);
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.my-plan-save-invite span {
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.my-plan-save-invite button {
+  min-height: 46px;
+  border: 0;
+  border-radius: 999px;
+  background: #111111;
+  color: #ffffff;
+  font-family: var(--font-family);
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
 }
 
 .my-plan-share-panel {
@@ -572,6 +723,18 @@
 
 .my-plan-qr {
   display: none;
+}
+
+.my-plan-qr__status {
+  display: block;
+  width: 100%;
+  border: 1px dashed var(--nav-line);
+  border-radius: 8px;
+  padding: 14px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.35;
 }
 
 @media (max-width: 360px) {
@@ -657,10 +820,46 @@
   }
 
   .my-plan-hero,
+  .my-plan-status,
+  .my-plan-summary-card,
   .my-plan-meters,
   .my-plan-section,
   .my-plan-actions {
     grid-column: 1;
+  }
+
+  .my-plan-page--guest .my-plan-shell {
+    width: min(100%, 980px);
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .my-plan-status {
+    padding: 26px;
+  }
+
+  .my-plan-status h1 {
+    font-size: clamp(40px, 5vw, 58px);
+  }
+
+  .my-plan-status p {
+    font-size: 17px;
+  }
+
+  .my-plan-summary-card {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+    padding: 0;
+  }
+
+  .my-plan-summary-card div {
+    border-bottom: 0;
+    border-right: 1px solid #edf0ef;
+    padding: 16px;
+  }
+
+  .my-plan-summary-card div:last-child {
+    border-right: 0;
+    padding-bottom: 16px;
   }
 
   .my-plan-hero {
@@ -750,6 +949,12 @@
     border-radius: 8px;
     background: #ffffff;
     padding: 8px;
+  }
+
+  .my-plan-qr .my-plan-qr__status {
+    margin-top: 0;
+    color: var(--text-muted);
+    font-size: 12px;
   }
 
   .my-plan-logout,

@@ -3,8 +3,11 @@ export const CAST_VOTE_FUNCTION_NAME = import.meta.env.VITE_CAST_VOTE_FUNCTION |
 export const SAVE_BALLOT_STATE_FUNCTION_NAME = import.meta.env.VITE_SAVE_BALLOT_STATE_FUNCTION || 'saveBallotState';
 export const SAVE_BALLOT_STEP_FUNCTION_NAME = import.meta.env.VITE_SAVE_BALLOT_STEP_FUNCTION || 'saveBallotStepSelection';
 export const DELETE_USER_ELECTION_DATA_FUNCTION_NAME = import.meta.env.VITE_DELETE_USER_ELECTION_DATA_FUNCTION || 'deleteUserElectionData';
+export const CREATE_PLAN_HANDOFF_TOKEN_FUNCTION_NAME = import.meta.env.VITE_CREATE_PLAN_HANDOFF_TOKEN_FUNCTION || 'createPlanHandoffToken';
+export const REDEEM_PLAN_HANDOFF_TOKEN_FUNCTION_NAME = import.meta.env.VITE_REDEEM_PLAN_HANDOFF_TOKEN_FUNCTION || 'redeemPlanHandoffToken';
 
 export const BALLOT_SCHEMA_VERSION = 1;
+export const VISITOR_DRAFT_ID = 'visitor';
 
 export const OFFICE_MINIMUM_SELECTIONS = {
   deputado_federal: 1,
@@ -22,7 +25,8 @@ export const BALLOT_ROUTES = {
   senadores: '/escolher-senadores',
   senador1: '/escolher-senador-1',
   senador2: '/escolher-senador-2',
-  meuPlano: '/meu-plano'
+  meuPlano: '/meu-plano',
+  continuarPlano: '/continuar-plano'
 };
 
 export const BALLOT_FLOW_STEPS = [

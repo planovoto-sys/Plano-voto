@@ -1,17 +1,20 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import QRCode from 'qrcode';
 import { BALLOT_ROUTES } from '@/constants/ballot';
 import { AVERAGE_ELECTED_VOTES_BY_OFFICE } from '@/constants/candidates';
 import { STATE_NAMES } from '@/constants/states';
+import { useDesktopExperience } from '@/hooks/useDesktopExperience';
 import { useUser } from '@/hooks/useUser';
 import { auth } from '@/services/firebase/firebase';
 import {
+  createPlanHandoffToken,
   fetchRemoteBallotDraft,
   fetchCandidatesByIds,
   getBallotProgress,
-  readBallotDraft
+  readBallotDraft,
+  readVisitorBallotDraft
 } from '@/services/voting/votingService';
 import {
   fetchCandidateTallies,
@@ -20,6 +23,7 @@ import {
 import ShareChoicePanel from '@/components/share/ShareChoicePanel';
 import BottomNavigation from '@/components/navigation/BottomNavigation';
 import AppFooter from '@/components/layout/AppFooter';
+import ConfirmModal from '@/components/feedback/ConfirmModal';
 import { BackIcon } from '@/components/icons/AppIcons';
 import { ChanceFlame } from '@/components/icons/ChanceFlame';
 import {
@@ -123,11 +127,27 @@ const mergeCandidateDetails = (storedCandidate, fetchedCandidate, tally) => {
   };
 };
 
-function MetricThermometer({ title, value, displayValue, caption, tone = 'viability' }) {
+function MetricThermometer({ title, value, displayValue, caption, tone = 'viability', locked = false, onLockedClick }) {
   const progress = clampPercent(value);
+  const handleClick = () => {
+    if (locked) onLockedClick?.();
+  };
+  const handleKeyDown = (event) => {
+    if (locked && ['Enter', ' '].includes(event.key)) {
+      event.preventDefault();
+      onLockedClick?.();
+    }
+  };
 
   return (
-    <article className={`my-plan-meter my-plan-meter--${tone}`} style={{ '--my-plan-meter-value': progress }}>
+    <article
+      className={`my-plan-meter my-plan-meter--${tone} ${locked ? 'is-locked' : ''}`}
+      style={{ '--my-plan-meter-value': progress }}
+      role={locked ? 'button' : undefined}
+      tabIndex={locked ? 0 : undefined}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+    >
       <span className="my-plan-meter__gauge" aria-hidden="true">
         <strong>{displayValue}</strong>
       </span>
@@ -139,18 +159,38 @@ function MetricThermometer({ title, value, displayValue, caption, tone = 'viabil
   );
 }
 
-function CandidateViability({ value }) {
+function CandidateViability({ value, locked = false, onLockedClick }) {
   const progress = clampPercent(value);
+  const handleClick = (event) => {
+    if (!locked) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    onLockedClick?.();
+  };
+  const handleKeyDown = (event) => {
+    if (!locked || !['Enter', ' '].includes(event.key)) return;
+
+    handleClick(event);
+  };
 
   return (
-    <span className="my-plan-candidate-viability" style={{ '--candidate-plan-progress': progress }} aria-label={`Viabilidade ${progress}%`}>
+    <span
+      className={`my-plan-candidate-viability ${locked ? 'is-locked' : ''}`}
+      style={{ '--candidate-plan-progress': progress }}
+      role={locked ? 'button' : undefined}
+      tabIndex={locked ? 0 : undefined}
+      aria-label={locked ? 'Campo de viabilidade bloqueado' : `Viabilidade ${progress}%`}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+    >
       <strong>{progress}<small>%</small></strong>
       <span>viável</span>
     </span>
   );
 }
 
-function CandidateSummaryCard({ candidate, fallbackTitle, onEdit }) {
+function CandidateSummaryCard({ candidate, fallbackTitle, onEdit, locked = false, onLockedClick, showIndicators = true }) {
   if (!candidate) {
     return (
       <article className="my-plan-candidate my-plan-candidate--empty">
@@ -168,20 +208,43 @@ function CandidateSummaryCard({ candidate, fallbackTitle, onEdit }) {
   const number = getCandidateNumber(candidate);
   const score = getCandidateSystemScore(candidate);
   const chance = getCandidateChance(candidate);
-  const tone = getCandidateTone(candidate);
+  const tone = locked ? 'neutral' : getCandidateTone(candidate);
   const assessment = getCandidateAssessment(candidate);
 
   return (
-    <article className={`my-plan-candidate my-plan-candidate--${tone}`}>
+    <article className={`my-plan-candidate my-plan-candidate--${tone} ${showIndicators ? '' : 'my-plan-candidate--draft'}`}>
       <div className="my-plan-candidate__identity">
         <strong>{name || fallbackTitle}</strong>
         <small>Nº {number} | {party || 'Partido não informado'}</small>
-        <span className={`my-plan-candidate__assessment my-plan-candidate__assessment--${assessment.icon}`}>
-          <i aria-hidden="true">{assessment.icon === 'error' ? 'X' : '!'}</i>
-          <span>Nota {score > 0 ? formatScore(score) : '--'} | {assessment.label}</span>
-        </span>
+        {showIndicators && (
+          <span
+            className={`my-plan-candidate__assessment my-plan-candidate__assessment--${assessment.icon} ${locked ? 'is-locked' : ''}`}
+            role={locked ? 'button' : undefined}
+            tabIndex={locked ? 0 : undefined}
+            aria-label={locked ? 'Campo de viabilidade bloqueado' : undefined}
+            onClick={(event) => {
+              if (!locked) return;
+              event.preventDefault();
+              event.stopPropagation();
+              onLockedClick?.();
+            }}
+            onKeyDown={(event) => {
+              if (!locked || !['Enter', ' '].includes(event.key)) return;
+              event.preventDefault();
+              event.stopPropagation();
+              onLockedClick?.();
+            }}
+          >
+            <i aria-hidden="true">{assessment.icon === 'error' ? 'X' : '!'}</i>
+            <span>Nota {score > 0 ? formatScore(score) : '--'} | {assessment.label}</span>
+          </span>
+        )}
       </div>
-      <CandidateViability value={chance} />
+      {showIndicators ? (
+        <CandidateViability value={chance} locked={locked} onLockedClick={onLockedClick} />
+      ) : (
+        <span className="my-plan-candidate__draft-pill">No rascunho</span>
+      )}
     </article>
   );
 }
@@ -189,11 +252,15 @@ function CandidateSummaryCard({ candidate, fallbackTitle, onEdit }) {
 export default function MeuPlano() {
   const { user, userData, loading: userLoading } = useUser();
   const navigate = useNavigate();
-  const localDraft = user?.uid ? readBallotDraft(user.uid, userData?.estado) : null;
+  const location = useLocation();
+  const isDesktopExperience = useDesktopExperience();
+  const isGuestMode = !user?.uid;
+  const localDraft = user?.uid ? readBallotDraft(user.uid, userData?.estado) : readVisitorBallotDraft();
   const [remoteDraftState, setRemoteDraftState] = useState({ userId: null, draft: null, loading: false });
   const [candidateDetailsState, setCandidateDetailsState] = useState({ signature: '', candidatesById: new Map(), loading: false });
   const [expandedCandidateGroups, setExpandedCandidateGroups] = useState({ deputados: false, senadores: false });
-  const [qrCodeUrl, setQrCodeUrl] = useState('');
+  const [handoffQrState, setHandoffQrState] = useState({ status: 'idle', url: '', expiresAtMs: null, error: '' });
+  const [modalCampoBloqueado, setModalCampoBloqueado] = useState(false);
   const [planUrl] = useState(() => getPlanUrl());
 
   useEffect(() => {
@@ -221,27 +288,6 @@ export default function MeuPlano() {
     };
   }, [user?.uid, userData?.estado]);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    QRCode.toDataURL(planUrl, {
-      width: 180,
-      margin: 1,
-      color: {
-        dark: '#111111',
-        light: '#ffffff'
-      }
-    }).then((url) => {
-      if (!cancelled) setQrCodeUrl(url);
-    }).catch(() => {
-      if (!cancelled) setQrCodeUrl('');
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [planUrl]);
-
   const loadingDraft = remoteDraftState.userId === user?.uid && remoteDraftState.loading;
   const currentDraft = remoteDraftState.userId === user?.uid && remoteDraftState.draft
     ? remoteDraftState.draft
@@ -251,6 +297,70 @@ export default function MeuPlano() {
   const selectedCandidateIds = [...rawDeputadosFederais, ...rawSenadores].map((candidate) => candidate.id).filter(Boolean);
   const selectedCandidateSignature = selectedCandidateIds.join('|');
   const storedCandidatesSnapshot = JSON.stringify([...rawDeputadosFederais, ...rawSenadores]);
+  const handoffDraftPayload = currentDraft?.estado
+    ? JSON.stringify({
+      estado: currentDraft.estado,
+      candidate_groups: currentDraft.candidate_groups,
+      selections: currentDraft.selections
+    })
+    : '';
+
+  useEffect(() => {
+    if (!isDesktopExperience || isGuestMode || !handoffDraftPayload) {
+      let cancelled = false;
+      queueMicrotask(() => {
+        if (!cancelled) setHandoffQrState({ status: 'idle', url: '', expiresAtMs: null, error: '' });
+      });
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    let cancelled = false;
+    const draftForHandoff = JSON.parse(handoffDraftPayload);
+    queueMicrotask(() => {
+      if (!cancelled) {
+        setHandoffQrState((currentState) => ({
+          ...currentState,
+          status: 'loading',
+          error: ''
+        }));
+      }
+    });
+
+    createPlanHandoffToken(draftForHandoff)
+      .then((handoff) => {
+        const token = handoff.token;
+        if (!token) throw new Error('Token ausente');
+
+        const handoffUrl = `${window.location.origin}${BALLOT_ROUTES.continuarPlano}/${encodeURIComponent(token)}`;
+        return QRCode.toDataURL(handoffUrl, {
+          width: 190,
+          margin: 1,
+          color: {
+            dark: '#111111',
+            light: '#ffffff'
+          }
+        }).then((url) => ({ url, expiresAtMs: handoff.expires_at_ms || null }));
+      })
+      .then(({ url, expiresAtMs }) => {
+        if (!cancelled) setHandoffQrState({ status: 'ready', url, expiresAtMs, error: '' });
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setHandoffQrState({
+            status: 'error',
+            url: '',
+            expiresAtMs: null,
+            error: 'QR Code temporário indisponível agora.'
+          });
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [handoffDraftPayload, isDesktopExperience, isGuestMode]);
 
   useEffect(() => {
     if (!selectedCandidateSignature) {
@@ -331,21 +441,38 @@ export default function MeuPlano() {
   const visibleSenadores = showAllSenadores ? senadores : senadores.slice(0, 2);
   const hasMoreDeputados = deputadosFederais.length > 1;
   const hasMoreSenadores = senadores.length > 2;
-  const profileName = userData?.name || user?.displayName || 'Usuário';
-  const profileEmail = userData?.email || user?.email || '';
-  const profileImage = userData?.profile_image || user?.photoURL || '';
+  const profileName = isGuestMode ? 'Visitante' : userData?.name || user?.displayName || 'Usuário';
+  const profileEmail = isGuestMode ? 'Rascunho local' : userData?.email || user?.email || '';
+  const profileImage = isGuestMode ? '' : userData?.profile_image || user?.photoURL || '';
   const profileInitial = profileName.trim().charAt(0).toUpperCase() || 'N';
-  const canSharePlan = Boolean(deputadosFederais.length > 0 && senadores.length >= 2 && estadoSigla);
+  const canSharePlan = !isGuestMode && Boolean(deputadosFederais.length > 0 && senadores.length >= 2 && estadoSigla);
   const shareData = canSharePlan ? {
     estadoSigla,
     estadoNome,
+    userName: profileName,
     deputado: deputadoFederal,
     senadores: senadores.slice(0, 2),
     url: planUrl
   } : null;
+  const deputySummary = deputadoFederal ? getCandidateName(deputadoFederal) : 'Pendente';
+  const senatorsSummary = senadores.length > 0
+    ? senadores.slice(0, 2).map((candidate) => getCandidateName(candidate)).filter(Boolean).join(', ')
+    : 'Pendente';
 
   const handleEdit = (route = BALLOT_ROUTES.deputadoFederal) => {
     navigate(route, { state: { bypassVoteRedirect: true } });
+  };
+
+  const handleLogin = () => {
+    navigate('/login', {
+      state: {
+        from: `${location.pathname}${location.search}`
+      }
+    });
+  };
+
+  const handleLockedFieldClick = () => {
+    setModalCampoBloqueado(true);
   };
 
   const toggleCandidateGroup = (group) => {
@@ -360,12 +487,12 @@ export default function MeuPlano() {
     navigate('/', { replace: true });
   };
 
-  if (userLoading || loadingDraft) {
+  if ((!isGuestMode && userLoading) || loadingDraft) {
     return <div className="loading nv-screen" role="status" aria-live="polite">CARREGANDO...</div>;
   }
 
   return (
-    <div className="my-plan-page prototype-page nv-screen">
+    <div className={`my-plan-page prototype-page nv-screen ${isGuestMode ? 'my-plan-page--guest' : 'my-plan-page--saved'}`}>
       <header className="my-plan-header">
         <button
           className="my-plan-header__back nv-touch"
@@ -386,6 +513,31 @@ export default function MeuPlano() {
 
       <main className="my-plan-scroll prototype-scroll nv-scroll">
         <div className="my-plan-shell">
+          <section className={`my-plan-status ${isGuestMode ? 'is-guest' : 'is-saved'}`} aria-label="Status do plano">
+            <span>{isGuestMode ? 'Rascunho local' : 'Plano salvo'}</span>
+            <h1>{isGuestMode ? 'Seu rascunho está pronto' : 'Plano salvo com sucesso'}</h1>
+            <p>
+              {isGuestMode
+                ? 'Seu rascunho está salvo apenas neste dispositivo. Entre para guardar na conta e acessar depois.'
+                : 'Suas escolhas foram guardadas na conta e podem ser retomadas em outro dispositivo.'}
+            </p>
+          </section>
+
+          <section className="my-plan-summary-card" aria-label="Resumo do rascunho">
+            <div>
+              <span>Estado</span>
+              <strong>{estadoNome}{estadoSigla ? ` (${estadoSigla})` : ''}</strong>
+            </div>
+            <div>
+              <span>Deputado Federal</span>
+              <strong>{deputySummary}</strong>
+            </div>
+            <div>
+              <span>Senadores</span>
+              <strong>{senatorsSummary}</strong>
+            </div>
+          </section>
+
           <section className="my-plan-hero" aria-label="Resumo do plano">
             <div className="my-plan-profile">
               {profileImage ? (
@@ -405,25 +557,29 @@ export default function MeuPlano() {
             </div>
           </section>
 
-          <section className="my-plan-meters" aria-label="Indicadores do plano">
-            <MetricThermometer
-              title="Viabilidade geral"
-              value={averageChance}
-              displayValue={`${Math.round(averageChance)}%`}
-              caption="Indicador médio de viabilidade dos candidatos escolhidos."
-              tone="viability"
-            />
-            <MetricThermometer
-              title="Média das notas"
-              value={scoreMeterValue}
-              displayValue={averageScore > 0 ? formatScore(averageScore) : '--'}
-              caption="Média das notas disponíveis no sistema."
-              tone="score"
-            />
-            <p className="my-plan-meters__note">
-              Esses termômetros são indicadores neutros baseados nos dados disponíveis. Eles ajudam a revisar o plano, mas não são recomendação absoluta de voto.
-            </p>
-          </section>
+          {!isGuestMode && (
+            <section className="my-plan-meters" aria-label="Indicadores do plano">
+              <MetricThermometer
+                title="Viabilidade geral"
+                value={averageChance}
+                displayValue={`${Math.round(averageChance)}%`}
+                caption="Indicador médio de viabilidade dos candidatos escolhidos."
+                tone="viability"
+                onLockedClick={handleLockedFieldClick}
+              />
+              <MetricThermometer
+                title="Média das notas"
+                value={scoreMeterValue}
+                displayValue={averageScore > 0 ? formatScore(averageScore) : '--'}
+                caption="Média das notas disponíveis no sistema."
+                tone="score"
+                onLockedClick={handleLockedFieldClick}
+              />
+              <p className="my-plan-meters__note">
+                Esses termômetros são indicadores neutros baseados nos dados disponíveis. Eles ajudam a revisar o plano, mas não são recomendação absoluta de voto.
+              </p>
+            </section>
+          )}
 
           <section className="my-plan-section" aria-labelledby="my-plan-candidates-title">
             <div className="my-plan-section__heading">
@@ -443,6 +599,8 @@ export default function MeuPlano() {
                       candidate={candidate}
                       fallbackTitle={`Deputado Federal ${index + 1}`}
                       onEdit={() => handleEdit(BALLOT_ROUTES.deputadoFederal)}
+                      onLockedClick={handleLockedFieldClick}
+                      showIndicators={!isGuestMode}
                     />
                   )) : (
                     <CandidateSummaryCard
@@ -476,6 +634,8 @@ export default function MeuPlano() {
                       candidate={candidate}
                       fallbackTitle={`Senador ${index + 1}`}
                       onEdit={() => handleEdit(BALLOT_ROUTES.senadores)}
+                      onLockedClick={handleLockedFieldClick}
+                      showIndicators={!isGuestMode}
                     />
                   )) : [0, 1].map((index) => (
                     <CandidateSummaryCard
@@ -502,37 +662,73 @@ export default function MeuPlano() {
           </section>
 
           <section className="my-plan-actions" aria-label="Ações do plano">
-            {shareData ? (
-              <ShareChoicePanel shareData={shareData} className="my-plan-share-panel" />
-            ) : (
-              <div className="my-plan-share-disabled">
-                <strong>Compartilhar plano</strong>
-                <span>Complete deputado federal e dois senadores para liberar o compartilhamento.</span>
+            {isGuestMode ? (
+              <div className="my-plan-save-invite">
+                <strong>Salvar rascunho na conta</strong>
+                <span>Seu rascunho está salvo apenas neste dispositivo. Entre para guardar na conta e acessar depois.</span>
+                <button className="nv-touch" type="button" onClick={handleLogin}>
+                  Fazer login para salvar
+                </button>
               </div>
+            ) : (
+              shareData ? (
+                <ShareChoicePanel shareData={shareData} className="my-plan-share-panel" />
+              ) : (
+                <div className="my-plan-share-disabled">
+                  <strong>Compartilhar plano</strong>
+                  <span>Complete deputado federal e dois senadores para liberar o compartilhamento.</span>
+                </div>
+              )
             )}
 
             <button className="my-plan-edit-action nv-touch" type="button" onClick={() => handleEdit(planProgress?.hasDeputadoFederal ? BALLOT_ROUTES.senadores : BALLOT_ROUTES.deputadoFederal)}>
-              Editar escolhas
+              {isGuestMode ? 'Voltar e editar' : 'Editar escolhas'}
             </button>
           </section>
 
-          <aside className="my-plan-qr" aria-label="Continuar no celular">
-            <div>
-              <strong>Continuar no celular</strong>
-              <span>Escaneie para abrir seu plano neste aparelho.</span>
-            </div>
-            {qrCodeUrl && <img src={qrCodeUrl} alt="QR Code para abrir Meu Plano" />}
-          </aside>
+          {!isGuestMode && (
+            <aside className="my-plan-qr" aria-label="Continuar no celular">
+              <div>
+                <strong>Continuar no celular</strong>
+                <span>Escaneie para abrir este plano no celular. O acesso é temporário e funciona uma única vez.</span>
+              </div>
+              {handoffQrState.status === 'ready' && handoffQrState.url && (
+                <img src={handoffQrState.url} alt="QR Code temporário para continuar o plano no celular" />
+              )}
+              {handoffQrState.status === 'loading' && (
+                <span className="my-plan-qr__status">Gerando QR Code temporário...</span>
+              )}
+              {handoffQrState.status === 'error' && (
+                <span className="my-plan-qr__status">{handoffQrState.error}</span>
+              )}
+              {!handoffDraftPayload && (
+                <span className="my-plan-qr__status">Escolha um estado para gerar o QR Code.</span>
+              )}
+            </aside>
+          )}
 
-          <button className="my-plan-logout nv-touch" type="button" onClick={handleLogout}>
-            Sair da conta
-          </button>
+          {!isGuestMode && (
+            <button className="my-plan-logout nv-touch" type="button" onClick={handleLogout}>
+              Sair da conta
+            </button>
+          )}
 
           <AppFooter className="app-footer--scroll-content" />
         </div>
       </main>
 
       <BottomNavigation currentStep="nossovoto" placement="footer" />
+
+      <ConfirmModal
+        isOpen={modalCampoBloqueado}
+        titulo="Recurso disponível com login"
+        mensagem="Faça login para liberar indicadores e salvar seu plano na conta."
+        textoConfirmar="ENTRAR AGORA"
+        textoCancelar="CONTINUAR EXPLORANDO"
+        tipo="login-required"
+        onConfirm={handleLogin}
+        onCancel={() => setModalCampoBloqueado(false)}
+      />
     </div>
   );
 }

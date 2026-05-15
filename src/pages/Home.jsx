@@ -9,8 +9,11 @@ import {
   fetchRemoteBallotDraft,
   getBallotEstado,
   getBallotSelectionCounts,
+  getVisitorBallotEstado,
   readBallotDraft,
-  saveBallotState
+  readVisitorBallotDraft,
+  saveBallotState,
+  saveVisitorBallotState
 } from '@/services/voting/votingService';
 import { flowError, flowLog, flowWarn } from '@/utils/debugFlow';
 import { normalizeSearch } from '@/utils/search';
@@ -29,7 +32,8 @@ export default function Home() {
   const buscaDiferida = useDeferredValue(busca);
   
   const [isTourOpen, setIsTourOpen] = useState(false);
-  const estadoSelecionado = normalizeStateCode(user?.uid ? getBallotEstado(user.uid, userData?.estado) : userData?.estado);
+  const isVisitorMode = !user?.uid;
+  const estadoSelecionado = normalizeStateCode(user?.uid ? getBallotEstado(user.uid, userData?.estado) : getVisitorBallotEstado());
 
   const tourSteps = [
     { target: '.app-help-action', title: 'AJUDA', content: 'Abre este guia sempre que você quiser revisar a tela.' },
@@ -63,14 +67,10 @@ export default function Home() {
       return;
     }
 
-    if (!user?.uid) {
-      flowWarn('home.confirm-state.no-user');
-      navigate('/', { replace: true });
-      return;
-    }
-
     const novoEstado = selecionados[0].sigla;
-    const draft = readBallotDraft(user.uid, estadoSelecionado);
+    const draft = user?.uid
+      ? readBallotDraft(user.uid, estadoSelecionado)
+      : readVisitorBallotDraft(estadoSelecionado);
     const estadoAtual = draft.estado || estadoSelecionado || null;
     const selectionCounts = getBallotSelectionCounts(draft);
 
@@ -92,26 +92,26 @@ export default function Home() {
   };
 
   const executarMudanca = async (novoEstado) => {
-    if (!user?.uid) {
-      flowWarn('home.change-state.no-user');
-      navigate('/', { replace: true });
-      return;
-    }
-
     flowLog('home.change-state.start', {
-      userId: user.uid,
+      userId: user?.uid || 'visitor',
       novoEstado,
-      estadoFirestore: userData?.estado || null
+      estadoFirestore: user?.uid ? userData?.estado || null : null
     });
 
     setLoading(true); setModalOpen(false);
     try {
-      const estadoAtual = readBallotDraft(user.uid, estadoSelecionado).estado || estadoSelecionado || null;
+      const estadoAtual = user?.uid
+        ? readBallotDraft(user.uid, estadoSelecionado).estado || estadoSelecionado || null
+        : readVisitorBallotDraft(estadoSelecionado).estado || estadoSelecionado || null;
 
-      await saveBallotState(user.uid, novoEstado);
-      await fetchRemoteBallotDraft(user.uid, novoEstado);
+      if (user?.uid) {
+        await saveBallotState(user.uid, novoEstado);
+        await fetchRemoteBallotDraft(user.uid, novoEstado);
+      } else {
+        await saveVisitorBallotState(novoEstado);
+      }
 
-      if (estadoAtual !== novoEstado) {
+      if (user?.uid && estadoAtual !== novoEstado) {
         clearVoteReceipt(user.uid);
       }
 
@@ -133,7 +133,7 @@ export default function Home() {
       
       <SelectBase
         titulo="SELECIONE SEU ESTADO" dados={listaExibida} limiteSelecao={1} selecaoInicial={selecaoInicial}
-        carregando={userLoading || loading} mostrarBusca={true} valorBusca={busca} onChangeBusca={setBusca}
+        carregando={(!isVisitorMode && userLoading) || loading} mostrarBusca={true} valorBusca={busca} onChangeBusca={setBusca}
         onConfirmar={handleConfirmar}
         linhasVisiveis={6}
         variant="home-state"

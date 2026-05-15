@@ -121,6 +121,10 @@ service cloud.firestore {
         allow create, update, delete: if isAdmin();
       }
 
+      match /plan_handoff_tokens/{tokenId} {
+        allow read, write: if false;
+      }
+
       match /audit_events/{eventId} {
         allow create: if false;
         allow read, update, delete: if isAdmin();

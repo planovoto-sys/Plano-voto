@@ -105,6 +105,12 @@
   color: #ffffff;
 }
 
+.btn-confirmar.login-required {
+  border-color: #111111;
+  background: #111111;
+  color: #ffffff;
+}
+
 .senator-replace-actions {
   display: grid;
   gap: 8px;

@@ -7,9 +7,12 @@ import { useUser } from '@/hooks/useUser';
 import {
   fetchRemoteBallotDraft,
   getBallotEstado,
+  getVisitorBallotEstado,
   getVotingErrorMessage,
   readBallotDraft,
-  saveBallotStepSelection
+  readVisitorBallotDraft,
+  saveBallotStepSelection,
+  saveVisitorBallotStepSelection
 } from '@/services/voting/votingService';
 import {
   fetchCandidatesByOffice,
@@ -176,7 +179,8 @@ export default function EscolherCandidatos({
   const [isTourOpen, setIsTourOpen] = useState(false);
 
   const userId = user?.uid;
-  const estadoDoFluxo = userId ? getBallotEstado(userId, userData?.estado) : userData?.estado;
+  const isGuestMode = !userId;
+  const estadoDoFluxo = userId ? getBallotEstado(userId, userData?.estado) : getVisitorBallotEstado();
   const isSenadoresUnificados = chaveBanco === 'senadores' && Array.isArray(chaveGrupos) && chaveGrupos.length > 1;
   const currentStep = chaveBanco === 'deputado_federal'
     ? 'deputado'
@@ -191,8 +195,8 @@ export default function EscolherCandidatos({
   ];
 
   useEffect(() => {
-    if (!userLoading && userId && !estadoDoFluxo) {
-      flowWarn('candidates.missing-state.redirect-home', { userId, cargo, chaveGrupo });
+    if (!userLoading && !estadoDoFluxo) {
+      flowWarn('candidates.missing-state.redirect-home', { userId: userId || 'visitor', cargo, chaveGrupo });
       navigate('/home', { replace: true });
     }
   }, [cargo, chaveGrupo, estadoDoFluxo, navigate, userId, userLoading]);
@@ -312,17 +316,22 @@ export default function EscolherCandidatos({
     let cancelled = false;
 
     const restoreSelection = async () => {
-      if (!userId || todosCandidatos.length === 0) {
+      if (todosCandidatos.length === 0) {
         setSelecionadosNaTela([]);
         setBallotDraft(null);
         return;
       }
 
-      let draft = readBallotDraft(userId, estadoDoFluxo);
-      try {
-        draft = await fetchRemoteBallotDraft(userId, estadoDoFluxo);
-      } catch (error) {
-        flowWarn('candidates.remote-draft.fetch-error', { cargo, chaveGrupo, message: error?.message });
+      let draft = userId
+        ? readBallotDraft(userId, estadoDoFluxo)
+        : readVisitorBallotDraft(estadoDoFluxo);
+
+      if (userId) {
+        try {
+          draft = await fetchRemoteBallotDraft(userId, estadoDoFluxo);
+        } catch (error) {
+          flowWarn('candidates.remote-draft.fetch-error', { cargo, chaveGrupo, message: error?.message });
+        }
       }
 
       if (cancelled) return;
@@ -349,9 +358,9 @@ export default function EscolherCandidatos({
   }, [cargo, userId, estadoDoFluxo, todosCandidatos, candidatosDoEstado, chaveGrupo, chaveGrupos, isSenadoresUnificados]);
 
   const selectedCandidateIdsInOtherSteps = useMemo(() => {
-    if (!userId) return new Set();
-
-    const draft = ballotDraft || readBallotDraft(userId, estadoDoFluxo);
+    const draft = ballotDraft || (userId
+      ? readBallotDraft(userId, estadoDoFluxo)
+      : readVisitorBallotDraft(estadoDoFluxo));
     const gruposDaTela = new Set(isSenadoresUnificados ? chaveGrupos : [chaveGrupo]);
     const ids = Object.entries(draft.candidate_groups || {})
       .filter(([stepId]) => !gruposDaTela.has(stepId))
@@ -361,13 +370,15 @@ export default function EscolherCandidatos({
   }, [ballotDraft, chaveGrupo, chaveGrupos, estadoDoFluxo, isSenadoresUnificados, userId]);
 
   const featuredCandidateId = useMemo(() => {
+    if (isGuestMode) return null;
+
     const candidatesWithState = candidatosDoEstado.map((candidate) => ({
       ...candidate,
       isAlreadyChosen: selectedCandidateIdsInOtherSteps.has(candidate.id)
     }));
 
     return getFeaturedCandidateId(candidatesWithState);
-  }, [candidatosDoEstado, selectedCandidateIdsInOtherSteps]);
+  }, [candidatosDoEstado, isGuestMode, selectedCandidateIdsInOtherSteps]);
 
   const listaExibida = useMemo(() => {
     let disponiveis = candidatosDoEstado;
@@ -398,6 +409,20 @@ export default function EscolherCandidatos({
     }));
 
     const desempatarPorNome = (a, b) => getCandidateName(a).localeCompare(getCandidateName(b));
+
+    if (isGuestMode) {
+      return listaComEstado
+        .map((candidate) => ({
+          ...candidate,
+          isChanceFeatured: false
+        }))
+        .sort((a, b) => {
+          const blockedDiff = Number(a.isAlreadyChosen) - Number(b.isAlreadyChosen);
+          if (blockedDiff !== 0) return blockedDiff;
+
+          return desempatarPorNome(a, b);
+        });
+    }
 
     const grupoVisual = (candidate) => {
       const score = getCandidateSystemScore(candidate);
@@ -430,15 +455,9 @@ export default function EscolherCandidatos({
 
         return desempatarPorNome(a, b);
       });
-  }, [candidatosDoEstado, featuredCandidateId, filtroLista, buscaDiferida, selectedCandidateIdsInOtherSteps, selecionadosNaTela]);
+  }, [candidatosDoEstado, featuredCandidateId, filtroLista, buscaDiferida, isGuestMode, selectedCandidateIdsInOtherSteps, selecionadosNaTela]);
 
   const persistirEtapa = async (listaFinalDaTela, { markCompleted = false } = {}) => {
-    if (!userId) {
-      flowWarn('candidates.persist.no-user', { cargo, chaveGrupo });
-      navigate('/', { replace: true });
-      throw new Error('Faça login para continuar.');
-    }
-
     if (!estadoDoFluxo) {
       flowWarn('candidates.persist.no-state', { cargo, chaveGrupo });
       navigate('/home', { replace: true });
@@ -448,7 +467,14 @@ export default function EscolherCandidatos({
     try {
       let draftAtualizado;
 
-      if (isSenadoresUnificados) {
+      if (!userId) {
+        draftAtualizado = await saveVisitorBallotStepSelection(
+          isSenadoresUnificados ? 'senadores_1' : chaveGrupo,
+          listaFinalDaTela,
+          estadoDoFluxo,
+          { markCompleted }
+        );
+      } else if (isSenadoresUnificados) {
         draftAtualizado = await saveBallotStepSelection(userId, 'senadores_1', listaFinalDaTela, estadoDoFluxo, { markCompleted });
       } else {
         draftAtualizado = await saveBallotStepSelection(userId, chaveGrupo, listaFinalDaTela, estadoDoFluxo, { markCompleted });
@@ -577,17 +603,21 @@ export default function EscolherCandidatos({
   const shareData = useMemo(() => {
     if (!isSenadoresUnificados || selecionadosNaTela.length < 2 || !estadoDoFluxo) return null;
 
-    const draft = ballotDraft || (userId ? readBallotDraft(userId, estadoDoFluxo) : null);
+    const draft = ballotDraft || (userId ? readBallotDraft(userId, estadoDoFluxo) : readVisitorBallotDraft(estadoDoFluxo));
     const deputado = getFeaturedSelectionCandidates(draft?.candidate_groups?.deputado_federal || [], 1)[0] || null;
     if (!deputado) return null;
 
     return {
       estadoSigla: estadoDoFluxo,
       estadoNome: STATE_NAMES[estadoDoFluxo] || estadoDoFluxo,
+      userName: userData?.name || user?.displayName || '',
       deputado,
       senadores: getFeaturedSelectionCandidates(selecionadosNaTela, 2)
     };
-  }, [ballotDraft, estadoDoFluxo, isSenadoresUnificados, selecionadosNaTela, userId]);
+  }, [ballotDraft, estadoDoFluxo, isSenadoresUnificados, selecionadosNaTela, user?.displayName, userData?.name, userId]);
+  const draftStateLabel = estadoDoFluxo
+    ? `${STATE_NAMES[estadoDoFluxo] || estadoDoFluxo} (${estadoDoFluxo})`
+    : '';
 
   return (
     <>
@@ -601,7 +631,7 @@ export default function EscolherCandidatos({
         limiteSelecao={null}
         minimoSelecao={isSenadoresUnificados ? 2 : 1}
         selecaoInicial={selecionadosNaTela}
-        carregando={userLoading || loading}
+        carregando={(!isGuestMode && userLoading) || loading}
         mostrarBusca={true}
         valorBusca={busca}
         onChangeBusca={setBusca}
@@ -617,7 +647,10 @@ export default function EscolherCandidatos({
         activeSubNavigationId={filtroLista}
         onSubNavigationSelect={handleSubNavigation}
         featuredCandidateId={featuredCandidateId}
-        shareData={shareData}
+        shareData={isGuestMode ? null : shareData}
+        personalizedFieldsLocked={isGuestMode}
+        draftStateLabel={draftStateLabel}
+        draftIsLocal={isGuestMode}
       />
 
       <ConfirmModal

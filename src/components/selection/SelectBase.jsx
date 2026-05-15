@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import ConfirmModal from '@/components/feedback/ConfirmModal';
 import AppFooter from '@/components/layout/AppFooter';
 import BottomNavigation from '@/components/navigation/BottomNavigation';
 import { ChanceFlame } from '@/components/icons/ChanceFlame';
 import { BackIcon, InfoIcon, SearchIcon } from '@/components/icons/AppIcons';
 import ShareChoicePanel from '@/components/share/ShareChoicePanel';
+import { BRAZILIAN_STATES } from '@/constants/states';
 import { flowLog, flowWarn } from '@/utils/debugFlow';
 import {
   getCandidateChance,
@@ -95,9 +96,13 @@ export default function SelectBase({
   emptyMessage = 'Nenhum resultado encontrado.',
   shareData = null,
   featuredCandidateId = null,
+  personalizedFieldsLocked = false,
+  draftStateLabel = '',
+  draftIsLocal = false,
   renderItem
 }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [selecionados, setSelecionados] = useState(selecaoInicial);
   const [candidateRenderLimit, setCandidateRenderLimit] = useState(INITIAL_CANDIDATE_RENDER_LIMIT);
   const [candidateSearchOpen, setCandidateSearchOpen] = useState(false);
@@ -111,6 +116,7 @@ export default function SelectBase({
   const [modalLimiteSelecao, setModalLimiteSelecao] = useState({ aberto: false });
   const [modalSubstituirSenador, setModalSubstituirSenador] = useState({ aberto: false, item: null });
   const [modalErroSalvar, setModalErroSalvar] = useState({ aberto: false, mensagem: '' });
+  const [modalCampoBloqueado, setModalCampoBloqueado] = useState(false);
   const [salvandoSelecao, setSalvandoSelecao] = useState(false);
   const [isDesktopLayout, setIsDesktopLayout] = useState(() => (
     typeof window !== 'undefined' && window.matchMedia(DESKTOP_LAYOUT_QUERY).matches
@@ -541,7 +547,19 @@ export default function SelectBase({
     if (onChangeBusca) onChangeBusca(event.target.value);
   };
 
-  const candidateSearchIsOpen = candidateSearchOpen || Boolean(valorBusca);
+  const handleLockedMetricClick = () => {
+    setModalCampoBloqueado(true);
+  };
+
+  const handleLoginFromLockedMetric = () => {
+    navigate('/login', {
+      state: {
+        from: `${location.pathname}${location.search}`
+      }
+    });
+  };
+
+  const candidateSearchIsOpen = candidateSearchOpen || Boolean(valorBusca) || (isDesktopLayout && isCandidateOffice);
 
   const renderSearchField = (className = '') => {
     if (!mostrarBusca) return null;
@@ -553,7 +571,7 @@ export default function SelectBase({
           type="search"
           value={valorBusca}
           onChange={handleSearchChange}
-          placeholder="Pesquisa"
+          placeholder={isHomeState ? 'Buscar estado ou sigla' : 'Pesquisa'}
         />
       </label>
     );
@@ -574,7 +592,7 @@ export default function SelectBase({
             if (!valorBusca) setCandidateSearchOpen(false);
           }}
           onChange={handleSearchChange}
-          placeholder="Pesquisa"
+          placeholder="Buscar por nome, partido ou número"
         />
       </label>
     );
@@ -582,11 +600,41 @@ export default function SelectBase({
 
   const renderStateList = () => {
     const estadoSelecionado = selecionados[0] || null;
+    const suggestedState = BRAZILIAN_STATES.find((estado) => estado.sigla === 'ES') || dados.find((estado) => estado.sigla === 'ES');
+    const isSuggestedSelected = Boolean(suggestedState && estadoSelecionado?.sigla === suggestedState.sigla);
+    const handleSuggestedStateContinue = async () => {
+      if (!suggestedState || salvandoSelecao) return;
+      await commitSelection([suggestedState], { autoConfirm: true, completed: true });
+    };
 
     return (
       <div className={`state-selection-flow nv-container ${estadoSelecionado ? 'has-current-state' : ''}`}>
+        <section className="state-selection-intro" aria-label="Escolha de estado">
+          <div className="state-selection-intro__copy">
+            <span>Plano de voto</span>
+            <h2>Escolha o estado onde você vota</h2>
+            <p>Seu plano será montado com base nos candidatos disponíveis para este estado.</p>
+          </div>
+
+          {suggestedState && (
+            <article className={`state-suggested-card ${isSuggestedSelected ? 'is-selected' : ''}`}>
+              <span>Estado sugerido</span>
+              <h3>{suggestedState.nome} ({suggestedState.sigla})</h3>
+              <p>Use o estado sugerido para avançar direto para os candidatos.</p>
+              <button
+                className="nv-touch"
+                type="button"
+                onClick={handleSuggestedStateContinue}
+                disabled={salvandoSelecao}
+              >
+                Continuar com este estado
+              </button>
+            </article>
+          )}
+        </section>
+
         {estadoSelecionado && (
-          <section className="state-current-section" aria-label="Meu estado">
+          <section className="state-current-section state-current-section--mobile" aria-label="Meu estado">
             <div className="prototype-section-heading">
               <h2>Meu estado</h2>
               <p>Estado em que você vota</p>
@@ -598,10 +646,10 @@ export default function SelectBase({
           </section>
         )}
 
-        <section className="state-selection-panel" aria-label="Outros estados">
+        <section className="state-selection-panel" aria-label="Estados">
           <div className="prototype-section-heading">
-            <h2>Estados</h2>
-            <p>Selecione o estado em que você vota</p>
+            <h2>Todos os estados</h2>
+            <p>Busque pela sigla ou escolha na lista abaixo.</p>
           </div>
 
           {renderSearchField('select-search-field--state')}
@@ -632,24 +680,34 @@ export default function SelectBase({
   };
 
   const renderCandidateList = () => {
-    const currentTitle = isSenateOffice || showSelectedInCurrentSection ? 'Meus candidatos' : 'Meu candidato';
+    const currentTitle = 'Meu rascunho';
     const hasCurrentCandidates = currentSectionCandidates.length > 0;
+    const showDraftSidebar = isCandidateOffice && (hasCurrentCandidates || isDesktopLayout);
     return (
-      <div className={`candidate-flow nv-container ${hasCurrentCandidates ? 'has-current-selection' : ''} ${isSenateOffice ? 'candidate-flow--senate' : 'candidate-flow--single'} ${showSelectedInCurrentSection ? 'is-showing-all-selected' : ''}`} id="tour-lista">
-        {hasCurrentCandidates && (
+      <div className={`candidate-flow nv-container ${showDraftSidebar ? 'has-current-selection' : ''} ${isSenateOffice ? 'candidate-flow--senate' : 'candidate-flow--single'} ${showSelectedInCurrentSection ? 'is-showing-all-selected' : ''}`} id="tour-lista">
+        {showDraftSidebar && (
           <section className="candidate-current-section">
             <div className="prototype-section-heading prototype-section-heading--current">
               <div className="prototype-section-heading__copy">
                 <h2>{currentTitle}</h2>
-                {currentSelectionSubtitle && (
-                  <p>
-                    {currentSelectionSubtitle.prefix}
-                    <span className="candidate-current-highlight">{currentSelectionSubtitle.highlight}</span>
-                    {currentSelectionSubtitle.showFire && (
-                      <ChanceFlame className="candidate-current-highlight__flame" size={12} />
-                    )}
-                  </p>
-                )}
+                <p>
+                  {draftIsLocal ? (
+                    <>
+                      <span className="candidate-current-badge">Rascunho local</span>
+                      <span>Entre para salvar na conta.</span>
+                    </>
+                  ) : currentSelectionSubtitle ? (
+                    <>
+                      {currentSelectionSubtitle.prefix}
+                      <span className="candidate-current-highlight">{currentSelectionSubtitle.highlight}</span>
+                      {currentSelectionSubtitle.showFire && (
+                        <ChanceFlame className="candidate-current-highlight__flame" size={12} />
+                      )}
+                    </>
+                  ) : (
+                    <span>Escolha candidatos para montar seu plano.</span>
+                  )}
+                </p>
               </div>
               {selectedSubNavigationItem && (
                 <button
@@ -665,20 +723,36 @@ export default function SelectBase({
               )}
             </div>
 
+            {draftStateLabel && (
+              <div className="candidate-current-state">
+                <span>Estado</span>
+                <strong>{draftStateLabel}</strong>
+              </div>
+            )}
+
             <div className={`candidate-current-list ${isSenateOffice ? 'candidate-current-list--double' : ''}`}>
-              {currentSectionCandidates.map((candidate) => (
-                <CandidateCard
-                  key={candidate.id}
-                  candidate={candidate}
-                  summary
-                  actionLabel="Remover"
-                  selected
-                  featuredMetrics={featuredMetricsByCandidateId.get(candidate.id)}
-                  showAssessmentSubtitle
-                  disabled={salvandoSelecao}
-                  onSelect={() => handleSelect(candidate)}
-                />
-              ))}
+              {hasCurrentCandidates ? (
+                currentSectionCandidates.map((candidate) => (
+                  <CandidateCard
+                    key={candidate.id}
+                    candidate={candidate}
+                    summary
+                    actionLabel="Remover"
+                    selected
+                    featuredMetrics={featuredMetricsByCandidateId.get(candidate.id)}
+                    showAssessmentSubtitle={!personalizedFieldsLocked}
+                    lockPersonalizedFields={false}
+                    onLockedMetricClick={handleLockedMetricClick}
+                    disabled={salvandoSelecao}
+                    onSelect={() => handleSelect(candidate)}
+                  />
+                ))
+              ) : (
+                <div className="candidate-current-empty">
+                  <strong>Nenhum candidato escolhido ainda</strong>
+                  <span>Use a lista ao lado para adicionar nomes ao rascunho.</span>
+                </div>
+              )}
             </div>
 
           </section>
@@ -714,6 +788,10 @@ export default function SelectBase({
                   onClick={() => {
                     revealContinue();
                     if (candidateSearchIsOpen) {
+                      if (isDesktopLayout && isCandidateOffice) {
+                        candidateSearchInputRef.current?.focus();
+                        return;
+                      }
                       if (valorBusca && onChangeBusca) onChangeBusca('');
                       setCandidateSearchOpen(false);
                       return;
@@ -740,6 +818,8 @@ export default function SelectBase({
                   selected={selecionados.some((item) => item.id === candidate.id)}
                   featuredMetrics={featuredMetricsByCandidateId.get(candidate.id)}
                   showAssessmentSubtitle
+                  lockPersonalizedFields={personalizedFieldsLocked}
+                  onLockedMetricClick={handleLockedMetricClick}
                   disabled={salvandoSelecao}
                   onSelect={() => handleSelect(candidate)}
                 />
@@ -776,7 +856,7 @@ export default function SelectBase({
         onClick={handleContinue}
         disabled={salvandoSelecao || !hasRequiredSelection}
       >
-        {isSenateOffice ? 'SALVAR' : 'CONTINUAR'}
+        {isSenateOffice ? (personalizedFieldsLocked ? 'REVISAR RASCUNHO' : 'SALVAR') : 'CONTINUAR'}
       </button>
     )
   );
@@ -930,6 +1010,17 @@ export default function SelectBase({
         textoConfirmar="OK, ENTENDI"
         mostrarCancelar={false}
         onConfirm={() => setModalErroSalvar({ aberto: false, mensagem: '' })}
+      />
+
+      <ConfirmModal
+        isOpen={modalCampoBloqueado}
+        titulo="Recurso disponível com login"
+        mensagem="Faça login para liberar indicadores e salvar seu plano na conta."
+        textoConfirmar="ENTRAR AGORA"
+        textoCancelar="CONTINUAR EXPLORANDO"
+        tipo="login-required"
+        onConfirm={handleLoginFromLockedMetric}
+        onCancel={() => setModalCampoBloqueado(false)}
       />
     </div>
   );

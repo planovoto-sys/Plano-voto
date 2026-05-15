@@ -1,104 +1,303 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ClearIcon, CopyIcon, DownloadIcon, ShareIcon } from '@/components/icons/AppIcons';
 import {
-  copyShareText,
   createShareAnalysis,
   downloadShareImage,
-  getShareChanceBand,
-  getShareScoreBand,
   shareTemplate,
   SHARE_CARD_TEMPLATES
 } from '@/services/share/shareCardService';
 import './ShareChoicePanel.css';
 
-const getBarStyle = (value) => ({ '--share-bar-value': `${value}%` });
+const clampPercent = (value) => Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
 
-function SharePreview({ templateId, analysis }) {
-  if (templateId === 'placar') {
-    return (
-      <article className="share-preview-card share-preview-card--placar">
-        <span className="share-preview-card__eyebrow">MEU PLACAR ELEITORAL</span>
-        <h3>{analysis.estadoNome}</h3>
-        <div className="share-score-list">
-          <span>Deputado Federal <strong>Nota {analysis.deputadoScoreBand} · Viabilidade {analysis.deputadoChanceBand}</strong></span>
-          <span>Senador 1 <strong>Nota {analysis.senatorOneScoreBand} · Viabilidade {analysis.senatorOneChanceBand}</strong></span>
-          <span>Senador 2 <strong>Nota {analysis.senatorTwoScoreBand} · Viabilidade {analysis.senatorTwoChanceBand}</strong></span>
-        </div>
-        <p>Foco em viabilidade {analysis.chanceBand.toLowerCase()} e avaliação {analysis.scoreBand.toLowerCase()}.</p>
-        <small>Candidatos ocultos</small>
-      </article>
-    );
-  }
+const getCandidateName = (name, fallback) => name || fallback;
 
-  if (templateId === 'blindado') {
+function ShareArtworkCard({ templateId, analysis, variant = 'main' }) {
+  const deputadoName = getCandidateName(analysis.deputadoName, 'Deputado federal definido');
+  const senatorOne = getCandidateName(analysis.senatorNames[0], 'Senador 1 definido');
+  const senatorTwo = getCandidateName(analysis.senatorNames[1], 'Senador 2 definido');
+  const locationLine = `${analysis.estadoNome} • ${analysis.year}`;
+
+  if (templateId === 'completo') {
     return (
-      <article className="share-preview-card share-preview-card--blindado">
-        <span className="share-preview-card__eyebrow">VOTO BLINDADO</span>
-        <h3>Minha escolha não é palpite. É análise.</h3>
-        <div className="share-check-list">
-          <span>Deputado Federal escolhido</span>
-          <span>2 Senadores escolhidos</span>
-          <span>Critérios analisados</span>
-          <span>Nomes protegidos</span>
+      <article className={`share-art-card share-art-card--completo share-art-card--${variant}`}>
+        <div className="share-art-card__brand">
+          <strong>nossovoto.org</strong>
+          <span>Mostra nomes</span>
         </div>
-        <p>{analysis.estadoNome} · {analysis.year}</p>
+        <h3>Meu plano de voto</h3>
+        <p>Estado: {analysis.estadoNome}</p>
+        <div className="share-art-card__candidate-list">
+          <span>Deputado Federal</span>
+          <strong>{deputadoName}</strong>
+          <span>Senadores</span>
+          <strong>{senatorOne}</strong>
+          <strong>{senatorTwo}</strong>
+        </div>
+        <div className="share-art-card__cta">
+          <span>Monte o seu também</span>
+          <strong>nossovoto.org</strong>
+        </div>
       </article>
     );
   }
 
   if (templateId === 'termometro') {
     return (
-      <article className="share-preview-card share-preview-card--termometro">
-        <span className="share-preview-card__eyebrow">TERMÔMETRO DA MINHA ESCOLHA</span>
-        <h3>{analysis.profile.title}</h3>
-        <div className="share-meter-list">
-          <span>Segurança eleitoral <i><b style={getBarStyle(analysis.termometer.security)}></b></i></span>
-          <span>Avaliação técnica <i><b style={getBarStyle(analysis.termometer.technical)}></b></i></span>
-          <span>Conclusão do fluxo <i><b style={getBarStyle(analysis.termometer.completion)}></b></i></span>
-          <span>Privacidade <i><b style={getBarStyle(analysis.termometer.privacy)}></b></i></span>
+      <article className={`share-art-card share-art-card--termometro share-art-card--${variant}`}>
+        <div className="share-art-card__brand">
+          <strong>nossovoto.org</strong>
+          <span>Visual</span>
         </div>
-        <small>Candidatos ocultos</small>
+        <h3>Meu plano em números</h3>
+        <div className="share-art-card__meters">
+          <span style={{ '--share-meter-value': clampPercent(analysis.averageChance) }}>
+            <i><strong>{analysis.averageChanceLabel}</strong></i>
+            <small>Viabilidade geral</small>
+          </span>
+          <span className="share-art-card__meter--score" style={{ '--share-meter-value': clampPercent(analysis.averageScore * 10) }}>
+            <i><strong>{analysis.averageScoreLabel}</strong></i>
+            <small>Média das notas</small>
+          </span>
+        </div>
+        <p>Indicadores de apoio para revisar o plano.</p>
+        <div className="share-art-card__cta">
+          <span>Monte o seu também</span>
+          <strong>nossovoto.org</strong>
+        </div>
+      </article>
+    );
+  }
+
+  if (templateId === 'checklist') {
+    return (
+      <article className={`share-art-card share-art-card--checklist share-art-card--${variant}`}>
+        <div className="share-art-card__brand">
+          <strong>nossovoto.org</strong>
+          <span>Sem nomes</span>
+        </div>
+        <h3>Checklist do meu plano</h3>
+        <div className="share-art-card__checklist">
+          <span>Estado escolhido ✓</span>
+          <span>Deputado federal escolhido ✓</span>
+          <span>Senadores escolhidos ✓</span>
+          <span>Rascunho revisado ✓</span>
+        </div>
+        <p>Agora é revisar antes da decisão final.</p>
+        <div className="share-art-card__cta">
+          <span>Monte o seu também</span>
+          <strong>nossovoto.org</strong>
+        </div>
       </article>
     );
   }
 
   return (
-    <article className="share-preview-card share-preview-card--perfil">
-      <span className="share-preview-card__eyebrow">MEU PERFIL POLÍTICO</span>
-      <p>{analysis.estadoNome} · {analysis.year}</p>
-      <h3>{analysis.profile.title}</h3>
-      <span className="share-preview-card__summary">{analysis.profile.summary}</span>
-      <div className="share-priority-list">
-        {analysis.profile.priorities.map((priority, index) => (
-          <span key={priority}>{index < 2 ? '↑' : '↓'} {priority}</span>
-        ))}
+    <article className={`share-art-card share-art-card--resumo share-art-card--${variant}`}>
+      <div className="share-art-card__brand">
+        <strong>nossovoto.org</strong>
+        <span>Seguro</span>
       </div>
-      <small>Deputado e senadores definidos · nomes ocultos</small>
+      <h3>Meu plano de voto está pronto</h3>
+      <p>{locationLine}</p>
+      <div className="share-art-card__checklist">
+        <span>Deputado federal definido</span>
+        <span>Senadores definidos</span>
+        <span>Nomes ocultos por privacidade</span>
+      </div>
+      <div className="share-art-card__cta">
+        <span>Monte o seu também</span>
+        <strong>nossovoto.org</strong>
+      </div>
     </article>
   );
 }
 
+function ShareMainGallery({ activeTemplateId, analysis, onSelect, actions }) {
+  const galleryRef = useRef(null);
+  const cardRefs = useRef(new Map());
+  const scrollFrameRef = useRef(0);
+  const dragStateRef = useRef({ active: false, startX: 0, startScrollLeft: 0, moved: false });
+
+  useEffect(() => {
+    const activeCard = cardRefs.current.get(activeTemplateId);
+    activeCard?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'center'
+    });
+  }, [activeTemplateId]);
+
+  useEffect(() => () => {
+    if (typeof window !== 'undefined') window.cancelAnimationFrame(scrollFrameRef.current);
+  }, []);
+
+  const selectCenteredCard = () => {
+    const gallery = galleryRef.current;
+    if (!gallery) return;
+
+    const galleryRect = gallery.getBoundingClientRect();
+    const galleryCenter = galleryRect.left + galleryRect.width / 2;
+    let closestTemplateId = activeTemplateId;
+    let closestDistance = Number.POSITIVE_INFINITY;
+
+    SHARE_CARD_TEMPLATES.forEach((template) => {
+      const card = cardRefs.current.get(template.id);
+      if (!card) return;
+
+      const cardRect = card.getBoundingClientRect();
+      const cardCenter = cardRect.left + cardRect.width / 2;
+      const distance = Math.abs(cardCenter - galleryCenter);
+
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestTemplateId = template.id;
+      }
+    });
+
+    if (closestTemplateId !== activeTemplateId) onSelect(closestTemplateId);
+  };
+
+  const handleScroll = () => {
+    if (typeof window === 'undefined') return;
+
+    window.cancelAnimationFrame(scrollFrameRef.current);
+    scrollFrameRef.current = window.requestAnimationFrame(selectCenteredCard);
+  };
+
+  const handlePointerDown = (event) => {
+    const gallery = galleryRef.current;
+    if (!gallery) return;
+
+    dragStateRef.current = {
+      active: true,
+      startX: event.clientX,
+      startScrollLeft: gallery.scrollLeft,
+      moved: false
+    };
+    gallery.setPointerCapture?.(event.pointerId);
+  };
+
+  const handlePointerMove = (event) => {
+    const gallery = galleryRef.current;
+    const dragState = dragStateRef.current;
+    if (!gallery || !dragState.active) return;
+
+    const deltaX = event.clientX - dragState.startX;
+    if (Math.abs(deltaX) > 5) dragState.moved = true;
+    gallery.scrollLeft = dragState.startScrollLeft - deltaX;
+  };
+
+  const endDrag = () => {
+    dragStateRef.current.active = false;
+  };
+
+  return (
+    <section className="share-gallery-stage" aria-label="Galeria de artes para compartilhar">
+      <div
+        ref={galleryRef}
+        className="share-gallery-track"
+        onScroll={handleScroll}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+        onPointerLeave={endDrag}
+      >
+        {SHARE_CARD_TEMPLATES.map((template) => (
+          <button
+            key={template.id}
+            ref={(element) => {
+              if (element) cardRefs.current.set(template.id, element);
+              else cardRefs.current.delete(template.id);
+            }}
+            type="button"
+            className={`share-gallery-slide nv-touch ${template.id === activeTemplateId ? 'is-active' : ''}`}
+            aria-label={`Selecionar ${template.label}`}
+            aria-pressed={template.id === activeTemplateId}
+            onClick={() => {
+              if (dragStateRef.current.moved) {
+                dragStateRef.current.moved = false;
+                return;
+              }
+              onSelect(template.id);
+            }}
+          >
+            <ShareArtworkCard templateId={template.id} analysis={analysis} />
+          </button>
+        ))}
+      </div>
+
+      <div className="share-gallery-actions" aria-label="Ações de compartilhamento">
+        {actions}
+      </div>
+    </section>
+  );
+}
+
+function ShareThumbnailStrip({ activeTemplateId, onSelect }) {
+  const stripRef = useRef(null);
+  const thumbnailRefs = useRef(new Map());
+
+  useEffect(() => {
+    const strip = stripRef.current;
+    const activeThumbnail = thumbnailRefs.current.get(activeTemplateId);
+    if (!strip || !activeThumbnail) return;
+
+    const nextScrollLeft = activeThumbnail.offsetLeft - (strip.clientWidth - activeThumbnail.clientWidth) / 2;
+    strip.scrollTo({
+      left: Math.max(0, nextScrollLeft),
+      behavior: 'smooth'
+    });
+  }, [activeTemplateId]);
+
+  return (
+    <div ref={stripRef} className="share-thumbnail-strip" aria-label="Modelos de compartilhamento">
+      {SHARE_CARD_TEMPLATES.map((template) => (
+        <button
+          key={template.id}
+          ref={(element) => {
+            if (element) thumbnailRefs.current.set(template.id, element);
+            else thumbnailRefs.current.delete(template.id);
+          }}
+          type="button"
+          className={`share-thumbnail nv-touch ${template.id === activeTemplateId ? 'is-active' : ''}`}
+          aria-label={`Selecionar ${template.label}`}
+          aria-pressed={template.id === activeTemplateId}
+          onClick={() => onSelect(template.id)}
+        >
+          <span>{template.tag}</span>
+          <strong>{template.label}</strong>
+          <small>{template.description}</small>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+const copyLinkToClipboard = async (url) => {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(url);
+    return;
+  }
+
+  const textArea = document.createElement('textarea');
+  textArea.value = url;
+  textArea.setAttribute('readonly', '');
+  textArea.style.position = 'fixed';
+  textArea.style.opacity = '0';
+  document.body.appendChild(textArea);
+  textArea.select();
+  document.execCommand('copy');
+  textArea.remove();
+};
+
 export default function ShareChoicePanel({ shareData, className = '' }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [templateId, setTemplateId] = useState('perfil');
+  const [templateId, setTemplateId] = useState('resumo');
   const [status, setStatus] = useState('');
-  const analysis = useMemo(() => {
-    const baseAnalysis = createShareAnalysis(shareData);
-    const getScoreBand = (candidate) => (candidate ? getShareScoreBand(candidate) : 'Pendente');
-    const getChanceBand = (candidate) => (candidate ? getShareChanceBand(candidate) : 'Pendente');
-
-    return {
-      ...baseAnalysis,
-      deputadoScoreBand: getScoreBand(baseAnalysis.deputado),
-      deputadoChanceBand: getChanceBand(baseAnalysis.deputado),
-      senatorOneScoreBand: getScoreBand(baseAnalysis.senadores[0]),
-      senatorOneChanceBand: getChanceBand(baseAnalysis.senadores[0]),
-      senatorTwoScoreBand: getScoreBand(baseAnalysis.senadores[1]),
-      senatorTwoChanceBand: getChanceBand(baseAnalysis.senadores[1])
-    };
-  }, [shareData]);
-
+  const analysis = useMemo(() => createShareAnalysis(shareData), [shareData]);
   const activeTemplate = SHARE_CARD_TEMPLATES.find((template) => template.id === templateId) || SHARE_CARD_TEMPLATES[0];
 
   useEffect(() => {
@@ -118,11 +317,16 @@ export default function ShareChoicePanel({ shareData, className = '' }) {
     };
   }, [isOpen]);
 
-  const runAction = async (action) => {
+  const handleTemplateSelect = (nextTemplateId) => {
+    setTemplateId(nextTemplateId);
+    setStatus('');
+  };
+
+  const runAction = async (action, successMessage) => {
     setStatus('');
     try {
-      const result = await action();
-      setStatus(result === 'copied' ? 'Texto copiado para compartilhar.' : 'Pronto para compartilhar.');
+      await action();
+      setStatus(successMessage);
     } catch (error) {
       setStatus(error?.message || 'Não foi possível concluir o compartilhamento.');
     }
@@ -130,51 +334,52 @@ export default function ShareChoicePanel({ shareData, className = '' }) {
 
   if (!shareData) return null;
 
+  const galleryActions = (
+    <>
+      <button className="share-gallery-actions__primary nv-touch" type="button" onClick={() => runAction(() => shareTemplate(templateId, shareData), 'Pronto para compartilhar.')}>
+        <ShareIcon />
+        <span>Compartilhar</span>
+      </button>
+      <button className="share-gallery-actions__secondary nv-touch" type="button" onClick={() => runAction(() => downloadShareImage(templateId, shareData), 'Imagem baixada.')}>
+        <DownloadIcon />
+        <span>Baixar imagem</span>
+      </button>
+      <button className="share-gallery-actions__link nv-touch" type="button" onClick={() => runAction(() => copyLinkToClipboard(analysis.url), 'Link copiado.')}>
+        <CopyIcon />
+        <span>Copiar link</span>
+      </button>
+    </>
+  );
+
   const shareModal = isOpen ? (
     <div className="share-modal nv-no-overflow" role="dialog" aria-modal="true" aria-labelledby="share-modal-title">
       <div className="share-modal__content nv-no-overflow">
         <header className="share-modal__header">
           <div>
-            <span>Escolha o que compartilhar</span>
-            <h2 id="share-modal-title">{activeTemplate.label}</h2>
+            <h2 id="share-modal-title">Compartilhar meu plano</h2>
+            <p>Arraste para escolher uma arte pronta</p>
           </div>
           <button className="share-modal__close nv-touch" type="button" onClick={() => setIsOpen(false)} aria-label="Fechar">
             <ClearIcon />
           </button>
         </header>
 
-        <div className="share-template-tabs" role="tablist" aria-label="Modelos de compartilhamento">
-          {SHARE_CARD_TEMPLATES.map((template) => (
-            <button
-              key={template.id}
-              type="button"
-              className={`nv-touch ${template.id === templateId ? 'is-active' : ''}`}
-              onClick={() => {
-                setTemplateId(template.id);
-                setStatus('');
-              }}
-            >
-              {template.shortLabel}
-            </button>
-          ))}
-        </div>
+        <div className="share-modal__body">
+          <ShareMainGallery
+            activeTemplateId={templateId}
+            analysis={analysis}
+            onSelect={handleTemplateSelect}
+            actions={galleryActions}
+          />
 
-        <p className="share-template-description">{activeTemplate.description}</p>
-        <SharePreview templateId={templateId} analysis={analysis} />
-
-        <div className="share-modal__actions">
-          <button className="nv-touch" type="button" onClick={() => runAction(() => shareTemplate(templateId, shareData))}>
-            <ShareIcon />
-            <span>Compartilhar</span>
-          </button>
-          <button className="nv-touch" type="button" onClick={() => runAction(() => copyShareText(templateId, shareData).then(() => 'copied'))}>
-            <CopyIcon />
-            <span>Copiar texto</span>
-          </button>
-          <button className="nv-touch" type="button" onClick={() => runAction(() => downloadShareImage(templateId, shareData).then(() => 'shared'))}>
-            <DownloadIcon />
-            <span>Imagem</span>
-          </button>
+          <section className="share-thumbnail-panel" aria-label="Modelos">
+            <div className="share-preview-panel__heading">
+              <span>{activeTemplate.tag}</span>
+              <strong>{activeTemplate.label}</strong>
+              <small>{activeTemplate.description}</small>
+            </div>
+            <ShareThumbnailStrip activeTemplateId={templateId} onSelect={handleTemplateSelect} />
+          </section>
         </div>
 
         {status && <p className="share-modal__status" role="status">{status}</p>}
@@ -185,8 +390,8 @@ export default function ShareChoicePanel({ shareData, className = '' }) {
   return (
     <section className={`share-choice-panel nv-no-overflow ${className}`.trim()} aria-labelledby="share-choice-title">
       <div className="share-choice-panel__copy">
-        <strong id="share-choice-title">Compartilhe sem revelar suas escolhas</strong>
-        <span>Escolha um modelo com perfil, placar ou privacidade. Nenhum nome de candidato aparece.</span>
+        <strong id="share-choice-title">Compartilhar meu plano</strong>
+        <span>Escolha uma arte pronta e compartilhe em poucos toques.</span>
       </div>
       <button className="share-choice-panel__button nv-touch" type="button" onClick={() => setIsOpen(true)}>
         <ShareIcon />

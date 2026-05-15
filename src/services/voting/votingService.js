@@ -17,17 +17,21 @@ import {
   BALLOT_ROUTES,
   BALLOT_SCHEMA_VERSION,
   CAST_VOTE_FUNCTION_NAME,
+  CREATE_PLAN_HANDOFF_TOKEN_FUNCTION_NAME,
   DELETE_USER_ELECTION_DATA_FUNCTION_NAME,
   LEGACY_FLOW_STEP_ALIASES,
   OFFICE_MINIMUM_SELECTIONS,
+  REDEEM_PLAN_HANDOFF_TOKEN_FUNCTION_NAME,
   SAVE_BALLOT_STATE_FUNCTION_NAME,
-  SAVE_BALLOT_STEP_FUNCTION_NAME
+  SAVE_BALLOT_STEP_FUNCTION_NAME,
+  VISITOR_DRAFT_ID
 } from '@/constants/ballot';
 import { db, functions, functionsRegion } from '@/services/firebase/firebase';
 import { flowLog } from '@/utils/debugFlow';
 import { getCandidateStateCode, normalizeStateCode } from '@/utils/state';
 const STORAGE_PREFIX = `meuvoto:${ACTIVE_ELECTION_ID}`;
 const DRAFT_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+const VISITOR_DRAFT_STORAGE_ID = `${VISITOR_DRAFT_ID}:local`;
 let storageAvailability = null;
 
 export class VotingError extends Error {
@@ -229,6 +233,28 @@ const persistCallableDraft = (userId, fallbackEstado, data) => {
   return persistBallotDraft(userId, normalizedDraft);
 };
 
+export const readVisitorBallotDraft = (estado = null) => readBallotDraft(VISITOR_DRAFT_STORAGE_ID, estado);
+
+export const getVisitorBallotEstado = (fallbackEstado = null) => {
+  const draft = readVisitorBallotDraft(fallbackEstado);
+  return draft.estado || fallbackEstado || null;
+};
+
+export const saveVisitorBallotState = async (estado) => {
+  const activeEstado = normalizeStateCode(estado);
+  if (!activeEstado) throw new VotingError('STATE_REQUIRED', 'Escolha um estado antes de continuar.');
+
+  const previousDraft = readVisitorBallotDraft(activeEstado);
+  const nextDraft = previousDraft.estado === activeEstado
+    ? normalizeDraft({ ...previousDraft, estado: activeEstado, updated_at: new Date().toISOString() }, activeEstado)
+    : createEmptyBallotDraft(activeEstado);
+
+  return persistBallotDraft(VISITOR_DRAFT_STORAGE_ID, {
+    ...nextDraft,
+    updated_at: new Date().toISOString()
+  });
+};
+
 const normalizeRemoteDraftData = (data) => {
   if (!data) return data;
   const updatedAt = typeof data.updated_at?.toDate === 'function'
@@ -269,6 +295,45 @@ const assertCandidateMatchesStep = (candidate, stepKey, estado) => {
   if (candidateState && candidateState !== 'TODOS' && candidateState !== estado) {
     throw new VotingError('INVALID_CANDIDATE_STATE', `Candidato ${candidateId} não pertence ao estado selecionado.`);
   }
+};
+
+export const saveVisitorBallotStepSelection = async (stepKey, candidates, estado = null) => {
+  if (!BALLOT_FLOW_STEP_IDS.includes(stepKey)) {
+    throw new VotingError('INVALID_BALLOT_STEP', 'Etapa inválida para esta eleição.');
+  }
+
+  const normalizedCandidates = asArray(candidates)
+    .map(normalizeStoredCandidate)
+    .filter(Boolean);
+  const currentDraft = readVisitorBallotDraft(estado);
+  const activeEstado = normalizeStateCode(estado ?? currentDraft.estado);
+
+  if (!activeEstado) {
+    throw new VotingError('STATE_REQUIRED', 'Escolha um estado antes de selecionar candidatos.');
+  }
+
+  const candidateSnapshots = normalizedCandidates.map((candidate) => {
+    assertCandidateMatchesStep(candidate, stepKey, activeEstado);
+    return normalizeStoredCandidate(candidate);
+  }).filter(Boolean);
+
+  const nextDraft = normalizeDraft({
+    ...currentDraft,
+    estado: activeEstado,
+    candidate_groups: {
+      ...currentDraft.candidate_groups,
+      [stepKey]: candidateSnapshots,
+      ...(stepKey.startsWith('senadores') ? { senadores_2: [] } : {})
+    },
+    updated_at: new Date().toISOString()
+  }, activeEstado);
+
+  const senatorIds = nextDraft.candidate_groups.senadores_1.map((candidate) => candidate.id).filter(Boolean);
+  if (new Set(senatorIds).size !== senatorIds.length) {
+    throw new VotingError('DUPLICATED_CANDIDATE', 'O mesmo senador não pode ser escolhido mais de uma vez.');
+  }
+
+  return persistBallotDraft(VISITOR_DRAFT_STORAGE_ID, nextDraft);
 };
 
 const getDraftActiveCandidateIds = (draft) => {
@@ -542,6 +607,66 @@ export const saveBallotStepSelection = async (userId, stepKey, candidates, estad
   return persistCallableDraft(userId, activeEstado, response.data);
 };
 
+export const saveBallotDraftToAccount = async (userId, draft) => {
+  if (!userId) throw new VotingError('AUTH_REQUIRED', 'Faça login para continuar.');
+
+  const normalizedDraft = normalizeDraft(draft);
+  const activeEstado = normalizeStateCode(normalizedDraft.estado);
+  if (!activeEstado) return createEmptyBallotDraft();
+
+  let savedDraft = await saveBallotState(userId, activeEstado);
+  const deputadoFederal = normalizedDraft.candidate_groups.deputado_federal;
+  const senadores = normalizedDraft.candidate_groups.senadores_1;
+
+  if (deputadoFederal.length > 0) {
+    savedDraft = await saveBallotStepSelection(userId, 'deputado_federal', deputadoFederal, activeEstado, { markCompleted: true });
+  }
+
+  if (senadores.length > 0) {
+    savedDraft = await saveBallotStepSelection(userId, 'senadores_1', senadores, activeEstado, {
+      markCompleted: senadores.length >= OFFICE_MINIMUM_SELECTIONS.senadores
+    });
+  }
+
+  return savedDraft;
+};
+
+export const mergeVisitorBallotDraftIntoAccount = async (userId) => {
+  const visitorDraft = readVisitorBallotDraft();
+  if (!draftHasBallotSelections(visitorDraft) && !visitorDraft.estado) return null;
+
+  const savedDraft = await saveBallotDraftToAccount(userId, visitorDraft);
+  clearVisitorBallotDraft();
+  return savedDraft;
+};
+
+export const createPlanHandoffToken = async (draft) => {
+  const normalizedDraft = normalizeDraft(draft);
+  if (!normalizedDraft.estado) {
+    throw new VotingError('STATE_REQUIRED', 'Escolha um estado antes de gerar o QR Code.');
+  }
+
+  const createToken = httpsCallable(functions, CREATE_PLAN_HANDOFF_TOKEN_FUNCTION_NAME);
+  const response = await createToken({
+    schema_version: BALLOT_SCHEMA_VERSION,
+    election_id: ACTIVE_ELECTION_ID,
+    draft: normalizedDraft
+  });
+
+  return response.data || {};
+};
+
+export const redeemPlanHandoffToken = async (token) => {
+  const redeemToken = httpsCallable(functions, REDEEM_PLAN_HANDOFF_TOKEN_FUNCTION_NAME);
+  const response = await redeemToken({
+    schema_version: BALLOT_SCHEMA_VERSION,
+    election_id: ACTIVE_ELECTION_ID,
+    token
+  });
+
+  return normalizeDraft(response.data?.draft || null);
+};
+
 export const clearBallotDraft = (userId) => {
   if (!userId || !canUseStorage()) return;
   try {
@@ -550,6 +675,8 @@ export const clearBallotDraft = (userId) => {
     // O rascunho local e apenas um apoio de navegacao.
   }
 };
+
+export const clearVisitorBallotDraft = () => clearBallotDraft(VISITOR_DRAFT_STORAGE_ID);
 
 export const clearVoteReceipt = (userId) => {
   if (!userId || !canUseStorage()) return;

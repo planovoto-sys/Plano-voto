@@ -1,5 +1,7 @@
 import {
+  formatScore,
   getCandidateChance,
+  getCandidateName,
   getCandidateSystemScore
 } from '@/utils/candidateMetrics';
 
@@ -8,28 +10,40 @@ const SHARE_YEAR = '2026';
 
 export const SHARE_CARD_TEMPLATES = [
   {
-    id: 'perfil',
-    label: 'Perfil político',
-    shortLabel: 'Perfil',
-    description: 'Mostra o estilo de escolha sem revelar nomes.'
+    id: 'resumo',
+    label: 'Plano pronto',
+    shortLabel: 'Resumo',
+    thumbnailTitle: 'Plano pronto',
+    thumbnailSubtitle: 'Nomes ocultos',
+    tag: 'Seguro',
+    description: 'Nomes ocultos'
   },
   {
-    id: 'placar',
-    label: 'Placar eleitoral',
-    shortLabel: 'Placar',
-    description: 'Resume nota e viabilidade em faixas seguras.'
-  },
-  {
-    id: 'blindado',
-    label: 'Voto blindado',
-    shortLabel: 'Privacidade',
-    description: 'Valoriza decisão salva e nomes protegidos.'
+    id: 'completo',
+    label: 'Candidatos escolhidos',
+    shortLabel: 'Completo',
+    thumbnailTitle: 'Candidatos escolhidos',
+    thumbnailSubtitle: 'Mostra nomes',
+    tag: 'Mostra nomes',
+    description: 'Mostra nomes'
   },
   {
     id: 'termometro',
-    label: 'Termômetro',
-    shortLabel: 'Termômetro',
-    description: 'Gera barras de segurança, avaliação e conclusão.'
+    label: 'Termômetros',
+    shortLabel: 'Termômetros',
+    thumbnailTitle: '33% viabilidade',
+    thumbnailSubtitle: '7,61 média',
+    tag: 'Visual',
+    description: 'Viabilidade e média'
+  },
+  {
+    id: 'checklist',
+    label: 'Checklist',
+    shortLabel: 'Checklist',
+    thumbnailTitle: 'Estado ✓',
+    thumbnailSubtitle: 'Deputado ✓ Senadores ✓',
+    tag: 'Sem nomes',
+    description: 'Sem nomes'
   }
 ];
 
@@ -140,18 +154,25 @@ export const createShareAnalysis = (shareData) => {
     ? selectedCandidates.filter((candidate) => hasCandidateScore(candidate) && getCandidateSystemScore(candidate) > 0).length / selectedCandidates.length
     : 0;
   const profile = getProfile({ averageScore, averageChance, renovationRatio, mandateRatio });
+  const deputadoName = getCandidateName(deputado);
+  const senatorNames = senadores.map((candidate) => getCandidateName(candidate)).filter(Boolean);
 
   return {
     estadoNome: shareData?.estadoNome || shareData?.estadoSigla || 'Brasil',
     estadoSigla: shareData?.estadoSigla || '',
     year: shareData?.year || SHARE_YEAR,
     url: shareData?.url || APP_SHARE_URL,
+    userName: shareData?.userName || shareData?.profileName || '',
     deputado,
+    deputadoName,
     senadores,
+    senatorNames,
     selectedCandidates,
     completedCount: selectedCandidates.length,
     averageScore,
     averageChance,
+    averageScoreLabel: averageScore > 0 ? formatScore(averageScore) : '--',
+    averageChanceLabel: `${Math.round(clamp(averageChance))}%`,
     scoreBand: getShareScoreBand(averageScore),
     chanceBand: getShareChanceBand(averageChance),
     profile,
@@ -165,64 +186,56 @@ export const createShareAnalysis = (shareData) => {
 };
 
 const getTemplateLines = (templateId, analysis) => {
-  const locationLine = `${analysis.estadoNome} · ${analysis.year}`;
+  const deputadoName = analysis.deputadoName || 'Deputado federal definido';
+  const senatorOne = analysis.senatorNames[0] || 'Senador 1 definido';
+  const senatorTwo = analysis.senatorNames[1] || 'Senador 2 definido';
 
-  if (templateId === 'placar') {
+  if (templateId === 'resumo') {
     return [
-      'MEU PLACAR ELEITORAL',
-      `Estado: ${analysis.estadoNome}`,
-      '',
-      `Deputado Federal: Nota ${analysis.deputado ? getShareScoreBand(analysis.deputado) : 'Pendente'} · Viabilidade ${analysis.deputado ? getShareChanceBand(analysis.deputado) : 'Pendente'}`,
-      `Senador 1: Nota ${analysis.senadores[0] ? getShareScoreBand(analysis.senadores[0]) : 'Pendente'} · Viabilidade ${analysis.senadores[0] ? getShareChanceBand(analysis.senadores[0]) : 'Pendente'}`,
-      `Senador 2: Nota ${analysis.senadores[1] ? getShareScoreBand(analysis.senadores[1]) : 'Pendente'} · Viabilidade ${analysis.senadores[1] ? getShareChanceBand(analysis.senadores[1]) : 'Pendente'}`,
-      '',
-      `Resultado: foco em viabilidade ${analysis.chanceBand.toLowerCase()} e avaliação ${analysis.scoreBand.toLowerCase()}.`,
-      'Candidatos ocultos.'
+      'Meu plano de voto está pronto',
+      `${analysis.estadoNome} • ${analysis.year}`,
+      'Deputado federal definido',
+      'Senadores definidos',
+      'Nomes ocultos por privacidade',
+      'Monte o seu também',
+      'nossovoto.org'
     ];
   }
 
-  if (templateId === 'blindado') {
+  if (templateId === 'completo') {
     return [
-      'VOTO BLINDADO',
-      locationLine,
-      '',
-      'Eu comparei candidatos antes de escolher.',
-      'Deputado Federal escolhido',
-      '2 Senadores escolhidos',
-      'Critérios analisados',
-      'Nomes protegidos',
-      '',
-      'Minha escolha não é palpite. É análise.'
+      'Meu plano de voto',
+      `Estado: ${analysis.estadoNome}`,
+      'Deputado Federal',
+      deputadoName,
+      'Senadores',
+      senatorOne,
+      senatorTwo,
+      'Monte o seu também',
+      'nossovoto.org'
     ];
   }
 
   if (templateId === 'termometro') {
     return [
-      'TERMÔMETRO DA MINHA ESCOLHA',
-      `${analysis.estadoSigla || analysis.estadoNome} · ${analysis.year}`,
-      '',
-      `Segurança eleitoral: ${analysis.termometer.security}%`,
-      `Avaliação técnica: ${analysis.termometer.technical}%`,
-      `Conclusão do fluxo: ${analysis.termometer.completion}%`,
-      `Privacidade: ${analysis.termometer.privacy}%`,
-      '',
-      `Resultado: ${analysis.profile.title}.`,
-      'Candidatos ocultos.'
+      'Meu plano em números',
+      `${analysis.averageChanceLabel} Viabilidade geral`,
+      `${analysis.averageScoreLabel} Média das notas`,
+      'Indicadores de apoio para revisar o plano.',
+      'Monte o seu também',
+      'nossovoto.org'
     ];
   }
 
   return [
-    'MEU PERFIL POLÍTICO',
-    locationLine,
-    '',
-    `Meu perfil de escolha: ${analysis.profile.title.toUpperCase()}`,
-    analysis.profile.summary,
-    '',
-    'Priorizei candidatos com:',
-    ...analysis.profile.priorities.map((priority) => `↑ ${priority}`),
-    '',
-    'Deputado Federal: escolha definida · nome oculto',
-    'Senado: 2 escolhas definidas · nomes ocultos'
+    'Checklist do meu plano',
+    'Estado escolhido ✓',
+    'Deputado federal escolhido ✓',
+    'Senadores escolhidos ✓',
+    'Rascunho revisado ✓',
+    'Agora é revisar antes da decisão final.',
+    'Monte o seu também',
+    'nossovoto.org'
   ];
 };
 
@@ -231,7 +244,6 @@ export const buildShareText = (templateId, shareData) => {
   return [
     ...getTemplateLines(templateId, analysis),
     '',
-    'Descubra seu perfil de escolha no app:',
     analysis.url
   ].join('\n');
 };
@@ -289,109 +301,186 @@ const drawRoundedRect = (context, x, y, width, height, radius) => {
   context.quadraticCurveTo(x, y, x + safeRadius, y);
 };
 
-const drawBar = (context, x, y, width, label, value) => {
-  context.fillStyle = '#4a4a4a';
-  context.font = '800 27px Montserrat, Arial, sans-serif';
-  context.fillText(label, x, y);
-  context.fillStyle = '#e8ebee';
+const drawInfoRows = (context, rows, x, y, width, options = {}) => {
+  let currentY = y;
+  const font = options.font || '800 38px Montserrat, Arial, sans-serif';
+  const lineHeight = options.lineHeight || 48;
+  context.font = font;
+
+  rows.forEach((row) => {
+    const rowText = typeof row === 'string' ? row : row.text;
+    const rowColor = typeof row === 'string' ? '#25323a' : row.color || '#25323a';
+    const rowFont = typeof row === 'string' ? font : row.font || font;
+    context.font = rowFont;
+    const wrappedLines = wrapCanvasText(context, rowText, width - 56);
+    const rowHeight = Math.max(options.minHeight || 78, wrappedLines.length * lineHeight + 32);
+
+    context.fillStyle = options.background || 'rgba(255, 255, 255, 0.78)';
+    context.beginPath();
+    drawRoundedRect(context, x, currentY, width, rowHeight, 22);
+    context.fill();
+    context.strokeStyle = options.border || 'rgba(17, 17, 17, 0.08)';
+    context.lineWidth = 2;
+    context.stroke();
+
+    context.fillStyle = rowColor;
+    wrappedLines.forEach((line, index) => {
+      context.fillText(line, x + 28, currentY + 44 + (index * lineHeight));
+    });
+
+    currentY += rowHeight + (options.gap || 18);
+  });
+
+  return currentY;
+};
+
+const drawStoryCta = (context, analysis, x, y, width) => {
+  context.fillStyle = '#111111';
   context.beginPath();
-  drawRoundedRect(context, x, y + 20, width, 18, 9);
+  drawRoundedRect(context, x, y, width, 122, 30);
   context.fill();
-  context.fillStyle = '#4a4a4a';
+  context.fillStyle = '#ffffff';
+  context.font = '900 36px Montserrat, Arial, sans-serif';
+  context.fillText('Monte o seu também', x + 34, y + 52);
+  context.fillStyle = 'rgba(255, 255, 255, 0.78)';
+  context.font = '800 30px Montserrat, Arial, sans-serif';
+  context.fillText((analysis.url || APP_SHARE_URL).replace('https://', ''), x + 34, y + 94);
+};
+
+const drawMetricBox = (context, x, y, width, height, label, value, percent, color = '#ff8b49') => {
+  const progress = clamp(percent);
+  const centerX = x + width / 2;
+  const centerY = y + 84;
+  const radius = 58;
+  context.fillStyle = color === '#72d552' ? '#f7fff4' : '#fff8f1';
   context.beginPath();
-  drawRoundedRect(context, x, y + 20, width * (value / 100), 18, 9);
+  drawRoundedRect(context, x, y, width, height, 28);
   context.fill();
-  context.font = '900 28px Montserrat, Arial, sans-serif';
-  context.fillText(`${value}%`, x + width + 24, y + 37);
+  context.strokeStyle = color === '#72d552' ? '#dcefd7' : '#f1dfd3';
+  context.lineWidth = 2;
+  context.stroke();
+
+  context.lineWidth = 16;
+  context.lineCap = 'round';
+  context.strokeStyle = 'rgba(169, 169, 169, 0.25)';
+  context.beginPath();
+  context.arc(centerX, centerY, radius, 0, Math.PI * 2);
+  context.stroke();
+
+  context.strokeStyle = color;
+  context.beginPath();
+  context.arc(centerX, centerY, radius, -Math.PI / 2, (-Math.PI / 2) + (Math.PI * 2 * (progress / 100)));
+  context.stroke();
+
+  context.fillStyle = '#ffffff';
+  context.beginPath();
+  context.arc(centerX, centerY, 44, 0, Math.PI * 2);
+  context.fill();
+
+  context.fillStyle = color;
+  context.font = '900 34px Montserrat, Arial, sans-serif';
+  context.textAlign = 'center';
+  context.fillText(value, centerX, centerY + 11);
+  context.fillStyle = '#59645f';
+  context.font = '800 28px Montserrat, Arial, sans-serif';
+  context.fillText(label, centerX, y + height - 42);
+  context.lineCap = 'butt';
+  context.textAlign = 'left';
 };
 
 const drawShareCanvas = (templateId, analysis, canvas) => {
+  const template = SHARE_CARD_TEMPLATES.find((item) => item.id === templateId) || SHARE_CARD_TEMPLATES[0];
   const context = canvas.getContext('2d');
   const width = 1080;
-  const height = 1350;
+  const height = 1920;
   canvas.width = width;
   canvas.height = height;
 
-  context.fillStyle = '#f4f4f4';
+  const background = context.createLinearGradient(0, 0, width, height);
+  background.addColorStop(0, '#fff8ef');
+  background.addColorStop(0.5, templateId === 'termometro' ? '#f8faf9' : '#ffffff');
+  background.addColorStop(1, templateId === 'resumo' ? '#f7fff4' : '#ffffff');
+  context.fillStyle = background;
   context.fillRect(0, 0, width, height);
+
   context.fillStyle = '#ffffff';
   context.beginPath();
-  drawRoundedRect(context, 70, 70, 940, 1210, 28);
+  drawRoundedRect(context, 62, 62, 956, 1796, 42);
   context.fill();
-  context.strokeStyle = '#dedede';
+  context.strokeStyle = 'rgba(17, 17, 17, 0.1)';
   context.lineWidth = 3;
   context.stroke();
 
-  context.fillStyle = '#4a4a4a';
-  context.font = '900 34px Montserrat, Arial, sans-serif';
-  context.fillText('nossovoto.org', 118, 142);
-
-  context.strokeStyle = '#e8ebee';
-  context.lineWidth = 3;
-  context.beginPath();
-  context.moveTo(118, 178);
-  context.lineTo(962, 178);
-  context.stroke();
-
-  if (templateId === 'termometro') {
-    drawTextBlock(context, [
-      { text: 'TERMÔMETRO DA MINHA ESCOLHA', font: '900 57px Montserrat, Arial, sans-serif', color: '#111111', lineHeight: 66 },
-      { text: `${analysis.estadoNome} · ${analysis.year}`, font: '700 31px Montserrat, Arial, sans-serif', color: '#69746f', lineHeight: 42, after: 58 }
-    ], { x: 118, y: 280, maxWidth: 820, font: '700 30px Montserrat, Arial, sans-serif', color: '#4a4a4a', lineHeight: 40 });
-
-    drawBar(context, 118, 510, 650, 'Segurança eleitoral', analysis.termometer.security);
-    drawBar(context, 118, 635, 650, 'Avaliação técnica', analysis.termometer.technical);
-    drawBar(context, 118, 760, 650, 'Conclusão do fluxo', analysis.termometer.completion);
-    drawBar(context, 118, 885, 650, 'Privacidade', analysis.termometer.privacy);
-
-    drawTextBlock(context, [
-      { text: `Resultado: ${analysis.profile.title}`, font: '900 45px Montserrat, Arial, sans-serif', color: '#111111', lineHeight: 54 },
-      { text: 'Candidatos ocultos. Veja como fica o seu termômetro.', font: '700 28px Montserrat, Arial, sans-serif', color: '#69746f', lineHeight: 38 }
-    ], { x: 118, y: 1080, maxWidth: 820, font: '700 30px Montserrat, Arial, sans-serif', color: '#4a4a4a', lineHeight: 40 });
-  } else {
-    const lines = templateId === 'placar'
-      ? [
-          { text: 'MEU PLACAR ELEITORAL', font: '900 62px Montserrat, Arial, sans-serif', color: '#111111', lineHeight: 72 },
-          { text: `Estado: ${analysis.estadoNome}`, font: '700 32px Montserrat, Arial, sans-serif', color: '#69746f', lineHeight: 44, after: 56 },
-          { text: `Deputado Federal · Nota ${analysis.deputado ? getShareScoreBand(analysis.deputado) : 'Pendente'} · Viabilidade ${analysis.deputado ? getShareChanceBand(analysis.deputado) : 'Pendente'}`, font: '800 32px Montserrat, Arial, sans-serif', color: '#4a4a4a', lineHeight: 46 },
-          { text: `Senador 1 · Nota ${analysis.senadores[0] ? getShareScoreBand(analysis.senadores[0]) : 'Pendente'} · Viabilidade ${analysis.senadores[0] ? getShareChanceBand(analysis.senadores[0]) : 'Pendente'}`, font: '800 32px Montserrat, Arial, sans-serif', color: '#4a4a4a', lineHeight: 46 },
-          { text: `Senador 2 · Nota ${analysis.senadores[1] ? getShareScoreBand(analysis.senadores[1]) : 'Pendente'} · Viabilidade ${analysis.senadores[1] ? getShareChanceBand(analysis.senadores[1]) : 'Pendente'}`, font: '800 32px Montserrat, Arial, sans-serif', color: '#4a4a4a', lineHeight: 46, after: 48 },
-          { text: `Resultado: foco em viabilidade ${analysis.chanceBand.toLowerCase()} e avaliação ${analysis.scoreBand.toLowerCase()}.`, font: '900 38px Montserrat, Arial, sans-serif', color: '#111111', lineHeight: 50 },
-          { text: 'Candidatos ocultos.', font: '700 30px Montserrat, Arial, sans-serif', color: '#69746f', lineHeight: 40 }
-        ]
-      : templateId === 'blindado'
-        ? [
-            { text: 'VOTO BLINDADO', font: '900 72px Montserrat, Arial, sans-serif', color: '#111111', lineHeight: 82 },
-            { text: `${analysis.estadoNome} · ${analysis.year}`, font: '700 32px Montserrat, Arial, sans-serif', color: '#69746f', lineHeight: 44, after: 70 },
-            { text: 'Eu comparei candidatos antes de escolher.', font: '900 41px Montserrat, Arial, sans-serif', color: '#4a4a4a', lineHeight: 54, after: 46 },
-            { text: '✓ Deputado Federal escolhido', font: '800 34px Montserrat, Arial, sans-serif', color: '#4a4a4a', lineHeight: 48 },
-            { text: '✓ 2 Senadores escolhidos', font: '800 34px Montserrat, Arial, sans-serif', color: '#4a4a4a', lineHeight: 48 },
-            { text: '✓ Critérios analisados', font: '800 34px Montserrat, Arial, sans-serif', color: '#4a4a4a', lineHeight: 48 },
-            { text: '🔒 Nomes protegidos', font: '800 34px Montserrat, Arial, sans-serif', color: '#4a4a4a', lineHeight: 48, after: 70 },
-            { text: 'Minha escolha não é palpite. É análise.', font: '900 40px Montserrat, Arial, sans-serif', color: '#111111', lineHeight: 52 }
-          ]
-        : [
-            { text: 'MEU PERFIL POLÍTICO', font: '900 62px Montserrat, Arial, sans-serif', color: '#111111', lineHeight: 72 },
-            { text: `${analysis.estadoNome} · ${analysis.year}`, font: '700 32px Montserrat, Arial, sans-serif', color: '#69746f', lineHeight: 44, after: 58 },
-            { text: 'Meu perfil de escolha:', font: '700 32px Montserrat, Arial, sans-serif', color: '#69746f', lineHeight: 44 },
-            { text: analysis.profile.title.toUpperCase(), font: '900 72px Montserrat, Arial, sans-serif', color: '#111111', lineHeight: 82 },
-            { text: analysis.profile.summary, font: '700 31px Montserrat, Arial, sans-serif', color: '#4a4a4a', lineHeight: 42, after: 40 },
-            { text: `↑ ${analysis.profile.priorities[0]}`, font: '800 31px Montserrat, Arial, sans-serif', color: '#4a4a4a', lineHeight: 43 },
-            { text: `↑ ${analysis.profile.priorities[1]}`, font: '800 31px Montserrat, Arial, sans-serif', color: '#4a4a4a', lineHeight: 43 },
-            { text: `↓ ${analysis.profile.priorities[2]}`, font: '800 31px Montserrat, Arial, sans-serif', color: '#4a4a4a', lineHeight: 43, after: 50 },
-            { text: 'Deputado Federal · escolha definida · nome oculto', font: '700 28px Montserrat, Arial, sans-serif', color: '#69746f', lineHeight: 38 },
-            { text: 'Senado · 2 escolhas definidas · nomes ocultos', font: '700 28px Montserrat, Arial, sans-serif', color: '#69746f', lineHeight: 38 }
-          ];
-
-    drawTextBlock(context, lines, { x: 118, y: 280, maxWidth: 820, font: '700 30px Montserrat, Arial, sans-serif', color: '#4a4a4a', lineHeight: 40 });
-  }
+  const contentX = 112;
+  const contentWidth = 856;
+  const tagText = template.tag.toUpperCase();
 
   context.fillStyle = '#111111';
-  context.font = '900 34px Montserrat, Arial, sans-serif';
-  context.fillText('Descubra seu perfil de escolha', 118, 1196);
-  context.fillStyle = '#69746f';
-  context.font = '800 28px Montserrat, Arial, sans-serif';
-  context.fillText(APP_SHARE_URL.replace('https://', ''), 118, 1240);
+  context.font = '900 38px Montserrat, Arial, sans-serif';
+  context.fillText('nossovoto.org', contentX, 150);
+
+  context.fillStyle = '#fff7ef';
+  context.beginPath();
+  const tagWidth = Math.min(340, context.measureText(tagText).width + 72);
+  drawRoundedRect(context, width - contentX - tagWidth, 112, tagWidth, 54, 27);
+  context.fill();
+  context.fillStyle = '#c95b18';
+  context.font = '900 23px Montserrat, Arial, sans-serif';
+  context.fillText(tagText, width - contentX - tagWidth + 36, 148);
+
+  if (templateId === 'resumo') {
+    drawTextBlock(context, [
+      { text: 'Meu plano de voto está pronto', font: '900 88px Montserrat, Arial, sans-serif', color: '#111111', lineHeight: 92 }
+    ], { x: contentX, y: 320, maxWidth: contentWidth, font: '900 88px Montserrat, Arial, sans-serif', color: '#111111', lineHeight: 92 });
+    context.fillStyle = '#39433f';
+    context.font = '800 38px Montserrat, Arial, sans-serif';
+    context.fillText(`${analysis.estadoNome} • ${analysis.year}`, contentX, 600);
+    drawInfoRows(context, [
+      'Deputado federal definido',
+      'Senadores definidos',
+      { text: 'Nomes ocultos por privacidade', color: '#c95b18' }
+    ], contentX, 690, contentWidth);
+  } else if (templateId === 'completo') {
+    const senatorOne = analysis.senatorNames[0] || 'Senador 1 definido';
+    const senatorTwo = analysis.senatorNames[1] || 'Senador 2 definido';
+    drawTextBlock(context, [
+      { text: 'Meu plano de voto', font: '900 92px Montserrat, Arial, sans-serif', color: '#111111', lineHeight: 96 }
+    ], { x: contentX, y: 320, maxWidth: contentWidth, font: '900 92px Montserrat, Arial, sans-serif', color: '#111111', lineHeight: 96 });
+    context.fillStyle = '#39433f';
+    context.font = '800 38px Montserrat, Arial, sans-serif';
+    context.fillText(`Estado: ${analysis.estadoNome}`, contentX, 575);
+    drawInfoRows(context, [
+      { text: 'Deputado Federal', color: '#c95b18', font: '900 27px Montserrat, Arial, sans-serif' },
+      { text: analysis.deputadoName || 'Deputado federal definido', color: '#111111', font: '900 42px Montserrat, Arial, sans-serif' },
+      { text: 'Senadores', color: '#c95b18', font: '900 27px Montserrat, Arial, sans-serif' },
+      { text: senatorOne, color: '#111111', font: '900 40px Montserrat, Arial, sans-serif' },
+      { text: senatorTwo, color: '#111111', font: '900 40px Montserrat, Arial, sans-serif' }
+    ], contentX, 660, contentWidth, { minHeight: 70 });
+  } else if (templateId === 'termometro') {
+    drawTextBlock(context, [
+      { text: 'Meu plano em números', font: '900 88px Montserrat, Arial, sans-serif', color: '#111111', lineHeight: 92 }
+    ], { x: contentX, y: 320, maxWidth: contentWidth, font: '900 88px Montserrat, Arial, sans-serif', color: '#111111', lineHeight: 92 });
+    drawMetricBox(context, contentX, 650, 405, 238, 'Viabilidade geral', analysis.averageChanceLabel, analysis.averageChance);
+    drawMetricBox(context, contentX + 451, 650, 405, 238, 'Média das notas', analysis.averageScoreLabel, analysis.averageScore * 10, '#72d552');
+    drawTextBlock(context, [
+      { text: 'Indicadores de apoio para revisar o plano.', font: '800 40px Montserrat, Arial, sans-serif', color: '#39433f', lineHeight: 50 }
+    ], { x: contentX, y: 1010, maxWidth: contentWidth, font: '800 40px Montserrat, Arial, sans-serif', color: '#39433f', lineHeight: 50 });
+  } else {
+    drawTextBlock(context, [
+      { text: 'Checklist do meu plano', font: '900 88px Montserrat, Arial, sans-serif', color: '#111111', lineHeight: 92 }
+    ], { x: contentX, y: 320, maxWidth: contentWidth, font: '900 88px Montserrat, Arial, sans-serif', color: '#111111', lineHeight: 92 });
+    drawInfoRows(context, [
+      'Estado escolhido ✓',
+      'Deputado federal escolhido ✓',
+      'Senadores escolhidos ✓',
+      'Rascunho revisado ✓'
+    ], contentX, 650, contentWidth);
+    drawTextBlock(context, [
+      { text: 'Agora é revisar antes da decisão final.', font: '800 38px Montserrat, Arial, sans-serif', color: '#39433f', lineHeight: 48 }
+    ], { x: contentX, y: 1120, maxWidth: contentWidth, font: '800 38px Montserrat, Arial, sans-serif', color: '#39433f', lineHeight: 48 });
+  }
+
+  drawStoryCta(context, analysis, contentX, 1630, 520);
 };
 
 export const createShareImageBlob = async (templateId, shareData) => {
@@ -439,7 +528,7 @@ export const copyShareText = async (templateId, shareData) => {
 
 export const shareTemplate = async (templateId, shareData) => {
   const text = buildShareText(templateId, shareData);
-  const title = 'Meu resultado no nossovoto.org';
+  const title = 'Compartilhar meu plano no Nosso Voto';
 
   if (navigator.share) {
     try {
@@ -453,7 +542,11 @@ export const shareTemplate = async (templateId, shareData) => {
       // Se o navegador nao aceitar arquivo, tenta compartilhar texto.
     }
 
-    await navigator.share({ title, text, url: shareData?.url || APP_SHARE_URL });
+    await navigator.share({
+      title,
+      text,
+      url: shareData?.url || APP_SHARE_URL
+    });
     return 'shared';
   }
 

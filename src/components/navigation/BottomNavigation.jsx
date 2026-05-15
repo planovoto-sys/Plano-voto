@@ -4,7 +4,9 @@ import { useUser } from '@/hooks/useUser';
 import {
   getBallotEstado,
   getBallotProgress,
-  readBallotDraft
+  getVisitorBallotEstado,
+  readBallotDraft,
+  readVisitorBallotDraft
 } from '@/services/voting/votingService';
 import {
   DeputadoNavIcon,
@@ -48,8 +50,8 @@ export default function BottomNavigation({ currentStep, placement = 'footer' }) 
   const navigate = useNavigate();
   const location = useLocation();
 
-  const draft = user?.uid ? readBallotDraft(user.uid, userData?.estado) : null;
-  const estadoSelecionado = user?.uid ? getBallotEstado(user.uid, userData?.estado) : userData?.estado;
+  const draft = user?.uid ? readBallotDraft(user.uid, userData?.estado) : readVisitorBallotDraft();
+  const estadoSelecionado = user?.uid ? getBallotEstado(user.uid, userData?.estado) : getVisitorBallotEstado();
   const progress = draft ? getBallotProgress(draft) : null;
   const activeStep = currentStep || STEP_BY_PATH[location.pathname] || 'estado';
 
