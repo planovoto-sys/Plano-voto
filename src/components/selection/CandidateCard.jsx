@@ -49,11 +49,6 @@ const getCandidateNumber = (candidate = {}) => {
   return String(value || '').trim();
 };
 
-const getCandidateOffice = (candidate = {}) => {
-  const value = candidate.Cargo ?? candidate.cargo ?? '';
-  return String(value || '').trim();
-};
-
 const getSingleLineSize = (value, sizes) => {
   const length = String(value || '').trim().length;
 
@@ -102,7 +97,6 @@ export default function CandidateCard({
   const name = getCandidateName(candidate);
   const party = getCandidateParty(candidate);
   const number = getCandidateNumber(candidate);
-  const office = getCandidateOffice(candidate);
   const candidateScore = getCandidateDisplayScore(candidate);
   const partyScore = getCandidatePartyScore(candidate);
   const chance = getCandidateChance(candidate);
@@ -116,10 +110,10 @@ export default function CandidateCard({
   const assessment = getAssessment({ isFireFeatured, isViabilityComplete, systemScore });
   const metricTone = isFireFeatured ? 'featured' : tone;
   const textFitStyle = {
-    '--candidate-name-size': `${getSingleLineSize(name, { base: 20, lg: 17, md: 14.4, sm: 12.2, xs: 10.4, xxs: 9.2 })}px`,
-    '--candidate-name-mobile-size': `${getSingleLineSize(name, { base: 18, lg: 15.2, md: 12.8, sm: 10.8, xs: 9.2, xxs: 8.2 })}px`,
-    '--candidate-name-narrow-size': `${getSingleLineSize(name, { base: 16, lg: 13.6, md: 11.2, sm: 9.6, xs: 8.2, xxs: 7.4 })}px`,
-    '--candidate-name-tiny-size': `${getSingleLineSize(name, { base: 15, lg: 12.6, md: 10.4, sm: 8.8, xs: 7.7, xxs: 7 })}px`,
+    '--candidate-name-size': '20px',
+    '--candidate-name-mobile-size': '18px',
+    '--candidate-name-narrow-size': '18px',
+    '--candidate-name-tiny-size': '17px',
     '--candidate-assessment-size': `${getSingleLineSize(assessment.label, { base: 10, lg: 9.4, md: 8.7, sm: 8, xs: 7.2, xxs: 6.6 })}px`,
     '--candidate-assessment-mobile-size': `${getSingleLineSize(assessment.label, { base: 8.4, lg: 8, md: 7.4, sm: 6.9, xs: 6.3, xxs: 5.9 })}px`
   };
@@ -130,7 +124,7 @@ export default function CandidateCard({
     event.stopPropagation();
     onLockedMetricClick?.();
   };
-  const metaParts = [party, number ? `Nº ${number}` : '', office].filter(Boolean);
+  const metaParts = [party, number ? `Nº ${number}` : ''].filter(Boolean);
 
   return (
     <button

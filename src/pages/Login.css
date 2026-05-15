@@ -38,6 +38,7 @@
   height: auto;
   flex: 0 0 auto;
   object-fit: contain;
+  transform: translateY(-5px);
 }
 
 .login-brand span {
@@ -88,7 +89,7 @@
 
 .btn-comecar {
   width: 100%;
-  min-height: 102px;
+  min-height: 88px;
   border: 0;
   border-radius: 9px;
   background: linear-gradient(90deg, #ffdf59 0%, #ff8b49 100%);
@@ -143,10 +144,11 @@
 
   .login-brand__flame {
     width: clamp(23px, 7.4vw, 27px);
+    transform: translateY(-4px);
   }
 
   .btn-comecar {
-    min-height: 86px;
+    min-height: 72px;
   }
 }
 
@@ -164,7 +166,7 @@
   }
 
   .btn-comecar {
-    min-height: 76px;
+    min-height: 68px;
   }
 }
 

@@ -22,7 +22,6 @@ import {
 } from '@/services/candidates/candidateService';
 import ShareChoicePanel from '@/components/share/ShareChoicePanel';
 import BottomNavigation from '@/components/navigation/BottomNavigation';
-import AppFooter from '@/components/layout/AppFooter';
 import ConfirmModal from '@/components/feedback/ConfirmModal';
 import { BackIcon } from '@/components/icons/AppIcons';
 import { ChanceFlame } from '@/components/icons/ChanceFlame';
@@ -55,16 +54,6 @@ const getCandidateNumber = (candidate = {}) => {
   const value = candidate.Numero ?? candidate.numero ?? candidate.number ?? '';
   const normalizedValue = String(value).trim();
   return normalizedValue || '000000';
-};
-
-const getCandidateAssessment = (candidate = {}) => {
-  const score = getCandidateSystemScore(candidate);
-  const chance = getCandidateChance(candidate);
-
-  if (score >= 7 && chance >= 100) return { label: 'Não precisa de mais votos', icon: 'info' };
-  if (score >= 7) return { label: 'Precisa de mais votos', icon: 'info' };
-  if (score > 0) return { label: 'Mal avaliado', icon: score < 6 ? 'error' : 'info' };
-  return { label: 'Sem nota', icon: 'info' };
 };
 
 const getCandidateOfficeKey = (candidate = {}) => {
@@ -159,46 +148,16 @@ function MetricThermometer({ title, value, displayValue, caption, tone = 'viabil
   );
 }
 
-function CandidateViability({ value, locked = false, onLockedClick }) {
-  const progress = clampPercent(value);
-  const handleClick = (event) => {
-    if (!locked) return;
-
-    event.preventDefault();
-    event.stopPropagation();
-    onLockedClick?.();
-  };
-  const handleKeyDown = (event) => {
-    if (!locked || !['Enter', ' '].includes(event.key)) return;
-
-    handleClick(event);
-  };
-
-  return (
-    <span
-      className={`my-plan-candidate-viability ${locked ? 'is-locked' : ''}`}
-      style={{ '--candidate-plan-progress': progress }}
-      role={locked ? 'button' : undefined}
-      tabIndex={locked ? 0 : undefined}
-      aria-label={locked ? 'Campo de viabilidade bloqueado' : `Viabilidade ${progress}%`}
-      onClick={handleClick}
-      onKeyDown={handleKeyDown}
-    >
-      <strong>{progress}<small>%</small></strong>
-      <span>viável</span>
-    </span>
-  );
-}
-
-function CandidateSummaryCard({ candidate, fallbackTitle, onEdit, locked = false, onLockedClick, showIndicators = true }) {
+function PlanSummaryCandidate({ label, candidate, fallbackTitle, onEdit, showIndicators = true, onLockedClick }) {
   if (!candidate) {
     return (
-      <article className="my-plan-candidate my-plan-candidate--empty">
-        <div className="my-plan-candidate__identity">
+      <article className="my-plan-summary-candidate is-empty">
+        <div className="my-plan-summary-candidate__main">
+          <span>{label}</span>
           <strong>{fallbackTitle}</strong>
           <small>Nº 000000 | Pendente</small>
         </div>
-        <button type="button" onClick={onEdit}>Escolher</button>
+        <button className="my-plan-summary-candidate__edit" type="button" onClick={onEdit}>Escolher</button>
       </article>
     );
   }
@@ -208,42 +167,32 @@ function CandidateSummaryCard({ candidate, fallbackTitle, onEdit, locked = false
   const number = getCandidateNumber(candidate);
   const score = getCandidateSystemScore(candidate);
   const chance = getCandidateChance(candidate);
-  const tone = locked ? 'neutral' : getCandidateTone(candidate);
-  const assessment = getCandidateAssessment(candidate);
+  const tone = getCandidateTone(candidate);
+  const scoreLabel = score > 0 ? formatScore(score) : '--';
+  const chanceLabel = `${clampPercent(chance)}%`;
 
   return (
-    <article className={`my-plan-candidate my-plan-candidate--${tone} ${showIndicators ? '' : 'my-plan-candidate--draft'}`}>
-      <div className="my-plan-candidate__identity">
+    <article className={`my-plan-summary-candidate my-plan-summary-candidate--${tone}`}>
+      <div className="my-plan-summary-candidate__main">
+        <span>{label}</span>
         <strong>{name || fallbackTitle}</strong>
         <small>Nº {number} | {party || 'Partido não informado'}</small>
-        {showIndicators && (
-          <span
-            className={`my-plan-candidate__assessment my-plan-candidate__assessment--${assessment.icon} ${locked ? 'is-locked' : ''}`}
-            role={locked ? 'button' : undefined}
-            tabIndex={locked ? 0 : undefined}
-            aria-label={locked ? 'Campo de viabilidade bloqueado' : undefined}
-            onClick={(event) => {
-              if (!locked) return;
-              event.preventDefault();
-              event.stopPropagation();
-              onLockedClick?.();
-            }}
-            onKeyDown={(event) => {
-              if (!locked || !['Enter', ' '].includes(event.key)) return;
-              event.preventDefault();
-              event.stopPropagation();
-              onLockedClick?.();
-            }}
-          >
-            <i aria-hidden="true">{assessment.icon === 'error' ? 'X' : '!'}</i>
-            <span>Nota {score > 0 ? formatScore(score) : '--'} | {assessment.label}</span>
-          </span>
-        )}
       </div>
       {showIndicators ? (
-        <CandidateViability value={chance} locked={locked} onLockedClick={onLockedClick} />
+        <div className="my-plan-summary-candidate__metrics" aria-label={`Indicadores de ${name || fallbackTitle}`}>
+          <span>
+            <small>Nota</small>
+            <strong>{scoreLabel}</strong>
+          </span>
+          <span>
+            <small>Viabilidade</small>
+            <strong>{chanceLabel}</strong>
+          </span>
+        </div>
       ) : (
-        <span className="my-plan-candidate__draft-pill">No rascunho</span>
+        <button className="my-plan-summary-candidate__locked" type="button" onClick={onLockedClick}>
+          Indicadores com login
+        </button>
       )}
     </article>
   );
@@ -258,7 +207,6 @@ export default function MeuPlano() {
   const localDraft = user?.uid ? readBallotDraft(user.uid, userData?.estado) : readVisitorBallotDraft();
   const [remoteDraftState, setRemoteDraftState] = useState({ userId: null, draft: null, loading: false });
   const [candidateDetailsState, setCandidateDetailsState] = useState({ signature: '', candidatesById: new Map(), loading: false });
-  const [expandedCandidateGroups, setExpandedCandidateGroups] = useState({ deputados: false, senadores: false });
   const [handoffQrState, setHandoffQrState] = useState({ status: 'idle', url: '', expiresAtMs: null, error: '' });
   const [modalCampoBloqueado, setModalCampoBloqueado] = useState(false);
   const [planUrl] = useState(() => getPlanUrl());
@@ -435,16 +383,7 @@ export default function MeuPlano() {
   const averageChance = getAverageChance(selectedCandidates);
   const averageScore = getAverageScore(selectedCandidates);
   const scoreMeterValue = averageScore * 10;
-  const showAllDeputados = expandedCandidateGroups.deputados;
-  const showAllSenadores = expandedCandidateGroups.senadores;
-  const visibleDeputadosFederais = showAllDeputados ? deputadosFederais : deputadosFederais.slice(0, 1);
-  const visibleSenadores = showAllSenadores ? senadores : senadores.slice(0, 2);
-  const hasMoreDeputados = deputadosFederais.length > 1;
-  const hasMoreSenadores = senadores.length > 2;
   const profileName = isGuestMode ? 'Visitante' : userData?.name || user?.displayName || 'Usuário';
-  const profileEmail = isGuestMode ? 'Rascunho local' : userData?.email || user?.email || '';
-  const profileImage = isGuestMode ? '' : userData?.profile_image || user?.photoURL || '';
-  const profileInitial = profileName.trim().charAt(0).toUpperCase() || 'N';
   const canSharePlan = !isGuestMode && Boolean(deputadosFederais.length > 0 && senadores.length >= 2 && estadoSigla);
   const shareData = canSharePlan ? {
     estadoSigla,
@@ -454,11 +393,6 @@ export default function MeuPlano() {
     senadores: senadores.slice(0, 2),
     url: planUrl
   } : null;
-  const deputySummary = deputadoFederal ? getCandidateName(deputadoFederal) : 'Pendente';
-  const senatorsSummary = senadores.length > 0
-    ? senadores.slice(0, 2).map((candidate) => getCandidateName(candidate)).filter(Boolean).join(', ')
-    : 'Pendente';
-
   const handleEdit = (route = BALLOT_ROUTES.deputadoFederal) => {
     navigate(route, { state: { bypassVoteRedirect: true } });
   };
@@ -473,13 +407,6 @@ export default function MeuPlano() {
 
   const handleLockedFieldClick = () => {
     setModalCampoBloqueado(true);
-  };
-
-  const toggleCandidateGroup = (group) => {
-    setExpandedCandidateGroups((currentGroups) => ({
-      ...currentGroups,
-      [group]: !currentGroups[group]
-    }));
   };
 
   const handleLogout = async () => {
@@ -505,55 +432,37 @@ export default function MeuPlano() {
         <div className="my-plan-header__brand">
           <strong>
             <ChanceFlame className="my-plan-header__flame" size={24} />
-            <span className="my-plan-header__brand-text">nossoVoto<em>.org</em></span>
+            <span className="my-plan-header__brand-text">nossovoto<em>.org</em></span>
           </strong>
-          <small>Meu plano</small>
         </div>
       </header>
 
       <main className="my-plan-scroll prototype-scroll nv-scroll">
         <div className="my-plan-shell">
-          <section className={`my-plan-status ${isGuestMode ? 'is-guest' : 'is-saved'}`} aria-label="Status do plano">
-            <span>{isGuestMode ? 'Rascunho local' : 'Plano salvo'}</span>
-            <h1>{isGuestMode ? 'Seu rascunho está pronto' : 'Plano salvo com sucesso'}</h1>
-            <p>
-              {isGuestMode
-                ? 'Seu rascunho está salvo apenas neste dispositivo. Entre para guardar na conta e acessar depois.'
-                : 'Suas escolhas foram guardadas na conta e podem ser retomadas em outro dispositivo.'}
-            </p>
-          </section>
-
           <section className="my-plan-summary-card" aria-label="Resumo do rascunho">
-            <div>
+            <div className="my-plan-summary-card__state">
               <span>Estado</span>
               <strong>{estadoNome}{estadoSigla ? ` (${estadoSigla})` : ''}</strong>
             </div>
-            <div>
-              <span>Deputado Federal</span>
-              <strong>{deputySummary}</strong>
-            </div>
-            <div>
-              <span>Senadores</span>
-              <strong>{senatorsSummary}</strong>
-            </div>
-          </section>
 
-          <section className="my-plan-hero" aria-label="Resumo do plano">
-            <div className="my-plan-profile">
-              {profileImage ? (
-                <img src={profileImage} alt="" referrerPolicy="no-referrer" />
-              ) : (
-                <span aria-hidden="true">{profileInitial}</span>
-              )}
-              <div>
-                <strong>{profileName}</strong>
-                {profileEmail && <small>{profileEmail}</small>}
-              </div>
-            </div>
-
-            <div className="my-plan-state">
-              <span>Estado escolhido</span>
-              <strong>{estadoNome}{estadoSigla ? ` (${estadoSigla})` : ''}</strong>
+            <div className="my-plan-summary-card__candidates">
+              <PlanSummaryCandidate
+                label="Deputado Federal"
+                candidate={deputadoFederal}
+                fallbackTitle="Deputado Federal"
+                onEdit={() => handleEdit(BALLOT_ROUTES.deputadoFederal)}
+                onLockedClick={handleLockedFieldClick}
+              />
+              {[0, 1].map((index) => (
+                <PlanSummaryCandidate
+                  key={`senador-resumo-${index}`}
+                  label={`Senador ${index + 1}`}
+                  candidate={senadores[index] || null}
+                  fallbackTitle={`Senador ${index + 1}`}
+                  onEdit={() => handleEdit(BALLOT_ROUTES.senadores)}
+                  onLockedClick={handleLockedFieldClick}
+                />
+              ))}
             </div>
           </section>
 
@@ -581,93 +490,13 @@ export default function MeuPlano() {
             </section>
           )}
 
-          <section className="my-plan-section" aria-labelledby="my-plan-candidates-title">
-            <div className="my-plan-section__heading">
-              <h2 id="my-plan-candidates-title">Candidatos escolhidos</h2>
-              <p>Revise os nomes salvos por cargo.</p>
-            </div>
-
-            <div className="my-plan-candidate-groups">
-              <div className="my-plan-office">
-                <div className="my-plan-office__header">
-                  <h3>Deputado Federal</h3>
-                </div>
-                <div className="my-plan-office-candidates" id="my-plan-deputados-list">
-                  {deputadosFederais.length > 0 ? visibleDeputadosFederais.map((candidate, index) => (
-                    <CandidateSummaryCard
-                      key={candidate.id || `deputado-${index}`}
-                      candidate={candidate}
-                      fallbackTitle={`Deputado Federal ${index + 1}`}
-                      onEdit={() => handleEdit(BALLOT_ROUTES.deputadoFederal)}
-                      onLockedClick={handleLockedFieldClick}
-                      showIndicators={!isGuestMode}
-                    />
-                  )) : (
-                    <CandidateSummaryCard
-                      candidate={null}
-                      fallbackTitle="Deputado Federal"
-                      onEdit={() => handleEdit(BALLOT_ROUTES.deputadoFederal)}
-                    />
-                  )}
-                </div>
-                {hasMoreDeputados && (
-                  <button
-                    className="my-plan-office__toggle"
-                    type="button"
-                    aria-expanded={showAllDeputados}
-                    aria-controls="my-plan-deputados-list"
-                    onClick={() => toggleCandidateGroup('deputados')}
-                  >
-                    {showAllDeputados ? 'Mostrar menos deputados' : `Ver todos os deputados (${deputadosFederais.length})`}
-                  </button>
-                )}
-              </div>
-
-              <div className="my-plan-office">
-                <div className="my-plan-office__header">
-                  <h3>Senadores</h3>
-                </div>
-                <div className="my-plan-office-candidates my-plan-senators" id="my-plan-senadores-list">
-                  {senadores.length > 0 ? visibleSenadores.map((candidate, index) => (
-                    <CandidateSummaryCard
-                      key={candidate.id || `senador-${index}`}
-                      candidate={candidate}
-                      fallbackTitle={`Senador ${index + 1}`}
-                      onEdit={() => handleEdit(BALLOT_ROUTES.senadores)}
-                      onLockedClick={handleLockedFieldClick}
-                      showIndicators={!isGuestMode}
-                    />
-                  )) : [0, 1].map((index) => (
-                    <CandidateSummaryCard
-                      key={`senador-${index}`}
-                      candidate={null}
-                      fallbackTitle={`Senador ${index + 1}`}
-                      onEdit={() => handleEdit(BALLOT_ROUTES.senadores)}
-                    />
-                  ))}
-                </div>
-                {hasMoreSenadores && (
-                  <button
-                    className="my-plan-office__toggle"
-                    type="button"
-                    aria-expanded={showAllSenadores}
-                    aria-controls="my-plan-senadores-list"
-                    onClick={() => toggleCandidateGroup('senadores')}
-                  >
-                    {showAllSenadores ? 'Mostrar menos senadores' : `Ver todos os senadores (${senadores.length})`}
-                  </button>
-                )}
-              </div>
-            </div>
-          </section>
-
           <section className="my-plan-actions" aria-label="Ações do plano">
             {isGuestMode ? (
               <div className="my-plan-save-invite">
                 <strong>Salvar rascunho na conta</strong>
-                <span>Seu rascunho está salvo apenas neste dispositivo. Entre para guardar na conta e acessar depois.</span>
+                <span>Rascunho local. Entre para salvar na conta.</span>
                 <button className="nv-touch" type="button" onClick={handleLogin}>
-                  Fazer login para salvar
+                  Fazer login
                 </button>
               </div>
             ) : (
@@ -681,9 +510,20 @@ export default function MeuPlano() {
               )
             )}
 
-            <button className="my-plan-edit-action nv-touch" type="button" onClick={() => handleEdit(planProgress?.hasDeputadoFederal ? BALLOT_ROUTES.senadores : BALLOT_ROUTES.deputadoFederal)}>
-              {isGuestMode ? 'Voltar e editar' : 'Editar escolhas'}
-            </button>
+            {isGuestMode ? (
+              <button className="my-plan-edit-action nv-touch" type="button" onClick={() => handleEdit(planProgress?.hasDeputadoFederal ? BALLOT_ROUTES.senadores : BALLOT_ROUTES.deputadoFederal)}>
+                Voltar e editar
+              </button>
+            ) : (
+              <div className="my-plan-actions__row">
+                <button className="my-plan-edit-action nv-touch" type="button" onClick={() => handleEdit(planProgress?.hasDeputadoFederal ? BALLOT_ROUTES.senadores : BALLOT_ROUTES.deputadoFederal)}>
+                  Editar escolhas
+                </button>
+                <button className="my-plan-logout nv-touch" type="button" onClick={handleLogout}>
+                  Sair da conta
+                </button>
+              </div>
+            )}
           </section>
 
           {!isGuestMode && (
@@ -707,13 +547,6 @@ export default function MeuPlano() {
             </aside>
           )}
 
-          {!isGuestMode && (
-            <button className="my-plan-logout nv-touch" type="button" onClick={handleLogout}>
-              Sair da conta
-            </button>
-          )}
-
-          <AppFooter className="app-footer--scroll-content" />
         </div>
       </main>
 

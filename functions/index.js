@@ -283,8 +283,11 @@ const normalizeDraft = (rawDraft, userId, estado = null) => {
       .filter(Boolean);
   });
 
+  const hasCandidateGroupsObject = rawDraft?.candidate_groups &&
+    typeof rawDraft.candidate_groups === 'object' &&
+    Object.keys(rawDraft.candidate_groups).length > 0;
   const hasGroupedCandidates = Object.values(candidateGroups).some((items) => items.length > 0);
-  if (hasGroupedCandidates) {
+  if (hasCandidateGroupsObject || hasGroupedCandidates) {
     candidateGroups.deputado_federal = uniqueCandidatesById(candidateGroups.deputado_federal);
     candidateGroups.senadores_1 = uniqueCandidatesById([
       ...candidateGroups.senadores_1,

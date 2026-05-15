@@ -383,19 +383,19 @@
   gap: 10px;
   margin: 0 0 16px;
   min-width: 0;
-  border: 1px solid rgba(17, 17, 17, 0.08);
-  border-radius: 8px;
-  background: #ffffff;
-  padding: 10px;
-  box-shadow: 0 12px 28px rgba(34, 36, 38, 0.05);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
 }
 
 .candidate-list-tools__row {
   display: flex;
-  align-items: flex-start;
-  gap: 5px;
+  align-items: center;
+  gap: 8px;
   min-width: 0;
-  padding-right: clamp(24px, 8vw, 38px);
+  padding-right: 0;
 }
 
 .candidate-filter-tabs {
@@ -412,8 +412,8 @@
 
 .candidate-filter-tabs__item {
   min-width: 0;
-  min-height: 36px;
-  height: 36px;
+  min-height: 40px;
+  height: 40px;
   flex: 1 1 0;
   border: 0;
   border-radius: 999px;
@@ -445,10 +445,11 @@
 }
 
 .candidate-search-button {
-  width: 39px;
-  min-height: 39px;
-  height: 39px;
-  flex: 0 0 39px;
+  width: 40px;
+  min-height: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  margin-left: auto;
   border: 1px solid rgba(17, 17, 17, 0.1);
   border-radius: 50%;
   background: #ffffff;
@@ -672,6 +673,8 @@
   width: 22px;
   height: 22px;
   flex: 0 0 22px;
+  align-self: start;
+  justify-self: end;
   border: 1px solid currentColor;
   border-radius: 50%;
   display: inline-flex;
@@ -715,7 +718,7 @@
   background: color-mix(in srgb, currentColor 16%, white);
   color: currentColor;
   display: inline-flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 4px;
   padding: 2px 7px;
   font-size: var(--candidate-assessment-size, 10px);
@@ -729,8 +732,8 @@
   height: 14px;
   flex: 0 0 14px;
   border-radius: 50%;
-  background: #ffffff;
-  color: currentColor;
+  background: var(--assessment-icon-color, #a9a9a9);
+  color: #ffffff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -738,7 +741,25 @@
   font-size: 10px;
   font-weight: 900;
   line-height: 1;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 18%, transparent);
+  box-shadow: none;
+}
+
+.candidate-card--success .candidate-card__assessment-icon {
+  --assessment-icon-color: #72d552;
+}
+
+.candidate-card--danger .candidate-card__assessment-icon {
+  --assessment-icon-color: #ff5757;
+}
+
+.candidate-card--neutral .candidate-card__assessment-icon,
+.candidate-card--new .candidate-card__assessment-icon {
+  --assessment-icon-color: #a9a9a9;
+}
+
+.prototype-candidate-card.is-fire-featured .candidate-card__assessment-icon,
+.candidate-card__assessment--fire .candidate-card__assessment-icon {
+  --assessment-icon-color: #ff8b49;
 }
 
 .candidate-card__assessment-icon svg,
@@ -924,8 +945,8 @@
   }
 
   .candidate-filter-tabs__item {
-    min-height: 38px;
-    height: 38px;
+    min-height: 40px;
+    height: 40px;
     padding: 0 10px;
     font-size: 12px;
   }
@@ -986,7 +1007,7 @@
   }
 
   .candidate-card--success {
-    border: 1px solid #72d552;
+    border: 1px solid transparent;
     background: #f2fff0;
     color: #72d552;
   }
@@ -1022,6 +1043,12 @@
     color: #ff8b49;
   }
 
+  .candidate-list-section .prototype-candidate-card:not(.is-selected),
+  .candidate-current-section .prototype-candidate-card:not(.is-selected) {
+    border-color: transparent;
+    box-shadow: none;
+  }
+
   .prototype-candidate-card.is-selected {
     box-shadow: inset 0 0 0 1px currentColor;
   }
@@ -1054,15 +1081,15 @@
   }
 
   .candidate-card__name-row {
-    display: flex;
-    align-items: center;
-    gap: 5px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 6px;
   }
 
   .candidate-card__identity strong {
-    flex: 0 1 auto;
     font-size: var(--candidate-name-mobile-size, 18px);
-    line-height: 1;
+    line-height: 1.05;
   }
 
   .candidate-card__identity small {
@@ -1126,8 +1153,8 @@
   }
 
   .candidate-list-tools__row {
-    gap: 4px;
-    padding-right: 24px;
+    gap: 6px;
+    padding-right: 0;
   }
 
   .candidate-filter-tabs {
@@ -1135,7 +1162,9 @@
   }
 
   .candidate-filter-tabs__item {
-    padding: 0 7px;
+    min-height: 38px;
+    height: 38px;
+    padding: 0 8px;
     font-size: 10.5px;
   }
 

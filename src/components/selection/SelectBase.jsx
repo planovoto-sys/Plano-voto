@@ -6,7 +6,6 @@ import BottomNavigation from '@/components/navigation/BottomNavigation';
 import { ChanceFlame } from '@/components/icons/ChanceFlame';
 import { BackIcon, InfoIcon, SearchIcon } from '@/components/icons/AppIcons';
 import ShareChoicePanel from '@/components/share/ShareChoicePanel';
-import { BRAZILIAN_STATES } from '@/constants/states';
 import { flowLog, flowWarn } from '@/utils/debugFlow';
 import {
   getCandidateChance,
@@ -600,39 +599,9 @@ export default function SelectBase({
 
   const renderStateList = () => {
     const estadoSelecionado = selecionados[0] || null;
-    const suggestedState = BRAZILIAN_STATES.find((estado) => estado.sigla === 'ES') || dados.find((estado) => estado.sigla === 'ES');
-    const isSuggestedSelected = Boolean(suggestedState && estadoSelecionado?.sigla === suggestedState.sigla);
-    const handleSuggestedStateContinue = async () => {
-      if (!suggestedState || salvandoSelecao) return;
-      await commitSelection([suggestedState], { autoConfirm: true, completed: true });
-    };
 
     return (
       <div className={`state-selection-flow nv-container ${estadoSelecionado ? 'has-current-state' : ''}`}>
-        <section className="state-selection-intro" aria-label="Escolha de estado">
-          <div className="state-selection-intro__copy">
-            <span>Plano de voto</span>
-            <h2>Escolha o estado onde você vota</h2>
-            <p>Seu plano será montado com base nos candidatos disponíveis para este estado.</p>
-          </div>
-
-          {suggestedState && (
-            <article className={`state-suggested-card ${isSuggestedSelected ? 'is-selected' : ''}`}>
-              <span>Estado sugerido</span>
-              <h3>{suggestedState.nome} ({suggestedState.sigla})</h3>
-              <p>Use o estado sugerido para avançar direto para os candidatos.</p>
-              <button
-                className="nv-touch"
-                type="button"
-                onClick={handleSuggestedStateContinue}
-                disabled={salvandoSelecao}
-              >
-                Continuar com este estado
-              </button>
-            </article>
-          )}
-        </section>
-
         {estadoSelecionado && (
           <section className="state-current-section state-current-section--mobile" aria-label="Meu estado">
             <div className="prototype-section-heading">
@@ -648,8 +617,8 @@ export default function SelectBase({
 
         <section className="state-selection-panel" aria-label="Estados">
           <div className="prototype-section-heading">
-            <h2>Todos os estados</h2>
-            <p>Busque pela sigla ou escolha na lista abaixo.</p>
+            <h2>Estados</h2>
+            <p>Selecione o estado onde você vota</p>
           </div>
 
           {renderSearchField('select-search-field--state')}

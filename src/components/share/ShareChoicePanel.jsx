@@ -194,45 +194,47 @@ function ShareMainGallery({ activeTemplateId, analysis, onSelect, actions }) {
   };
 
   return (
-    <section className="share-gallery-stage" aria-label="Galeria de artes para compartilhar">
-      <div
-        ref={galleryRef}
-        className="share-gallery-track"
-        onScroll={handleScroll}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={endDrag}
-        onPointerCancel={endDrag}
-        onPointerLeave={endDrag}
-      >
-        {SHARE_CARD_TEMPLATES.map((template) => (
-          <button
-            key={template.id}
-            ref={(element) => {
-              if (element) cardRefs.current.set(template.id, element);
-              else cardRefs.current.delete(template.id);
-            }}
-            type="button"
-            className={`share-gallery-slide nv-touch ${template.id === activeTemplateId ? 'is-active' : ''}`}
-            aria-label={`Selecionar ${template.label}`}
-            aria-pressed={template.id === activeTemplateId}
-            onClick={() => {
-              if (dragStateRef.current.moved) {
-                dragStateRef.current.moved = false;
-                return;
-              }
-              onSelect(template.id);
-            }}
-          >
-            <ShareArtworkCard templateId={template.id} analysis={analysis} />
-          </button>
-        ))}
-      </div>
+    <div className="share-main-gallery">
+      <section className="share-gallery-stage" aria-label="Galeria de artes para compartilhar">
+        <div
+          ref={galleryRef}
+          className="share-gallery-track"
+          onScroll={handleScroll}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={endDrag}
+          onPointerCancel={endDrag}
+          onPointerLeave={endDrag}
+        >
+          {SHARE_CARD_TEMPLATES.map((template) => (
+            <button
+              key={template.id}
+              ref={(element) => {
+                if (element) cardRefs.current.set(template.id, element);
+                else cardRefs.current.delete(template.id);
+              }}
+              type="button"
+              className={`share-gallery-slide nv-touch ${template.id === activeTemplateId ? 'is-active' : ''}`}
+              aria-label={`Selecionar ${template.label}`}
+              aria-pressed={template.id === activeTemplateId}
+              onClick={() => {
+                if (dragStateRef.current.moved) {
+                  dragStateRef.current.moved = false;
+                  return;
+                }
+                onSelect(template.id);
+              }}
+            >
+              <ShareArtworkCard templateId={template.id} analysis={analysis} />
+            </button>
+          ))}
+        </div>
+      </section>
 
       <div className="share-gallery-actions" aria-label="Ações de compartilhamento">
         {actions}
       </div>
-    </section>
+    </div>
   );
 }
 

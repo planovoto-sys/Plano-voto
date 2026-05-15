@@ -1,5 +1,6 @@
 .my-plan-page {
   background: #ffffff;
+  overflow-x: hidden;
 }
 
 .my-plan-header {
@@ -36,7 +37,7 @@
   min-width: 0;
   display: grid;
   justify-items: center;
-  gap: 3px;
+  gap: 0;
 }
 
 .my-plan-header__brand strong {
@@ -82,68 +83,21 @@
 
 .my-plan-scroll {
   background: #ffffff;
-  padding: 22px var(--screen-gutter) 0;
+  padding: 12px clamp(16px, 4vw, 20px) calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px) + 14px);
+  overflow-x: hidden;
+  scrollbar-width: none;
+}
+
+.my-plan-scroll::-webkit-scrollbar {
+  display: none;
 }
 
 .my-plan-shell {
   display: grid;
-  gap: 24px;
+  gap: 12px;
   min-width: 0;
-}
-
-.my-plan-status {
-  border: 1px solid rgba(255, 139, 73, 0.22);
-  border-radius: 8px;
-  background:
-    linear-gradient(135deg, rgba(255, 223, 89, 0.24), rgba(255, 255, 255, 0) 48%),
-    #ffffff;
-  display: grid;
-  gap: 8px;
-  padding: 20px;
-  box-shadow: 0 16px 38px rgba(34, 36, 38, 0.08);
-}
-
-.my-plan-status.is-saved {
-  border-color: rgba(36, 89, 61, 0.2);
-  background:
-    linear-gradient(135deg, rgba(114, 213, 82, 0.14), rgba(255, 255, 255, 0) 46%),
-    #ffffff;
-}
-
-.my-plan-status > span {
-  width: fit-content;
-  border: 1px solid rgba(255, 139, 73, 0.28);
-  border-radius: 999px;
-  background: #fff7ef;
-  color: #c95b18;
-  padding: 6px 11px;
-  font-size: 11px;
-  font-weight: 950;
-  line-height: 1;
-  text-transform: uppercase;
-}
-
-.my-plan-status.is-saved > span {
-  border-color: rgba(36, 89, 61, 0.24);
-  background: #f7fff4;
-  color: #24593d;
-}
-
-.my-plan-status h1 {
-  margin: 0;
-  color: #111111;
-  font-size: clamp(28px, 8vw, 42px);
-  font-weight: 950;
-  line-height: 0.98;
-}
-
-.my-plan-status p {
-  max-width: 650px;
-  margin: 0;
-  color: #48544f;
-  font-size: 14px;
-  font-weight: 650;
-  line-height: 1.45;
+  width: 100%;
+  max-width: 100%;
 }
 
 .my-plan-summary-card {
@@ -151,25 +105,26 @@
   border-radius: 8px;
   background: #ffffff;
   display: grid;
-  gap: 10px;
-  padding: 16px;
+  gap: 7px;
+  padding: 9px;
   box-shadow: 0 12px 28px rgba(34, 36, 38, 0.05);
 }
 
-.my-plan-summary-card div {
+.my-plan-summary-card__state {
   min-width: 0;
   border-bottom: 1px solid #edf0ef;
   display: grid;
   gap: 4px;
-  padding-bottom: 10px;
+  padding: 1px 4px 8px;
 }
 
-.my-plan-summary-card div:last-child {
-  border-bottom: 0;
-  padding-bottom: 0;
+.my-plan-summary-card__candidates {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
 }
 
-.my-plan-summary-card span {
+.my-plan-summary-card__state span {
   color: #69746f;
   font-size: 11px;
   font-weight: 900;
@@ -177,7 +132,7 @@
   text-transform: uppercase;
 }
 
-.my-plan-summary-card strong {
+.my-plan-summary-card__state strong {
   min-width: 0;
   color: #111111;
   font-size: 15px;
@@ -185,9 +140,129 @@
   line-height: 1.2;
 }
 
+.my-plan-summary-candidate {
+  --summary-candidate-tone: #69746f;
+  min-width: 0;
+  min-height: 64px;
+  border: 1px solid color-mix(in srgb, var(--summary-candidate-tone) 28%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--summary-candidate-tone) 9%, white);
+  color: var(--summary-candidate-tone);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 9px;
+}
+
+.my-plan-summary-candidate--success {
+  --summary-candidate-tone: var(--tone-success);
+}
+
+.my-plan-summary-candidate--danger {
+  --summary-candidate-tone: var(--tone-danger);
+}
+
+.my-plan-summary-candidate--neutral,
+.my-plan-summary-candidate--new,
+.my-plan-summary-candidate.is-empty {
+  --summary-candidate-tone: var(--tone-neutral);
+}
+
+.my-plan-summary-candidate__main {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.my-plan-summary-candidate__main > span {
+  color: currentColor;
+  font-size: 10px;
+  font-weight: 950;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.my-plan-summary-candidate__main strong {
+  min-width: 0;
+  overflow: visible;
+  color: currentColor;
+  font-size: 15px;
+  font-weight: 850;
+  line-height: 1.08;
+  text-transform: uppercase;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.my-plan-summary-candidate__main small {
+  color: currentColor;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+
+.my-plan-summary-candidate__metrics {
+  min-width: 112px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(56px, 1fr));
+  gap: 5px;
+}
+
+.my-plan-summary-candidate__metrics span {
+  min-width: 0;
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.74);
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 5px 4px;
+  text-align: center;
+}
+
+.my-plan-summary-candidate__metrics small {
+  color: currentColor;
+  font-size: 8px;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.my-plan-summary-candidate__metrics strong {
+  color: currentColor;
+  font-size: 13px;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.my-plan-summary-candidate__edit,
+.my-plan-summary-candidate__locked {
+  min-height: 34px;
+  border: 1px solid rgba(17, 17, 17, 0.14);
+  border-radius: 999px;
+  background: #ffffff;
+  color: #111111;
+  padding: 0 12px;
+  font-family: var(--font-family);
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.my-plan-summary-candidate__locked {
+  max-width: 118px;
+  border-color: rgba(255, 139, 73, 0.25);
+  color: #c95b18;
+  background: #fff7ef;
+  white-space: normal;
+}
+
 .my-plan-hero {
   display: grid;
-  gap: 12px;
+  gap: 8px;
 }
 
 .my-plan-profile,
@@ -201,16 +276,16 @@
 
 .my-plan-profile {
   display: grid;
-  grid-template-columns: 58px minmax(0, 1fr);
+  grid-template-columns: 40px minmax(0, 1fr);
   align-items: center;
-  gap: 13px;
-  padding: 14px;
+  gap: 10px;
+  padding: 8px 10px;
 }
 
 .my-plan-profile img,
 .my-plan-profile > span {
-  width: 58px;
-  height: 58px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: #fff0e4;
   color: #f26f2e;
@@ -218,7 +293,7 @@
   align-items: center;
   justify-content: center;
   object-fit: cover;
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 900;
 }
 
@@ -233,7 +308,7 @@
   max-width: 100%;
   overflow: hidden;
   color: var(--text-strong);
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 900;
   line-height: 1.15;
   text-overflow: ellipsis;
@@ -246,7 +321,7 @@
   max-width: 100%;
   overflow: hidden;
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 700;
   line-height: 1.2;
   text-overflow: ellipsis;
@@ -258,33 +333,33 @@
   gap: 5px;
   border-color: #dcefd7;
   background: #f7fff4;
-  padding: 14px;
+  padding: 10px 12px;
 }
 
 .my-plan-meters {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
 }
 
 .my-plan-meter {
   --my-plan-meter-color: #ff8b49;
   min-width: 0;
-  min-height: 174px;
+  min-height: 128px;
   border: 1px solid #f1dfd3;
   border-radius: 8px;
   background: #fff8f1;
   display: grid;
   align-content: start;
   justify-items: center;
-  gap: 10px;
-  padding: 13px 9px;
+  gap: 7px;
+  padding: 10px 8px;
   text-align: center;
 }
 
 .my-plan-meter__gauge {
-  width: 82px;
-  height: 82px;
+  width: 68px;
+  height: 68px;
   border-radius: 50%;
   background:
     radial-gradient(circle at center, #ffffff 0 59%, transparent 60%),
@@ -302,9 +377,9 @@
 }
 
 .my-plan-meter__gauge strong {
-  max-width: 68px;
+  max-width: 56px;
   overflow: hidden;
-  font-size: 19px;
+  font-size: 16px;
   font-weight: 900;
   line-height: 1;
   text-overflow: ellipsis;
@@ -314,26 +389,26 @@
 .my-plan-meter h3 {
   margin: 0;
   color: var(--text-strong);
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 900;
   line-height: 1.1;
 }
 
 .my-plan-meter p {
-  margin: 5px 0 0;
+  margin: 3px 0 0;
   color: var(--text-main);
-  font-size: 10.5px;
+  font-size: 9px;
   font-weight: 650;
-  line-height: 1.25;
+  line-height: 1.2;
 }
 
 .my-plan-meters__note {
   grid-column: 1 / -1;
   margin: 0;
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  line-height: 1.35;
+  line-height: 1.3;
 }
 
 .my-plan-section {
@@ -624,7 +699,13 @@
 
 .my-plan-actions {
   display: grid;
-  gap: 10px;
+  gap: 8px;
+}
+
+.my-plan-actions__row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
 }
 
 .my-plan-save-invite {
@@ -666,6 +747,8 @@
   margin-top: 0;
   border-color: rgba(255, 139, 73, 0.4);
   background: linear-gradient(90deg, #ffdf59 0%, #ff8b49 100%);
+  gap: 8px;
+  padding: 8px 10px;
 }
 
 .my-plan-share-panel .share-choice-panel__copy strong,
@@ -673,9 +756,24 @@
   color: #000000;
 }
 
+.my-plan-share-panel .share-choice-panel__copy {
+  gap: 2px;
+}
+
+.my-plan-share-panel .share-choice-panel__copy strong {
+  font-size: 12px;
+}
+
+.my-plan-share-panel .share-choice-panel__copy span {
+  font-size: 10px;
+  line-height: 1.15;
+}
+
 .my-plan-share-panel .share-choice-panel__button {
-  min-height: 46px;
+  min-height: 36px;
   background: #111111;
+  padding-inline: 12px;
+  font-size: 11px;
 }
 
 .my-plan-share-disabled {
@@ -701,10 +799,10 @@
 .my-plan-edit-action,
 .my-plan-logout {
   width: 100%;
-  min-height: 52px;
+  min-height: 44px;
   border-radius: 999px;
   font-family: var(--font-family);
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 900;
   cursor: pointer;
 }
@@ -739,26 +837,57 @@
 
 @media (max-width: 360px) {
   .my-plan-scroll {
-    padding-top: 18px;
+    padding-top: 10px;
   }
 
   .my-plan-shell {
-    gap: 20px;
+    gap: 10px;
+  }
+
+  .my-plan-summary-candidate {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .my-plan-summary-candidate__metrics {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .my-plan-actions__row {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .my-plan-meter {
-    min-height: 168px;
+    min-height: 112px;
     padding-inline: 7px;
   }
 
+  .my-plan-summary-candidate {
+    gap: 6px;
+    padding: 8px;
+  }
+
+  .my-plan-summary-candidate__metrics {
+    min-width: 104px;
+    grid-template-columns: repeat(2, minmax(48px, 1fr));
+  }
+
+  .my-plan-summary-candidate__metrics span {
+    padding: 5px 4px;
+  }
+
+  .my-plan-summary-candidate__metrics strong {
+    font-size: 12px;
+  }
+
   .my-plan-meter__gauge {
-    width: 74px;
-    height: 74px;
+    width: 58px;
+    height: 58px;
   }
 
   .my-plan-meter__gauge strong {
-    max-width: 60px;
-    font-size: 16px;
+    max-width: 50px;
+    font-size: 14px;
   }
 
   .my-plan-meter h3 {
@@ -766,7 +895,7 @@
   }
 
   .my-plan-meter p {
-    font-size: 9.5px;
+    font-size: 8.5px;
   }
 
   .my-plan-candidate {
@@ -777,6 +906,12 @@
     justify-self: center;
     width: 62px;
     height: 62px;
+  }
+}
+
+@media (max-width: 767px) {
+  .my-plan-state {
+    display: none;
   }
 }
 
@@ -808,7 +943,7 @@
   }
 
   .my-plan-scroll {
-    padding: 30px var(--screen-gutter) 0;
+    padding: 24px var(--screen-gutter) calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px) + 20px);
   }
 
   .my-plan-shell {
@@ -819,8 +954,6 @@
     gap: 26px;
   }
 
-  .my-plan-hero,
-  .my-plan-status,
   .my-plan-summary-card,
   .my-plan-meters,
   .my-plan-section,
@@ -833,37 +966,29 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .my-plan-status {
-    padding: 26px;
-  }
-
-  .my-plan-status h1 {
-    font-size: clamp(40px, 5vw, 58px);
-  }
-
-  .my-plan-status p {
-    font-size: 17px;
-  }
-
   .my-plan-summary-card {
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .my-plan-summary-card__state {
+    border-bottom: 1px solid #edf0ef;
+    padding: 2px 4px 12px;
+  }
+
+  .my-plan-summary-card__candidates {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0;
-    padding: 0;
+    align-items: stretch;
   }
 
-  .my-plan-summary-card div {
-    border-bottom: 0;
-    border-right: 1px solid #edf0ef;
-    padding: 16px;
+  .my-plan-summary-candidate {
+    grid-template-columns: minmax(0, 1fr);
+    align-content: space-between;
   }
 
-  .my-plan-summary-card div:last-child {
-    border-right: 0;
-    padding-bottom: 16px;
-  }
-
-  .my-plan-hero {
-    grid-template-columns: minmax(0, 1fr) minmax(220px, 0.64fr);
+  .my-plan-summary-candidate__metrics {
+    width: 100%;
+    min-width: 0;
   }
 
   .my-plan-profile,
@@ -957,14 +1082,8 @@
     font-size: 12px;
   }
 
-  .my-plan-logout,
   .my-plan-shell > .app-footer {
     grid-column: 1 / -1;
-  }
-
-  .my-plan-logout {
-    width: min(100%, 420px);
-    justify-self: center;
   }
 }
 
