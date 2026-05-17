@@ -347,46 +347,6 @@ const getDraftActiveCandidateIds = (draft) => {
   ].map((candidate) => candidate.id).filter(Boolean);
 };
 
-const countCandidateIds = (candidateIds) => (
-  candidateIds.reduce((counts, candidateId) => {
-    counts.set(candidateId, (counts.get(candidateId) || 0) + 1);
-    return counts;
-  }, new Map())
-);
-
-const updateActiveTalliesInTransaction = async (transaction, oldDraft, newDraft, updatedAt) => {
-  const oldCounts = countCandidateIds(getDraftActiveCandidateIds(oldDraft));
-  const newCounts = countCandidateIds(getDraftActiveCandidateIds(newDraft));
-  const candidateIds = new Set([...oldCounts.keys(), ...newCounts.keys()]);
-  const changes = [];
-
-  candidateIds.forEach((candidateId) => {
-    const delta = (newCounts.get(candidateId) || 0) - (oldCounts.get(candidateId) || 0);
-    if (delta === 0) return;
-    changes.push({
-      candidateId,
-      delta,
-      ref: doc(db, 'elections', ACTIVE_ELECTION_ID, 'candidate_tallies', candidateId)
-    });
-  });
-
-  const tallySnaps = [];
-  for (const change of changes) {
-    tallySnaps.push(await transaction.get(change.ref));
-  }
-
-  changes.forEach((change, index) => {
-    const currentActiveSelections = Number(tallySnaps[index].data()?.active_selections || 0) || 0;
-    transaction.set(change.ref, {
-      schema_version: BALLOT_SCHEMA_VERSION,
-      election_id: ACTIVE_ELECTION_ID,
-      candidate_id: change.candidateId,
-      active_selections: Math.max(0, currentActiveSelections + change.delta),
-      updated_at: updatedAt
-    }, { merge: true });
-  });
-};
-
 const prepareDraftForFirestore = (draft, userId, updatedAt) => ({
   ...normalizeDraft(draft, draft.estado),
   schema_version: BALLOT_SCHEMA_VERSION,
@@ -436,7 +396,6 @@ const saveBallotStateDirectly = async (userId, estado) => {
       updated_at: new Date().toISOString()
     }, activeEstado);
 
-    await updateActiveTalliesInTransaction(transaction, previousDraft, responseDraft, updatedAt);
     transaction.set(draftRef, prepareDraftForFirestore(responseDraft, userId, updatedAt), { merge: false });
     transaction.set(userRef, {
       estado: activeEstado,
@@ -500,7 +459,6 @@ const saveBallotStepSelectionDirectly = async (userId, stepKey, candidates, esta
     }
 
     responseDraft = nextDraft;
-    await updateActiveTalliesInTransaction(transaction, previousDraft, responseDraft, updatedAt);
     transaction.set(draftRef, prepareDraftForFirestore(responseDraft, userId, updatedAt), { merge: false });
   });
 
