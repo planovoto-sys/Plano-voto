@@ -6,6 +6,10 @@ export const DELETE_USER_ELECTION_DATA_FUNCTION_NAME = import.meta.env.VITE_DELE
 export const CREATE_PLAN_HANDOFF_TOKEN_FUNCTION_NAME = import.meta.env.VITE_CREATE_PLAN_HANDOFF_TOKEN_FUNCTION || 'createPlanHandoffToken';
 export const REDEEM_PLAN_HANDOFF_TOKEN_FUNCTION_NAME = import.meta.env.VITE_REDEEM_PLAN_HANDOFF_TOKEN_FUNCTION || 'redeemPlanHandoffToken';
 
+const normalizePublicAppUrl = (value) => String(value || '').trim().replace(/\/+$/, '');
+
+export const PUBLIC_APP_URL = normalizePublicAppUrl(import.meta.env.VITE_PUBLIC_APP_URL) || 'https://plano-voto.vercel.app';
+
 export const BALLOT_SCHEMA_VERSION = 1;
 export const VISITOR_DRAFT_ID = 'visitor';
 

@@ -1,5 +1,6 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { initializeApp } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
 import { FieldValue, getFirestore } from 'firebase-admin/firestore';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
 
@@ -595,6 +596,10 @@ export const createPlanHandoffToken = onCall({
   region: FUNCTIONS_REGION,
   cors: true,
 }, async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
+  }
+
   const payload = request.data || {};
   const electionId = assertElectionPayload(payload);
   const rawDraft = payload.draft || {};
@@ -606,24 +611,52 @@ export const createPlanHandoffToken = onCall({
 
   const token = makePlanHandoffToken();
   const tokenHash = hashPlanHandoffToken(electionId, token);
+  const replaceToken = asString(payload.replace_token);
+  const replaceTokenHash = replaceToken ? hashPlanHandoffToken(electionId, assertValidId(replaceToken, 'Token anterior')) : '';
   const expiresAtMs = Date.now() + PLAN_HANDOFF_TTL_MS;
-  const draft = normalizeDraft(rawDraft, request.auth?.uid || 'handoff', estado);
+  const userId = request.auth.uid;
+  const draft = normalizeDraft(rawDraft, userId, estado);
 
   draft.active_candidate_ids.forEach((candidateId) => {
     assertValidId(candidateId, 'Candidato');
   });
 
-  await db.doc(`elections/${electionId}/plan_handoff_tokens/${tokenHash}`).set({
+  const newTokenRef = db.doc(`elections/${electionId}/plan_handoff_tokens/${tokenHash}`);
+  const batch = db.batch();
+
+  if (replaceTokenHash && replaceTokenHash !== tokenHash) {
+    const replacedTokenRef = db.doc(`elections/${electionId}/plan_handoff_tokens/${replaceTokenHash}`);
+    const replacedTokenSnap = await replacedTokenRef.get();
+
+    if (replacedTokenSnap.exists) {
+      const replacedTokenData = replacedTokenSnap.data();
+      if (replacedTokenData.created_by === userId && !replacedTokenData.used_at) {
+        batch.update(replacedTokenRef, {
+          used_at: FieldValue.serverTimestamp(),
+          revoked_at: FieldValue.serverTimestamp(),
+          revoked_by: userId,
+          replaced_by_token_hash: tokenHash,
+        });
+      }
+    }
+  }
+
+  batch.set(newTokenRef, {
     schema_version: BALLOT_SCHEMA_VERSION,
     election_id: electionId,
     token_hash: tokenHash,
     draft,
-    created_by: request.auth?.uid || null,
+    created_by: userId,
     created_at: FieldValue.serverTimestamp(),
     expires_at_ms: expiresAtMs,
     used_at: null,
+    revoked_at: null,
+    revoked_by: null,
+    replaced_by_token_hash: null,
     redeemed_by: null,
   });
+
+  await batch.commit();
 
   return {
     token,
@@ -642,6 +675,7 @@ export const redeemPlanHandoffToken = onCall({
   const tokenHash = hashPlanHandoffToken(electionId, token);
   const tokenRef = db.doc(`elections/${electionId}/plan_handoff_tokens/${tokenHash}`);
   let responseDraft = null;
+  let handoffUserId = null;
 
   await db.runTransaction(async (transaction) => {
     const tokenSnap = await transaction.get(tokenRef);
@@ -658,14 +692,28 @@ export const redeemPlanHandoffToken = onCall({
       throw new HttpsError('deadline-exceeded', 'Token expirado.');
     }
 
-    responseDraft = normalizeDraft(tokenData.draft, request.auth?.uid || 'handoff', tokenData.draft?.estado);
+    handoffUserId = asString(tokenData.created_by);
+    if (!handoffUserId) {
+      throw new HttpsError('failed-precondition', 'Token sem usuario vinculado.');
+    }
+
+    responseDraft = normalizeDraft(tokenData.draft, handoffUserId, tokenData.draft?.estado);
     transaction.update(tokenRef, {
       used_at: FieldValue.serverTimestamp(),
-      redeemed_by: request.auth?.uid || null,
+      redeemed_by: request.auth?.uid || handoffUserId,
     });
   });
 
-  return buildDraftResponse(responseDraft);
+  const authToken = await getAuth().createCustomToken(handoffUserId, {
+    election_id: electionId,
+    handoff: true,
+  });
+
+  return {
+    ...buildDraftResponse(responseDraft),
+    auth_token: authToken,
+    user_id: handoffUserId,
+  };
 });
 
 export const castAnonymousVote = onCall({

@@ -649,7 +649,7 @@ export default function SelectBase({
   };
 
   const renderCandidateList = () => {
-    const currentTitle = 'Meu rascunho';
+    const currentTitle = 'Meu candidato';
     const hasCurrentCandidates = currentSectionCandidates.length > 0;
     const showDraftSidebar = isCandidateOffice && (hasCurrentCandidates || isDesktopLayout);
     return (
@@ -825,7 +825,7 @@ export default function SelectBase({
         onClick={handleContinue}
         disabled={salvandoSelecao || !hasRequiredSelection}
       >
-        {isSenateOffice ? (personalizedFieldsLocked ? 'REVISAR RASCUNHO' : 'SALVAR') : 'CONTINUAR'}
+        {isSenateOffice ? (personalizedFieldsLocked ? 'REVISAR RASCUNHO' : 'CONTINUAR') : 'CONTINUAR'}
       </button>
     )
   );

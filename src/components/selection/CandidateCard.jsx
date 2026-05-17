@@ -74,7 +74,7 @@ const getAssessment = ({ isFireFeatured, isViabilityComplete, systemScore }) => 
   }
 
   if (systemScore > 0 && systemScore < 7) {
-    return { label: 'Mal avaliado', icon: systemScore < 6 ? 'error' : 'info' };
+    return { label: 'Mal avaliado', icon: 'error' };
   }
 
   return { label: 'Sem nota', icon: 'info' };
@@ -128,7 +128,7 @@ export default function CandidateCard({
 
   return (
     <button
-      className={`prototype-candidate-card nv-touch nv-no-overflow candidate-card--${tone} ${highlight ? 'is-highlight' : ''} ${selected ? 'is-selected' : ''} ${summary ? 'is-summary' : ''} ${isFireFeatured ? 'is-fire-featured' : ''} ${isViabilityComplete ? 'is-viability-complete' : ''} ${isBlocked ? 'is-blocked' : ''}`}
+      className={`prototype-candidate-card nv-touch nv-no-overflow candidate-card--${tone} ${highlight ? 'is-highlight' : ''} ${selected ? 'is-selected' : ''} ${summary ? 'is-summary' : ''} ${lockPersonalizedFields ? 'is-personalized-locked' : ''} ${isFireFeatured ? 'is-fire-featured' : ''} ${isViabilityComplete ? 'is-viability-complete' : ''} ${isBlocked ? 'is-blocked' : ''}`}
       style={textFitStyle}
       type="button"
       onClick={onSelect}
@@ -147,11 +147,6 @@ export default function CandidateCard({
       <span className="candidate-card__identity">
         <span className="candidate-card__name-row">
           <strong>{name}</strong>
-          {!summary && !lockPersonalizedFields && (
-            <span className={`candidate-card__action ${selected ? 'is-selected' : ''}`} aria-hidden="true">
-              {selected ? '✓' : '+'}
-            </span>
-          )}
         </span>
         <small>{metaParts.join(' / ')}</small>
         {showAssessmentSubtitle && lockPersonalizedFields ? (
@@ -182,11 +177,7 @@ export default function CandidateCard({
           locked={false}
           onLockedClick={onLockedMetricClick}
         />
-      ) : lockPersonalizedFields ? (
-        <span className={`candidate-card__action ${selected ? 'is-selected' : ''}`} aria-hidden="true">
-          {selected ? '✓' : '+'}
-        </span>
-      ) : (
+      ) : !lockPersonalizedFields ? (
         <ViabilityMeter
           value={chance}
           tone={metricTone}
@@ -194,7 +185,7 @@ export default function CandidateCard({
           locked={false}
           onLockedClick={onLockedMetricClick}
         />
-      )}
+      ) : null}
     </button>
   );
 }

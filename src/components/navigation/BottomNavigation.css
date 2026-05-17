@@ -7,39 +7,42 @@
 }
 
 .bottom-step-nav {
-  --step-nav-muted: #b2b2b2;
-  --step-nav-active-bg: #fff2df;
-  --step-nav-active-color: #111111;
+  --step-nav-muted: #a9abad;
+  --step-nav-active-bg: #e9ecef;
+  --step-nav-active-color: #a9abad;
+  --step-nav-brand-color: #111111;
   position: relative;
-  height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
-  min-height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
+  height: calc(72px + env(safe-area-inset-bottom, 0px));
+  min-height: calc(72px + env(safe-area-inset-bottom, 0px));
   flex: 0 0 auto;
-  border-top: 1px solid var(--nav-line);
+  border-top: 1px solid #eef0f2;
   background: #ffffff;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0;
-  padding: 3px 8px calc(3px + env(safe-area-inset-bottom, 0px));
+  padding: 7px 8px calc(5px + env(safe-area-inset-bottom, 0px));
 }
 
 .bottom-step-nav__item {
   position: relative;
   z-index: 1;
+  justify-self: center;
+  width: min(80px, 100%);
   min-width: 0;
-  height: 46px;
+  height: 58px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 13px;
   background: transparent;
   color: var(--step-nav-muted);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1px;
-  padding: 2px 2px 3px;
+  gap: 0;
+  padding: 4px 4px 5px;
   font-family: var(--font-family);
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 650;
   line-height: 1;
   cursor: pointer;
 }
@@ -47,12 +50,12 @@
 .bottom-step-nav__item.is-active {
   background: var(--step-nav-active-bg);
   color: var(--step-nav-active-color);
-  font-weight: 800;
+  font-weight: 750;
 }
 
 .bottom-step-nav__item.is-complete {
   color: var(--step-nav-muted);
-  font-weight: 500;
+  font-weight: 650;
 }
 
 .bottom-step-nav__item.is-future {
@@ -60,21 +63,23 @@
 }
 
 .bottom-step-nav__item--brand {
-  color: var(--step-nav-muted);
-  font-weight: 500;
+  color: var(--step-nav-brand-color);
+  font-weight: 950;
 }
 
 .bottom-step-nav__item--brand .bottom-step-nav__icon {
-  width: 21px;
-  height: 25px;
-  flex-basis: 25px;
-  padding: 0;
+  width: 34px;
+  height: 34px;
+  flex-basis: 34px;
+  padding: 1px;
+  transform: none;
   line-height: 1;
   object-fit: contain;
 }
 
 .bottom-step-nav__item--brand.is-active {
-  color: var(--step-nav-active-color);
+  background: transparent;
+  color: var(--step-nav-brand-color);
 }
 
 .bottom-step-nav__item:disabled {
@@ -83,16 +88,19 @@
 }
 
 .bottom-step-nav__icon {
-  width: 30px;
-  height: 30px;
-  flex: 0 0 30px;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
   border-radius: 0;
   background: transparent;
   color: currentColor;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 4px;
+  padding: 0;
+  overflow: visible;
+  transform: scale(1.36);
+  transform-origin: center;
 }
 
 .bottom-step-nav__item.is-complete .bottom-step-nav__icon {
@@ -112,16 +120,23 @@
   box-shadow: none;
 }
 
+.bottom-step-nav__item--estado .bottom-step-nav__icon {
+  transform: scale(1.08);
+}
+
 .bottom-step-nav__label {
   display: block;
   max-width: 100%;
   overflow: hidden;
+  margin-top: 1px;
+  font-size: inherit;
+  font-weight: inherit;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .bottom-step-nav__item--brand .bottom-step-nav__label {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: inherit;
 }
 
@@ -132,19 +147,27 @@
   }
 
   .bottom-step-nav__item {
-    font-size: 11px;
+    width: min(76px, 100%);
+    font-size: 12px;
   }
 
   .bottom-step-nav__icon {
-    width: 28px;
-    height: 28px;
-    flex-basis: 28px;
+    width: 33px;
+    height: 33px;
+    flex-basis: 33px;
+  }
+
+  .bottom-step-nav__item--brand .bottom-step-nav__icon {
+    width: 33px;
+    height: 33px;
+    flex-basis: 33px;
   }
 }
 
 @media (max-width: 340px) {
   .bottom-step-nav__item {
-    font-size: 10px;
+    width: min(72px, 100%);
+    font-size: 11px;
   }
 }
 
@@ -155,16 +178,24 @@
   }
 
   .bottom-step-nav__item {
-    height: 44px;
-    border-radius: 10px;
-    font-size: 9px;
+    width: min(68px, 100%);
+    height: 54px;
+    border-radius: 12px;
+    font-size: 10px;
   }
 
   .bottom-step-nav__icon {
-    width: 27px;
-    height: 27px;
-    flex-basis: 27px;
-    padding: 4px;
+    width: 31px;
+    height: 31px;
+    flex-basis: 31px;
+    padding: 1px;
+  }
+
+  .bottom-step-nav__item--brand .bottom-step-nav__icon {
+    width: 31px;
+    height: 31px;
+    flex-basis: 31px;
+    padding: 1px;
   }
 }
 
@@ -399,10 +430,10 @@
     border-radius: 12px;
     color: var(--step-nav-muted);
     flex-direction: column;
-    gap: 1px;
+    gap: 0;
     padding: 3px 6px 4px;
-    font-size: 12px;
-    font-weight: 500;
+    font-size: 11.5px;
+    font-weight: 650;
   }
 
   .app-page-footer--header .bottom-step-nav__item.is-active {
@@ -414,7 +445,7 @@
 
   .app-page-footer--header .bottom-step-nav__item.is-complete {
     color: var(--step-nav-muted);
-    font-weight: 500;
+    font-weight: 650;
   }
 
   .app-page-footer--header .bottom-step-nav__item:not(:disabled):hover {
@@ -439,6 +470,7 @@
     color: var(--step-nav-muted);
     padding: 4px;
     box-shadow: none;
+    transform: none;
   }
 
   .app-page-footer--header .bottom-step-nav__item.is-complete .bottom-step-nav__icon {
@@ -461,10 +493,10 @@
   }
 
   .app-page-footer--header .bottom-step-nav__item--brand .bottom-step-nav__icon {
-    width: 21px;
-    height: 25px;
-    flex-basis: 25px;
-    padding: 0;
+    width: 30px;
+    height: 30px;
+    flex-basis: 30px;
+    padding: 3px;
     object-fit: contain;
   }
 
@@ -570,16 +602,18 @@
   }
 
   .app-page-footer--header .bottom-step-nav__icon {
-    width: 24px;
-    height: 24px;
-    flex-basis: 24px;
+    width: 26px;
+    height: 26px;
+    flex-basis: 26px;
     padding: 3px;
+    transform: none;
   }
 
   .app-page-footer--header .bottom-step-nav__item--brand .bottom-step-nav__icon {
-    width: 19px;
-    height: 22px;
-    flex-basis: 19px;
+    width: 26px;
+    height: 26px;
+    flex-basis: 26px;
+    padding: 3px;
   }
 
   .app-page-footer--header .bottom-step-nav__label {

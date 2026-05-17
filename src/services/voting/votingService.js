@@ -643,7 +643,7 @@ export const mergeVisitorBallotDraftIntoAccount = async (userId) => {
   return savedDraft;
 };
 
-export const createPlanHandoffToken = async (draft) => {
+export const createPlanHandoffToken = async (draft, options = {}) => {
   const normalizedDraft = normalizeDraft(draft);
   if (!normalizedDraft.estado) {
     throw new VotingError('STATE_REQUIRED', 'Escolha um estado antes de gerar o QR Code.');
@@ -653,7 +653,8 @@ export const createPlanHandoffToken = async (draft) => {
   const response = await createToken({
     schema_version: BALLOT_SCHEMA_VERSION,
     election_id: ACTIVE_ELECTION_ID,
-    draft: normalizedDraft
+    draft: normalizedDraft,
+    replace_token: options.replaceToken || null
   });
 
   return response.data || {};
@@ -667,7 +668,11 @@ export const redeemPlanHandoffToken = async (token) => {
     token
   });
 
-  return normalizeDraft(response.data?.draft || null);
+  return {
+    draft: normalizeDraft(response.data?.draft || null),
+    authToken: response.data?.auth_token || response.data?.authToken || '',
+    userId: response.data?.user_id || response.data?.userId || null
+  };
 };
 
 export const clearBallotDraft = (userId) => {
