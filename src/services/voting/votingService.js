@@ -23,6 +23,7 @@ import {
   OFFICE_MINIMUM_SELECTIONS,
   SAVE_BALLOT_STATE_FUNCTION_NAME,
   SAVE_BALLOT_STEP_FUNCTION_NAME,
+  USE_FIREBASE_DRAFT_FUNCTIONS,
   VISITOR_DRAFT_ID
 } from '@/constants/ballot';
 import { auth, db, functions, functionsRegion } from '@/services/firebase/firebase';
@@ -526,6 +527,10 @@ export const fetchRemoteBallotDraft = async (userId, estado = null) => {
 export const saveBallotState = async (userId, estado) => {
   if (!userId) throw new VotingError('AUTH_REQUIRED', 'Faça login para continuar.');
 
+  if (!USE_FIREBASE_DRAFT_FUNCTIONS) {
+    return saveBallotStateDirectly(userId, estado);
+  }
+
   const saveState = httpsCallable(functions, SAVE_BALLOT_STATE_FUNCTION_NAME);
   let response = null;
 
@@ -581,6 +586,10 @@ export const saveBallotStepSelection = async (userId, stepKey, candidates, estad
 
   if (!activeEstado) {
     throw new VotingError('STATE_REQUIRED', 'Escolha um estado antes de selecionar candidatos.');
+  }
+
+  if (!USE_FIREBASE_DRAFT_FUNCTIONS) {
+    return saveBallotStepSelectionDirectly(userId, stepKey, normalizedCandidates, activeEstado);
   }
 
   const saveStep = httpsCallable(functions, SAVE_BALLOT_STEP_FUNCTION_NAME);

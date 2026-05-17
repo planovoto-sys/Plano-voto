@@ -10,6 +10,7 @@ const normalizePublicAppUrl = (value) => String(value || '').trim().replace(/\/+
 
 export const PUBLIC_APP_URL = normalizePublicAppUrl(import.meta.env.VITE_PUBLIC_APP_URL) || 'https://plano-voto.vercel.app';
 export const HANDOFF_API_BASE_URL = normalizePublicAppUrl(import.meta.env.VITE_HANDOFF_API_BASE_URL) || PUBLIC_APP_URL;
+export const USE_FIREBASE_DRAFT_FUNCTIONS = import.meta.env.VITE_USE_FIREBASE_DRAFT_FUNCTIONS === 'true';
 
 export const BALLOT_SCHEMA_VERSION = 1;
 export const VISITOR_DRAFT_ID = 'visitor';

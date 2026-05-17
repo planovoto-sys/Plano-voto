@@ -97,23 +97,35 @@ const asString = (value) => (typeof value === 'string' ? value.trim() : '');
 const normalizePrivateKey = (value) => asString(value).replace(/\\n/g, '\n');
 
 const getServiceAccount = () => {
-  const rawJson = asString(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
-  const rawBase64 = asString(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64 || process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-  if (rawJson || rawBase64) {
-    const json = rawJson || Buffer.from(rawBase64, 'base64').toString('utf8');
-    const parsed = JSON.parse(json);
-    return {
-      projectId: parsed.project_id || parsed.projectId,
-      clientEmail: parsed.client_email || parsed.clientEmail,
-      privateKey: normalizePrivateKey(parsed.private_key || parsed.privateKey)
-    };
+  let serviceAccount = null;
+
+  try {
+    const rawJson = asString(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+    const rawBase64 = asString(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64 || process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+    if (rawJson || rawBase64) {
+      const json = rawJson || Buffer.from(rawBase64, 'base64').toString('utf8');
+      const parsed = JSON.parse(json);
+      serviceAccount = {
+        projectId: parsed.project_id || parsed.projectId,
+        clientEmail: parsed.client_email || parsed.clientEmail,
+        privateKey: normalizePrivateKey(parsed.private_key || parsed.privateKey)
+      };
+    } else {
+      serviceAccount = {
+        projectId: process.env.FIREBASE_PROJECT_ID || process.env.VITE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: normalizePrivateKey(process.env.FIREBASE_PRIVATE_KEY)
+      };
+    }
+  } catch {
+    throw new ApiError(500, 'SERVER_CONFIG_INVALID', 'Credenciais Firebase Admin invalidas na Vercel.');
   }
 
-  return {
-    projectId: process.env.FIREBASE_PROJECT_ID || process.env.VITE_PROJECT_ID,
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-    privateKey: normalizePrivateKey(process.env.FIREBASE_PRIVATE_KEY)
-  };
+  if (!serviceAccount.projectId || !serviceAccount.clientEmail || !serviceAccount.privateKey) {
+    throw new ApiError(500, 'SERVER_CONFIG_MISSING', 'Configure FIREBASE_SERVICE_ACCOUNT_BASE64 na Vercel para gerar QR Code.');
+  }
+
+  return serviceAccount;
 };
 
 const getAdminServices = () => {
