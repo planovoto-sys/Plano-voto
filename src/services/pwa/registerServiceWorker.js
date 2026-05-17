@@ -6,6 +6,10 @@ export const registerPwaServiceWorker = () => {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js', { scope: '/' })
       .then((registration) => {
+        registration.update().catch(() => {
+          // A proxima abertura da PWA tentara atualizar novamente.
+        });
+
         window.setInterval(() => {
           registration.update().catch(() => {
             // A proxima abertura da PWA tentara atualizar novamente.
@@ -17,5 +21,11 @@ export const registerPwaServiceWorker = () => {
           console.warn('Nao foi possivel registrar o service worker.', error);
         }
       });
+  });
+
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (sessionStorage.getItem('meuvoto:sw-reloaded') === 'true') return;
+    sessionStorage.setItem('meuvoto:sw-reloaded', 'true');
+    window.location.reload();
   });
 };

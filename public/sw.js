@@ -1,4 +1,4 @@
-const CACHE_VERSION = '1.4.2-20260508';
+const CACHE_VERSION = '1.4.3-20260517';
 const APP_CACHE = `meuvoto-app-${CACHE_VERSION}`;
 const STATIC_CACHE = `meuvoto-static-${CACHE_VERSION}`;
 const APP_SHELL = [
@@ -68,12 +68,15 @@ const handleNavigation = async (request) => {
 };
 
 const handleStaticAsset = async (request) => {
-  const cached = await caches.match(request);
-  if (cached) return cached;
-
-  const response = await fetch(request);
-  await putIfCacheable(STATIC_CACHE, request, response);
-  return response;
+  try {
+    const response = await fetch(request);
+    await putIfCacheable(STATIC_CACHE, request, response);
+    return response;
+  } catch {
+    const cached = await caches.match(request);
+    if (cached) return cached;
+    throw new Error('Asset indisponivel.');
+  }
 };
 
 self.addEventListener('fetch', (event) => {
