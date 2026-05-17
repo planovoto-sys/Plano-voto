@@ -9,6 +9,7 @@ export const REDEEM_PLAN_HANDOFF_TOKEN_FUNCTION_NAME = import.meta.env.VITE_REDE
 const normalizePublicAppUrl = (value) => String(value || '').trim().replace(/\/+$/, '');
 
 export const PUBLIC_APP_URL = normalizePublicAppUrl(import.meta.env.VITE_PUBLIC_APP_URL) || 'https://plano-voto.vercel.app';
+export const HANDOFF_API_BASE_URL = normalizePublicAppUrl(import.meta.env.VITE_HANDOFF_API_BASE_URL) || PUBLIC_APP_URL;
 
 export const BALLOT_SCHEMA_VERSION = 1;
 export const VISITOR_DRAFT_ID = 'visitor';

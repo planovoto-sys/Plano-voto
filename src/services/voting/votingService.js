@@ -17,16 +17,15 @@ import {
   BALLOT_ROUTES,
   BALLOT_SCHEMA_VERSION,
   CAST_VOTE_FUNCTION_NAME,
-  CREATE_PLAN_HANDOFF_TOKEN_FUNCTION_NAME,
   DELETE_USER_ELECTION_DATA_FUNCTION_NAME,
+  HANDOFF_API_BASE_URL,
   LEGACY_FLOW_STEP_ALIASES,
   OFFICE_MINIMUM_SELECTIONS,
-  REDEEM_PLAN_HANDOFF_TOKEN_FUNCTION_NAME,
   SAVE_BALLOT_STATE_FUNCTION_NAME,
   SAVE_BALLOT_STEP_FUNCTION_NAME,
   VISITOR_DRAFT_ID
 } from '@/constants/ballot';
-import { db, functions, functionsRegion } from '@/services/firebase/firebase';
+import { auth, db, functions, functionsRegion } from '@/services/firebase/firebase';
 import { flowLog } from '@/utils/debugFlow';
 import { getCandidateStateCode, normalizeStateCode } from '@/utils/state';
 const STORAGE_PREFIX = `meuvoto:${ACTIVE_ELECTION_ID}`;
@@ -643,35 +642,69 @@ export const mergeVisitorBallotDraftIntoAccount = async (userId) => {
   return savedDraft;
 };
 
+const parseHandoffApiResponse = async (response) => {
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
+};
+
+const postHandoffApi = async (path, payload, { authRequired = false } = {}) => {
+  const headers = {
+    'Content-Type': 'application/json'
+  };
+
+  if (authRequired) {
+    const currentUser = auth.currentUser;
+    if (!currentUser?.uid) {
+      throw new VotingError('AUTH_REQUIRED', 'Faça login para gerar o QR Code.');
+    }
+    headers.Authorization = `Bearer ${await currentUser.getIdToken()}`;
+  }
+
+  const response = await fetch(`${HANDOFF_API_BASE_URL}${path}`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(payload)
+  });
+  const data = await parseHandoffApiResponse(response);
+
+  if (!response.ok) {
+    throw new VotingError(
+      data?.code || 'HANDOFF_API_ERROR',
+      data?.message || 'QR Code temporário indisponível agora.'
+    );
+  }
+
+  return data || {};
+};
+
 export const createPlanHandoffToken = async (draft, options = {}) => {
   const normalizedDraft = normalizeDraft(draft);
   if (!normalizedDraft.estado) {
     throw new VotingError('STATE_REQUIRED', 'Escolha um estado antes de gerar o QR Code.');
   }
 
-  const createToken = httpsCallable(functions, CREATE_PLAN_HANDOFF_TOKEN_FUNCTION_NAME);
-  const response = await createToken({
+  return postHandoffApi('/api/create-plan-handoff-token', {
     schema_version: BALLOT_SCHEMA_VERSION,
     election_id: ACTIVE_ELECTION_ID,
     draft: normalizedDraft,
     replace_token: options.replaceToken || null
-  });
-
-  return response.data || {};
+  }, { authRequired: true });
 };
 
 export const redeemPlanHandoffToken = async (token) => {
-  const redeemToken = httpsCallable(functions, REDEEM_PLAN_HANDOFF_TOKEN_FUNCTION_NAME);
-  const response = await redeemToken({
+  const data = await postHandoffApi('/api/redeem-plan-handoff-token', {
     schema_version: BALLOT_SCHEMA_VERSION,
     election_id: ACTIVE_ELECTION_ID,
     token
   });
 
   return {
-    draft: normalizeDraft(response.data?.draft || null),
-    authToken: response.data?.auth_token || response.data?.authToken || '',
-    userId: response.data?.user_id || response.data?.userId || null
+    draft: normalizeDraft(data?.draft || null),
+    authToken: data?.auth_token || data?.authToken || '',
+    userId: data?.user_id || data?.userId || null
   };
 };
 
