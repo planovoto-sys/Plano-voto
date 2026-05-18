@@ -92,7 +92,6 @@ export default function BottomNavigation({ currentStep, placement = 'footer' }) 
               className={[
                 'bottom-step-nav__item',
                 'nv-touch',
-                `bottom-step-nav__item--${item.id}`,
                 item.brand ? 'bottom-step-nav__item--brand' : '',
                 isActive ? 'is-active' : '',
                 isComplete ? 'is-complete' : '',

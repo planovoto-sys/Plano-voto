@@ -17,16 +17,16 @@ import {
   BALLOT_ROUTES,
   BALLOT_SCHEMA_VERSION,
   CAST_VOTE_FUNCTION_NAME,
+  CREATE_PLAN_HANDOFF_TOKEN_FUNCTION_NAME,
   DELETE_USER_ELECTION_DATA_FUNCTION_NAME,
-  HANDOFF_API_BASE_URL,
   LEGACY_FLOW_STEP_ALIASES,
   OFFICE_MINIMUM_SELECTIONS,
+  REDEEM_PLAN_HANDOFF_TOKEN_FUNCTION_NAME,
   SAVE_BALLOT_STATE_FUNCTION_NAME,
   SAVE_BALLOT_STEP_FUNCTION_NAME,
-  USE_FIREBASE_DRAFT_FUNCTIONS,
   VISITOR_DRAFT_ID
 } from '@/constants/ballot';
-import { auth, db, functions, functionsRegion } from '@/services/firebase/firebase';
+import { db, functions, functionsRegion } from '@/services/firebase/firebase';
 import { flowLog } from '@/utils/debugFlow';
 import { getCandidateStateCode, normalizeStateCode } from '@/utils/state';
 const STORAGE_PREFIX = `meuvoto:${ACTIVE_ELECTION_ID}`;
@@ -347,6 +347,46 @@ const getDraftActiveCandidateIds = (draft) => {
   ].map((candidate) => candidate.id).filter(Boolean);
 };
 
+const countCandidateIds = (candidateIds) => (
+  candidateIds.reduce((counts, candidateId) => {
+    counts.set(candidateId, (counts.get(candidateId) || 0) + 1);
+    return counts;
+  }, new Map())
+);
+
+const updateActiveTalliesInTransaction = async (transaction, oldDraft, newDraft, updatedAt) => {
+  const oldCounts = countCandidateIds(getDraftActiveCandidateIds(oldDraft));
+  const newCounts = countCandidateIds(getDraftActiveCandidateIds(newDraft));
+  const candidateIds = new Set([...oldCounts.keys(), ...newCounts.keys()]);
+  const changes = [];
+
+  candidateIds.forEach((candidateId) => {
+    const delta = (newCounts.get(candidateId) || 0) - (oldCounts.get(candidateId) || 0);
+    if (delta === 0) return;
+    changes.push({
+      candidateId,
+      delta,
+      ref: doc(db, 'elections', ACTIVE_ELECTION_ID, 'candidate_tallies', candidateId)
+    });
+  });
+
+  const tallySnaps = [];
+  for (const change of changes) {
+    tallySnaps.push(await transaction.get(change.ref));
+  }
+
+  changes.forEach((change, index) => {
+    const currentActiveSelections = Number(tallySnaps[index].data()?.active_selections || 0) || 0;
+    transaction.set(change.ref, {
+      schema_version: BALLOT_SCHEMA_VERSION,
+      election_id: ACTIVE_ELECTION_ID,
+      candidate_id: change.candidateId,
+      active_selections: Math.max(0, currentActiveSelections + change.delta),
+      updated_at: updatedAt
+    }, { merge: true });
+  });
+};
+
 const prepareDraftForFirestore = (draft, userId, updatedAt) => ({
   ...normalizeDraft(draft, draft.estado),
   schema_version: BALLOT_SCHEMA_VERSION,
@@ -396,6 +436,7 @@ const saveBallotStateDirectly = async (userId, estado) => {
       updated_at: new Date().toISOString()
     }, activeEstado);
 
+    await updateActiveTalliesInTransaction(transaction, previousDraft, responseDraft, updatedAt);
     transaction.set(draftRef, prepareDraftForFirestore(responseDraft, userId, updatedAt), { merge: false });
     transaction.set(userRef, {
       estado: activeEstado,
@@ -459,6 +500,7 @@ const saveBallotStepSelectionDirectly = async (userId, stepKey, candidates, esta
     }
 
     responseDraft = nextDraft;
+    await updateActiveTalliesInTransaction(transaction, previousDraft, responseDraft, updatedAt);
     transaction.set(draftRef, prepareDraftForFirestore(responseDraft, userId, updatedAt), { merge: false });
   });
 
@@ -484,10 +526,6 @@ export const fetchRemoteBallotDraft = async (userId, estado = null) => {
 
 export const saveBallotState = async (userId, estado) => {
   if (!userId) throw new VotingError('AUTH_REQUIRED', 'Faça login para continuar.');
-
-  if (!USE_FIREBASE_DRAFT_FUNCTIONS) {
-    return saveBallotStateDirectly(userId, estado);
-  }
 
   const saveState = httpsCallable(functions, SAVE_BALLOT_STATE_FUNCTION_NAME);
   let response = null;
@@ -544,10 +582,6 @@ export const saveBallotStepSelection = async (userId, stepKey, candidates, estad
 
   if (!activeEstado) {
     throw new VotingError('STATE_REQUIRED', 'Escolha um estado antes de selecionar candidatos.');
-  }
-
-  if (!USE_FIREBASE_DRAFT_FUNCTIONS) {
-    return saveBallotStepSelectionDirectly(userId, stepKey, normalizedCandidates, activeEstado);
   }
 
   const saveStep = httpsCallable(functions, SAVE_BALLOT_STEP_FUNCTION_NAME);
@@ -609,70 +643,31 @@ export const mergeVisitorBallotDraftIntoAccount = async (userId) => {
   return savedDraft;
 };
 
-const parseHandoffApiResponse = async (response) => {
-  try {
-    return await response.json();
-  } catch {
-    return null;
-  }
-};
-
-const postHandoffApi = async (path, payload, { authRequired = false } = {}) => {
-  const headers = {
-    'Content-Type': 'application/json'
-  };
-
-  if (authRequired) {
-    const currentUser = auth.currentUser;
-    if (!currentUser?.uid) {
-      throw new VotingError('AUTH_REQUIRED', 'Faça login para gerar o QR Code.');
-    }
-    headers.Authorization = `Bearer ${await currentUser.getIdToken()}`;
-  }
-
-  const response = await fetch(`${HANDOFF_API_BASE_URL}${path}`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(payload)
-  });
-  const data = await parseHandoffApiResponse(response);
-
-  if (!response.ok) {
-    throw new VotingError(
-      data?.code || 'HANDOFF_API_ERROR',
-      data?.message || 'QR Code temporário indisponível agora.'
-    );
-  }
-
-  return data || {};
-};
-
-export const createPlanHandoffToken = async (draft, options = {}) => {
+export const createPlanHandoffToken = async (draft) => {
   const normalizedDraft = normalizeDraft(draft);
   if (!normalizedDraft.estado) {
     throw new VotingError('STATE_REQUIRED', 'Escolha um estado antes de gerar o QR Code.');
   }
 
-  return postHandoffApi('/api/create-plan-handoff-token', {
+  const createToken = httpsCallable(functions, CREATE_PLAN_HANDOFF_TOKEN_FUNCTION_NAME);
+  const response = await createToken({
     schema_version: BALLOT_SCHEMA_VERSION,
     election_id: ACTIVE_ELECTION_ID,
-    draft: normalizedDraft,
-    replace_token: options.replaceToken || null
-  }, { authRequired: true });
+    draft: normalizedDraft
+  });
+
+  return response.data || {};
 };
 
 export const redeemPlanHandoffToken = async (token) => {
-  const data = await postHandoffApi('/api/redeem-plan-handoff-token', {
+  const redeemToken = httpsCallable(functions, REDEEM_PLAN_HANDOFF_TOKEN_FUNCTION_NAME);
+  const response = await redeemToken({
     schema_version: BALLOT_SCHEMA_VERSION,
     election_id: ACTIVE_ELECTION_ID,
     token
   });
 
-  return {
-    draft: normalizeDraft(data?.draft || null),
-    authToken: data?.auth_token || data?.authToken || '',
-    userId: data?.user_id || data?.userId || null
-  };
+  return normalizeDraft(response.data?.draft || null);
 };
 
 export const clearBallotDraft = (userId) => {

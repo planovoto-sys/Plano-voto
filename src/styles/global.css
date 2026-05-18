@@ -227,7 +227,7 @@ body {
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: var(--text-main);
+  color: #111111;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -248,7 +248,7 @@ body {
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: var(--text-main);
+  color: #111111;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -912,7 +912,7 @@ body {
     border-radius: 999px;
     padding-inline: 13px 15px;
     gap: 8px;
-    color: var(--text-main);
+    color: #25323a;
     font-size: 13px;
     font-weight: 850;
     letter-spacing: 0.01em;
@@ -928,7 +928,7 @@ body {
     border-radius: 999px;
     padding-inline: 13px 15px;
     gap: 8px;
-    color: var(--text-main);
+    color: #25323a;
     font-size: 13px;
     font-weight: 850;
     letter-spacing: 0.01em;

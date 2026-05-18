@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import QRCode from 'qrcode';
-import { BALLOT_ROUTES, PUBLIC_APP_URL } from '@/constants/ballot';
+import { BALLOT_ROUTES } from '@/constants/ballot';
 import { AVERAGE_ELECTED_VOTES_BY_OFFICE } from '@/constants/candidates';
 import { STATE_NAMES } from '@/constants/states';
 import { useDesktopExperience } from '@/hooks/useDesktopExperience';
@@ -61,7 +61,10 @@ const getCandidateOfficeKey = (candidate = {}) => {
   return officeName.includes('senador') ? 'senadores' : 'deputado_federal';
 };
 
-const getPlanUrl = () => `${PUBLIC_APP_URL}${BALLOT_ROUTES.meuPlano}`;
+const getPlanUrl = () => {
+  if (typeof window === 'undefined') return 'https://nossovoto.org/meu-plano';
+  return `${window.location.origin}${BALLOT_ROUTES.meuPlano}`;
+};
 
 const getDraftOfficeCandidates = (draft, officeKey) => {
   if (!draft) return [];
@@ -204,9 +207,7 @@ export default function MeuPlano() {
   const localDraft = user?.uid ? readBallotDraft(user.uid, userData?.estado) : readVisitorBallotDraft();
   const [remoteDraftState, setRemoteDraftState] = useState({ userId: null, draft: null, loading: false });
   const [candidateDetailsState, setCandidateDetailsState] = useState({ signature: '', candidatesById: new Map(), loading: false });
-  const handoffQrTokenRef = useRef('');
   const [handoffQrState, setHandoffQrState] = useState({ status: 'idle', url: '', expiresAtMs: null, error: '' });
-  const [handoffQrRefreshKey, setHandoffQrRefreshKey] = useState(0);
   const [modalCampoBloqueado, setModalCampoBloqueado] = useState(false);
   const [planUrl] = useState(() => getPlanUrl());
 
@@ -256,10 +257,7 @@ export default function MeuPlano() {
     if (!isDesktopExperience || isGuestMode || !handoffDraftPayload) {
       let cancelled = false;
       queueMicrotask(() => {
-        if (!cancelled) {
-          handoffQrTokenRef.current = '';
-          setHandoffQrState({ status: 'idle', url: '', expiresAtMs: null, error: '' });
-        }
+        if (!cancelled) setHandoffQrState({ status: 'idle', url: '', expiresAtMs: null, error: '' });
       });
       return () => {
         cancelled = true;
@@ -278,12 +276,12 @@ export default function MeuPlano() {
       }
     });
 
-    createPlanHandoffToken(draftForHandoff, { replaceToken: handoffQrTokenRef.current })
+    createPlanHandoffToken(draftForHandoff)
       .then((handoff) => {
         const token = handoff.token;
         if (!token) throw new Error('Token ausente');
 
-        const handoffUrl = `${PUBLIC_APP_URL}${BALLOT_ROUTES.continuarPlano}/${encodeURIComponent(token)}`;
+        const handoffUrl = `${window.location.origin}${BALLOT_ROUTES.continuarPlano}/${encodeURIComponent(token)}`;
         return QRCode.toDataURL(handoffUrl, {
           width: 190,
           margin: 1,
@@ -291,13 +289,10 @@ export default function MeuPlano() {
             dark: '#111111',
             light: '#ffffff'
           }
-        }).then((url) => ({ url, token, expiresAtMs: handoff.expires_at_ms || null }));
+        }).then((url) => ({ url, expiresAtMs: handoff.expires_at_ms || null }));
       })
-      .then(({ url, token, expiresAtMs }) => {
-        if (!cancelled) {
-          handoffQrTokenRef.current = token;
-          setHandoffQrState({ status: 'ready', url, expiresAtMs, error: '' });
-        }
+      .then(({ url, expiresAtMs }) => {
+        if (!cancelled) setHandoffQrState({ status: 'ready', url, expiresAtMs, error: '' });
       })
       .catch(() => {
         if (!cancelled) {
@@ -313,7 +308,7 @@ export default function MeuPlano() {
     return () => {
       cancelled = true;
     };
-  }, [handoffDraftPayload, handoffQrRefreshKey, isDesktopExperience, isGuestMode]);
+  }, [handoffDraftPayload, isDesktopExperience, isGuestMode]);
 
   useEffect(() => {
     if (!selectedCandidateSignature) {
@@ -412,10 +407,6 @@ export default function MeuPlano() {
 
   const handleLockedFieldClick = () => {
     setModalCampoBloqueado(true);
-  };
-
-  const handleRefreshQrCode = () => {
-    setHandoffQrRefreshKey((currentKey) => currentKey + 1);
   };
 
   const handleLogout = async () => {
@@ -539,7 +530,7 @@ export default function MeuPlano() {
             <aside className="my-plan-qr" aria-label="Continuar no celular">
               <div>
                 <strong>Continuar no celular</strong>
-                <span>Escaneie para entrar no celular e abrir este plano automaticamente. O acesso é temporário e funciona uma única vez.</span>
+                <span>Escaneie para abrir este plano no celular. O acesso é temporário e funciona uma única vez.</span>
               </div>
               {handoffQrState.status === 'ready' && handoffQrState.url && (
                 <img src={handoffQrState.url} alt="QR Code temporário para continuar o plano no celular" />
@@ -552,11 +543,6 @@ export default function MeuPlano() {
               )}
               {!handoffDraftPayload && (
                 <span className="my-plan-qr__status">Escolha um estado para gerar o QR Code.</span>
-              )}
-              {handoffDraftPayload && handoffQrState.status !== 'loading' && (
-                <button className="my-plan-qr__retry nv-touch" type="button" onClick={handleRefreshQrCode}>
-                  {handoffQrState.status === 'error' ? 'Tentar novamente' : 'Gerar novo QR Code'}
-                </button>
               )}
             </aside>
           )}
