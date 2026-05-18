@@ -11,15 +11,16 @@ export function MenuIcon({ className = 'app-icon' }) {
 export function InfoIcon({ className = 'app-icon' }) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        d="M12 2.1c5.75 0 10 3.89 10 9.11 0 5.35-4.35 9.14-10.13 9.14-1.2 0-2.35-.16-3.41-.49L2.8 21.9l1.65-5.15A8.62 8.62 0 0 1 2 10.98C2 5.87 6.31 2.1 12 2.1Z"
+      <circle
+        cx="12"
+        cy="12"
+        r="8.6"
         fill="none"
         stroke="currentColor"
-        strokeWidth="2"
-        strokeLinejoin="round"
+        strokeWidth="2.2"
       />
-      <path d="M12 10.25v5.55" fill="none" stroke="currentColor" strokeWidth="2.35" strokeLinecap="round" />
-      <circle cx="12" cy="7.05" r="1.35" fill="currentColor" />
+      <path d="M12 10.8v5.5" fill="none" stroke="currentColor" strokeWidth="2.35" strokeLinecap="round" />
+      <circle cx="12" cy="7.55" r="1.25" fill="currentColor" />
     </svg>
   );
 }
@@ -73,7 +74,8 @@ export function SearchIcon({ className = 'app-icon' }) {
 export function BackIcon({ className = 'app-icon' }) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M15.5 5 8.5 12l7 7" fill="none" stroke="currentColor" strokeWidth="2.7" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M14.8 5.3 8.1 12l6.7 6.7" fill="none" stroke="currentColor" strokeWidth="2.55" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M8.9 12h10" fill="none" stroke="currentColor" strokeWidth="2.55" strokeLinecap="round" />
     </svg>
   );
 }
@@ -96,7 +98,7 @@ export function EstadoNavIcon({ className = 'app-icon' }) {
 export function DeputadoNavIcon({ className = 'app-icon' }) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M4 8.1h16c-.6 5.05-3.78 8.3-8 8.3S4.6 13.15 4 8.1Z" fill="currentColor" />
+      <path d="M2.8 6.6h18.4c-.7 7.1-4.34 11.4-9.2 11.4S3.5 13.7 2.8 6.6Z" fill="currentColor" />
     </svg>
   );
 }
@@ -104,7 +106,7 @@ export function DeputadoNavIcon({ className = 'app-icon' }) {
 export function SenadoNavIcon({ className = 'app-icon' }) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M4.1 16.3c.8-4.95 3.95-8.15 7.9-8.15s7.1 3.2 7.9 8.15H4.1Z" fill="currentColor" />
+      <path d="M2.9 17.7c.92-7 4.58-11.35 9.1-11.35s8.18 4.35 9.1 11.35H2.9Z" fill="currentColor" />
     </svg>
   );
 }

@@ -649,7 +649,7 @@ export default function SelectBase({
   };
 
   const renderCandidateList = () => {
-    const currentTitle = 'Meu rascunho';
+    const currentTitle = 'Meu Candidato';
     const hasCurrentCandidates = currentSectionCandidates.length > 0;
     const showDraftSidebar = isCandidateOffice && (hasCurrentCandidates || isDesktopLayout);
     return (

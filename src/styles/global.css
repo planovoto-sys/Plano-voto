@@ -231,6 +231,7 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  box-shadow: none;
   cursor: pointer;
 }
 
@@ -258,12 +259,13 @@ body {
   font-family: var(--font-family);
   font-size: 0;
   font-weight: 800;
+  box-shadow: none;
   cursor: pointer;
 }
 
 .app-header-back-button .app-icon {
-  width: 31px;
-  height: 31px;
+  width: 24px;
+  height: 24px;
 }
 
 .app-header-back-button span {
@@ -881,21 +883,20 @@ body {
 
   .app-header-back-button,
   .app-header-icon-action {
-    border: 1px solid rgba(15, 23, 42, 0.1);
-    background: #f8faf9;
-    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.07);
+    border: 0;
+    background: transparent;
+    box-shadow: none;
     transition:
       background-color 160ms ease,
-      border-color 160ms ease,
-      box-shadow 160ms ease,
+      color 160ms ease,
       transform 160ms ease;
   }
 
   .app-header-back-button:hover,
   .app-header-icon-action:hover {
-    border-color: rgba(255, 126, 66, 0.36);
-    background: #fff7ef;
-    box-shadow: 0 12px 24px rgba(255, 126, 66, 0.14);
+    background: transparent;
+    box-shadow: none;
+    color: #ff914d;
     transform: translateY(-1px);
   }
 
@@ -923,19 +924,19 @@ body {
   }
 
   .app-help-action {
-    width: auto;
-    min-width: 96px;
-    border-radius: 999px;
-    padding-inline: 13px 15px;
-    gap: 8px;
+    width: 42px;
+    min-width: 42px;
+    border-radius: 50%;
+    padding: 0;
+    gap: 0;
     color: #25323a;
-    font-size: 13px;
+    font-size: 0;
     font-weight: 850;
     letter-spacing: 0.01em;
   }
 
   .app-help-action::after {
-    content: "Ajuda";
+    content: none;
   }
 
   .prototype-page > .app-page-header h1 {
@@ -974,8 +975,7 @@ body {
     letter-spacing: 1.05px;
   }
 
-  .app-header-back-button,
-  .app-help-action {
+  .app-header-back-button {
     min-width: 78px;
     padding-inline: 10px 12px;
     gap: 6px;
@@ -1034,8 +1034,7 @@ body {
     width: min(28vw, 340px);
   }
 
-  .app-header-back-button,
-  .app-help-action {
+  .app-header-back-button {
     min-width: 84px;
     padding-inline: 10px 12px;
   }

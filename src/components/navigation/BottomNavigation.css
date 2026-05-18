@@ -95,6 +95,11 @@
   padding: 4px;
 }
 
+.bottom-step-nav__item--deputado .bottom-step-nav__icon,
+.bottom-step-nav__item--senador .bottom-step-nav__icon {
+  padding: 2px;
+}
+
 .bottom-step-nav__item.is-complete .bottom-step-nav__icon {
   background: transparent;
   color: currentColor;
@@ -140,6 +145,11 @@
     height: 28px;
     flex-basis: 28px;
   }
+
+  .bottom-step-nav__item--deputado .bottom-step-nav__icon,
+  .bottom-step-nav__item--senador .bottom-step-nav__icon {
+    padding: 2px;
+  }
 }
 
 @media (max-width: 340px) {
@@ -165,6 +175,11 @@
     height: 27px;
     flex-basis: 27px;
     padding: 4px;
+  }
+
+  .bottom-step-nav__item--deputado .bottom-step-nav__icon,
+  .bottom-step-nav__item--senador .bottom-step-nav__icon {
+    padding: 2px;
   }
 }
 
@@ -441,6 +456,11 @@
     box-shadow: none;
   }
 
+  .app-page-footer--header .bottom-step-nav__item--deputado .bottom-step-nav__icon,
+  .app-page-footer--header .bottom-step-nav__item--senador .bottom-step-nav__icon {
+    padding: 2px;
+  }
+
   .app-page-footer--header .bottom-step-nav__item.is-complete .bottom-step-nav__icon {
     background: transparent;
     color: currentColor;
@@ -574,6 +594,11 @@
     height: 24px;
     flex-basis: 24px;
     padding: 3px;
+  }
+
+  .app-page-footer--header .bottom-step-nav__item--deputado .bottom-step-nav__icon,
+  .app-page-footer--header .bottom-step-nav__item--senador .bottom-step-nav__icon {
+    padding: 1px;
   }
 
   .app-page-footer--header .bottom-step-nav__item--brand .bottom-step-nav__icon {

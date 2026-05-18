@@ -62,22 +62,22 @@ const getSingleLineSize = (value, sizes) => {
 
 const getAssessment = ({ isFireFeatured, isViabilityComplete, systemScore }) => {
   if (isFireFeatured && systemScore > 7) {
-    return { label: 'Mais viável', icon: 'fire' };
+    return { label: 'Mais viável', tone: 'fire', icon: 'fire' };
+  }
+
+  if (isViabilityComplete) {
+    return { label: 'Não precisa de mais votos', tone: 'info', icon: 'error' };
   }
 
   if (systemScore >= 7) {
-    if (isViabilityComplete) {
-      return { label: 'Não precisa de mais votos', icon: 'info' };
-    }
-
-    return { label: 'Precisa de mais votos', icon: 'info' };
+    return { label: 'Precisa de mais votos', tone: 'info', icon: 'info' };
   }
 
   if (systemScore > 0 && systemScore < 7) {
-    return { label: 'Mal avaliado', icon: systemScore < 6 ? 'error' : 'info' };
+    return { label: 'Mal avaliado', tone: 'info', icon: 'error' };
   }
 
-  return { label: 'Sem nota', icon: 'info' };
+  return { label: 'Sem nota', tone: 'info', icon: 'info' };
 };
 
 export default function CandidateCard({
@@ -147,11 +147,6 @@ export default function CandidateCard({
       <span className="candidate-card__identity">
         <span className="candidate-card__name-row">
           <strong>{name}</strong>
-          {!summary && !lockPersonalizedFields && (
-            <span className={`candidate-card__action ${selected ? 'is-selected' : ''}`} aria-hidden="true">
-              {selected ? '✓' : '+'}
-            </span>
-          )}
         </span>
         <small>{metaParts.join(' / ')}</small>
         {showAssessmentSubtitle && lockPersonalizedFields ? (
@@ -163,7 +158,7 @@ export default function CandidateCard({
             <span>Entre para ver nota, viabilidade e análise personalizada.</span>
           </span>
         ) : showAssessmentSubtitle && (
-          <span className={`candidate-card__assessment candidate-card__assessment--${assessment.icon}`}>
+          <span className={`candidate-card__assessment candidate-card__assessment--${assessment.tone}`}>
             <i className="candidate-card__assessment-icon" aria-hidden="true">
               {assessment.icon === 'fire'
                 ? <ChanceFlame size={13} color="currentColor" />
@@ -183,9 +178,7 @@ export default function CandidateCard({
           onLockedClick={onLockedMetricClick}
         />
       ) : lockPersonalizedFields ? (
-        <span className={`candidate-card__action ${selected ? 'is-selected' : ''}`} aria-hidden="true">
-          {selected ? '✓' : '+'}
-        </span>
+        null
       ) : (
         <ViabilityMeter
           value={chance}

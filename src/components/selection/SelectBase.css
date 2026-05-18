@@ -1,5 +1,9 @@
+.select-base-container {
+  position: relative;
+}
+
 .select-base__scroll {
-  padding: 31px var(--screen-gutter) 18px;
+  padding: 31px var(--screen-gutter) calc(118px + env(safe-area-inset-bottom, 0px));
 }
 
 .variant-home-state .select-base__scroll {
@@ -303,11 +307,11 @@
 
 .candidate-current-section {
   gap: 12px;
-  border: 1px solid rgba(17, 17, 17, 0.09);
-  border-radius: 8px;
-  background: #ffffff;
-  padding: 16px;
-  box-shadow: 0 14px 34px rgba(34, 36, 38, 0.07);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
 }
 
 .candidate-current-list {
@@ -403,11 +407,11 @@
   flex: 1 1 auto;
   display: flex;
   align-items: center;
-  gap: 0;
-  border: 1px solid #edf0ef;
-  border-radius: 999px;
-  background: #f6f8f7;
-  padding: 4px;
+  gap: 8px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
 }
 
 .candidate-filter-tabs__item {
@@ -415,10 +419,10 @@
   min-height: 40px;
   height: 40px;
   flex: 1 1 0;
-  border: 0;
+  border: 1px solid #a1a1a1;
   border-radius: 999px;
   background: transparent;
-  color: #52605b;
+  color: #a1a1a1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -432,16 +436,17 @@
   white-space: nowrap;
   cursor: pointer;
   transition:
-    background-color 180ms ease,
+    border-color 180ms ease,
     color 180ms ease,
-    box-shadow 180ms ease,
+    background-color 180ms ease,
     transform 180ms ease;
 }
 
 .candidate-filter-tabs__item.is-active {
-  background: #111111;
-  color: #ffffff;
-  box-shadow: 0 8px 18px rgba(17, 17, 17, 0.14);
+  border-color: #0a0a0a;
+  background: transparent;
+  color: #0a0a0a;
+  box-shadow: none;
 }
 
 .candidate-search-button {
@@ -549,7 +554,14 @@
   --candidate-card-pad-left: 19px;
   --candidate-card-pad-right: 10px;
   --candidate-metric-size: 56px;
-  --metric-feature-color: #ff8b49;
+  --metric-feature-color: #ff914d;
+  --candidate-card-bg: #ffffff;
+  --candidate-card-fg: #69746f;
+  --candidate-assessment-bg: color-mix(in srgb, currentColor 16%, white);
+  --candidate-viability-fill: currentColor;
+  --candidate-viability-track: rgba(169, 169, 169, 0.28);
+  --assessment-icon-bg: #a9a9a9;
+  --assessment-icon-fg: #ffffff;
   position: relative;
   width: 100%;
   min-height: 80px;
@@ -560,6 +572,8 @@
   align-items: center;
   gap: 8px;
   padding: 8px var(--candidate-card-pad-right) 8px var(--candidate-card-pad-left);
+  background: var(--candidate-card-bg);
+  color: var(--candidate-card-fg);
   text-align: left;
   font-family: var(--font-family);
   cursor: pointer;
@@ -576,19 +590,34 @@
 }
 
 .candidate-card--success {
-  border: 1px solid var(--tone-success);
-  background: var(--tone-success-bg);
-  color: var(--tone-success);
+  --candidate-card-bg: #f2fbee;
+  --candidate-card-fg: #7ed957;
+  --candidate-assessment-bg: #dbf4cf;
+  --candidate-viability-fill: #7ed957;
+  --candidate-viability-track: #dbf4cf;
+  --assessment-icon-bg: #7ed957;
+  --assessment-icon-fg: #dbf4cf;
+  border: 1px solid transparent;
 }
 
 .candidate-card--neutral {
-  background: var(--card-bg);
-  color: var(--tone-neutral);
+  --candidate-card-bg: #f7f7f7;
+  --candidate-card-fg: #b4b4b4;
+  --candidate-assessment-bg: #eaeaea;
+  --candidate-viability-fill: #b4b4b4;
+  --candidate-viability-track: #eaeaea;
+  --assessment-icon-bg: #b4b4b4;
+  --assessment-icon-fg: #eaeaea;
 }
 
 .candidate-card--danger {
-  background: var(--tone-danger-bg);
-  color: var(--tone-danger);
+  --candidate-card-bg: #fff3f3;
+  --candidate-card-fg: #ff5757;
+  --candidate-assessment-bg: #ffdcdc;
+  --candidate-viability-fill: #ff5757;
+  --candidate-viability-track: #ffdcdc;
+  --assessment-icon-bg: #ff5757;
+  --assessment-icon-fg: #ffdcdc;
 }
 
 .candidate-card--new {
@@ -615,9 +644,25 @@
 }
 
 .prototype-candidate-card.is-fire-featured {
+  --candidate-card-bg: #ffeed5;
+  --candidate-card-fg: #ff914d;
+  --candidate-assessment-bg: #ffe4bc;
+  --candidate-viability-fill: #ff914d;
+  --candidate-viability-track: #ffe4bc;
+  --assessment-icon-bg: transparent;
+  --assessment-icon-fg: #ff914d;
+  --metric-feature-color: #ff914d;
   border-color: transparent;
-  background: #fff1df;
-  color: #ff8b49;
+}
+
+.prototype-candidate-card.is-viability-complete {
+  --candidate-card-bg: #f7f7f7;
+  --candidate-card-fg: #b4b4b4;
+  --candidate-assessment-bg: #eaeaea;
+  --candidate-viability-fill: #b4b4b4;
+  --candidate-viability-track: #eaeaea;
+  --assessment-icon-bg: #b4b4b4;
+  --assessment-icon-fg: #eaeaea;
 }
 
 .candidate-card__identity {
@@ -634,9 +679,9 @@
   max-width: 100%;
   overflow: visible;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
   align-items: start;
-  gap: 6px;
+  gap: 0;
 }
 
 .candidate-card__identity strong {
@@ -669,28 +714,6 @@
   overflow-wrap: anywhere;
 }
 
-.candidate-card__action {
-  width: 22px;
-  height: 22px;
-  flex: 0 0 22px;
-  align-self: start;
-  justify-self: end;
-  border: 1px solid currentColor;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: currentColor;
-  font-size: 18px;
-  font-weight: 500;
-  line-height: 1;
-}
-
-.candidate-card__action.is-selected {
-  font-size: 16px;
-  font-weight: 800;
-}
-
 .candidate-card__remove-action {
   min-width: 82px;
   min-height: 34px;
@@ -715,7 +738,7 @@
   overflow: visible;
   margin-top: 6px;
   border-radius: 999px;
-  background: color-mix(in srgb, currentColor 16%, white);
+  background: var(--candidate-assessment-bg);
   color: currentColor;
   display: inline-flex;
   align-items: center;
@@ -732,8 +755,8 @@
   height: 14px;
   flex: 0 0 14px;
   border-radius: 50%;
-  background: var(--assessment-icon-color, #a9a9a9);
-  color: #ffffff;
+  background: var(--assessment-icon-bg);
+  color: var(--assessment-icon-fg);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -744,22 +767,15 @@
   box-shadow: none;
 }
 
-.candidate-card--success .candidate-card__assessment-icon {
-  --assessment-icon-color: #72d552;
-}
-
-.candidate-card--danger .candidate-card__assessment-icon {
-  --assessment-icon-color: #ff5757;
-}
-
-.candidate-card--neutral .candidate-card__assessment-icon,
-.candidate-card--new .candidate-card__assessment-icon {
-  --assessment-icon-color: #a9a9a9;
-}
-
 .prototype-candidate-card.is-fire-featured .candidate-card__assessment-icon,
 .candidate-card__assessment--fire .candidate-card__assessment-icon {
-  --assessment-icon-color: #ff8b49;
+  background: transparent;
+  color: #ff914d;
+}
+
+.candidate-card__assessment--fire {
+  align-self: flex-start;
+  margin-left: 0;
 }
 
 .candidate-card__assessment-icon svg,
@@ -837,7 +853,7 @@
   inset: 0;
   z-index: -1;
   border-radius: 50%;
-  background: conic-gradient(from 0deg, currentColor calc(var(--metric-progress, 0) * 1%), rgba(169, 169, 169, 0.28) 0);
+  background: conic-gradient(from 0deg, var(--candidate-viability-fill, currentColor) calc(var(--metric-progress, 0) * 1%), var(--candidate-viability-track, rgba(169, 169, 169, 0.28)) 0);
   -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 4px));
   mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 4px));
 }
@@ -868,8 +884,8 @@
 
 .candidate-viability__flame {
   position: absolute;
-  top: -10px;
-  right: -6px;
+  top: -14px;
+  right: -10px;
   z-index: 3;
   width: 28px;
   height: 34px;
@@ -880,20 +896,33 @@
 }
 
 .candidate-viability__flame--summary {
-  top: -10px;
-  right: -6px;
+  top: -15px;
+  right: -11px;
   z-index: 3;
 }
 
 .select-base__continue-shell {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
+  z-index: 12;
+  display: flex;
+  justify-content: center;
   flex: 0 0 auto;
   max-height: 116px;
   padding: 8px var(--screen-gutter) 16px;
-  background: #ffffff;
-  overflow: hidden;
+  background: transparent;
+  overflow: visible;
   opacity: 1;
+  pointer-events: none;
+  visibility: visible;
   transform: translateY(0);
-  transition: max-height 180ms ease, padding 180ms ease, opacity 160ms ease, transform 180ms ease, border-color 180ms ease;
+  transition: max-height 180ms ease, padding 180ms ease, opacity 160ms ease, transform 180ms ease, border-color 180ms ease, visibility 180ms ease;
+}
+
+.select-base__continue-shell > * {
+  pointer-events: auto;
 }
 
 .select-base__continue-shell.has-share-panel {
@@ -911,14 +940,19 @@
   border-color: transparent;
   opacity: 0;
   pointer-events: none;
+  visibility: hidden;
   transform: translateY(10px);
+}
+
+.select-base__continue-shell.is-hidden > * {
+  pointer-events: none;
 }
 
 .select-base__continue {
   width: 100%;
   min-height: 80px;
   border: 0;
-  border-radius: 9px;
+  border-radius: 14px;
   background: linear-gradient(90deg, #ffdf59 0%, #ff8b49 100%);
   color: #000000;
   font-family: var(--font-family);
@@ -1008,20 +1042,14 @@
 
   .candidate-card--success {
     border: 1px solid transparent;
-    background: #f2fff0;
-    color: #72d552;
   }
 
   .candidate-card--danger {
     border: 1px solid transparent;
-    background: #fff0f0;
-    color: #ff5757;
   }
 
   .candidate-card--neutral {
     border: 1px solid transparent;
-    background: #f2f2f2;
-    color: #a9a9a9;
   }
 
   .candidate-card--new {
@@ -1039,8 +1067,8 @@
   }
 
   .prototype-candidate-card.is-fire-featured {
-    background: #fff0d6;
-    color: #ff8b49;
+    --candidate-card-bg: #ffeed5;
+    --candidate-card-fg: #ff914d;
   }
 
   .candidate-list-section .prototype-candidate-card:not(.is-selected),
@@ -1064,15 +1092,15 @@
   }
 
   .candidate-viability__flame {
-    top: -17px;
-    right: -14px;
+    top: -20px;
+    right: -17px;
     width: 34px;
     height: 41px;
   }
 
   .candidate-viability__flame--summary {
-    top: -23px;
-    right: -16px;
+    top: -25px;
+    right: -18px;
     width: 39px;
     height: 47px;
     z-index: 5;
@@ -1082,9 +1110,9 @@
 
   .candidate-card__name-row {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
     align-items: start;
-    gap: 6px;
+    gap: 0;
   }
 
   .candidate-card__identity strong {
@@ -1096,14 +1124,6 @@
     margin-top: 1px;
     font-size: 12px;
     line-height: 1.05;
-  }
-
-  .candidate-card__action {
-    width: 21px;
-    height: 21px;
-    flex-basis: 21px;
-    font-size: 19px;
-    line-height: 1;
   }
 
   .candidate-card__assessment {
@@ -1158,7 +1178,7 @@
   }
 
   .candidate-filter-tabs {
-    gap: 0;
+    gap: 6px;
   }
 
   .candidate-filter-tabs__item {
@@ -1204,15 +1224,15 @@
   }
 
   .candidate-viability__flame {
-    top: -15px;
-    right: -12px;
+    top: -18px;
+    right: -15px;
     width: 30px;
     height: 36px;
   }
 
   .candidate-viability__flame--summary {
-    top: -20px;
-    right: -14px;
+    top: -22px;
+    right: -16px;
     width: 35px;
     height: 42px;
   }
@@ -1258,7 +1278,7 @@
 
 @media (min-width: 768px) {
   .select-base__scroll {
-    padding: 34px var(--screen-gutter) 22px;
+    padding: 34px var(--screen-gutter) calc(106px + env(safe-area-inset-bottom, 0px));
   }
 
   .variant-home-state .select-base__scroll {
@@ -1341,14 +1361,14 @@
     justify-content: center;
     max-height: 90px;
     padding: 12px var(--screen-gutter) 18px;
-    border-top: 1px solid var(--desktop-border);
-    background: var(--desktop-bg);
+    border-top: 0;
+    background: transparent;
   }
 
   .select-base__continue {
     width: min(100%, var(--content-max-width, 1180px));
     min-height: 58px;
-    border-radius: 8px;
+    border-radius: 14px;
     font-size: 18px;
   }
 }
@@ -1631,8 +1651,8 @@
 
   .candidate-filter-tabs__item:not(.is-active):hover,
   .candidate-search-button:not(.is-active):hover {
-    border-color: #cfd3d6;
-    background: #f8f9fa;
+    border-color: #0a0a0a;
+    background: transparent;
   }
 
   .candidate-filter-tabs__item:not(:disabled):hover,
@@ -1682,7 +1702,7 @@
 
   .candidate-list-section .candidate-card__name-row {
     align-items: flex-start;
-    gap: 8px;
+    gap: 0;
   }
 
   .candidate-list-section .candidate-card__identity strong {
@@ -1873,7 +1893,7 @@
   }
 
   .candidate-current-section {
-    padding: 18px;
+    padding: 0;
   }
 
   .candidate-list-tools {
@@ -1912,4 +1932,9 @@
     background: #ffffff;
     box-shadow: 0 0 0 3px rgba(255, 139, 73, 0.12);
   }
+}
+
+.candidate-list-section .prototype-candidate-card.candidate-card--visitor,
+.candidate-current-section .prototype-candidate-card.candidate-card--visitor {
+  grid-template-columns: minmax(0, 1fr);
 }
