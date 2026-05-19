@@ -72,6 +72,7 @@ const getCandidateElectionFilter = (candidate) => {
     if (['false', 'nao', 'não', '0'].includes(normalizedValue)) return 'renovar';
 
     if (
+      normalizedValue.includes('ingressante') ||
       normalizedValue.includes('renov') ||
       normalizedValue.includes('novo') ||
       normalizedValue.includes('fora') ||
@@ -153,6 +154,19 @@ const getChangedSelectionIds = (previousCandidates, nextCandidates) => {
     .filter((candidateId) => previousIds.has(candidateId) !== nextIds.has(candidateId));
 };
 
+const getSelectionDeltas = (previousCandidates, nextCandidates) => {
+  const previousIds = new Set(previousCandidates.map((candidate) => candidate.id).filter(Boolean));
+  const nextIds = new Set(nextCandidates.map((candidate) => candidate.id).filter(Boolean));
+  const deltas = new Map();
+
+  [...new Set([...previousIds, ...nextIds])].forEach((candidateId) => {
+    if (previousIds.has(candidateId) === nextIds.has(candidateId)) return;
+    deltas.set(candidateId, nextIds.has(candidateId) ? 1 : -1);
+  });
+
+  return deltas;
+};
+
 export default function EscolherCandidatos({
   cargo,
   titulo,
@@ -208,8 +222,8 @@ export default function EscolherCandidatos({
       const lista = candidateDocs.map((candidateDoc) => {
           const d = candidateDoc;
           const tally = tallies.get(candidateDoc.id) || {};
-          const valCand = d['Nota candidato'];
-          const valPart = d['Nota partido'];
+          const valCand = d['Nota candidato'] ?? d.nota_candidato ?? d.notaCandidato;
+          const valPart = d['Nota partido'] ?? d.nota_partido ?? d.notaPartido;
           const isNotaValida = (val) => val !== undefined && val !== null && val !== '' && val !== '-';
           const temNotaCandidato = isNotaValida(valCand) && Number(valCand) !== 0;
           let notaFinal = 0;
@@ -221,7 +235,7 @@ export default function EscolherCandidatos({
           if (notaFinal < 7) indicatorTone = 'indicator-low';
           else if (notaFinal < 8.5) indicatorTone = 'indicator-attention';
 
-          const classificacaoOriginal = d['Classificação'] || d.Classificacao || '-';
+          const classificacaoOriginal = d['Classificação'] ?? d.Classificacao ?? d.classificacao ?? '-';
           const classificacaoNum = classificacaoOriginal === '-' ? 999999 : Number(classificacaoOriginal);
           const ufLimpa = getCandidateStateCode(d, { allowPartyFallback: chaveBanco === 'senadores' }) || (
             chaveBanco === 'senadores' ? '' : 'TODOS'
@@ -266,9 +280,31 @@ export default function EscolherCandidatos({
       setLoading(true);
       setErroCarregamento('');
 
+      const getTallyTargets = (candidateDocs) => {
+        const activeState = normalizeStateCode(estadoDoFluxo);
+        if (!activeState) return [];
+
+        return candidateDocs
+          .map((candidateDoc) => {
+            const candidateState = getCandidateStateCode(candidateDoc, { allowPartyFallback: chaveBanco === 'senadores' }) || (
+              chaveBanco === 'senadores' ? '' : 'TODOS'
+            );
+
+            if (candidateState !== activeState && !(chaveBanco !== 'senadores' && candidateState === 'TODOS')) {
+              return null;
+            }
+
+            return {
+              ...candidateDoc,
+              state: candidateState === 'TODOS' ? activeState : candidateState
+            };
+          })
+          .filter(Boolean);
+      };
+
       const cachedCandidates = readCachedCandidatesByOffice(cargo);
       if (cachedCandidates?.value?.length) {
-        const cachedTallies = readCachedTallies(cachedCandidates.value.map((candidateDoc) => candidateDoc.id));
+        const cachedTallies = readCachedTallies(getTallyTargets(cachedCandidates.value), { estado: estadoDoFluxo });
         buildCandidateList(cachedCandidates.value, cachedTallies, cachedCandidates.isFresh ? 'cache' : 'stale-cache');
       }
 
@@ -276,10 +312,11 @@ export default function EscolherCandidatos({
         const candidateDocs = cachedCandidates?.isFresh
           ? cachedCandidates.value
           : await fetchCandidatesByOffice(cargo);
-        let tallies = readCachedTallies(candidateDocs.map((candidateDoc) => candidateDoc.id));
+        const tallyTargets = getTallyTargets(candidateDocs);
+        let tallies = readCachedTallies(tallyTargets, { estado: estadoDoFluxo });
 
         try {
-          tallies = await fetchCandidateTallies(candidateDocs.map((candidateDoc) => candidateDoc.id), { forceRefresh: true });
+          tallies = await fetchCandidateTallies(tallyTargets, { forceRefresh: true, estado: estadoDoFluxo });
         } catch (error) {
           flowWarn('candidates.tallies.fetch-error', { cargo, chaveGrupo, message: error?.message });
         }
@@ -303,7 +340,7 @@ export default function EscolherCandidatos({
     return () => {
       cancelled = true;
     };
-  }, [cargo, chaveBanco, chaveGrupo]);
+  }, [cargo, chaveBanco, chaveGrupo, estadoDoFluxo]);
 
   const candidatosDoEstado = useMemo(() => {
     const meuEstado = normalizeStateCode(estadoDoFluxo);
@@ -395,8 +432,8 @@ export default function EscolherCandidatos({
     const termo = normalizeSearch(buscaDiferida);
     if (termo) {
       disponiveis = disponiveis.filter((candidate) => {
-        const nome = normalizeSearch(candidate.Nome || '');
-        const partido = normalizeSearch(candidate.Partido || '');
+        const nome = normalizeSearch(candidate.Nome || candidate.nome || candidate.nome_civil || '');
+        const partido = normalizeSearch(candidate.Partido || candidate.partido || candidate.sigla_partido || '');
         const numero = normalizeSearch(candidate.Numero || candidate.numero || '');
 
         return nome.includes(termo) || partido.includes(termo) || numero.includes(termo);
@@ -521,14 +558,47 @@ export default function EscolherCandidatos({
     return candidatesToUpdate.map(applyTally);
   };
 
+  const applyLocalTallyDeltas = (selectionDeltas, candidatesToUpdate = []) => {
+    if (!selectionDeltas || selectionDeltas.size === 0) return candidatesToUpdate;
+
+    const applyDelta = (candidate) => {
+      const delta = selectionDeltas.get(candidate.id);
+      if (!delta) return candidate;
+
+      const selectedByUsers = Math.max(0, parseNumeric(
+        candidate.active_selections,
+        candidate.selected_by_users,
+        candidate.selectedByUsers,
+        0
+      ) + delta);
+      const averageElectedVotes = parseNumeric(
+        candidate.averageElectedVotes,
+        candidate.average_elected_votes,
+        AVERAGE_ELECTED_VOTES_BY_OFFICE[chaveBanco],
+        3
+      );
+
+      return {
+        ...candidate,
+        selectedByUsers,
+        selected_by_users: selectedByUsers,
+        active_selections: selectedByUsers,
+        chance: calculateCandidateChance(selectedByUsers, averageElectedVotes)
+      };
+    };
+
+    setTodosCandidatos((currentCandidates) => currentCandidates.map(applyDelta));
+    return candidatesToUpdate.map(applyDelta);
+  };
+
   const refreshChangedTallies = async (candidateIds, candidatesToUpdate = []) => {
     const idsToRefresh = [...new Set(candidateIds)].filter(Boolean);
     if (idsToRefresh.length === 0) return candidatesToUpdate;
 
-    invalidateCandidateTalliesCache(idsToRefresh);
+    invalidateCandidateTalliesCache(idsToRefresh, { estado: estadoDoFluxo });
 
     try {
-      const tallies = await fetchCandidateTallies(idsToRefresh, { forceRefresh: true });
+      const tallies = await fetchCandidateTallies(idsToRefresh, { forceRefresh: true, estado: estadoDoFluxo });
       return applyServerTallies(tallies, candidatesToUpdate);
     } catch (error) {
       flowWarn('candidates.tallies.refresh-after-save-error', {
@@ -543,11 +613,14 @@ export default function EscolherCandidatos({
   const handleSelectionChange = async (listaAtualizada, options = {}) => {
     const listaAnterior = selecionadosNaTela;
     const changedCandidateIds = getChangedSelectionIds(listaAnterior, listaAtualizada);
+    const selectionDeltas = userId ? getSelectionDeltas(listaAnterior, listaAtualizada) : new Map();
     setSelecionadosNaTela(listaAtualizada);
 
     try {
       const draftAtualizado = await persistirEtapa(listaAtualizada, { markCompleted: options.completed === true });
-      const listaComTalliesAtualizados = await refreshChangedTallies(changedCandidateIds, listaAtualizada);
+      const listaComTalliesLocais = applyLocalTallyDeltas(selectionDeltas, listaAtualizada);
+      setSelecionadosNaTela(listaComTalliesLocais);
+      const listaComTalliesAtualizados = await refreshChangedTallies(changedCandidateIds, listaComTalliesLocais);
       setSelecionadosNaTela(listaComTalliesAtualizados);
       return draftAtualizado;
     } catch (error) {

@@ -1,16 +1,14 @@
-# Modelo Firestore para voto sem vínculo direto com o eleitor
+# Modelo Firestore para escolhas e viabilidade
 
-Este projeto usa Firestore, então o modelo foi separado em coleções por responsabilidade. A regra principal é: o documento do usuário nunca armazena candidato, partido, cargo escolhido ou histórico de voto.
+Este projeto usa Firestore sem Cloud Functions para salvar escolhas ativas e calcular viabilidade. A regra principal é: cada usuário autenticado tem apenas um documento público de escolhas, identificado por um ID aleatório que não é o UID.
 
 ## Coleções
 
 ```mermaid
 erDiagram
-  USERS ||--o| ELIGIBILITY : "doc id = uid"
-  ELECTIONS ||--o{ ELIGIBILITY : "subcollection"
-  ELECTIONS ||--o{ VOTES : "subcollection"
-  ELECTIONS ||--o{ CANDIDATE_TALLIES : "subcollection"
-  CANDIDATES ||--o{ CANDIDATE_TALLIES : "candidate_id"
+  USERS ||--o| CHOICE_CONFIG : "subcollection privada"
+  CHOICE_CONFIG ||--|| PUBLIC_CANDIDATE_CHOICES : "choiceDocId aleatorio"
+  CANDIDATES ||--o{ PUBLIC_CANDIDATE_CHOICES : "candidateIds array-contains"
 
   USERS {
     string docId_uid
@@ -23,23 +21,18 @@ erDiagram
     timestamp updated_at
   }
 
-  ELIGIBILITY {
-    string docId_uid
-    string election_id
-    boolean eligible
-    string status
-    boolean has_voted
-    timestamp voted_at
+  CHOICE_CONFIG {
+    string choiceDocId
+    timestamp createdAt
   }
 
-  VOTES {
-    string random_doc_id
-    string election_id
-    string estado
-    map offices
-    array candidate_ids
-    array candidate_snapshots
-    timestamp submitted_at
+  PUBLIC_CANDIDATE_CHOICES {
+    string docId_random
+    number schemaVersion
+    string electionId
+    string state
+    array candidateIds
+    timestamp updatedAt
   }
 
   CANDIDATES {
@@ -47,58 +40,64 @@ erDiagram
     string Nome
     string Partido
     string Cargo
-    number votos_recebidos
-  }
-
-  CANDIDATE_TALLIES {
-    string docId_candidate
-    string candidate_id
-    number total_votes
-    timestamp updated_at
+    string Estado
   }
 ```
 
 ## Caminhos Firestore
 
-- `users/{uid}`: identidade e estado do eleitor. Não recebe `candidatos_escolhidos`.
-- `elections/{electionId}/eligibility/{uid}`: controla se o eleitor está habilitado e se já votou. Não contém candidato.
-- `elections/{electionId}/votes/{randomVoteId}`: voto anônimo com candidatos escolhidos. Não contém `uid`, nome ou e-mail.
-- `elections/{electionId}/candidate_tallies/{candidateId}`: totalização por candidato.
-- `elections/{electionId}/audit_events/{eventId}`: eventos técnicos sem candidato e sem identidade direta.
+- `users/{uid}`: identidade minima do eleitor. Nao recebe lista de candidatos.
+- `users/{uid}/private/choiceConfig`: documento privado com `choiceDocId` aleatorio.
+- `publicCandidateChoices/{choiceDocId}`: escolha publica ativa, com `state` e `candidateIds`.
+- `candidatos/{candidateId}`: dados publicos dos candidatos.
+- `elections/{electionId}/ballot_drafts/{uid}`: legado, somente leitura do dono para migracao suave.
+- `elections/{electionId}/candidate_tallies/{candidateId}`: legado/admin; o app novo calcula viabilidade com `count()`.
 
-## Fluxo implementado no app
+## Fluxo implementado
 
-1. Login com Firebase Auth identifica o eleitor.
-2. `UserProvider` cria/atualiza `users/{uid}` apenas com perfil mínimo e remove `candidatos_escolhidos` se existir.
-3. A escolha de candidatos durante a navegação fica em `localStorage`, vinculada apenas ao navegador local, não ao Firestore.
-4. Ao finalizar a escolha dos senadores, a tela de resultado mostra uma revisão e só registra o voto após confirmação explícita.
-5. `castAnonymousVote()` chama a Cloud Function Callable `castAnonymousVote`, que executa a transação pelo Admin SDK:
-   - lê `elections/{electionId}/eligibility/{uid}`;
-   - bloqueia se `has_voted` já for `true`;
-   - bloqueia se a elegibilidade não existir ou não estiver aprovada;
-   - cria `elections/{electionId}/votes/{randomVoteId}` sem `uid`;
-   - marca `has_voted: true` no documento de elegibilidade;
-   - incrementa a totalização dos candidatos.
-6. A tela de resultado lê o rascunho/recibo local para exibir a nota. Ela não busca voto por `uid`.
+1. Login com Firebase Auth identifica o usuario.
+2. Ao salvar pela primeira vez, o app cria `users/{uid}/private/choiceConfig` com um `choiceDocId` aleatorio.
+3. O app grava as escolhas em `publicCandidateChoices/{choiceDocId}`.
+4. O rascunho completo com snapshots dos candidatos continua em `localStorage` para navegação rapida.
+5. Ao mudar de estado, o app sobrescreve o documento publico com o novo `state` e `candidateIds: []`.
+6. Ao escolher/remover candidato, o app sobrescreve o mesmo documento com os IDs ativos.
 
-## Modo de avaliação e modo produção
+## Regras de contagem
 
-As regras de produção não permitem autoinscrição pelo cliente. A coleção `elections/{electionId}/eligibility/{uid}` deve ser pré-carregada por processo administrativo confiável antes do eleitor votar.
+A viabilidade usa agregacao de leitura do Firestore:
 
-O frontend chama a função configurada por `VITE_CAST_VOTE_FUNCTION` ou, por padrão, `castAnonymousVote`. A região padrão implementada no backend é `southamerica-east1`; se usar outra região, defina `VITE_FIREBASE_FUNCTIONS_REGION`.
-
-A função está configurada com App Check obrigatório. Em produção, cadastre o domínio no Firebase App Check e defina `VITE_RECAPTCHA_V3_SITE_KEY` no ambiente do Vercel.
-
-## Deploy necessário
-
-Depois de configurar as variáveis de ambiente, publique as regras e a função:
-
-```bash
-firebase deploy --only firestore:rules,functions
+```js
+count(
+  publicCandidateChoices
+    .where('electionId', '==', ACTIVE_ELECTION_ID)
+    .where('state', '==', candidateState)
+    .where('candidateIds', 'array-contains', candidateId)
+)
 ```
 
-O deploy da Vercel sozinho não registra votos, porque a escrita segura agora acontece no Firebase Functions.
+Formula:
 
-## Observação de segurança
+```txt
+viabilidadePercent = min((usuariosQueSelecionaram / mediaVotosEleitos) * 100, 100)
+```
 
-Este modelo remove o vínculo direto `UserID -> CandidateID` do documento de voto no Firestore e impede que o cliente grave voto ou totalizador diretamente. Para sigilo eleitoral absoluto contra administradores com acesso a logs, o próximo passo é emitir token cego ou usar outra separação criptográfica entre autenticação e urna. Mesmo com Cloud Function, ainda pode existir correlação por horário de escrita nos logs da infraestrutura.
+No teste atual, `mediaVotosEleitos = 4`.
+
+## Garantias
+
+- Um usuario nao cria dois documentos publicos, porque o `choiceDocId` fica fixo no documento privado.
+- O mesmo candidato nao aparece duplicado no app, porque o servico normaliza IDs unicos antes de salvar.
+- O fluxo exige pelo menos 1 deputado federal e 2 senadores para avançar, mas a seleção pode ter mais candidatos.
+- Mudanca de estado zera a lista publica, entao escolhas antigas deixam de contar automaticamente.
+
+## Limite de privacidade
+
+O ID publico aleatorio reduz o vinculo direto com o UID, mas nao e anonimato forte. Como o frontend usa `count()` direto no Firestore, as regras precisam permitir leitura de `publicCandidateChoices`. Para sigilo forte no futuro, a contagem agregada deve voltar para um backend confiavel ou outro mecanismo que nao exponha documentos de escolha.
+
+## Deploy necessario
+
+Depois da alteracao, publique regras e indices:
+
+```bash
+firebase deploy --only firestore:rules,firestore:indexes
+```

@@ -6,7 +6,6 @@ import { useUser } from '@/hooks/useUser';
 import {
   clearVoteReceipt,
   draftHasBallotSelections,
-  fetchRemoteBallotDraft,
   getBallotEstado,
   getBallotSelectionCounts,
   getVisitorBallotEstado,
@@ -106,7 +105,6 @@ export default function Home() {
 
       if (user?.uid) {
         await saveBallotState(user.uid, novoEstado);
-        await fetchRemoteBallotDraft(user.uid, novoEstado);
       } else {
         await saveVisitorBallotState(novoEstado);
       }

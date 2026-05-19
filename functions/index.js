@@ -119,6 +119,16 @@ const assertStringList = (value, { min = 1, exact = null } = {}, label) => {
   return ids;
 };
 
+const readNumericValue = (...values) => {
+  for (const value of values) {
+    if (value === undefined || value === null || value === '') continue;
+    const numericValue = Number(value);
+    if (Number.isFinite(numericValue)) return numericValue;
+  }
+
+  return 0;
+};
+
 const isEligibleStatus = (eligibility) => {
   if (eligibility?.eligible === false) return false;
   if (!eligibility?.status) return true;
@@ -128,12 +138,19 @@ const isEligibleStatus = (eligibility) => {
 const buildCandidateSnapshot = (candidateId, data) => ({
   id: candidateId,
   nome: data.Nome || data.nome || '',
-  partido: data.Partido || data.partido || '',
+  nome_civil: data.nome_civil || data.nomeCivil || data.NomeCivil || null,
+  partido: data.Partido || data.partido || data.sigla_partido || '',
+  sigla_partido: data.sigla_partido || data.siglaPartido || data.SiglaPartido || null,
+  tipo: data.tipo || data.Tipo || null,
   cargo: data.Cargo || data.cargo || '',
   numero: data.Numero || data.numero || null,
-  estado: data.Estado || data.estado || null,
+  estado: getCandidateStateCode(data) || null,
   classificacao: data['Classificação'] || data.Classificacao || data.classificacao || null,
-  nota_final: Number(data['Nota candidato'] || data['Nota partido'] || data.nota_final || 0) || 0,
+  nota_candidato: readNumericValue(data.nota_candidato, data.notaCandidato, data['Nota candidato']),
+  nota_partido: readNumericValue(data.nota_partido, data.notaPartido, data['Nota partido']),
+  nota_final: readNumericValue(data.nota_final, data.notaFinal, data.nota_candidato, data.notaCandidato, data['Nota candidato'], data.nota_partido, data.notaPartido, data['Nota partido']),
+  temNotaCandidato: data.temNotaCandidato ?? data.tem_nota_candidato ?? null,
+  tem_nota_candidato: data.temNotaCandidato ?? data.tem_nota_candidato ?? null,
 });
 
 const normalizeOfficeName = (value) => (
@@ -230,16 +247,23 @@ const normalizeStoredCandidate = (candidate) => {
   return {
     id: candidate.id,
     nome: candidate.nome || candidate.Nome || '',
-    partido: candidate.partido || candidate.Partido || '',
+    nome_civil: candidate.nome_civil || candidate.nomeCivil || candidate.NomeCivil || null,
+    partido: candidate.partido || candidate.Partido || candidate.sigla_partido || '',
+    sigla_partido: candidate.sigla_partido || candidate.siglaPartido || candidate.SiglaPartido || null,
+    tipo: candidate.tipo || candidate.Tipo || null,
     cargo: candidate.cargo || candidate.Cargo || '',
     numero: candidate.numero || candidate.Numero || null,
-    estado: normalizeStateCode(candidate.estado || candidate.Estado || candidate.UF || candidate.uf || '') || null,
+    estado: getCandidateStateCode(candidate) || null,
     classificacao: candidate.classificacao || candidate.ClassificacaoOficial || candidate['Classificação'] || candidate.Classificacao || null,
-    nota_final: Number(candidate.nota_final ?? candidate.notaFinal ?? candidate['Nota candidato'] ?? candidate['Nota partido'] ?? 0) || 0,
+    nota_candidato: readNumericValue(candidate.nota_candidato, candidate.notaCandidato, candidate['Nota candidato']),
+    nota_partido: readNumericValue(candidate.nota_partido, candidate.notaPartido, candidate['Nota partido']),
+    nota_final: readNumericValue(candidate.nota_final, candidate.notaFinal, candidate.nota_candidato, candidate.notaCandidato, candidate['Nota candidato'], candidate.nota_partido, candidate.notaPartido, candidate['Nota partido']),
     chance: Number(candidate.chance ?? candidate.Chance ?? 0) || 0,
     selected_by_users: Number(candidate.selected_by_users ?? candidate.selectedByUsers ?? 0) || 0,
     average_elected_votes: Number(candidate.average_elected_votes ?? candidate.averageElectedVotes ?? 0) || 0,
     ranking_total: Number(candidate.ranking_total ?? candidate.rankingTotal ?? 0) || 0,
+    temNotaCandidato: candidate.temNotaCandidato ?? candidate.tem_nota_candidato ?? null,
+    tem_nota_candidato: candidate.temNotaCandidato ?? candidate.tem_nota_candidato ?? null,
   };
 };
 
@@ -309,10 +333,10 @@ const normalizeDraft = (rawDraft, userId, estado = null) => {
     senadores_1: candidateGroups.senadores_1.length >= 1,
     senadores_2: candidateGroups.senadores_1.length >= OFFICE_MINIMUM_SELECTIONS.senadores,
   };
-  const activeCandidateIds = [
+  const activeCandidateIds = [...new Set([
     ...selections.deputado_federal,
     ...selections.senadores,
-  ].map((candidate) => candidate.id);
+  ].map((candidate) => candidate.id).filter(Boolean))];
 
   return {
     ...baseDraft,
@@ -326,48 +350,6 @@ const normalizeDraft = (rawDraft, userId, estado = null) => {
     completed_steps: completedSteps,
     active_candidate_ids: activeCandidateIds,
   };
-};
-
-const getActiveCandidateIdCounts = (draft) => {
-  const counts = new Map();
-  const normalizedDraft = normalizeDraft(draft, draft?.user_id || '');
-  normalizedDraft.active_candidate_ids.forEach((candidateId) => {
-    counts.set(candidateId, (counts.get(candidateId) || 0) + 1);
-  });
-  return counts;
-};
-
-const updateActiveTallies = async (transaction, electionId, oldDraft, newDraft, updatedAt) => {
-  const oldCounts = getActiveCandidateIdCounts(oldDraft);
-  const newCounts = getActiveCandidateIdCounts(newDraft);
-  const candidateIds = new Set([...oldCounts.keys(), ...newCounts.keys()]);
-  const changes = [];
-
-  candidateIds.forEach((candidateId) => {
-    const delta = (newCounts.get(candidateId) || 0) - (oldCounts.get(candidateId) || 0);
-    if (delta === 0) return;
-    changes.push({
-      candidateId,
-      delta,
-      ref: db.doc(`elections/${electionId}/candidate_tallies/${candidateId}`),
-    });
-  });
-
-  const tallySnaps = [];
-  for (const change of changes) {
-    tallySnaps.push(await transaction.get(change.ref));
-  }
-
-  changes.forEach((change, index) => {
-    const currentActiveSelections = Number(tallySnaps[index].data()?.active_selections || 0) || 0;
-    transaction.set(change.ref, {
-      schema_version: BALLOT_SCHEMA_VERSION,
-      election_id: electionId,
-      candidate_id: change.candidateId,
-      active_selections: Math.max(0, currentActiveSelections + change.delta),
-      updated_at: updatedAt,
-    }, { merge: true });
-  });
 };
 
 const assertElectionPayload = (payload) => {
@@ -438,7 +420,6 @@ export const saveBallotState = onCall({
         updated_at: updatedAt,
       };
 
-    await updateActiveTallies(transaction, electionId, previousDraft, nextDraft, updatedAt);
     transaction.set(draftRef, nextDraft, { merge: false });
     transaction.set(userRef, {
       estado,
@@ -519,7 +500,6 @@ export const saveBallotStepSelection = onCall({
       throw new HttpsError('invalid-argument', 'O mesmo senador nao pode ser escolhido mais de uma vez.');
     }
 
-    await updateActiveTallies(transaction, electionId, previousDraft, nextDraft, updatedAt);
     transaction.set(draftRef, {
       ...nextDraft,
       updated_at: updatedAt,
@@ -549,16 +529,12 @@ export const deleteUserElectionData = onCall({
   const eligibilityRef = db.doc(`elections/${electionId}/eligibility/${userId}`);
 
   await db.runTransaction(async (transaction) => {
-    const draftSnap = await transaction.get(draftRef);
     const voteSnap = await transaction.get(voteRef);
     const eligibilitySnap = await transaction.get(eligibilityRef);
-    const previousDraft = normalizeDraft(draftSnap.exists ? draftSnap.data() : null, userId);
-    const emptyDraft = createEmptyBallotDraft(userId, null);
     const legacyVoteCandidateIds = voteSnap.exists
       ? asArray(voteSnap.data().candidate_ids).map(asString).filter(Boolean)
       : [];
 
-    await updateActiveTallies(transaction, electionId, previousDraft, emptyDraft, updatedAt);
     legacyVoteCandidateIds.forEach((candidateId) => {
       transaction.set(db.doc(`elections/${electionId}/candidate_tallies/${candidateId}`), {
         schema_version: BALLOT_SCHEMA_VERSION,

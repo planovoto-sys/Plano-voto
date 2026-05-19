@@ -52,6 +52,49 @@ service cloud.firestore {
         && request.resource.data.email == request.auth.token.email;
     }
 
+    function choiceConfigPath(userId) {
+      return /databases/$(database)/documents/users/$(userId)/private/choiceConfig;
+    }
+
+    function validChoiceConfigCreate() {
+      return request.resource.data.keys().hasOnly([
+          'choiceDocId',
+          'createdAt'
+        ])
+        && request.resource.data.choiceDocId is string
+        && request.resource.data.choiceDocId.size() >= 20
+        && request.resource.data.createdAt == request.time;
+    }
+
+    function ownsChoiceDoc(choiceDocId) {
+      return signedIn()
+        && (
+          (
+            exists(choiceConfigPath(request.auth.uid))
+            && get(choiceConfigPath(request.auth.uid)).data.choiceDocId == choiceDocId
+          )
+          || getAfter(choiceConfigPath(request.auth.uid)).data.choiceDocId == choiceDocId
+        );
+    }
+
+    function validPublicCandidateChoice(choiceDocId) {
+      return request.resource.data.keys().hasOnly([
+          'schemaVersion',
+          'electionId',
+          'state',
+          'candidateIds',
+          'updatedAt'
+        ])
+        && request.resource.data.schemaVersion == 1
+        && request.resource.data.electionId is string
+        && request.resource.data.state is string
+        && validEstado(request.resource.data.state)
+        && request.resource.data.candidateIds is list
+        && request.resource.data.candidateIds.size() <= 100
+        && request.resource.data.updatedAt == request.time
+        && ownsChoiceDoc(choiceDocId);
+    }
+
     match /users/{userId} {
       allow get: if isOwner(userId) || isAdmin();
       allow list: if isAdmin();
@@ -87,11 +130,30 @@ service cloud.firestore {
         );
 
       allow delete: if isAdmin();
+
+      match /private/{privateDocId} {
+        allow read: if privateDocId == 'choiceConfig' && isOwner(userId);
+        allow create: if privateDocId == 'choiceConfig'
+          && isOwner(userId)
+          && validChoiceConfigCreate();
+        allow update, delete: if false;
+      }
     }
 
     match /candidatos/{candidateId} {
       allow read: if true;
       allow create, update, delete: if isAdmin();
+    }
+
+    match /partidos_politicos/{partyId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /publicCandidateChoices/{choiceDocId} {
+      allow read: if true;
+      allow create, update: if validPublicCandidateChoice(choiceDocId);
+      allow delete: if false;
     }
 
     match /elections/{electionId} {
