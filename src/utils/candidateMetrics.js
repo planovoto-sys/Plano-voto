@@ -18,10 +18,10 @@ export const formatScore = (value) => {
 };
 
 export const getCandidateName = (candidate = {}) => candidate.Nome || candidate.nome || '';
-export const getCandidateParty = (candidate = {}) => candidate.Partido || candidate.partido || '';
+export const getCandidateParty = (candidate = {}) => candidate.Partido || candidate.partido || candidate.sigla_partido || '';
 
 export const getCandidateSystemScore = (candidate = {}) => {
-  const value = candidate.notaFinal ?? candidate.nota_final ?? candidate['Nota candidato'] ?? candidate['Nota partido'] ?? 0;
+  const value = candidate.notaFinal ?? candidate.nota_final ?? candidate.notaCandidato ?? candidate.nota_candidato ?? candidate['Nota candidato'] ?? candidate.notaPartido ?? candidate.nota_partido ?? candidate['Nota partido'] ?? 0;
   const numericValue = Number(value);
   return Number.isFinite(numericValue) ? numericValue : 0;
 };
@@ -44,18 +44,17 @@ export const getCandidatePartyScore = (candidate = {}) => {
 
 export const getCandidateScore = (candidate = {}) => {
   if (!candidate) return 0;
-  if (candidate.temNotaCandidato === false) return 0;
 
-  const candidateScore = candidate.nota_final ?? candidate.notaFinal ?? candidate['Nota candidato'];
-  const partyScore = candidate['Nota partido'];
-  const numericCandidateScore = Number(candidateScore);
+  if (candidate.temNotaCandidato !== false) {
+    const candidateScore = candidate.nota_final ?? candidate.notaFinal ?? candidate.notaCandidato ?? candidate.nota_candidato ?? candidate['Nota candidato'];
+    const numericCandidateScore = Number(candidateScore);
 
-  if (Number.isFinite(numericCandidateScore) && numericCandidateScore !== 0) {
-    return numericCandidateScore;
+    if (Number.isFinite(numericCandidateScore) && numericCandidateScore !== 0) {
+      return numericCandidateScore;
+    }
   }
 
-  const numericPartyScore = Number(partyScore);
-  return Number.isFinite(numericPartyScore) ? numericPartyScore : 0;
+  return getCandidatePartyScore(candidate);
 };
 
 export const getCandidateChance = (candidate = {}) => {
@@ -103,7 +102,7 @@ export const getCandidateScoreTone = (candidate, fallback = 'neutral') => {
 export const getDisplayCandidate = (candidate, fallbackName, defaultNumber) => ({
   numero: candidate?.numero || candidate?.Numero || defaultNumber,
   nome: candidate?.nome || candidate?.Nome || fallbackName,
-  partido: candidate?.partido || candidate?.Partido || 'PARTIDO',
+  partido: candidate?.partido || candidate?.Partido || candidate?.sigla_partido || 'PARTIDO',
   nota: getCandidateScore(candidate),
   chance: getCandidateChance(candidate)
 });

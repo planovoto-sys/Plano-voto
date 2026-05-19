@@ -82,31 +82,28 @@ export function BackIcon({ className = 'app-icon' }) {
 
 export function EstadoNavIcon({ className = 'app-icon' }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+    <svg className={className} viewBox="0 0 32 42" aria-hidden="true">
       <path
-        d="M12 21.1c-3.9-5.18-5.85-8.63-5.85-11.05A5.85 5.85 0 0 1 12 4.2a5.85 5.85 0 0 1 5.85 5.85c0 2.42-1.95 5.87-5.85 11.05Z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.2"
-        strokeLinejoin="round"
+        d="M16 40C7.9 28.8 4 22.2 4 15.8 4 9.2 9.3 4 16 4s12 5.2 12 11.8c0 6.4-3.9 13-12 24.2Z"
+        fill="currentColor"
       />
-      <circle cx="12" cy="10.05" r="1.7" fill="currentColor" />
+      <circle cx="16" cy="15.7" r="5.5" fill="#ffffff" />
     </svg>
   );
 }
 
 export function DeputadoNavIcon({ className = 'app-icon' }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M2.8 6.6h18.4c-.7 7.1-4.34 11.4-9.2 11.4S3.5 13.7 2.8 6.6Z" fill="currentColor" />
+    <svg className={className} viewBox="0 0 32 14" aria-hidden="true">
+      <path d="M4 1h24a12 12 0 0 1-24 0Z" fill="currentColor" />
     </svg>
   );
 }
 
 export function SenadoNavIcon({ className = 'app-icon' }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M2.9 17.7c.92-7 4.58-11.35 9.1-11.35s8.18 4.35 9.1 11.35H2.9Z" fill="currentColor" />
+    <svg className={className} viewBox="0 0 32 14" aria-hidden="true">
+      <path d="M4 13a12 12 0 0 1 24 0H4Z" fill="currentColor" />
     </svg>
   );
 }

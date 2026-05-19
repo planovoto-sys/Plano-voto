@@ -1,19 +1,26 @@
 import {
   collection,
-  documentId,
+  getCountFromServer,
   getDocs,
   query,
   where
 } from 'firebase/firestore';
 import { ACTIVE_ELECTION_ID } from '@/constants/ballot';
 import { db } from '@/services/firebase/firebase';
+import { normalizeSearch } from '@/utils/search';
+import { normalizeStateCode } from '@/utils/state';
 
-const PUBLIC_CACHE_VERSION = 'v2';
+const PUBLIC_CACHE_VERSION = 'v6';
 const CACHE_PREFIX = `meuvoto:public-cache:${PUBLIC_CACHE_VERSION}`;
 const CANDIDATE_CACHE_MAX_AGE_MS = 12 * 60 * 60 * 1000;
 const CANDIDATE_CACHE_MAX_STALE_MS = 7 * 24 * 60 * 60 * 1000;
+const PARTY_CACHE_MAX_AGE_MS = 12 * 60 * 60 * 1000;
+const PARTY_CACHE_MAX_STALE_MS = 7 * 24 * 60 * 60 * 1000;
 const TALLY_CACHE_MAX_AGE_MS = 2 * 60 * 1000;
 const TALLY_CACHE_MAX_STALE_MS = 30 * 60 * 1000;
+const CANDIDATES_COLLECTION = 'candidatos';
+const PARTY_COLLECTION = 'partidos_politicos';
+const PUBLIC_CANDIDATE_CHOICES_COLLECTION = 'publicCandidateChoices';
 const memoryCache = new Map();
 let storageAvailability = null;
 
@@ -111,7 +118,162 @@ const removeCacheEntry = (key) => {
 };
 
 const candidateCacheKey = (officeName) => `candidates:${officeName}`;
-const tallyCacheKey = (candidateId) => `tallies:${ACTIVE_ELECTION_ID}:${candidateId}`;
+const partyCacheKey = () => 'party-scores';
+const tallyCacheKey = (candidateId, estado = null) => `choice-counts:${ACTIVE_ELECTION_ID}:${normalizeStateCode(estado) || 'all'}:${candidateId}`;
+
+const normalizeLookupKey = (value) => (
+  normalizeSearch(value).replace(/[^a-z0-9]+/g, '')
+);
+
+const readNumericValue = (...values) => {
+  for (const value of values) {
+    if (value === undefined || value === null || value === '') continue;
+    const numericValue = Number(value);
+    if (Number.isFinite(numericValue)) return numericValue;
+  }
+
+  return null;
+};
+
+const getPartyScore = (party = {}) => readNumericValue(
+  party.nota,
+  party.nota_partido,
+  party.notaPartido,
+  party['Nota partido'],
+  party.score
+);
+
+const addPartyLookupEntry = (lookup, key, party) => {
+  const normalizedKey = normalizeLookupKey(key);
+  if (!normalizedKey || lookup.has(normalizedKey)) return;
+  lookup.set(normalizedKey, party);
+};
+
+const buildPartyLookup = (parties) => {
+  const lookup = new Map();
+
+  parties.forEach((party) => {
+    const normalizedParty = {
+      ...party,
+      nota: getPartyScore(party)
+    };
+
+    [
+      party.id,
+      party.sigla,
+      party.Sigla,
+      party.nome,
+      party.Nome,
+      party.partido,
+      party.Partido
+    ].forEach((key) => addPartyLookupEntry(lookup, key, normalizedParty));
+  });
+
+  return lookup;
+};
+
+const fetchPartyLookup = async () => {
+  const cachedParties = readCacheEntry(partyCacheKey(), {
+    maxAgeMs: PARTY_CACHE_MAX_AGE_MS,
+    maxStaleMs: PARTY_CACHE_MAX_STALE_MS
+  });
+
+  if (cachedParties?.value?.length) {
+    return buildPartyLookup(cachedParties.value);
+  }
+
+  try {
+    const partySnapshot = await getDocs(collection(db, PARTY_COLLECTION));
+    const parties = partySnapshot.docs.map((partyDoc) => ({
+      id: partyDoc.id,
+      ...partyDoc.data()
+    }));
+
+    writeCacheEntry(partyCacheKey(), parties);
+    return buildPartyLookup(parties);
+  } catch (error) {
+    console.warn('Nao foi possivel carregar as notas dos partidos.', error);
+    return new Map();
+  }
+};
+
+const isIncomingCandidate = (candidate = {}) => (
+  normalizeSearch(candidate.tipo ?? candidate.Tipo ?? '').includes('ingressante')
+);
+
+const getCandidatePartyScoreFromLookup = (candidate, partyLookup) => {
+  const currentScore = readNumericValue(
+    candidate.nota_partido,
+    candidate.notaPartido,
+    candidate['Nota partido']
+  );
+
+  if (currentScore !== null) return currentScore;
+
+  const candidateKeys = [
+    candidate.sigla_partido,
+    candidate.siglaPartido,
+    candidate.partido,
+    candidate.Partido
+  ];
+
+  for (const key of candidateKeys) {
+    const party = partyLookup.get(normalizeLookupKey(key));
+    if (party?.nota !== null && party?.nota !== undefined) return party.nota;
+  }
+
+  return null;
+};
+
+const enrichIncomingCandidateWithPartyScore = (candidate, partyLookup) => {
+  if (!isIncomingCandidate(candidate)) return candidate;
+
+  const partyScore = getCandidatePartyScoreFromLookup(candidate, partyLookup);
+  const baseCandidate = {
+    ...candidate,
+    tipo: candidate.tipo ?? candidate.Tipo ?? 'ingressante',
+    temNotaCandidato: false,
+    tem_nota_candidato: false
+  };
+
+  if (partyScore === null) return baseCandidate;
+
+  return {
+    ...baseCandidate,
+    nota_partido: partyScore,
+    notaPartido: candidate.notaPartido ?? partyScore,
+    nota_final: partyScore,
+    notaFinal: candidate.notaFinal ?? partyScore,
+    party_score_source: 'partidos_politicos'
+  };
+};
+
+const getCandidateState = (candidate, fallbackEstado = null) => (
+  normalizeStateCode(
+    candidate?.state ??
+    candidate?.estado ??
+    candidate?.Estado ??
+    candidate?.UF ??
+    candidate?.uf ??
+    candidate?.ufLimpa ??
+    fallbackEstado
+  )
+);
+
+const normalizeTallyTarget = (target, fallbackEstado = null) => {
+  if (!target) return null;
+  if (typeof target === 'string') {
+    return {
+      id: target,
+      estado: normalizeStateCode(fallbackEstado)
+    };
+  }
+
+  return {
+    id: target.id,
+    estado: getCandidateState(target, fallbackEstado)
+  };
+};
 
 export const readCachedCandidatesByOffice = (officeName) => (
   readCacheEntry(candidateCacheKey(officeName), {
@@ -121,73 +283,112 @@ export const readCachedCandidatesByOffice = (officeName) => (
 );
 
 export const fetchCandidatesByOffice = async (officeName) => {
-  const candidatesQuery = query(collection(db, 'candidatos'), where('Cargo', '==', officeName));
-  const snapshot = await getDocs(candidatesQuery);
-  const candidates = snapshot.docs.map((candidateDoc) => ({
-    id: candidateDoc.id,
-    ...candidateDoc.data()
-  }));
+  const partyLookupPromise = fetchPartyLookup();
+  const candidatesQuery = query(collection(db, CANDIDATES_COLLECTION), where('cargo', '==', officeName));
+  let snapshot = await getDocs(candidatesQuery);
+
+  if (snapshot.empty) {
+    const legacyCandidatesQuery = query(collection(db, CANDIDATES_COLLECTION), where('Cargo', '==', officeName));
+    snapshot = await getDocs(legacyCandidatesQuery);
+  }
+
+  const partyLookup = await partyLookupPromise;
+  const candidates = snapshot.docs
+    .map((candidateDoc) => ({
+      id: candidateDoc.id,
+      ...candidateDoc.data()
+    }))
+    .map((candidate) => enrichIncomingCandidateWithPartyScore(candidate, partyLookup));
 
   writeCacheEntry(candidateCacheKey(officeName), candidates);
   return candidates;
 };
 
-export const readCachedTallies = (candidateIds) => {
+export const readCachedTallies = (candidateTargets, { estado = null } = {}) => {
   const tallies = new Map();
 
-  candidateIds.forEach((candidateId) => {
-    const cached = readCacheEntry(tallyCacheKey(candidateId), {
-      maxAgeMs: TALLY_CACHE_MAX_AGE_MS,
-      maxStaleMs: TALLY_CACHE_MAX_STALE_MS
-    });
+  candidateTargets
+    .map((target) => normalizeTallyTarget(target, estado))
+    .filter((target) => target?.id)
+    .forEach((target) => {
+      const cached = readCacheEntry(tallyCacheKey(target.id, target.estado), {
+        maxAgeMs: TALLY_CACHE_MAX_AGE_MS,
+        maxStaleMs: TALLY_CACHE_MAX_STALE_MS
+      });
 
-    if (cached?.value) {
-      tallies.set(candidateId, cached.value);
-    }
-  });
+      if (cached?.value) {
+        tallies.set(target.id, cached.value);
+      }
+    });
 
   return tallies;
 };
 
-export const invalidateCandidateTalliesCache = (candidateIds) => {
-  [...new Set(candidateIds)].filter(Boolean).forEach((candidateId) => {
-    removeCacheEntry(tallyCacheKey(candidateId));
-  });
+export const invalidateCandidateTalliesCache = (candidateTargets, { estado = null } = {}) => {
+  candidateTargets
+    .map((target) => normalizeTallyTarget(target, estado))
+    .filter((target) => target?.id)
+    .forEach((target) => {
+      removeCacheEntry(tallyCacheKey(target.id, target.estado));
+    });
 };
 
-export const fetchCandidateTallies = async (candidateIds, { forceRefresh = false } = {}) => {
-  const uniqueIds = [...new Set(candidateIds)].filter(Boolean);
-  const tallies = new Map();
-  const idsToFetch = [];
+export const fetchCandidateTallies = async (candidateTargets, { forceRefresh = false, estado = null } = {}) => {
+  const targetsByKey = new Map();
 
-  uniqueIds.forEach((candidateId) => {
-    const cached = readCacheEntry(tallyCacheKey(candidateId), {
+  candidateTargets
+    .map((target) => normalizeTallyTarget(target, estado))
+    .filter((target) => target?.id)
+    .forEach((target) => {
+      const key = `${target.estado || 'all'}:${target.id}`;
+      if (!targetsByKey.has(key)) targetsByKey.set(key, target);
+    });
+
+  const targets = [...targetsByKey.values()];
+  const tallies = new Map();
+  const targetsToFetch = [];
+
+  targets.forEach((target) => {
+    const cached = readCacheEntry(tallyCacheKey(target.id, target.estado), {
       maxAgeMs: TALLY_CACHE_MAX_AGE_MS,
       maxStaleMs: TALLY_CACHE_MAX_STALE_MS
     });
 
     if (cached?.value) {
-      tallies.set(candidateId, cached.value);
+      tallies.set(target.id, cached.value);
     }
 
     if (forceRefresh || !cached?.isFresh) {
-      idsToFetch.push(candidateId);
+      targetsToFetch.push(target);
     }
   });
 
-  for (let index = 0; index < idsToFetch.length; index += 10) {
-    const chunk = idsToFetch.slice(index, index + 10);
-    const talliesQuery = query(
-      collection(db, 'elections', ACTIVE_ELECTION_ID, 'candidate_tallies'),
-      where(documentId(), 'in', chunk)
-    );
+  for (const target of targetsToFetch) {
+    const constraints = [
+      where('electionId', '==', ACTIVE_ELECTION_ID),
+      where('candidateIds', 'array-contains', target.id)
+    ];
 
-    const talliesSnap = await getDocs(talliesQuery);
-    talliesSnap.forEach((tallyDoc) => {
-      const data = tallyDoc.data();
-      tallies.set(tallyDoc.id, data);
-      writeCacheEntry(tallyCacheKey(tallyDoc.id), data);
-    });
+    if (target.estado) {
+      constraints.push(where('state', '==', target.estado));
+    }
+
+    const choicesQuery = query(
+      collection(db, PUBLIC_CANDIDATE_CHOICES_COLLECTION),
+      ...constraints
+    );
+    const countSnap = await getCountFromServer(choicesQuery);
+    const activeSelections = Math.max(0, Number(countSnap.data().count) || 0);
+    const data = {
+      schema_version: 1,
+      election_id: ACTIVE_ELECTION_ID,
+      candidate_id: target.id,
+      state: target.estado || null,
+      active_selections: activeSelections
+    };
+
+    tallies.set(target.id, data);
+    writeCacheEntry(tallyCacheKey(target.id, target.estado), data);
   }
 
   return tallies;

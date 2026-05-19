@@ -7,9 +7,9 @@
 }
 
 .bottom-step-nav {
-  --step-nav-muted: #b2b2b2;
-  --step-nav-active-bg: #fff2df;
-  --step-nav-active-color: #111111;
+  --step-nav-muted: #a1a1a1;
+  --step-nav-active-bg: #eef0f2;
+  --step-nav-active-color: #0a0a0a;
   position: relative;
   height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
   min-height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
@@ -19,35 +19,36 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0;
-  padding: 3px 8px calc(3px + env(safe-area-inset-bottom, 0px));
+  padding: 2px 8px calc(4px + env(safe-area-inset-bottom, 0px));
 }
 
 .bottom-step-nav__item {
   position: relative;
   z-index: 1;
   min-width: 0;
-  height: 46px;
+  height: 50px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 18px;
   background: transparent;
   color: var(--step-nav-muted);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1px;
-  padding: 2px 2px 3px;
+  gap: 0;
+  padding: 3px 2px 4px;
   font-family: var(--font-family);
   font-size: 12px;
   font-weight: 500;
   line-height: 1;
   cursor: pointer;
+  overflow: visible;
 }
 
 .bottom-step-nav__item.is-active {
   background: var(--step-nav-active-bg);
   color: var(--step-nav-active-color);
-  font-weight: 800;
+  font-weight: 500;
 }
 
 .bottom-step-nav__item.is-complete {
@@ -65,9 +66,9 @@
 }
 
 .bottom-step-nav__item--brand .bottom-step-nav__icon {
-  width: 21px;
-  height: 25px;
-  flex-basis: 25px;
+  width: 22px;
+  height: 27px;
+  flex-basis: 27px;
   padding: 0;
   line-height: 1;
   object-fit: contain;
@@ -83,21 +84,25 @@
 }
 
 .bottom-step-nav__icon {
-  width: 30px;
-  height: 30px;
-  flex: 0 0 30px;
+  width: 28px;
+  height: 27px;
+  flex: 0 0 27px;
   border-radius: 0;
   background: transparent;
   color: currentColor;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 4px;
+  padding: 1px;
 }
 
 .bottom-step-nav__item--deputado .bottom-step-nav__icon,
 .bottom-step-nav__item--senador .bottom-step-nav__icon {
-  padding: 2px;
+  width: 30px;
+  height: 27px;
+  flex-basis: 27px;
+  margin-bottom: 0;
+  padding: 0;
 }
 
 .bottom-step-nav__item.is-complete .bottom-step-nav__icon {
@@ -120,14 +125,11 @@
 .bottom-step-nav__label {
   display: block;
   max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  min-height: 15px;
+  overflow: visible;
+  text-overflow: clip;
+  line-height: 1.25;
   white-space: nowrap;
-}
-
-.bottom-step-nav__item--brand .bottom-step-nav__label {
-  font-size: 10px;
-  font-weight: inherit;
 }
 
 @media (max-width: 420px) {
@@ -141,14 +143,18 @@
   }
 
   .bottom-step-nav__icon {
-    width: 28px;
-    height: 28px;
-    flex-basis: 28px;
+    width: 27px;
+    height: 26px;
+    flex-basis: 26px;
   }
 
   .bottom-step-nav__item--deputado .bottom-step-nav__icon,
   .bottom-step-nav__item--senador .bottom-step-nav__icon {
-    padding: 2px;
+    width: 29px;
+    height: 26px;
+    flex-basis: 26px;
+    margin-bottom: 0;
+    padding: 0;
   }
 }
 
@@ -165,21 +171,25 @@
   }
 
   .bottom-step-nav__item {
-    height: 44px;
-    border-radius: 10px;
-    font-size: 9px;
+    height: 48px;
+    border-radius: 16px;
+    font-size: 10px;
   }
 
   .bottom-step-nav__icon {
-    width: 27px;
-    height: 27px;
-    flex-basis: 27px;
-    padding: 4px;
+    width: 25px;
+    height: 25px;
+    flex-basis: 25px;
+    padding: 1px;
   }
 
   .bottom-step-nav__item--deputado .bottom-step-nav__icon,
   .bottom-step-nav__item--senador .bottom-step-nav__icon {
-    padding: 2px;
+    width: 27px;
+    height: 25px;
+    flex-basis: 25px;
+    margin-bottom: 0;
+    padding: 0;
   }
 }
 
@@ -409,13 +419,13 @@
     position: relative;
     z-index: 1;
     width: 100%;
-    height: 52px;
+    height: 54px;
     min-width: 0;
-    border-radius: 12px;
+    border-radius: 20px;
     color: var(--step-nav-muted);
     flex-direction: column;
-    gap: 1px;
-    padding: 3px 6px 4px;
+    gap: 0;
+    padding: 4px 6px 5px;
     font-size: 12px;
     font-weight: 500;
   }
@@ -423,7 +433,7 @@
   .app-page-footer--header .bottom-step-nav__item.is-active {
     background: var(--step-nav-active-bg);
     color: var(--step-nav-active-color);
-    font-weight: 800;
+    font-weight: 500;
     box-shadow: none;
   }
 
@@ -443,22 +453,26 @@
   }
 
   .app-page-footer--header .bottom-step-nav__item:disabled {
-    color: #b7bcc1;
+    color: var(--step-nav-muted);
   }
 
   .app-page-footer--header .bottom-step-nav__icon {
-    width: 30px;
-    height: 30px;
-    flex: 0 0 30px;
+    width: 28px;
+    height: 27px;
+    flex: 0 0 27px;
     background: transparent;
     color: var(--step-nav-muted);
-    padding: 4px;
+    padding: 1px;
     box-shadow: none;
   }
 
   .app-page-footer--header .bottom-step-nav__item--deputado .bottom-step-nav__icon,
   .app-page-footer--header .bottom-step-nav__item--senador .bottom-step-nav__icon {
-    padding: 2px;
+    width: 30px;
+    height: 27px;
+    flex-basis: 27px;
+    margin-bottom: 0;
+    padding: 0;
   }
 
   .app-page-footer--header .bottom-step-nav__item.is-complete .bottom-step-nav__icon {
@@ -481,16 +495,17 @@
   }
 
   .app-page-footer--header .bottom-step-nav__item--brand .bottom-step-nav__icon {
-    width: 21px;
-    height: 25px;
-    flex-basis: 25px;
+    width: 22px;
+    height: 27px;
+    flex-basis: 27px;
     padding: 0;
     object-fit: contain;
   }
 
   .app-page-footer--header .bottom-step-nav__label {
     max-width: 96px;
-    text-transform: capitalize;
+    min-height: 15px;
+    text-transform: none;
   }
 
   .options-drawer-shell {
@@ -590,15 +605,19 @@
   }
 
   .app-page-footer--header .bottom-step-nav__icon {
-    width: 24px;
-    height: 24px;
-    flex-basis: 24px;
-    padding: 3px;
+    width: 23px;
+    height: 23px;
+    flex-basis: 23px;
+    padding: 1px;
   }
 
   .app-page-footer--header .bottom-step-nav__item--deputado .bottom-step-nav__icon,
   .app-page-footer--header .bottom-step-nav__item--senador .bottom-step-nav__icon {
-    padding: 1px;
+    width: 25px;
+    height: 12px;
+    flex-basis: 13px;
+    margin-bottom: -1px;
+    padding: 0;
   }
 
   .app-page-footer--header .bottom-step-nav__item--brand .bottom-step-nav__icon {

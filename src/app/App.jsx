@@ -4,6 +4,7 @@ import { CANDIDATE_ROUTES } from '@/constants/candidateRoutes';
 import { BALLOT_ROUTES } from '@/constants/ballot';
 import { useDesktopExperience } from '@/hooks/useDesktopExperience';
 import { useUser } from '@/hooks/useUser';
+import { ChanceFlame } from '@/components/icons/ChanceFlame';
 import PrivacyConsent from '@/components/privacy/PrivacyConsent';
 import {
   fetchRemoteBallotDraft,
@@ -46,7 +47,10 @@ function LoadingScreen() {
         <span className="loading-intro__ring" aria-hidden="true"></span>
         <span className="loading-intro__scan" aria-hidden="true"></span>
         <span className="loading-intro__brand">nossovoto.org</span>
-        <span className="loading-intro__caption">PlanoVoto.org</span>
+        <span className="loading-intro__mark">
+          <ChanceFlame className="loading-intro__flame" size={92} />
+          <span className="loading-intro__caption">carregando aguarde</span>
+        </span>
       </div>
     </div>
   );

@@ -382,34 +382,56 @@ body {
   animation: loadingInnerSweep 1400ms ease-in-out infinite;
 }
 
-.loading-intro__brand,
-.loading-intro__caption {
-  position: relative;
+.loading-intro__brand {
+  position: absolute;
   z-index: 2;
+  top: 25%;
+  left: 0;
+  right: 0;
   display: block;
   width: 100%;
   overflow: hidden;
+  color: var(--text-main);
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 1;
+  text-align: center;
   text-overflow: clip;
+  text-shadow: 0 10px 28px rgba(255, 255, 255, 0.72);
   white-space: nowrap;
 }
 
-.loading-intro__brand {
-  color: var(--text-main);
-  font-size: 36px;
-  font-weight: 900;
-  line-height: 1;
-  letter-spacing: 0;
-  text-shadow: 0 10px 28px rgba(255, 255, 255, 0.72);
+.loading-intro__mark {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transform: translate(-50%, -50%);
+}
+
+.loading-intro__flame {
+  position: relative;
+  width: clamp(72px, 24vw, 104px);
+  height: clamp(72px, 24vw, 104px);
+  filter: drop-shadow(0 12px 22px rgba(255, 122, 53, 0.24));
 }
 
 .loading-intro__caption {
-  align-self: end;
-  margin-bottom: 24%;
+  display: block;
   color: #70757a;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0;
-  text-transform: uppercase;
+  line-height: 1.2;
+  text-align: center;
+  text-transform: none;
+  white-space: nowrap;
 }
 
 @keyframes loadingSpin {
@@ -564,11 +586,12 @@ body {
   }
 
   .loading-intro__brand {
-    font-size: 31px;
+    font-size: 29px;
   }
 
-  .loading-intro__caption {
-    font-size: 10px;
+  .loading-intro__flame {
+    width: 82px;
+    height: 82px;
   }
 
   .prototype-header h1 {
@@ -650,11 +673,12 @@ body {
   }
 
   .loading-intro__brand {
-    font-size: 26px;
+    font-size: 25px;
   }
 
-  .loading-intro__caption {
-    font-size: 9px;
+  .loading-intro__flame {
+    width: 68px;
+    height: 68px;
   }
 
   .prototype-header {
@@ -817,12 +841,9 @@ body {
     width: min(48vw, 400px);
   }
 
-  .loading-intro__brand {
-    font-size: 46px;
-  }
-
-  .loading-intro__caption {
-    font-size: 12px;
+  .loading-intro__flame {
+    width: 104px;
+    height: 104px;
   }
 
   .no-data {
