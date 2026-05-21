@@ -43,13 +43,9 @@ const renderCandidateRoute = (config) => (
 function LoadingScreen() {
   return (
     <div className="loading loading--intro" role="status" aria-live="polite">
-      <div className="loading-intro" aria-label="Carregando nossovoto.org">
-        <span className="loading-intro__ring" aria-hidden="true"></span>
-        <span className="loading-intro__scan" aria-hidden="true"></span>
-        <span className="loading-intro__brand">nossovoto.org</span>
-        <span className="loading-intro__mark">
-          <ChanceFlame className="loading-intro__flame" size={92} />
-          <span className="loading-intro__caption">carregando aguarde</span>
+      <div className="loading-intro" aria-label="Carregando">
+        <span className="loading-intro__mark" aria-hidden="true">
+          <ChanceFlame className="loading-intro__flame" size={82} />
         </span>
       </div>
     </div>

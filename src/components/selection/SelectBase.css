@@ -106,7 +106,7 @@
   border-radius: 999px;
   background: linear-gradient(90deg, #ffdf59 0%, #ff8b49 100%);
   color: #111111;
-  font-family: var(--font-family);
+  font-family: var(--font-display);
   font-size: 13px;
   font-weight: 950;
   cursor: pointer;
@@ -141,6 +141,7 @@
 .prototype-section-heading h2 {
   margin: 0;
   color: var(--text-strong);
+  font-family: var(--font-display);
   font-size: 17px;
   font-weight: 800;
   line-height: 1.1;
@@ -218,9 +219,21 @@
   outline: 0;
 }
 
+.select-search-field .app-icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  z-index: 1;
+  width: 18px;
+  height: 18px;
+  color: var(--text-muted);
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
 .select-search-field input {
-  padding: 0 16px;
-  text-align: center;
+  padding: 0 16px 0 42px;
+  text-align: left;
 }
 
 .select-search-field input:focus,
@@ -289,6 +302,7 @@
   max-width: 100%;
   overflow: hidden;
   color: currentColor;
+  font-family: var(--font-display);
   font-size: 20px;
   font-weight: 800;
   line-height: 1.05;
@@ -533,7 +547,7 @@
   display: flex;
   flex-direction: column;
   gap: 18px;
-  padding-top: 22px;
+  padding-top: 14px;
 }
 
 .candidate-load-more {
@@ -560,18 +574,20 @@
   --candidate-assessment-bg: color-mix(in srgb, currentColor 16%, white);
   --candidate-viability-fill: currentColor;
   --candidate-viability-track: rgba(169, 169, 169, 0.28);
+  --candidate-thermometer-fill: currentColor;
+  --candidate-thermometer-track: rgba(169, 169, 169, 0.28);
   --assessment-icon-bg: #a9a9a9;
   --assessment-icon-fg: #ffffff;
   position: relative;
   width: 100%;
-  min-height: 80px;
+  min-height: 96px;
   border: 0;
   border-radius: 9px;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) var(--candidate-metric-size);
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
-  gap: 8px;
-  padding: 8px var(--candidate-card-pad-right) 8px var(--candidate-card-pad-left);
+  gap: 7px;
+  padding: 10px var(--candidate-card-pad-right) 9px var(--candidate-card-pad-left);
   background: var(--candidate-card-bg);
   color: var(--candidate-card-fg);
   text-align: left;
@@ -595,6 +611,8 @@
   --candidate-assessment-bg: #dbf4cf;
   --candidate-viability-fill: #7ed957;
   --candidate-viability-track: #dbf4cf;
+  --candidate-thermometer-fill: #8bdd62;
+  --candidate-thermometer-track: #d9f4cc;
   --assessment-icon-bg: #7ed957;
   --assessment-icon-fg: #dbf4cf;
   border: 1px solid transparent;
@@ -606,6 +624,8 @@
   --candidate-assessment-bg: #eaeaea;
   --candidate-viability-fill: #b4b4b4;
   --candidate-viability-track: #eaeaea;
+  --candidate-thermometer-fill: #b4b4b4;
+  --candidate-thermometer-track: #e5e5e5;
   --assessment-icon-bg: #b4b4b4;
   --assessment-icon-fg: #eaeaea;
 }
@@ -616,6 +636,8 @@
   --candidate-assessment-bg: #ffdcdc;
   --candidate-viability-fill: #ff5757;
   --candidate-viability-track: #ffdcdc;
+  --candidate-thermometer-fill: #ff6b6b;
+  --candidate-thermometer-track: #ffc8c8;
   --assessment-icon-bg: #ff5757;
   --assessment-icon-fg: #ffdcdc;
 }
@@ -639,7 +661,7 @@
 }
 
 .prototype-candidate-card.is-summary {
-  grid-template-columns: minmax(0, 1fr) var(--candidate-metric-size);
+  grid-template-columns: minmax(0, 1fr);
   padding-right: var(--candidate-card-pad-right);
 }
 
@@ -649,6 +671,8 @@
   --candidate-assessment-bg: #ffe4bc;
   --candidate-viability-fill: #ff914d;
   --candidate-viability-track: #ffe4bc;
+  --candidate-thermometer-fill: linear-gradient(90deg, rgb(255, 152, 0) 0%, rgb(255, 152, 0) 100%);
+  --candidate-thermometer-track: #ffd28f;
   --assessment-icon-bg: transparent;
   --assessment-icon-fg: #ff914d;
   --metric-feature-color: #ff914d;
@@ -661,6 +685,8 @@
   --candidate-assessment-bg: #eaeaea;
   --candidate-viability-fill: #b4b4b4;
   --candidate-viability-track: #eaeaea;
+  --candidate-thermometer-fill: #b4b4b4;
+  --candidate-thermometer-track: #e5e5e5;
   --assessment-icon-bg: #b4b4b4;
   --assessment-icon-fg: #eaeaea;
 }
@@ -672,16 +698,30 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+  gap: 1px;
 }
 
 .candidate-card__name-row {
   min-width: 0;
   max-width: 100%;
   overflow: visible;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  align-items: start;
-  gap: 0;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.candidate-card__number {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  color: currentColor;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .candidate-card__identity strong {
@@ -690,6 +730,7 @@
   max-width: 100%;
   overflow: visible;
   color: currentColor;
+  font-family: var(--font-display);
   font-size: var(--candidate-name-size, 20px);
   font-weight: 800;
   line-height: 1.05;
@@ -699,11 +740,24 @@
   overflow-wrap: anywhere;
 }
 
+.candidate-card__score {
+  color: currentColor;
+  font-family: var(--font-display);
+  font-size: var(--candidate-score-size, 16px);
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.prototype-candidate-card.has-number-above .candidate-card__identity {
+  gap: 2px;
+}
+
 .candidate-card__identity small {
   display: block;
   max-width: 100%;
   overflow: visible;
-  margin-top: 3px;
+  margin-top: 0;
   color: currentColor;
   font-size: 13px;
   font-weight: 500;
@@ -742,8 +796,8 @@
   color: currentColor;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px 7px;
+  gap: 2px;
+  padding: 2px 6px;
   font-size: var(--candidate-assessment-size, 10px);
   font-weight: 800;
   line-height: 1;
@@ -751,9 +805,9 @@
 }
 
 .candidate-card__assessment-icon {
-  width: 14px;
-  height: 14px;
-  flex: 0 0 14px;
+  width: 12px;
+  height: 12px;
+  flex: 0 0 12px;
   border-radius: 50%;
   background: var(--assessment-icon-bg);
   color: var(--assessment-icon-fg);
@@ -780,8 +834,8 @@
 
 .candidate-card__assessment-icon svg,
 .candidate-card__assessment-icon img {
-  width: 10px;
-  height: 12px;
+  width: 9px;
+  height: 11px;
   flex: 0 0 auto;
   color: currentColor;
   object-fit: contain;
@@ -822,73 +876,140 @@
   line-height: 1.25;
 }
 
-.candidate-viability {
+.candidate-thermometer {
   position: relative;
-  width: var(--candidate-metric-size);
-  height: var(--candidate-metric-size);
-  flex: 0 0 var(--candidate-metric-size);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+  margin-top: 7px;
+  padding-right: 40px;
   color: currentColor;
 }
 
-.candidate-viability__circle {
+.candidate-thermometer__track {
   position: relative;
-  z-index: 2;
   width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  line-height: 1;
+  height: 22px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--candidate-thermometer-track);
 }
 
-.candidate-viability__circle::before {
+.candidate-thermometer__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--thermometer-progress, 0%);
+  border-radius: inherit;
+  background: var(--candidate-thermometer-fill);
+  transition: all 0.5s ease;
+}
+
+.candidate-thermometer__tick {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.55);
+  opacity: 0.72;
+}
+
+.candidate-thermometer__tick--first {
+  left: 25%;
+}
+
+.candidate-thermometer__tick--second {
+  left: 50%;
+}
+
+.candidate-thermometer__tick--third {
+  left: 75%;
+}
+
+.candidate-thermometer__caption {
+  display: inline-block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: visible;
+  color: currentColor;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.candidate-thermometer__caption strong,
+.candidate-thermometer__caption em {
+  display: inline;
+  color: currentColor;
+  font-family: var(--font-family);
+  font-size: inherit;
+  font-style: normal;
+  font-weight: 800;
+  line-height: inherit;
+  text-transform: none;
+}
+
+.candidate-thermometer__caption b {
+  font-weight: 700;
+}
+
+.candidate-thermometer--featured .candidate-thermometer__fill {
+  background: linear-gradient(90deg, rgb(255, 152, 0) 0%, rgb(255, 152, 0) 100%);
+  box-shadow: rgba(255, 152, 0, 0.2) 0 0 0 2px;
+  animation: candidateThermometerPulse 1300ms ease-in-out infinite;
+}
+
+.candidate-thermometer__lock {
+  position: absolute;
+  right: 0;
+  top: -10px;
+  z-index: 4;
+  width: 24px;
+  height: 22px;
+  border-radius: 2px;
+  background: #6e6e6e;
+  box-shadow: 0 2px 5px rgba(17, 17, 17, 0.18);
+}
+
+.candidate-thermometer__lock::before {
   content: '';
   position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: 50%;
-  background: conic-gradient(from 0deg, var(--candidate-viability-fill, currentColor) calc(var(--metric-progress, 0) * 1%), var(--candidate-viability-track, rgba(169, 169, 169, 0.28)) 0);
-  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 4px));
-  mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 4px));
+  left: 5px;
+  top: -13px;
+  width: 14px;
+  height: 15px;
+  border: 3px solid #777777;
+  border-bottom: 0;
+  border-radius: 9px 9px 0 0;
 }
 
-.candidate-viability strong {
-  color: currentColor;
-  font-size: 18px;
-  font-weight: 900;
-  line-height: 0.9;
+@keyframes candidateThermometerPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
 }
 
-.candidate-viability small {
-  font-size: 9px;
-  font-weight: 900;
-}
-
-.candidate-viability span span,
-.candidate-viability__circle > span {
-  color: currentColor;
-  font-size: 9px;
-  font-weight: 800;
-  line-height: 1;
-}
-
-.candidate-viability--featured {
-  color: var(--metric-feature-color);
+@media (prefers-reduced-motion: reduce) {
+  .candidate-thermometer--featured .candidate-thermometer__fill {
+    animation: none;
+  }
 }
 
 .candidate-viability__flame {
   position: absolute;
-  top: -14px;
-  right: -10px;
+  top: auto;
+  right: 12px;
+  bottom: 33px;
   z-index: 3;
-  width: 28px;
-  height: 34px;
+  width: 30px;
+  height: 38px;
   pointer-events: none;
   filter: drop-shadow(0 2px 4px rgba(255, 139, 73, 0.22));
   object-fit: contain;
@@ -896,8 +1017,9 @@
 }
 
 .candidate-viability__flame--summary {
-  top: -15px;
-  right: -11px;
+  top: auto;
+  right: 12px;
+  bottom: 33px;
   z-index: 3;
 }
 
@@ -912,7 +1034,10 @@
   flex: 0 0 auto;
   max-height: 116px;
   padding: 8px var(--screen-gutter) 16px;
-  background: transparent;
+  border-top: 1px solid rgba(232, 235, 238, 0.62);
+  background: rgba(255, 255, 255, 0.68);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
   overflow: visible;
   opacity: 1;
   pointer-events: none;
@@ -930,6 +1055,10 @@
 }
 
 .select-base__desktop-action {
+  display: none;
+}
+
+.select-base__desktop-action.is-hidden {
   display: none;
 }
 
@@ -955,7 +1084,7 @@
   border-radius: 14px;
   background: linear-gradient(90deg, #ffdf59 0%, #ff8b49 100%);
   color: #000000;
-  font-family: var(--font-family);
+  font-family: var(--font-display);
   font-size: 23px;
   font-weight: 900;
   line-height: 1;
@@ -1024,19 +1153,19 @@
 
   .candidate-card-list {
     gap: 8px;
-    padding-top: 10px;
+    padding-top: 6px;
   }
 
   .candidate-list-section .prototype-candidate-card,
   .candidate-current-section .prototype-candidate-card {
-    --candidate-card-pad-left: 21px;
+    --candidate-card-pad-left: 14px;
     --candidate-card-pad-right: 10px;
     --candidate-metric-size: 62px;
-    min-height: 78px;
+    min-height: 92px;
     border-radius: 8px;
-    grid-template-columns: minmax(0, 1fr) var(--candidate-metric-size);
-    gap: 8px;
-    padding-block: 9px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+    padding-block: 10px;
     box-shadow: none;
   }
 
@@ -1082,37 +1211,33 @@
   }
 
   .candidate-current-section .prototype-candidate-card.is-summary {
-    grid-template-columns: minmax(0, 1fr) var(--candidate-metric-size);
+    grid-template-columns: minmax(0, 1fr);
     padding-right: 12px;
   }
 
-  .candidate-list-section .candidate-viability,
-  .candidate-current-section .candidate-viability {
-    transform: translateX(-4px);
-  }
-
   .candidate-viability__flame {
-    top: -20px;
-    right: -17px;
-    width: 34px;
-    height: 41px;
+    top: auto;
+    right: 12px;
+    bottom: 33px;
+    width: 30px;
+    height: 38px;
   }
 
   .candidate-viability__flame--summary {
-    top: -25px;
-    right: -18px;
-    width: 39px;
-    height: 47px;
+    top: auto;
+    right: 12px;
+    bottom: 33px;
+    width: 30px;
+    height: 38px;
     z-index: 5;
-    filter: drop-shadow(0 4px 8px rgba(255, 139, 73, 0.24));
+    filter: drop-shadow(0 2px 4px rgba(255, 139, 73, 0.22));
     transform: rotate(8deg);
   }
 
   .candidate-card__name-row {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    align-items: start;
-    gap: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
   }
 
   .candidate-card__identity strong {
@@ -1121,7 +1246,7 @@
   }
 
   .candidate-card__identity small {
-    margin-top: 1px;
+    margin-top: 0;
     font-size: 12px;
     line-height: 1.05;
   }
@@ -1129,37 +1254,23 @@
   .candidate-card__assessment {
     min-height: 20px;
     margin-top: 4px;
-    padding: 3px 7px;
+    padding: 3px 6px;
     font-size: var(--candidate-assessment-mobile-size, 9px);
     line-height: 1;
   }
 
   .candidate-card__assessment-icon {
-    width: 14px;
-    height: 14px;
-    flex-basis: 14px;
+    width: 12px;
+    height: 12px;
+    flex-basis: 12px;
   }
 
-  .candidate-viability {
-    width: var(--candidate-metric-size);
-    height: var(--candidate-metric-size);
+  .candidate-thermometer__track {
+    height: 22px;
   }
 
-  .candidate-viability__circle::before {
-    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 5px));
-    mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 5px));
-  }
-
-  .candidate-viability strong {
-    font-size: 19px;
-  }
-
-  .candidate-viability small {
-    font-size: 10px;
-  }
-
-  .candidate-viability__circle > span {
-    font-size: 9px;
+  .candidate-thermometer__caption {
+    font-size: 8.5px;
   }
 }
 
@@ -1199,7 +1310,7 @@
     --candidate-card-pad-left: 12px;
     --candidate-card-pad-right: 7px;
     --candidate-metric-size: 48px;
-    min-height: 76px;
+    min-height: 88px;
   }
 
   .candidate-card__identity strong {
@@ -1215,26 +1326,20 @@
     font-size: min(var(--candidate-assessment-mobile-size, 7px), 7px);
   }
 
-  .candidate-viability strong {
-    font-size: 16px;
-  }
-
-  .candidate-viability__circle > span {
-    font-size: 7px;
-  }
-
   .candidate-viability__flame {
-    top: -18px;
-    right: -15px;
-    width: 30px;
-    height: 36px;
+    top: auto;
+    right: 9px;
+    bottom: 33px;
+    width: 26px;
+    height: 33px;
   }
 
   .candidate-viability__flame--summary {
-    top: -22px;
-    right: -16px;
-    width: 35px;
-    height: 42px;
+    top: auto;
+    right: 9px;
+    bottom: 33px;
+    width: 26px;
+    height: 33px;
   }
 
   .select-base__continue {
@@ -1334,7 +1439,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
     gap: 22px;
-    padding-top: 22px;
+    padding-top: 14px;
   }
 
   .candidate-list-tools {
@@ -1362,7 +1467,7 @@
     max-height: 90px;
     padding: 12px var(--screen-gutter) 18px;
     border-top: 0;
-    background: transparent;
+    background: rgba(255, 255, 255, 0.68);
   }
 
   .select-base__continue {
@@ -1577,7 +1682,7 @@
 
   .candidate-current-list {
     gap: 22px;
-    padding-top: 12px;
+    padding-top: 6px;
   }
 
   .candidate-flow.has-current-selection .candidate-current-list--double {
@@ -1674,7 +1779,7 @@
   .candidate-card-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 22px;
-    padding-top: 22px;
+    padding-top: 14px;
   }
 
   .candidate-flow:not(.has-current-selection) .candidate-card-list {
@@ -1695,14 +1800,14 @@
 
   .candidate-list-section .prototype-candidate-card {
     min-height: 112px;
-    grid-template-columns: minmax(0, 1fr) var(--candidate-metric-size);
+    grid-template-columns: minmax(0, 1fr);
     column-gap: 16px;
     align-items: center;
   }
 
   .candidate-list-section .candidate-card__name-row {
-    align-items: flex-start;
-    gap: 0;
+    align-items: baseline;
+    gap: 5px;
   }
 
   .candidate-list-section .candidate-card__identity strong {
@@ -1727,15 +1832,12 @@
     font-size: 12px;
   }
 
-  .candidate-viability strong {
-    font-size: 19px;
-  }
-
   .candidate-viability__flame {
-    top: -11px;
-    right: -7px;
-    width: 30px;
-    height: 36px;
+    top: auto;
+    right: 14px;
+    bottom: 36px;
+    width: 32px;
+    height: 40px;
   }
 
   .candidate-current-section .prototype-candidate-card {

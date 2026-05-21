@@ -8,7 +8,7 @@
 
 .bottom-step-nav {
   --step-nav-muted: #a1a1a1;
-  --step-nav-active-bg: #eef0f2;
+  --step-nav-active-bg: #f2f3f4;
   --step-nav-active-color: #0a0a0a;
   position: relative;
   height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
@@ -49,6 +49,7 @@
   background: var(--step-nav-active-bg);
   color: var(--step-nav-active-color);
   font-weight: 500;
+  border-radius: 16px;
 }
 
 .bottom-step-nav__item.is-complete {
@@ -103,6 +104,7 @@
   flex-basis: 27px;
   margin-bottom: 0;
   padding: 0;
+  transform: translateY(2px);
 }
 
 .bottom-step-nav__item.is-complete .bottom-step-nav__icon {
@@ -155,6 +157,7 @@
     flex-basis: 26px;
     margin-bottom: 0;
     padding: 0;
+    transform: translateY(2px);
   }
 }
 
@@ -190,6 +193,7 @@
     flex-basis: 25px;
     margin-bottom: 0;
     padding: 0;
+    transform: translateY(2px);
   }
 }
 
@@ -473,6 +477,7 @@
     flex-basis: 27px;
     margin-bottom: 0;
     padding: 0;
+    transform: translateY(2px);
   }
 
   .app-page-footer--header .bottom-step-nav__item.is-complete .bottom-step-nav__icon {
@@ -618,6 +623,7 @@
     flex-basis: 13px;
     margin-bottom: -1px;
     padding: 0;
+    transform: translateY(2px);
   }
 
   .app-page-footer--header .bottom-step-nav__item--brand .bottom-step-nav__icon {

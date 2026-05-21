@@ -53,7 +53,15 @@ export default function ContinuarPlano() {
   };
 
   if (userLoading || status.type === 'loading') {
-    return <div className="loading nv-screen" role="status" aria-live="polite">{status.message || 'CARREGANDO...'}</div>;
+    return (
+      <div className="loading nv-screen" role="status" aria-live="polite">
+        <div className="loading-intro" aria-label="Carregando">
+          <span className="loading-intro__mark" aria-hidden="true">
+            <ChanceFlame className="loading-intro__flame" size={82} />
+          </span>
+        </div>
+      </div>
+    );
   }
 
   return (

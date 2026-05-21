@@ -102,12 +102,15 @@ export default function SelectBase({
 }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const isHomeState = variant === 'home-state';
+  const isCandidateOffice = variant === 'office-deputado' || variant === 'office-senado';
+  const isSenateOffice = variant === 'office-senado';
   const [selecionados, setSelecionados] = useState(selecaoInicial);
   const [candidateRenderLimit, setCandidateRenderLimit] = useState(INITIAL_CANDIDATE_RENDER_LIMIT);
   const [candidateSearchOpen, setCandidateSearchOpen] = useState(false);
   const candidateSearchInputRef = useRef(null);
   const lastScrollTopRef = useRef(0);
-  const [continueVisible, setContinueVisible] = useState(true);
+  const [continueVisible, setContinueVisible] = useState(() => variant !== 'home-state');
   const [senateChoicesSaved, setSenateChoicesSaved] = useState(false);
   const [modalMalAvaliado, setModalMalAvaliado] = useState({ aberto: false, item: null });
   const [modalAltaChance, setModalAltaChance] = useState({ aberto: false, item: null });
@@ -160,7 +163,7 @@ export default function SelectBase({
 
     lastScrollTopRef.current = 0;
     queueMicrotask(() => {
-      if (!cancelled) setContinueVisible(true);
+      if (!cancelled) setContinueVisible(variant !== 'home-state');
     });
 
     return () => {
@@ -168,9 +171,6 @@ export default function SelectBase({
     };
   }, [activeSubNavigationId, valorBusca, variant]);
 
-  const isHomeState = variant === 'home-state';
-  const isCandidateOffice = variant === 'office-deputado' || variant === 'office-senado';
-  const isSenateOffice = variant === 'office-senado';
   const effectiveLimit = Number.isFinite(limiteSelecao) ? limiteSelecao : null;
   const requiredSelectionCount = isCandidateOffice ? minimoSelecao : (effectiveLimit || 1);
   const hasSelectionLimit = Number.isFinite(effectiveLimit) && effectiveLimit > 0;
@@ -181,6 +181,8 @@ export default function SelectBase({
     selecionados.map((candidate) => candidate.id).filter(Boolean).sort().join('|')
   ), [selecionados]);
   const showSavedSenateSharePanel = isSenateOffice && senateChoicesSaved && hasRequiredSelection && Boolean(shareData);
+  const shouldShowContinue = isHomeState ? (hasRequiredSelection || continueVisible) : continueVisible;
+  const shouldShowDesktopContinue = isHomeState ? (hasRequiredSelection || continueVisible) : true;
 
   useEffect(() => {
     if (!isSenateOffice) return undefined;
@@ -358,7 +360,7 @@ export default function SelectBase({
 
     if (Math.abs(diff) < 8) return;
 
-    if (currentTop < 20 || diff < 0) {
+    if (diff < 0 || (!isHomeState && currentTop < 20)) {
       setContinueVisible(true);
     } else if (diff > 0) {
       setContinueVisible(false);
@@ -542,7 +544,7 @@ export default function SelectBase({
   };
 
   const handleSearchChange = (event) => {
-    revealContinue();
+    if (!isHomeState) revealContinue();
     if (onChangeBusca) onChangeBusca(event.target.value);
   };
 
@@ -565,12 +567,13 @@ export default function SelectBase({
 
     return (
       <label className={`select-search-field ${className}`} id="tour-busca">
+        <SearchIcon />
         <span>Buscar</span>
         <input
           type="search"
           value={valorBusca}
           onChange={handleSearchChange}
-          placeholder={isHomeState ? 'Buscar estado ou sigla' : 'Pesquisa'}
+          placeholder={isHomeState ? '' : 'Pesquisa'}
         />
       </label>
     );
@@ -825,25 +828,37 @@ export default function SelectBase({
         onClick={handleContinue}
         disabled={salvandoSelecao || !hasRequiredSelection}
       >
-        {isSenateOffice ? (personalizedFieldsLocked ? 'REVISAR RASCUNHO' : 'SALVAR') : 'CONTINUAR'}
+        {isSenateOffice && personalizedFieldsLocked ? 'REVISAR RASCUNHO' : 'CONTINUAR'}
       </button>
     )
   );
 
-  if (carregando) return <div className="loading nv-screen" role="status" aria-live="polite">CARREGANDO...</div>;
+  if (carregando) {
+    return (
+      <div className="loading nv-screen" role="status" aria-live="polite">
+        <div className="loading-intro" aria-label="Carregando">
+          <span className="loading-intro__mark" aria-hidden="true">
+            <ChanceFlame className="loading-intro__flame" size={82} />
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`select-base-container prototype-page nv-screen variant-${variant}`}>
       <header className="prototype-header app-page-header">
-        <button
-          className="app-header-back-button nv-touch"
-          type="button"
-          onClick={handleHeaderBack}
-          aria-label="Voltar"
-        >
-          <BackIcon />
-          <span>Voltar</span>
-        </button>
+        {!isHomeState && (
+          <button
+            className="app-header-back-button nv-touch"
+            type="button"
+            onClick={handleHeaderBack}
+            aria-label="Voltar"
+          >
+            <BackIcon />
+            <span>Voltar</span>
+          </button>
+        )}
 
         <div className="app-page-header__brand" aria-hidden="true">
           <ChanceFlame className="app-page-header__brand-flame" size={30} />
@@ -877,13 +892,13 @@ export default function SelectBase({
 
       <main className="prototype-scroll select-base__scroll nv-scroll" onScroll={handleScroll}>
         {isHomeState ? renderStateList() : renderCandidateList()}
-        <div className="select-base__desktop-action">
+        <div className={`select-base__desktop-action ${shouldShowDesktopContinue ? '' : 'is-hidden'}`}>
           {renderContinueContent()}
         </div>
         <AppFooter className="app-footer--scroll-content" />
       </main>
 
-      <div className={`select-base__continue-shell ${showSavedSenateSharePanel ? 'has-share-panel' : ''} ${continueVisible ? '' : 'is-hidden'}`}>
+      <div className={`select-base__continue-shell ${showSavedSenateSharePanel ? 'has-share-panel' : ''} ${shouldShowContinue ? '' : 'is-hidden'}`}>
         {renderContinueContent()}
       </div>
 

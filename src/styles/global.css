@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
 
 :root {
   --app-width: 500px;
@@ -28,7 +28,8 @@
   --metric-progress: 0;
   --candidate-name-size: 20px;
   --candidate-assessment-size: 10px;
-  --font-family: 'Montserrat', Arial, sans-serif;
+  --font-family: 'Inter', Arial, sans-serif;
+  --font-display: 'Plus Jakarta Sans', 'Inter', Arial, sans-serif;
 }
 
 *,
@@ -126,6 +127,7 @@ body {
 .prototype-header h1 {
   margin: 0;
   color: var(--text-main);
+  font-family: var(--font-display);
   font-size: 34px;
   font-weight: 800;
   line-height: 1;
@@ -178,6 +180,7 @@ body {
   min-width: 0;
   overflow: hidden;
   color: #111111;
+  font-family: var(--font-display);
   font-size: 20px;
   font-weight: 900;
   line-height: 1;
@@ -227,7 +230,7 @@ body {
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: #111111;
+  color: var(--text-main);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -249,7 +252,7 @@ body {
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: #111111;
+  color: var(--text-main);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -275,6 +278,7 @@ body {
 .prototype-page > .app-page-header h1 {
   margin: 0;
   color: var(--text-main);
+  font-family: var(--font-display);
   font-size: clamp(21px, 5.6vw, 25px);
   font-weight: 800;
   line-height: 1;
@@ -298,17 +302,13 @@ body {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background:
-    linear-gradient(135deg, #ffffff 0%, #f4f4f4 52%, #e9ecef 100%);
+  background: #ffffff;
   color: var(--text-main);
 }
 
 .loading::before,
 .loading::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
+  content: none;
 }
 
 .loading::before {
@@ -329,8 +329,8 @@ body {
 .loading-intro {
   position: relative;
   z-index: 1;
-  width: min(78vw, 360px);
-  aspect-ratio: 1;
+  width: auto;
+  aspect-ratio: auto;
   display: grid;
   place-items: center;
   text-align: center;
@@ -339,10 +339,7 @@ body {
 
 .loading-intro__ring,
 .loading-intro__scan {
-  position: absolute;
-  inset: 6%;
-  border-radius: 50%;
-  pointer-events: none;
+  display: none;
 }
 
 .loading-intro__ring {
@@ -383,55 +380,28 @@ body {
 }
 
 .loading-intro__brand {
-  position: absolute;
-  z-index: 2;
-  top: 25%;
-  left: 0;
-  right: 0;
-  display: block;
-  width: 100%;
-  overflow: hidden;
-  color: var(--text-main);
-  font-size: 32px;
-  font-weight: 900;
-  letter-spacing: 0;
-  line-height: 1;
-  text-align: center;
-  text-overflow: clip;
-  text-shadow: 0 10px 28px rgba(255, 255, 255, 0.72);
-  white-space: nowrap;
+  display: none;
 }
 
 .loading-intro__mark {
-  position: absolute;
-  z-index: 2;
-  top: 50%;
-  left: 50%;
+  position: static;
   display: inline-flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  transform: translate(-50%, -50%);
+  gap: 0;
+  transform: none;
 }
 
 .loading-intro__flame {
   position: relative;
-  width: clamp(72px, 24vw, 104px);
-  height: clamp(72px, 24vw, 104px);
+  width: clamp(58px, 18vw, 82px);
+  height: clamp(58px, 18vw, 82px);
   filter: drop-shadow(0 12px 22px rgba(255, 122, 53, 0.24));
 }
 
 .loading-intro__caption {
-  display: block;
-  color: #70757a;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0;
-  line-height: 1.2;
-  text-align: center;
-  text-transform: none;
-  white-space: nowrap;
+  display: none;
 }
 
 @keyframes loadingSpin {
@@ -833,17 +803,16 @@ body {
   }
 
   .loading {
-    background:
-      linear-gradient(135deg, #ffffff 0%, #f4f4f4 52%, #e9ecef 100%);
+    background: #ffffff;
   }
 
   .loading-intro {
-    width: min(48vw, 400px);
+    width: auto;
   }
 
   .loading-intro__flame {
-    width: 104px;
-    height: 104px;
+    width: 82px;
+    height: 82px;
   }
 
   .no-data {
@@ -917,7 +886,7 @@ body {
   .app-header-icon-action:hover {
     background: transparent;
     box-shadow: none;
-    color: #ff914d;
+    color: var(--text-main);
     transform: translateY(-1px);
   }
 
@@ -934,7 +903,7 @@ body {
     border-radius: 999px;
     padding-inline: 13px 15px;
     gap: 8px;
-    color: #25323a;
+    color: var(--text-main);
     font-size: 13px;
     font-weight: 850;
     letter-spacing: 0.01em;
@@ -950,7 +919,7 @@ body {
     border-radius: 50%;
     padding: 0;
     gap: 0;
-    color: #25323a;
+    color: var(--text-main);
     font-size: 0;
     font-weight: 850;
     letter-spacing: 0.01em;

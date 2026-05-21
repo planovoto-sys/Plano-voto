@@ -49,6 +49,7 @@
   max-width: 100%;
   overflow: hidden;
   color: #111111;
+  font-family: var(--font-display);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -104,14 +105,72 @@
 
 .my-plan-shell {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
-  gap: 8px;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  gap: 10px;
   min-width: 0;
   min-height: 0;
   height: 100%;
   width: 100%;
   max-width: 720px;
   margin: 0 auto;
+}
+
+.my-plan-profile {
+  min-width: 0;
+  min-height: 42px;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  background: #ffffff;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  padding: 5px 9px;
+}
+
+.my-plan-profile__photo {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #eceff1;
+  color: #0a0a0a;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  object-fit: cover;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.my-plan-profile__copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.my-plan-profile__copy strong,
+.my-plan-profile__copy span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.my-plan-profile__copy strong {
+  color: #111111;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.my-plan-profile__copy span {
+  color: #8a8a8a;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.1;
 }
 
 .my-plan-overview {
@@ -123,7 +182,7 @@
 
 .my-plan-overview-card {
   min-width: 0;
-  min-height: 78px;
+  min-height: 64px;
   border: 1px solid #f0f0f0;
   border-radius: 8px;
   background: #f6f6f6;
@@ -131,8 +190,8 @@
   grid-template-rows: auto minmax(0, 1fr);
   align-items: center;
   justify-items: center;
-  gap: 4px;
-  padding: 7px 4px;
+  gap: 2px;
+  padding: 7px 4px 8px;
   text-align: center;
 }
 
@@ -140,8 +199,9 @@
   max-width: 100%;
   overflow: hidden;
   color: #111111;
-  font-size: 15px;
-  font-weight: 900;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 800;
   line-height: 1;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -151,9 +211,10 @@
   max-width: 100%;
   overflow: hidden;
   color: #000000;
-  font-size: 30px;
-  font-weight: 950;
-  line-height: 0.95;
+  font-family: var(--font-display);
+  font-size: clamp(18px, 4.8vw, 21px);
+  font-weight: 800;
+  line-height: 1;
   letter-spacing: 0;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -171,57 +232,32 @@
   white-space: nowrap;
 }
 
-.my-plan-overview-card.has-gauge {
-  --my-plan-gauge-color: #72d552;
-}
-
-.my-plan-overview-card--score {
-  --my-plan-gauge-color: #72d552;
-}
-
-.my-plan-overview-card--viability {
-  --my-plan-gauge-color: #ff914d;
-}
-
-.my-plan-overview-card__circle {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at center, #f6f6f6 0 59%, transparent 60%),
-    conic-gradient(var(--my-plan-gauge-color) var(--my-plan-gauge-value, 0%), rgba(169, 169, 169, 0.24) 0);
-  color: var(--my-plan-gauge-color);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.my-plan-overview-card__circle strong {
-  max-width: 42px;
-  color: currentColor;
-  font-size: 15px;
-  font-weight: 950;
-  line-height: 1;
-}
-
 .my-plan-choices {
   display: grid;
   grid-template-rows: auto auto;
-  gap: 8px;
+  align-content: start;
+  gap: 6px;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
 }
 
 .my-plan-choice-section {
-  gap: 4px;
+  align-content: start;
+  gap: 2px;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
+  padding-top: 0;
+}
+
+.my-plan-choice-section + .my-plan-choice-section {
+  padding-top: 8px;
 }
 
 .my-plan-choice-section .prototype-section-heading {
   margin-bottom: 0;
+  line-height: 1;
 }
 
 .my-plan-choice-section .prototype-section-heading p {
@@ -232,6 +268,8 @@
   min-width: 0;
   min-height: 0;
   overflow: hidden;
+  gap: 8px;
+  padding-top: 0;
 }
 
 .my-plan-empty-choice {
@@ -283,7 +321,8 @@
 .my-plan-actions {
   display: grid;
   gap: 0;
-  min-height: 72px;
+  min-height: 80px;
+  padding: 6px 0 2px;
 }
 
 .my-plan-save-invite,
@@ -368,7 +407,7 @@
   background: linear-gradient(90deg, #ffdf59 0%, #ff8b49 100%);
   color: #000000;
   padding: 0 12px;
-  font-family: var(--font-family);
+  font-family: var(--font-display);
   font-size: 20px;
   font-weight: 900;
   letter-spacing: 1.4px;
@@ -397,25 +436,16 @@
   }
 
   .my-plan-overview-card {
-    min-height: 72px;
+    min-height: 62px;
     padding-inline: 4px;
   }
 
   .my-plan-overview-card span {
-    font-size: 15px;
+    font-size: 13px;
   }
 
   .my-plan-overview-card strong {
-    font-size: 27px;
-  }
-
-  .my-plan-overview-card__circle {
-    width: 48px;
-    height: 48px;
-  }
-
-  .my-plan-overview-card__circle strong {
-    font-size: 14px;
+    font-size: 18px;
   }
 
   .my-plan-share-disabled strong,
@@ -454,29 +484,41 @@
 
   .my-plan-shell {
     max-width: 960px;
-    gap: 16px;
+    gap: 14px;
+  }
+
+  .my-plan-profile {
+    min-height: 54px;
+    grid-template-columns: 42px minmax(0, 1fr);
+    gap: 12px;
+    padding: 6px 12px;
+  }
+
+  .my-plan-profile__photo {
+    width: 42px;
+    height: 42px;
+    font-size: 16px;
+  }
+
+  .my-plan-profile__copy strong {
+    font-size: 16px;
+  }
+
+  .my-plan-profile__copy span {
+    font-size: 13px;
   }
 
   .my-plan-overview-card {
-    min-height: 118px;
+    min-height: 86px;
     padding: 12px;
   }
 
   .my-plan-overview-card span {
-    font-size: 24px;
+    font-size: 20px;
   }
 
   .my-plan-overview-card strong {
-    font-size: 44px;
-  }
-
-  .my-plan-overview-card__circle {
-    width: 72px;
-    height: 72px;
-  }
-
-  .my-plan-overview-card__circle strong {
-    font-size: 20px;
+    font-size: 22px;
   }
 
   .my-plan-overview-card small {

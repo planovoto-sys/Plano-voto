@@ -37,8 +37,6 @@ const average = (values) => {
   return validValues.reduce((sum, value) => sum + value, 0) / validValues.length;
 };
 
-const clampPercent = (value) => Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
-
 const getAverageChance = (candidates) => average(candidates.map((candidate) => getCandidateChance(candidate)));
 
 const getAverageScore = (candidates) => (
@@ -105,23 +103,11 @@ const mergeCandidateDetails = (storedCandidate, fetchedCandidate, tally) => {
   };
 };
 
-function OverviewTile({ label, value, caption, tone = 'neutral', gaugeValue = null }) {
-  const numericGaugeValue = Number(gaugeValue);
-  const hasGauge = gaugeValue !== null && gaugeValue !== undefined && Number.isFinite(numericGaugeValue);
-
+function OverviewTile({ label, value, caption, tone = 'neutral' }) {
   return (
-    <article
-      className={`my-plan-overview-card my-plan-overview-card--${tone} ${hasGauge ? 'has-gauge' : ''}`}
-      style={hasGauge ? { '--my-plan-gauge-value': `${clampPercent(numericGaugeValue)}%` } : undefined}
-    >
+    <article className={`my-plan-overview-card my-plan-overview-card--${tone}`}>
       <span>{label}</span>
-      {hasGauge ? (
-        <div className="my-plan-overview-card__circle" aria-hidden="true">
-          <strong>{value}</strong>
-        </div>
-      ) : (
-        <strong>{value}</strong>
-      )}
+      <strong>{value}</strong>
       <small>{caption}</small>
     </article>
   );
@@ -259,6 +245,9 @@ export default function MeuPlano() {
   const averageChance = getAverageChance(selectedCandidates);
   const averageScore = getAverageScore(selectedCandidates);
   const profileName = isGuestMode ? 'Visitante' : userData?.name || user?.displayName || 'Usuário';
+  const profileEmail = isGuestMode ? 'Plano local' : userData?.email || user?.email || 'Email não informado';
+  const profileImage = userData?.profile_image || user?.photoURL || '';
+  const profileInitial = (profileName || 'N').trim().charAt(0).toUpperCase();
   const canSharePlan = !isGuestMode && Boolean(deputadosFederais.length > 0 && senadores.length >= 2 && estadoSigla);
   const shareData = canSharePlan ? {
     estadoSigla,
@@ -297,13 +286,22 @@ export default function MeuPlano() {
       selected
       actionLabel="Candidato escolhido"
       lockPersonalizedFields={false}
+      showNumberAbove
       onSelect={() => handleEdit(route)}
       onLockedMetricClick={handleLockedFieldClick}
     />
   );
 
   if ((!isGuestMode && userLoading) || loadingDraft) {
-    return <div className="loading nv-screen" role="status" aria-live="polite">CARREGANDO...</div>;
+    return (
+      <div className="loading nv-screen" role="status" aria-live="polite">
+        <div className="loading-intro" aria-label="Carregando">
+          <span className="loading-intro__mark" aria-hidden="true">
+            <ChanceFlame className="loading-intro__flame" size={82} />
+          </span>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -334,6 +332,25 @@ export default function MeuPlano() {
 
       <main className="my-plan-scroll prototype-scroll nv-scroll">
         <div className="my-plan-shell">
+          <section className="my-plan-profile" aria-label="Perfil">
+            {profileImage ? (
+              <img
+                className="my-plan-profile__photo"
+                src={profileImage}
+                alt=""
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <span className="my-plan-profile__photo my-plan-profile__photo--fallback" aria-hidden="true">
+                {profileInitial}
+              </span>
+            )}
+            <div className="my-plan-profile__copy">
+              <strong>{profileName}</strong>
+              <span>{profileEmail}</span>
+            </div>
+          </section>
+
           <section className="my-plan-overview" aria-label="Resumo do plano">
             <OverviewTile
               label="Estado"
@@ -346,14 +363,12 @@ export default function MeuPlano() {
               value={averageScore > 0 ? formatScore(averageScore) : '--'}
               caption="Média das notas"
               tone="score"
-              gaugeValue={averageScore * 10}
             />
             <OverviewTile
               label="Viabilidade"
               value={`${Math.round(averageChance)}%`}
               caption="Média do plano"
               tone="viability"
-              gaugeValue={averageChance}
             />
           </section>
 
@@ -362,9 +377,6 @@ export default function MeuPlano() {
               <div className="prototype-section-heading prototype-section-heading--current">
                 <div className="prototype-section-heading__copy">
                   <h2>Deputado Federal</h2>
-                  <p>
-                    <span>Seu candidato escolhido para deputado federal.</span>
-                  </p>
                 </div>
               </div>
               <div className="candidate-current-list my-plan-choice-list">
@@ -385,9 +397,6 @@ export default function MeuPlano() {
               <div className="prototype-section-heading prototype-section-heading--current">
                 <div className="prototype-section-heading__copy">
                   <h2>Senadores</h2>
-                  <p>
-                    <span>Seus candidatos escolhidos para o Senado.</span>
-                  </p>
                 </div>
               </div>
               <div className="candidate-current-list candidate-current-list--double my-plan-choice-list">
