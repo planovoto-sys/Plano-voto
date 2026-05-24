@@ -4,7 +4,7 @@ import ConfirmModal from '@/components/feedback/ConfirmModal';
 import AppFooter from '@/components/layout/AppFooter';
 import BottomNavigation from '@/components/navigation/BottomNavigation';
 import { ChanceFlame } from '@/components/icons/ChanceFlame';
-import { BackIcon, InfoIcon, SearchIcon } from '@/components/icons/AppIcons';
+import { BackIcon, CheckIcon, ChevronDownIcon, FilterIcon, InfoIcon, SearchIcon } from '@/components/icons/AppIcons';
 import ShareChoicePanel from '@/components/share/ShareChoicePanel';
 import { flowLog, flowWarn } from '@/utils/debugFlow';
 import {
@@ -21,21 +21,21 @@ const DESKTOP_LAYOUT_QUERY = '(min-width: 1024px)';
 const getScreenCopy = ({ variant, titulo, subtitulo }) => {
   if (variant === 'home-state') {
     return {
-      title: 'ESTADO',
+      title: 'Estado',
       subtitle: ''
     };
   }
 
   if (variant === 'office-senado') {
     return {
-      title: 'SENADORES',
+      title: 'Senadores',
       subtitle: ''
     };
   }
 
   if (variant === 'office-deputado') {
     return {
-      title: 'DEPUTADO FEDERAL',
+      title: 'Deputado Federal',
       subtitle: ''
     };
   }
@@ -107,10 +107,11 @@ export default function SelectBase({
   const isSenateOffice = variant === 'office-senado';
   const [selecionados, setSelecionados] = useState(selecaoInicial);
   const [candidateRenderLimit, setCandidateRenderLimit] = useState(INITIAL_CANDIDATE_RENDER_LIMIT);
-  const [candidateSearchOpen, setCandidateSearchOpen] = useState(false);
+  const [candidateFilterOpen, setCandidateFilterOpen] = useState(false);
   const candidateSearchInputRef = useRef(null);
+  const candidateFilterRef = useRef(null);
   const lastScrollTopRef = useRef(0);
-  const [continueVisible, setContinueVisible] = useState(() => variant !== 'home-state');
+  const [continueVisible, setContinueVisible] = useState(false);
   const [senateChoicesSaved, setSenateChoicesSaved] = useState(false);
   const [modalMalAvaliado, setModalMalAvaliado] = useState({ aberto: false, item: null });
   const [modalAltaChance, setModalAltaChance] = useState({ aberto: false, item: null });
@@ -153,23 +154,38 @@ export default function SelectBase({
   }, []);
 
   useEffect(() => {
-    if (candidateSearchOpen) {
-      candidateSearchInputRef.current?.focus();
-    }
-  }, [candidateSearchOpen]);
+    if (!candidateFilterOpen || typeof document === 'undefined') return undefined;
+
+    const handlePointerDown = (event) => {
+      if (candidateFilterRef.current?.contains(event.target)) return;
+      setCandidateFilterOpen(false);
+    };
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setCandidateFilterOpen(false);
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [candidateFilterOpen]);
 
   useEffect(() => {
     let cancelled = false;
 
     lastScrollTopRef.current = 0;
     queueMicrotask(() => {
-      if (!cancelled) setContinueVisible(variant !== 'home-state');
+      if (!cancelled) setContinueVisible(false);
     });
 
     return () => {
       cancelled = true;
     };
-  }, [activeSubNavigationId, valorBusca, variant]);
+  }, [variant]);
 
   const effectiveLimit = Number.isFinite(limiteSelecao) ? limiteSelecao : null;
   const requiredSelectionCount = isCandidateOffice ? minimoSelecao : (effectiveLimit || 1);
@@ -181,8 +197,20 @@ export default function SelectBase({
     selecionados.map((candidate) => candidate.id).filter(Boolean).sort().join('|')
   ), [selecionados]);
   const showSavedSenateSharePanel = isSenateOffice && senateChoicesSaved && hasRequiredSelection && Boolean(shareData);
-  const shouldShowContinue = isHomeState ? (hasRequiredSelection || continueVisible) : continueVisible;
-  const shouldShowDesktopContinue = isHomeState ? (hasRequiredSelection || continueVisible) : true;
+  const shouldShowContinue = hasRequiredSelection && continueVisible;
+  const shouldShowDesktopContinue = hasRequiredSelection && continueVisible;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    queueMicrotask(() => {
+      if (!cancelled) setContinueVisible(hasRequiredSelection);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [hasRequiredSelection, isHomeState]);
 
   useEffect(() => {
     if (!isSenateOffice) return undefined;
@@ -286,6 +314,19 @@ export default function SelectBase({
     subNavigationItems.find((item) => item.mode === 'selecionados' || item.id?.includes('selecionados')) || null
   ), [subNavigationItems]);
 
+  const candidateFilterItems = useMemo(() => (
+    subNavigationItems.map((item) => ({
+      ...item,
+      shortLabel: item.shortLabel || getSubNavLabel(item)
+    }))
+  ), [subNavigationItems]);
+
+  const isCandidateFilterActive = (item) => (
+    item.id === activeSubNavigationId || item.mode === activeSubNavigationId
+  );
+
+  const activeCandidateFilterItem = candidateFilterItems.find(isCandidateFilterActive) || candidateFilterItems[0] || null;
+
   const showSelectedInCurrentSection = Boolean(
     isDesktopLayout &&
     isCandidateOffice &&
@@ -358,9 +399,18 @@ export default function SelectBase({
     const currentTop = event.currentTarget.scrollTop;
     const diff = currentTop - lastScrollTopRef.current;
 
-    if (Math.abs(diff) < 8) return;
+    if (!hasRequiredSelection) {
+      if (continueVisible) setContinueVisible(false);
+      lastScrollTopRef.current = currentTop;
+      return;
+    }
 
-    if (diff < 0 || (!isHomeState && currentTop < 20)) {
+    if (Math.abs(diff) < 8) {
+      lastScrollTopRef.current = currentTop;
+      return;
+    }
+
+    if (diff < 0 || currentTop < 20) {
       setContinueVisible(true);
     } else if (diff > 0) {
       setContinueVisible(false);
@@ -427,7 +477,6 @@ export default function SelectBase({
 
   const handleSelect = async (item) => {
     if (salvandoSelecao) return;
-    revealContinue();
 
     const jaSelecionado = selecionados.find((v) => v.id === item.id);
     if (jaSelecionado) {
@@ -505,7 +554,6 @@ export default function SelectBase({
   const handleSubNavigation = async (item) => {
     if (!onSubNavigationSelect) return;
 
-    revealContinue();
     try {
       await onSubNavigationSelect(item, selecionados);
     } catch (error) {
@@ -544,7 +592,6 @@ export default function SelectBase({
   };
 
   const handleSearchChange = (event) => {
-    if (!isHomeState) revealContinue();
     if (onChangeBusca) onChangeBusca(event.target.value);
   };
 
@@ -559,8 +606,6 @@ export default function SelectBase({
       }
     });
   };
-
-  const candidateSearchIsOpen = candidateSearchOpen || Boolean(valorBusca) || (isDesktopLayout && isCandidateOffice);
 
   const renderSearchField = (className = '') => {
     if (!mostrarBusca) return null;
@@ -579,24 +624,80 @@ export default function SelectBase({
     );
   };
 
-  const renderCandidateSearchControl = () => {
-    if (!mostrarBusca || !candidateSearchIsOpen) return null;
+  const renderCandidateSearchFilter = () => {
+    if (!mostrarBusca && candidateFilterItems.length === 0) return null;
 
     return (
-      <label className="candidate-search-field" id="tour-busca">
-        <SearchIcon />
-        <span>Pesquisar candidatos</span>
-        <input
-          ref={candidateSearchInputRef}
-          type="search"
-          value={valorBusca}
-          onBlur={() => {
-            if (!valorBusca) setCandidateSearchOpen(false);
-          }}
-          onChange={handleSearchChange}
-          placeholder="Buscar por nome, partido ou número"
-        />
-      </label>
+      <div
+        className={`candidate-search-filter ${candidateFilterOpen ? 'is-open' : ''}`}
+        id="tour-busca"
+        ref={candidateFilterRef}
+      >
+        {mostrarBusca && (
+          <label className="candidate-search-filter__search">
+            <SearchIcon />
+            <span>Pesquisar candidatos</span>
+            <input
+              ref={candidateSearchInputRef}
+              type="search"
+              value={valorBusca}
+              onChange={handleSearchChange}
+              placeholder="Pesquisar candidatos"
+            />
+          </label>
+        )}
+
+        {mostrarBusca && candidateFilterItems.length > 0 && (
+          <span className="candidate-search-filter__divider" aria-hidden="true" />
+        )}
+
+        {candidateFilterItems.length > 0 && (
+          <div className="candidate-search-filter__menu">
+            <button
+              className="candidate-search-filter__trigger nv-touch"
+              type="button"
+              onClick={() => {
+                setCandidateFilterOpen((currentValue) => !currentValue);
+              }}
+              aria-expanded={candidateFilterOpen}
+              aria-haspopup="menu"
+              aria-label="Filtrar candidatos"
+              title="Filtrar candidatos"
+            >
+              <FilterIcon />
+              <span>{activeCandidateFilterItem?.shortLabel || 'Atuais'}</span>
+              <ChevronDownIcon />
+            </button>
+
+            {candidateFilterOpen && (
+              <div className="candidate-search-filter__dropdown" role="menu" aria-label="Filtro de candidatos">
+                {candidateFilterItems.map((item) => {
+                  const isActive = isCandidateFilterActive(item);
+
+                  return (
+                    <button
+                      key={item.id}
+                      className={`candidate-search-filter__option ${isActive ? 'is-active' : ''}`}
+                      type="button"
+                      role="menuitemradio"
+                      aria-checked={isActive}
+                      onClick={async () => {
+                        await handleSubNavigation(item);
+                        setCandidateFilterOpen(false);
+                      }}
+                    >
+                      <span className="candidate-search-filter__check" aria-hidden="true">
+                        {isActive && <CheckIcon />}
+                      </span>
+                      <span>{item.shortLabel}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     );
   };
 
@@ -736,49 +837,10 @@ export default function SelectBase({
             <p>Selecione todos os candidatos que aceita votar</p>
           </div>
 
-          <div className={`candidate-list-tools ${candidateSearchIsOpen ? 'is-search-open' : ''}`}>
+          <div className={`candidate-list-tools ${candidateFilterOpen ? 'is-filter-open' : ''}`}>
             <div className="candidate-list-tools__row">
-              {subNavigationItems.length > 0 && (
-                <nav className="candidate-filter-tabs" aria-label="Filtro de candidatos">
-                  {subNavigationItems.map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      className={`candidate-filter-tabs__item nv-touch ${item.id === activeSubNavigationId ? 'is-active' : ''} ${item.mode === 'selecionados' || item.id?.includes('selecionados') ? 'candidate-filter-tabs__item--selected' : ''}`}
-                      onClick={() => handleSubNavigation(item)}
-                      title={item.mode === 'selecionados' ? 'Candidatos selecionados' : item.mode === 'renovar' ? 'Renovação: candidatos sem nota' : 'Reeleição: candidatos com nota'}
-                    >
-                      {getSubNavLabel(item)}
-                    </button>
-                  ))}
-                </nav>
-              )}
-              {mostrarBusca && (
-                <button
-                  className={`candidate-search-button nv-touch ${candidateSearchIsOpen ? 'is-active' : ''}`}
-                  type="button"
-                  onClick={() => {
-                    revealContinue();
-                    if (candidateSearchIsOpen) {
-                      if (isDesktopLayout && isCandidateOffice) {
-                        candidateSearchInputRef.current?.focus();
-                        return;
-                      }
-                      if (valorBusca && onChangeBusca) onChangeBusca('');
-                      setCandidateSearchOpen(false);
-                      return;
-                    }
-                    setCandidateSearchOpen(true);
-                  }}
-                  aria-expanded={candidateSearchIsOpen}
-                  aria-label="Pesquisar candidatos"
-                  title="Pesquisar"
-                >
-                  <SearchIcon />
-                </button>
-              )}
+              {renderCandidateSearchFilter()}
             </div>
-            {renderCandidateSearchControl()}
           </div>
 
           <div className="candidate-card-list nv-card-grid">
@@ -806,7 +868,6 @@ export default function SelectBase({
               className="candidate-load-more nv-touch"
               type="button"
               onClick={() => {
-                revealContinue();
                 setCandidateRenderLimit(dados.length);
               }}
             >
@@ -823,12 +884,12 @@ export default function SelectBase({
       <ShareChoicePanel shareData={shareData} className="share-choice-panel--continue" />
     ) : (
       <button
-        className="select-base__continue nv-touch"
+        className="primary-continue-button select-base__continue nv-touch"
         type="button"
         onClick={handleContinue}
         disabled={salvandoSelecao || !hasRequiredSelection}
       >
-        {isSenateOffice && personalizedFieldsLocked ? 'REVISAR RASCUNHO' : 'CONTINUAR'}
+        Continuar
       </button>
     )
   );

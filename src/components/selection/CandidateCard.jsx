@@ -10,7 +10,7 @@ import {
   getCandidateTone
 } from '@/utils/candidateMetrics';
 
-function ViabilityMeter({ value, tone, featured = false, locked = false, label = '', showCaption = true, onLockedClick }) {
+function ViabilityMeter({ value, tone, featured = false, locked = false, label = '', showCaption = true, iconKind = '', onLockedClick }) {
   const numericValue = Number(value) || 0;
   const progress = Math.max(0, Math.min(100, numericValue));
   const displayValue = Math.round(progress);
@@ -38,18 +38,32 @@ function ViabilityMeter({ value, tone, featured = false, locked = false, label =
       onClick={handleLockedClick}
       onKeyDown={handleLockedKeyDown}
     >
-      <span className="candidate-thermometer__track" aria-hidden="true">
-        <span className="candidate-thermometer__fill"></span>
-        <span className="candidate-thermometer__tick candidate-thermometer__tick--first"></span>
-        <span className="candidate-thermometer__tick candidate-thermometer__tick--second"></span>
-        <span className="candidate-thermometer__tick candidate-thermometer__tick--third"></span>
+      <span className="candidate-thermometer__meter-row">
+        <span className="candidate-thermometer__track" aria-hidden="true">
+          <span className="candidate-thermometer__fill"></span>
+          <span className="candidate-thermometer__tick candidate-thermometer__tick--first"></span>
+          <span className="candidate-thermometer__tick candidate-thermometer__tick--second"></span>
+          <span className="candidate-thermometer__tick candidate-thermometer__tick--third"></span>
+        </span>
       </span>
       {showCaption && (
         <span className="candidate-thermometer__caption">
-          Viabilidade no momento: <strong>{displayValue}%</strong>{label && <><b> | </b><em>{label}</em></>}
+          <span className="candidate-thermometer__caption-main">
+            <span>Viabilidade:</span>
+            <strong>{displayValue}%</strong>
+          </span>
+          {label && (
+            <span className="candidate-thermometer__badge">
+              {iconKind && (
+                <span className={`candidate-thermometer__icon candidate-thermometer__icon--${iconKind}`} aria-hidden="true">
+                  <StatusIcon kind={iconKind} />
+                </span>
+              )}
+              <em>{label}</em>
+            </span>
+          )}
         </span>
       )}
-      {isComplete && <span className="candidate-thermometer__lock" aria-hidden="true"></span>}
     </span>
   );
 }
@@ -91,11 +105,52 @@ const getAssessment = ({ isFireFeatured, isViabilityComplete, systemScore }) => 
 };
 
 const getViabilityLabel = ({ progress, isFireFeatured, isViabilityComplete, systemScore }) => {
-  if (isViabilityComplete || progress >= 100) return 'MÁXIMA';
+  if (isViabilityComplete || progress >= 100) return 'META ATINGIDA';
   if (isFireFeatured && systemScore > 7) return 'MUITO INTERESSANTE';
-  if (progress >= 50 && systemScore >= 7) return 'INTERESSANTE';
-  return '';
+  if (systemScore > 0 && systemScore < 7) return 'NOTA BAIXA';
+  if (systemScore >= 7) return 'INTERESSANTE';
+  return 'EM ANÁLISE';
 };
+
+const getStatusIconKind = ({ isFireFeatured, isViabilityComplete, systemScore, tone, locked }) => {
+  if (locked) return 'lock';
+  if (isFireFeatured) return 'fire';
+  if (isViabilityComplete) return 'lock';
+  if (systemScore > 0 && systemScore < 7) return 'thumb-down';
+  if (tone === 'success' || systemScore >= 7) return 'thumb-up';
+  return 'lock';
+};
+
+function StatusIcon({ kind }) {
+  if (kind === 'fire') {
+    return <ChanceFlame className="candidate-status-icon candidate-status-icon--fire" size={30} />;
+  }
+
+  if (kind === 'lock') {
+    return (
+      <svg className="candidate-status-icon candidate-status-icon--lock" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M7.25 10.2V8a4.75 4.75 0 0 1 9.5 0v2.2" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
+        <rect x="5.4" y="10" width="13.2" height="10.2" rx="2.1" fill="currentColor" />
+      </svg>
+    );
+  }
+
+  if (kind === 'thumb-down') {
+    return (
+      <svg className="candidate-status-icon candidate-status-icon--thumb-down" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M9.8 4.1h7.5c1.1 0 2 .8 2.2 1.9l.9 5.4c.2 1.2-.7 2.3-1.9 2.3h-4.4l.5 3.3c.2 1.1-.3 2.1-1.2 2.7l-.4.3-4.2-6.2V5.2c0-.6.4-1.1 1-1.1Z" fill="currentColor" />
+        <path d="M4.2 4.3h3.1v9.3H4.2z" fill="currentColor" opacity="0.72" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg className="candidate-status-icon candidate-status-icon--thumb-up" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M14.2 19.9H6.7c-1.1 0-2-.8-2.2-1.9l-.9-5.4c-.2-1.2.7-2.3 1.9-2.3h4.4l-.5-3.3c-.2-1.1.3-2.1 1.2-2.7l.4-.3 4.2 6.2v8.6c0 .6-.4 1.1-1 1.1Z" fill="currentColor" />
+      <path d="M16.7 10.4h3.1v9.3h-3.1z" fill="currentColor" opacity="0.72" />
+    </svg>
+  );
+}
 
 export default function CandidateCard({
   candidate,
@@ -132,12 +187,19 @@ export default function CandidateCard({
     isViabilityComplete,
     systemScore
   });
+  const statusIconKind = getStatusIconKind({
+    isFireFeatured,
+    isViabilityComplete,
+    systemScore,
+    tone,
+    locked: lockPersonalizedFields
+  });
   const metricTone = isFireFeatured ? 'featured' : tone;
   const textFitStyle = {
-    '--candidate-name-size': '20px',
-    '--candidate-name-mobile-size': '18px',
-    '--candidate-name-narrow-size': '18px',
-    '--candidate-name-tiny-size': '17px',
+    '--candidate-name-size': '16.5px',
+    '--candidate-name-mobile-size': '15.5px',
+    '--candidate-name-narrow-size': '14.8px',
+    '--candidate-name-tiny-size': '14px',
     '--candidate-assessment-size': `${getSingleLineSize(assessment.label, { base: 10, lg: 9.4, md: 8.7, sm: 8, xs: 7.2, xxs: 6.6 })}px`,
     '--candidate-assessment-mobile-size': `${getSingleLineSize(assessment.label, { base: 8.4, lg: 8, md: 7.4, sm: 6.9, xs: 6.3, xxs: 5.9 })}px`
   };
@@ -162,20 +224,18 @@ export default function CandidateCard({
       aria-pressed={selected}
       aria-disabled={candidate.isAlreadyChosen ? 'true' : undefined}
     >
-      {isFireFeatured && (
-        <ChanceFlame
-          className={`candidate-viability__flame ${summary ? 'candidate-viability__flame--summary' : ''}`}
-          size={34}
-        />
-      )}
-
       <span className="candidate-card__identity">
         {showNumberAbove && number && (
           <span className="candidate-card__number">{number}</span>
         )}
         <span className="candidate-card__name-row">
           <strong>{name}</strong>
-          {scoreLabel && <span className="candidate-card__score">| {scoreLabel}</span>}
+          {scoreLabel && (
+            <>
+              <span className="candidate-card__score-separator" aria-hidden="true">|</span>
+              <span className="candidate-card__score">{scoreLabel}</span>
+            </>
+          )}
         </span>
         {partyLabel && <small>{partyLabel}</small>}
         {showAssessmentSubtitle && lockPersonalizedFields ? (
@@ -194,6 +254,7 @@ export default function CandidateCard({
             locked={false}
             label={viabilityLabel}
             showCaption={showAssessmentSubtitle}
+            iconKind={statusIconKind}
             onLockedClick={onLockedMetricClick}
           />
         )}

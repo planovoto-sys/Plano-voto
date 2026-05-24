@@ -1,3 +1,4 @@
+import { CheckCircle2, Landmark, MapPin, Users } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { BALLOT_ROUTES } from '@/constants/ballot';
 import { useUser } from '@/hooks/useUser';
@@ -8,23 +9,17 @@ import {
   readBallotDraft,
   readVisitorBallotDraft
 } from '@/services/voting/votingService';
-import {
-  DeputadoNavIcon,
-  EstadoNavIcon,
-  NossoVotoNavIcon,
-  SenadoNavIcon
-} from '@/components/icons/AppIcons';
 import './BottomNavigation.css';
 
 const PROGRESS_ITEMS = [
-  { id: 'estado', label: 'estado', path: BALLOT_ROUTES.estado, Icon: EstadoNavIcon },
-  { id: 'deputado', label: 'deputado', path: BALLOT_ROUTES.deputadoFederal, Icon: DeputadoNavIcon },
-  { id: 'senador', label: 'senador', path: BALLOT_ROUTES.senadores, Icon: SenadoNavIcon }
+  { id: 'estado', label: 'Estado', path: BALLOT_ROUTES.estado, Icon: MapPin },
+  { id: 'deputado', label: 'Deputados', path: BALLOT_ROUTES.deputadoFederal, Icon: Users },
+  { id: 'senador', label: 'Senadores', path: BALLOT_ROUTES.senadores, Icon: Landmark }
 ];
 
 const NAV_ITEMS = [
   ...PROGRESS_ITEMS,
-  { id: 'nossovoto', label: 'nossovoto', path: BALLOT_ROUTES.meuPlano, Icon: NossoVotoNavIcon, brand: true }
+  { id: 'nossovoto', label: 'Nosso Voto', path: BALLOT_ROUTES.meuPlano, Icon: CheckCircle2, brand: true }
 ];
 
 const STEP_BY_PATH = {
@@ -104,7 +99,7 @@ export default function BottomNavigation({ currentStep, placement = 'footer' }) 
               aria-disabled={isDisabled}
               disabled={isDisabled}
             >
-              <StepIcon className="bottom-step-nav__icon" />
+              <StepIcon className="bottom-step-nav__icon" strokeWidth={2.2} aria-hidden="true" />
               <span className="bottom-step-nav__label">{item.label}</span>
             </button>
           );

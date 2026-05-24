@@ -38,7 +38,7 @@
 .app-footer span,
 .app-footer a {
   max-width: 100%;
-  color: #69746f;
+  color: var(--text-main);
   font-size: 13px;
   font-weight: 600;
   line-height: 1.35;

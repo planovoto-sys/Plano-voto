@@ -1,6 +1,6 @@
 export const CANDIDATE_FILTERS = [
-  { id: 'reeleger', mode: 'reeleger', shortLabel: 'Reeleição' },
-  { id: 'renovar', mode: 'renovar', shortLabel: 'Renovação' },
+  { id: 'reeleger', mode: 'reeleger', shortLabel: 'Atuais' },
+  { id: 'renovar', mode: 'renovar', shortLabel: 'Novos' },
   { id: 'selecionados', mode: 'selecionados', shortLabel: 'Selecionados' }
 ];
 

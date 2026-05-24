@@ -1,5 +1,3 @@
-import { ChanceFlame } from './ChanceFlame';
-
 export function MenuIcon({ className = 'app-icon' }) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
@@ -71,6 +69,37 @@ export function SearchIcon({ className = 'app-icon' }) {
   );
 }
 
+export function FilterIcon({ className = 'app-icon' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M4.8 5.7h14.4l-5.5 6.4v5.7l-3.4 1.7v-7.4L4.8 5.7Z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function ChevronDownIcon({ className = 'app-icon' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <path d="m7.5 9.8 4.5 4.4 4.5-4.4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function CheckIcon({ className = 'app-icon' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <path d="m5.7 12.4 4 4 8.8-9" fill="none" stroke="currentColor" strokeWidth="2.7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export function BackIcon({ className = 'app-icon' }) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
@@ -80,44 +109,10 @@ export function BackIcon({ className = 'app-icon' }) {
   );
 }
 
-export function EstadoNavIcon({ className = 'app-icon' }) {
-  return (
-    <svg className={className} viewBox="0 0 32 42" aria-hidden="true">
-      <path
-        d="M16 40C7.9 28.8 4 22.2 4 15.8 4 9.2 9.3 4 16 4s12 5.2 12 11.8c0 6.4-3.9 13-12 24.2Z"
-        fill="currentColor"
-      />
-      <circle cx="16" cy="15.7" r="5.5" fill="#ffffff" />
-    </svg>
-  );
-}
-
-export function DeputadoNavIcon({ className = 'app-icon' }) {
-  return (
-    <svg className={className} viewBox="0 0 32 14" aria-hidden="true">
-      <path d="M4 1h24a12 12 0 0 1-24 0Z" fill="currentColor" />
-    </svg>
-  );
-}
-
-export function SenadoNavIcon({ className = 'app-icon' }) {
-  return (
-    <svg className={className} viewBox="0 0 32 14" aria-hidden="true">
-      <path d="M4 13a12 12 0 0 1 24 0H4Z" fill="currentColor" />
-    </svg>
-  );
-}
-
 export function OptionsNavIcon({ className = 'app-icon' }) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
       <path d="M3.5 6h17M3.5 12h17M3.5 18h17" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="square" />
     </svg>
-  );
-}
-
-export function NossoVotoNavIcon({ className = 'app-icon' }) {
-  return (
-    <ChanceFlame className={className} size={26} />
   );
 }

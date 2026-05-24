@@ -7,49 +7,72 @@
 }
 
 .bottom-step-nav {
-  --step-nav-muted: #a1a1a1;
-  --step-nav-active-bg: #f2f3f4;
-  --step-nav-active-color: #0a0a0a;
+  --step-nav-muted: rgba(0, 42, 84, 0.62);
+  --step-nav-active-bg: transparent;
+  --step-nav-active-color: #002a54;
+  --step-nav-accent: #ff9800;
   position: relative;
+  width: 100%;
+  max-width: 100%;
   height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
   min-height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
   flex: 0 0 auto;
-  border-top: 1px solid var(--nav-line);
-  background: #ffffff;
+  border-top: 1px solid rgba(0, 42, 84, 0.1);
+  background: #fbffff;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0;
-  padding: 2px 8px calc(4px + env(safe-area-inset-bottom, 0px));
+  padding: 5px 18px calc(5px + env(safe-area-inset-bottom, 0px));
+  overflow: hidden;
 }
 
 .bottom-step-nav__item {
   position: relative;
   z-index: 1;
   min-width: 0;
-  height: 50px;
+  height: 48px;
   border: 0;
-  border-radius: 18px;
+  border-radius: 0;
   background: transparent;
   color: var(--step-nav-muted);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0;
-  padding: 3px 2px 4px;
+  gap: 2px;
+  padding: 7px 2px 2px;
   font-family: var(--font-family);
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 11px;
+  font-weight: 700;
   line-height: 1;
   cursor: pointer;
   overflow: visible;
 }
 
+.bottom-step-nav__item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 28px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--step-nav-accent);
+  opacity: 0;
+  transform: translateX(-50%) scaleX(0.72);
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
 .bottom-step-nav__item.is-active {
   background: var(--step-nav-active-bg);
   color: var(--step-nav-active-color);
-  font-weight: 500;
-  border-radius: 16px;
+  font-weight: 800;
+  border-radius: 0;
+}
+
+.bottom-step-nav__item.is-active::before {
+  opacity: 1;
+  transform: translateX(-50%) scaleX(1);
 }
 
 .bottom-step-nav__item.is-complete {
@@ -68,11 +91,8 @@
 
 .bottom-step-nav__item--brand .bottom-step-nav__icon {
   width: 22px;
-  height: 27px;
-  flex-basis: 27px;
-  padding: 0;
-  line-height: 1;
-  object-fit: contain;
+  height: 22px;
+  flex-basis: 22px;
 }
 
 .bottom-step-nav__item--brand.is-active {
@@ -85,9 +105,9 @@
 }
 
 .bottom-step-nav__icon {
-  width: 28px;
-  height: 27px;
-  flex: 0 0 27px;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
   border-radius: 0;
   background: transparent;
   color: currentColor;
@@ -99,12 +119,12 @@
 
 .bottom-step-nav__item--deputado .bottom-step-nav__icon,
 .bottom-step-nav__item--senador .bottom-step-nav__icon {
-  width: 30px;
-  height: 27px;
-  flex-basis: 27px;
+  width: 22px;
+  height: 22px;
+  flex-basis: 22px;
   margin-bottom: 0;
-  padding: 0;
-  transform: translateY(2px);
+  padding: 1px;
+  transform: none;
 }
 
 .bottom-step-nav__item.is-complete .bottom-step-nav__icon {
@@ -128,16 +148,43 @@
   display: block;
   max-width: 100%;
   min-height: 15px;
-  overflow: visible;
+  overflow: hidden;
   text-overflow: clip;
   line-height: 1.25;
   white-space: nowrap;
 }
 
+@media (max-width: 1023px) {
+  :root {
+    --bottom-nav-height: 58px;
+  }
+
+  .app-page-footer--footer {
+    position: relative;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    z-index: 100;
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    flex: 0 0 auto;
+    min-height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
+    background: #fbffff;
+    overflow: hidden;
+    transform: none;
+    box-shadow: 0 -1px 0 rgba(0, 42, 84, 0.1);
+  }
+
+  .app-page-footer--footer .bottom-step-nav {
+    display: grid;
+  }
+}
+
 @media (max-width: 420px) {
   .bottom-step-nav {
-    padding-left: 4px;
-    padding-right: 4px;
+    padding-left: 12px;
+    padding-right: 12px;
   }
 
   .bottom-step-nav__item {
@@ -145,19 +192,19 @@
   }
 
   .bottom-step-nav__icon {
-    width: 27px;
-    height: 26px;
-    flex-basis: 26px;
+    width: 22px;
+    height: 22px;
+    flex-basis: 22px;
   }
 
   .bottom-step-nav__item--deputado .bottom-step-nav__icon,
   .bottom-step-nav__item--senador .bottom-step-nav__icon {
-    width: 29px;
-    height: 26px;
-    flex-basis: 26px;
+    width: 22px;
+    height: 22px;
+    flex-basis: 22px;
     margin-bottom: 0;
-    padding: 0;
-    transform: translateY(2px);
+    padding: 1px;
+    transform: none;
   }
 }
 
@@ -169,31 +216,31 @@
 
 @media (max-width: 320px) {
   .bottom-step-nav {
-    padding-left: 2px;
-    padding-right: 2px;
+    padding-left: 8px;
+    padding-right: 8px;
   }
 
   .bottom-step-nav__item {
     height: 48px;
-    border-radius: 16px;
+    border-radius: 0;
     font-size: 10px;
   }
 
   .bottom-step-nav__icon {
-    width: 25px;
-    height: 25px;
-    flex-basis: 25px;
+    width: 21px;
+    height: 21px;
+    flex-basis: 21px;
     padding: 1px;
   }
 
   .bottom-step-nav__item--deputado .bottom-step-nav__icon,
   .bottom-step-nav__item--senador .bottom-step-nav__icon {
-    width: 27px;
-    height: 25px;
-    flex-basis: 25px;
+    width: 21px;
+    height: 21px;
+    flex-basis: 21px;
     margin-bottom: 0;
-    padding: 0;
-    transform: translateY(2px);
+    padding: 1px;
+    transform: none;
   }
 }
 
@@ -379,7 +426,7 @@
   }
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
   .app-page-footer--header {
     display: flex;
     align-items: center;
@@ -437,7 +484,7 @@
   .app-page-footer--header .bottom-step-nav__item.is-active {
     background: var(--step-nav-active-bg);
     color: var(--step-nav-active-color);
-    font-weight: 500;
+    font-weight: 700;
     box-shadow: none;
   }
 
@@ -472,12 +519,12 @@
 
   .app-page-footer--header .bottom-step-nav__item--deputado .bottom-step-nav__icon,
   .app-page-footer--header .bottom-step-nav__item--senador .bottom-step-nav__icon {
-    width: 30px;
+    width: 28px;
     height: 27px;
     flex-basis: 27px;
     margin-bottom: 0;
-    padding: 0;
-    transform: translateY(2px);
+    padding: 1px;
+    transform: none;
   }
 
   .app-page-footer--header .bottom-step-nav__item.is-complete .bottom-step-nav__icon {
@@ -500,11 +547,10 @@
   }
 
   .app-page-footer--header .bottom-step-nav__item--brand .bottom-step-nav__icon {
-    width: 22px;
+    width: 28px;
     height: 27px;
     flex-basis: 27px;
-    padding: 0;
-    object-fit: contain;
+    padding: 1px;
   }
 
   .app-page-footer--header .bottom-step-nav__label {
@@ -569,7 +615,7 @@
   }
 }
 
-@media (min-width: 768px) and (max-width: 1100px) {
+@media (min-width: 1024px) and (max-width: 1100px) {
   .app-page-footer--header .bottom-step-nav {
     grid-template-columns: repeat(4, 58px);
     gap: 4px;
@@ -618,18 +664,18 @@
 
   .app-page-footer--header .bottom-step-nav__item--deputado .bottom-step-nav__icon,
   .app-page-footer--header .bottom-step-nav__item--senador .bottom-step-nav__icon {
-    width: 25px;
-    height: 12px;
-    flex-basis: 13px;
-    margin-bottom: -1px;
-    padding: 0;
-    transform: translateY(2px);
+    width: 23px;
+    height: 23px;
+    flex-basis: 23px;
+    margin-bottom: 0;
+    padding: 1px;
+    transform: none;
   }
 
   .app-page-footer--header .bottom-step-nav__item--brand .bottom-step-nav__icon {
-    width: 19px;
-    height: 22px;
-    flex-basis: 19px;
+    width: 23px;
+    height: 23px;
+    flex-basis: 23px;
   }
 
   .app-page-footer--header .bottom-step-nav__label {

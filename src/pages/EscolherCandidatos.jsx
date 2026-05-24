@@ -203,7 +203,7 @@ export default function EscolherCandidatos({
   const tourSteps = [
     { target: '.app-help-action', title: 'AJUDA', content: 'Abre este guia sempre que você quiser revisar a tela.' },
     { target: '#tour-busca', title: 'PESQUISA', content: 'Pesquisa candidatos por nome ou partido.' },
-    { target: '.candidate-filter-tabs', title: 'FILTROS', content: '<b>Reeleição:</b> Exibe candidatos que atuaram na última legislatura.<br><b>Renovação:</b> Exibe candidatos que não atuaram na última legislatura.' },
+    { target: '.candidate-search-filter__trigger', title: 'FILTROS', content: '<b>Atuais:</b> Exibe candidatos que atuaram na última legislatura.<br><b>Novos:</b> Exibe candidatos que não atuaram na última legislatura.<br><b>Selecionados:</b> Exibe apenas os candidatos escolhidos.' },
     { target: '.prototype-candidate-card.is-fire-featured .candidate-viability', title: 'FOGUINHO', content: 'O foguinho destaca o candidato bem avaliado com a maior viabilidade entre as opções disponíveis.' },
     { target: '.prototype-candidate-card.is-viability-complete .candidate-viability', title: 'VIÁVEL 100', content: 'Quando a viabilidade está em 100, esse candidato já possui grandes chances e não precisa de mais voto.' }
   ];
@@ -425,7 +425,7 @@ export default function EscolherCandidatos({
       disponiveis = disponiveis.filter((candidate) => idsSelecionados.has(candidate.id));
     } else if (filtroLista === 'renovar') {
       disponiveis = disponiveis.filter((candidate) => getCandidateElectionFilter(candidate) === 'renovar');
-    } else {
+    } else if (filtroLista === 'reeleger') {
       disponiveis = disponiveis.filter((candidate) => getCandidateElectionFilter(candidate) === 'reeleger');
     }
 
