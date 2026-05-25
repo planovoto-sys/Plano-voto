@@ -141,7 +141,7 @@ export default function Home() {
         linhasVisiveis={6}
         variant="home-state"
         currentStep="estado"
-        autoAvancarAoSelecionar={false}
+        autoAvancarAoSelecionar={true}
         onHelpClick={() => setIsTourOpen(true)}
         renderItem={(estado) => (
           <div className="state-centered-name">

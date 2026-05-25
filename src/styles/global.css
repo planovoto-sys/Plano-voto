@@ -14,6 +14,10 @@
   --orange-dark: #bd6400;
   --orange-soft: #fff4e0;
   --orange-line: #ffca8a;
+  --action: #ff9800;
+  --action-foreground: #00000f;
+  --action-shadow: 0 18px 30px rgba(255, 152, 0, 0.28);
+  --action-shadow-strong: 0 20px 34px rgba(255, 152, 0, 0.36);
   --line: #dfe6ed;
   --surface: #ffffff;
   --soft: #f2f2f2;
@@ -694,6 +698,16 @@ body {
 @media (min-width: 421px) and (max-width: 479px) {
   .prototype-page > .app-page-header h1 {
     font-size: 16px;
+  }
+}
+
+@media (min-width: 431px) and (max-width: 767px) {
+  :root {
+    --app-width: 100%;
+  }
+
+  #root {
+    box-shadow: none;
   }
 }
 

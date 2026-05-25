@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ClearIcon, CopyIcon, DownloadIcon, ShareIcon } from '@/components/icons/AppIcons';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ClearIcon, DownloadIcon, ShareIcon } from '@/components/icons/AppIcons';
 import {
   createShareAnalysis,
   downloadShareImage,
@@ -13,31 +14,102 @@ const clampPercent = (value) => Math.max(0, Math.min(100, Math.round(Number(valu
 
 const getCandidateName = (name, fallback) => name || fallback;
 
+function ShareArtworkBrand({ analysis, locationLine }) {
+  return (
+    <div className="share-art-card__brand">
+      <div className="share-art-card__brand-copy">
+        <strong>NOSSOVOTO.ORG</strong>
+        <span>{locationLine}</span>
+      </div>
+      <small>{analysis.year}</small>
+    </div>
+  );
+}
+
+function ShareArtworkVisual({ templateId, analysis, scoreProgress, chanceProgress }) {
+  if (templateId === 'completo') {
+    return (
+      <div className="share-art-card__visual share-art-card__visual--split" aria-hidden="true">
+        <span className="share-art-card__visual-item">
+          <small>Deputado</small>
+          <strong>1 definido</strong>
+        </span>
+        <span className="share-art-card__visual-item">
+          <small>Senadores</small>
+          <strong>2 definidos</strong>
+        </span>
+      </div>
+    );
+  }
+
+  if (templateId === 'termometro') {
+    return (
+      <div className="share-art-card__visual share-art-card__visual--meters" aria-hidden="true">
+        <span className="share-art-card__visual-item">
+          <small>Nota</small>
+          <strong>{analysis.scoreBand}</strong>
+          <i style={{ '--share-stat-progress': `${scoreProgress}%` }} />
+        </span>
+        <span className="share-art-card__visual-item">
+          <small>Viabilidade</small>
+          <strong>{analysis.chanceBand}</strong>
+          <i style={{ '--share-stat-progress': `${chanceProgress}%` }} />
+        </span>
+      </div>
+    );
+  }
+
+  if (templateId === 'checklist') {
+    return (
+      <div className="share-art-card__visual share-art-card__visual--steps" aria-hidden="true">
+        <span>01</span>
+        <span>02</span>
+        <span>03</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="share-art-card__visual share-art-card__visual--profile">
+      <small>Perfil do plano</small>
+      <strong>{analysis.profile.title}</strong>
+      <span>{Math.min(analysis.completedCount, 3)}/3 escolhas definidas</span>
+    </div>
+  );
+}
+
 function ShareArtworkCard({ templateId, analysis, variant = 'main' }) {
   const deputadoName = getCandidateName(analysis.deputadoName, 'Deputado federal definido');
   const senatorOne = getCandidateName(analysis.senatorNames[0], 'Senador 1 definido');
   const senatorTwo = getCandidateName(analysis.senatorNames[1], 'Senador 2 definido');
-  const locationLine = `${analysis.estadoNome} • ${analysis.year}`;
+  const locationLine = analysis.estadoSigla
+    ? `${analysis.estadoNome} — ${analysis.estadoSigla}`
+    : `${analysis.estadoNome} — ${analysis.year}`;
+  const chanceProgress = clampPercent(analysis.averageChance);
+  const scoreProgress = clampPercent(analysis.averageScore * 10);
 
   if (templateId === 'completo') {
     return (
       <article className={`share-art-card share-art-card--completo share-art-card--${variant}`}>
-        <div className="share-art-card__brand">
-          <strong>nossovoto.org</strong>
-          <span>Mostra nomes</span>
-        </div>
-        <h3>Meu plano de voto</h3>
-        <p>Estado: {analysis.estadoNome}</p>
-        <div className="share-art-card__candidate-list">
-          <span>Deputado Federal</span>
-          <strong>{deputadoName}</strong>
-          <span>Senadores</span>
-          <strong>{senatorOne}</strong>
-          <strong>{senatorTwo}</strong>
-        </div>
-        <div className="share-art-card__cta">
-          <span>Monte o seu também</span>
-          <strong>nossovoto.org</strong>
+        <ShareArtworkBrand analysis={analysis} locationLine={locationLine} />
+        <ShareArtworkVisual templateId={templateId} analysis={analysis} scoreProgress={scoreProgress} chanceProgress={chanceProgress} />
+        <div className="share-art-card__content">
+          <h3>Candidatos escolhidos</h3>
+          <p>Com nomes no card</p>
+          <div className="share-art-card__candidate-list">
+            <span>
+              <small>Deputado Federal</small>
+              <strong>{deputadoName}</strong>
+            </span>
+            <span>
+              <small>Senador</small>
+              <strong>{senatorOne}</strong>
+            </span>
+            <span>
+              <small>Senador</small>
+              <strong>{senatorTwo}</strong>
+            </span>
+          </div>
         </div>
       </article>
     );
@@ -46,25 +118,23 @@ function ShareArtworkCard({ templateId, analysis, variant = 'main' }) {
   if (templateId === 'termometro') {
     return (
       <article className={`share-art-card share-art-card--termometro share-art-card--${variant}`}>
-        <div className="share-art-card__brand">
-          <strong>nossovoto.org</strong>
-          <span>Visual</span>
-        </div>
-        <h3>Meu plano em números</h3>
-        <div className="share-art-card__meters">
-          <span style={{ '--share-meter-value': clampPercent(analysis.averageChance) }}>
-            <i><strong>{analysis.averageChanceLabel}</strong></i>
-            <small>Viabilidade geral</small>
-          </span>
-          <span className="share-art-card__meter--score" style={{ '--share-meter-value': clampPercent(analysis.averageScore * 10) }}>
-            <i><strong>{analysis.averageScoreLabel}</strong></i>
-            <small>Média das notas</small>
-          </span>
-        </div>
-        <p>Indicadores de apoio para revisar o plano.</p>
-        <div className="share-art-card__cta">
-          <span>Monte o seu também</span>
-          <strong>nossovoto.org</strong>
+        <ShareArtworkBrand analysis={analysis} locationLine={locationLine} />
+        <ShareArtworkVisual templateId={templateId} analysis={analysis} scoreProgress={scoreProgress} chanceProgress={chanceProgress} />
+        <div className="share-art-card__content">
+          <h3>Indicadores do plano</h3>
+          <p>Nota e viabilidade</p>
+          <div className="share-art-card__stats share-art-card__stats--stacked">
+            <span>
+              <strong>{analysis.averageScoreLabel}</strong>
+              <small>MÉDIA DE NOTA</small>
+              <i style={{ '--share-stat-progress': scoreProgress }} />
+            </span>
+            <span>
+              <strong>{analysis.averageChanceLabel}</strong>
+              <small>VIABILIDADE</small>
+              <i style={{ '--share-stat-progress': chanceProgress }} />
+            </span>
+          </div>
         </div>
       </article>
     );
@@ -73,21 +143,17 @@ function ShareArtworkCard({ templateId, analysis, variant = 'main' }) {
   if (templateId === 'checklist') {
     return (
       <article className={`share-art-card share-art-card--checklist share-art-card--${variant}`}>
-        <div className="share-art-card__brand">
-          <strong>nossovoto.org</strong>
-          <span>Sem nomes</span>
-        </div>
-        <h3>Checklist do meu plano</h3>
-        <div className="share-art-card__checklist">
-          <span>Estado escolhido ✓</span>
-          <span>Deputado federal escolhido ✓</span>
-          <span>Senadores escolhidos ✓</span>
-          <span>Rascunho revisado ✓</span>
-        </div>
-        <p>Agora é revisar antes da decisão final.</p>
-        <div className="share-art-card__cta">
-          <span>Monte o seu também</span>
-          <strong>nossovoto.org</strong>
+        <ShareArtworkBrand analysis={analysis} locationLine={locationLine} />
+        <ShareArtworkVisual templateId={templateId} analysis={analysis} scoreProgress={scoreProgress} chanceProgress={chanceProgress} />
+        <div className="share-art-card__content">
+          <h3>Checklist do plano</h3>
+          <p>Sem nomes de candidatos</p>
+          <div className="share-art-card__checklist">
+            <span>Estado escolhido</span>
+            <span>Deputado federal definido</span>
+            <span>Dois senadores definidos</span>
+            <span>Plano pronto para revisar</span>
+          </div>
         </div>
       </article>
     );
@@ -95,20 +161,23 @@ function ShareArtworkCard({ templateId, analysis, variant = 'main' }) {
 
   return (
     <article className={`share-art-card share-art-card--resumo share-art-card--${variant}`}>
-      <div className="share-art-card__brand">
-        <strong>nossovoto.org</strong>
-        <span>Seguro</span>
-      </div>
-      <h3>Meu plano de voto está pronto</h3>
-      <p>{locationLine}</p>
-      <div className="share-art-card__checklist">
-        <span>Deputado federal definido</span>
-        <span>Senadores definidos</span>
-        <span>Nomes ocultos por privacidade</span>
-      </div>
-      <div className="share-art-card__cta">
-        <span>Monte o seu também</span>
-        <strong>nossovoto.org</strong>
+      <ShareArtworkBrand analysis={analysis} locationLine={locationLine} />
+      <ShareArtworkVisual templateId={templateId} analysis={analysis} scoreProgress={scoreProgress} chanceProgress={chanceProgress} />
+      <div className="share-art-card__content">
+        <h3>Resumo geral</h3>
+        <p>Tudo em um card</p>
+        <div className="share-art-card__stats">
+          <span>
+            <strong>{analysis.averageScoreLabel}</strong>
+            <small>MÉDIA DE NOTA</small>
+            <i style={{ '--share-stat-progress': `${scoreProgress}%` }} />
+          </span>
+          <span>
+            <strong>{analysis.averageChanceLabel}</strong>
+            <small>VIABILIDADE</small>
+            <i style={{ '--share-stat-progress': `${chanceProgress}%` }} />
+          </span>
+        </div>
       </div>
     </article>
   );
@@ -118,19 +187,33 @@ function ShareMainGallery({ activeTemplateId, analysis, onSelect, actions }) {
   const galleryRef = useRef(null);
   const cardRefs = useRef(new Map());
   const scrollFrameRef = useRef(0);
+  const scrollSettledTimerRef = useRef(0);
+  const programmaticScrollRef = useRef(false);
   const dragStateRef = useRef({ active: false, startX: 0, startScrollLeft: 0, moved: false });
+  const activeTemplateIndex = Math.max(0, SHARE_CARD_TEMPLATES.findIndex((template) => template.id === activeTemplateId));
 
   useEffect(() => {
     const activeCard = cardRefs.current.get(activeTemplateId);
+    programmaticScrollRef.current = true;
     activeCard?.scrollIntoView({
       behavior: 'smooth',
       block: 'nearest',
       inline: 'center'
     });
+
+    if (typeof window !== 'undefined') {
+      window.clearTimeout(scrollSettledTimerRef.current);
+      scrollSettledTimerRef.current = window.setTimeout(() => {
+        programmaticScrollRef.current = false;
+      }, 360);
+    }
   }, [activeTemplateId]);
 
   useEffect(() => () => {
-    if (typeof window !== 'undefined') window.cancelAnimationFrame(scrollFrameRef.current);
+    if (typeof window !== 'undefined') {
+      window.cancelAnimationFrame(scrollFrameRef.current);
+      window.clearTimeout(scrollSettledTimerRef.current);
+    }
   }, []);
 
   const selectCenteredCard = () => {
@@ -161,6 +244,7 @@ function ShareMainGallery({ activeTemplateId, analysis, onSelect, actions }) {
 
   const handleScroll = () => {
     if (typeof window === 'undefined') return;
+    if (programmaticScrollRef.current) return;
 
     window.cancelAnimationFrame(scrollFrameRef.current);
     scrollFrameRef.current = window.requestAnimationFrame(selectCenteredCard);
@@ -177,6 +261,7 @@ function ShareMainGallery({ activeTemplateId, analysis, onSelect, actions }) {
       moved: false
     };
     gallery.setPointerCapture?.(event.pointerId);
+    programmaticScrollRef.current = false;
   };
 
   const handlePointerMove = (event) => {
@@ -193,9 +278,22 @@ function ShareMainGallery({ activeTemplateId, analysis, onSelect, actions }) {
     dragStateRef.current.active = false;
   };
 
+  const goToRelativeTemplate = (offset) => {
+    const nextIndex = (activeTemplateIndex + offset + SHARE_CARD_TEMPLATES.length) % SHARE_CARD_TEMPLATES.length;
+    onSelect(SHARE_CARD_TEMPLATES[nextIndex].id);
+  };
+
   return (
     <div className="share-main-gallery">
       <section className="share-gallery-stage" aria-label="Galeria de artes para compartilhar">
+        <button
+          className="share-gallery-nav share-gallery-nav--previous nv-touch"
+          type="button"
+          onClick={() => goToRelativeTemplate(-1)}
+          aria-label="Arte anterior"
+        >
+          <ChevronLeft aria-hidden="true" />
+        </button>
         <div
           ref={galleryRef}
           className="share-gallery-track"
@@ -229,7 +327,28 @@ function ShareMainGallery({ activeTemplateId, analysis, onSelect, actions }) {
             </button>
           ))}
         </div>
+        <button
+          className="share-gallery-nav share-gallery-nav--next nv-touch"
+          type="button"
+          onClick={() => goToRelativeTemplate(1)}
+          aria-label="Próxima arte"
+        >
+          <ChevronRight aria-hidden="true" />
+        </button>
       </section>
+
+      <div className="share-gallery-dots" aria-label="Selecionar arte">
+        {SHARE_CARD_TEMPLATES.map((template) => (
+          <button
+            key={template.id}
+            className={`share-gallery-dot nv-touch ${template.id === activeTemplateId ? 'is-active' : ''}`}
+            type="button"
+            aria-label={`Selecionar ${template.label}`}
+            aria-pressed={template.id === activeTemplateId}
+            onClick={() => onSelect(template.id)}
+          />
+        ))}
+      </div>
 
       <div className="share-gallery-actions" aria-label="Ações de compartilhamento">
         {actions}
@@ -238,69 +357,11 @@ function ShareMainGallery({ activeTemplateId, analysis, onSelect, actions }) {
   );
 }
 
-function ShareThumbnailStrip({ activeTemplateId, onSelect }) {
-  const stripRef = useRef(null);
-  const thumbnailRefs = useRef(new Map());
-
-  useEffect(() => {
-    const strip = stripRef.current;
-    const activeThumbnail = thumbnailRefs.current.get(activeTemplateId);
-    if (!strip || !activeThumbnail) return;
-
-    const nextScrollLeft = activeThumbnail.offsetLeft - (strip.clientWidth - activeThumbnail.clientWidth) / 2;
-    strip.scrollTo({
-      left: Math.max(0, nextScrollLeft),
-      behavior: 'smooth'
-    });
-  }, [activeTemplateId]);
-
-  return (
-    <div ref={stripRef} className="share-thumbnail-strip" aria-label="Modelos de compartilhamento">
-      {SHARE_CARD_TEMPLATES.map((template) => (
-        <button
-          key={template.id}
-          ref={(element) => {
-            if (element) thumbnailRefs.current.set(template.id, element);
-            else thumbnailRefs.current.delete(template.id);
-          }}
-          type="button"
-          className={`share-thumbnail nv-touch ${template.id === activeTemplateId ? 'is-active' : ''}`}
-          aria-label={`Selecionar ${template.label}`}
-          aria-pressed={template.id === activeTemplateId}
-          onClick={() => onSelect(template.id)}
-        >
-          <span>{template.tag}</span>
-          <strong>{template.label}</strong>
-          <small>{template.description}</small>
-        </button>
-      ))}
-    </div>
-  );
-}
-
-const copyLinkToClipboard = async (url) => {
-  if (navigator.clipboard?.writeText) {
-    await navigator.clipboard.writeText(url);
-    return;
-  }
-
-  const textArea = document.createElement('textarea');
-  textArea.value = url;
-  textArea.setAttribute('readonly', '');
-  textArea.style.position = 'fixed';
-  textArea.style.opacity = '0';
-  document.body.appendChild(textArea);
-  textArea.select();
-  document.execCommand('copy');
-  textArea.remove();
-};
-
 export default function ShareChoicePanel({ shareData, className = '' }) {
   const [isOpen, setIsOpen] = useState(false);
   const [templateId, setTemplateId] = useState('resumo');
   const [status, setStatus] = useState('');
   const analysis = useMemo(() => createShareAnalysis(shareData), [shareData]);
-  const activeTemplate = SHARE_CARD_TEMPLATES.find((template) => template.id === templateId) || SHARE_CARD_TEMPLATES[0];
 
   useEffect(() => {
     if (!isOpen || typeof document === 'undefined') return undefined;
@@ -327,8 +388,8 @@ export default function ShareChoicePanel({ shareData, className = '' }) {
   const runAction = async (action, successMessage) => {
     setStatus('');
     try {
-      await action();
-      setStatus(successMessage);
+      const result = await action();
+      setStatus(typeof successMessage === 'function' ? successMessage(result) : successMessage);
     } catch (error) {
       setStatus(error?.message || 'Não foi possível concluir o compartilhamento.');
     }
@@ -338,29 +399,38 @@ export default function ShareChoicePanel({ shareData, className = '' }) {
 
   const galleryActions = (
     <>
-      <button className="share-gallery-actions__primary nv-touch" type="button" onClick={() => runAction(() => shareTemplate(templateId, shareData), 'Pronto para compartilhar.')}>
+      <button
+        className="share-gallery-actions__primary nv-touch"
+        type="button"
+        onClick={() => runAction(
+          () => shareTemplate(templateId, shareData),
+          (result) => (result === 'copied' ? 'Texto copiado para compartilhar.' : 'Imagem pronta para compartilhar.')
+        )}
+      >
         <ShareIcon />
-        <span>Compartilhar</span>
+        <span>Compartilhar imagem</span>
       </button>
-      <button className="share-gallery-actions__secondary nv-touch" type="button" onClick={() => runAction(() => downloadShareImage(templateId, shareData), 'Imagem baixada.')}>
+      <button className="share-gallery-actions__secondary nv-touch" type="button" onClick={() => runAction(() => downloadShareImage(templateId, shareData), 'Imagem salva.')}>
         <DownloadIcon />
-        <span>Baixar imagem</span>
-      </button>
-      <button className="share-gallery-actions__link nv-touch" type="button" onClick={() => runAction(() => copyLinkToClipboard(analysis.url), 'Link copiado.')}>
-        <CopyIcon />
-        <span>Copiar link</span>
+        <span>Salvar imagem</span>
       </button>
     </>
   );
 
   const shareModal = isOpen ? (
-    <div className="share-modal nv-no-overflow" role="dialog" aria-modal="true" aria-labelledby="share-modal-title">
+    <div
+      className="share-modal nv-no-overflow"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="share-modal-title"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) setIsOpen(false);
+      }}
+    >
       <div className="share-modal__content nv-no-overflow">
+        <span className="share-modal__handle" aria-hidden="true" />
         <header className="share-modal__header">
-          <div>
-            <h2 id="share-modal-title">Compartilhar meu plano</h2>
-            <p>Arraste para escolher uma arte pronta</p>
-          </div>
+          <h2 id="share-modal-title">Escolha o que compartilhar</h2>
           <button className="share-modal__close nv-touch" type="button" onClick={() => setIsOpen(false)} aria-label="Fechar">
             <ClearIcon />
           </button>
@@ -373,18 +443,12 @@ export default function ShareChoicePanel({ shareData, className = '' }) {
             onSelect={handleTemplateSelect}
             actions={galleryActions}
           />
-
-          <section className="share-thumbnail-panel" aria-label="Modelos">
-            <div className="share-preview-panel__heading">
-              <span>{activeTemplate.tag}</span>
-              <strong>{activeTemplate.label}</strong>
-              <small>{activeTemplate.description}</small>
-            </div>
-            <ShareThumbnailStrip activeTemplateId={templateId} onSelect={handleTemplateSelect} />
-          </section>
         </div>
 
         {status && <p className="share-modal__status" role="status">{status}</p>}
+        <button className="share-modal__cancel nv-touch" type="button" onClick={() => setIsOpen(false)}>
+          Cancelar
+        </button>
       </div>
     </div>
   ) : null;

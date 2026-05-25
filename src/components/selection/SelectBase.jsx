@@ -197,8 +197,9 @@ export default function SelectBase({
     selecionados.map((candidate) => candidate.id).filter(Boolean).sort().join('|')
   ), [selecionados]);
   const showSavedSenateSharePanel = isSenateOffice && senateChoicesSaved && hasRequiredSelection && Boolean(shareData);
-  const shouldShowContinue = hasRequiredSelection && continueVisible;
-  const shouldShowDesktopContinue = hasRequiredSelection && continueVisible;
+  const shouldRenderContinue = !isHomeState;
+  const shouldShowContinue = shouldRenderContinue && hasRequiredSelection && continueVisible;
+  const shouldShowDesktopContinue = shouldRenderContinue && hasRequiredSelection && continueVisible;
 
   useEffect(() => {
     let cancelled = false;
@@ -512,8 +513,13 @@ export default function SelectBase({
     await efetivarSelecao(item);
   };
 
-  const handleStateSelect = (item) => {
+  const handleStateSelect = async (item) => {
     if (salvandoSelecao) return;
+
+    if (autoAvancarAoSelecionar) {
+      await commitSelection([item], { autoConfirm: true, completed: true });
+      return;
+    }
 
     revealContinue();
     setSelecionados([item]);
@@ -953,15 +959,19 @@ export default function SelectBase({
 
       <main className="prototype-scroll select-base__scroll nv-scroll" onScroll={handleScroll}>
         {isHomeState ? renderStateList() : renderCandidateList()}
-        <div className={`select-base__desktop-action ${shouldShowDesktopContinue ? '' : 'is-hidden'}`}>
-          {renderContinueContent()}
-        </div>
+        {shouldRenderContinue && (
+          <div className={`select-base__desktop-action ${shouldShowDesktopContinue ? '' : 'is-hidden'}`}>
+            {renderContinueContent()}
+          </div>
+        )}
         <AppFooter className="app-footer--scroll-content" />
       </main>
 
-      <div className={`select-base__continue-shell ${showSavedSenateSharePanel ? 'has-share-panel' : ''} ${shouldShowContinue ? '' : 'is-hidden'}`}>
-        {renderContinueContent()}
-      </div>
+      {shouldRenderContinue && (
+        <div className={`select-base__continue-shell ${showSavedSenateSharePanel ? 'has-share-panel' : ''} ${shouldShowContinue ? '' : 'is-hidden'}`}>
+          {renderContinueContent()}
+        </div>
+      )}
 
       <BottomNavigation currentStep={currentStep} placement="footer" />
 

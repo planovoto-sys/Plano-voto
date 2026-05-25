@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
+import { LogIn, LogOut } from 'lucide-react';
 import { BALLOT_ROUTES } from '@/constants/ballot';
 import { AVERAGE_ELECTED_VOTES_BY_OFFICE } from '@/constants/candidates';
 import { STATE_NAMES } from '@/constants/states';
@@ -315,18 +316,17 @@ export default function MeuPlano() {
         >
           <BackIcon />
         </button>
-        <div className="my-plan-header__brand">
-          <strong>
-            <ChanceFlame className="my-plan-header__flame" size={24} />
-            <span className="my-plan-header__brand-text">nossovoto<em>.org</em></span>
-          </strong>
-        </div>
+        <h1 className="my-plan-header__title">
+          <ChanceFlame className="my-plan-header__flame" size={20} />
+          <span>nossovoto<em>.org</em></span>
+        </h1>
         <button
           className="my-plan-header__logout nv-touch"
           type="button"
           onClick={isGuestMode ? handleLogin : handleLogout}
+          aria-label={isGuestMode ? 'Entrar' : 'Sair'}
         >
-          {isGuestMode ? 'Entrar' : 'Sair'}
+          {isGuestMode ? <LogIn aria-hidden="true" /> : <LogOut aria-hidden="true" />}
         </button>
       </header>
 

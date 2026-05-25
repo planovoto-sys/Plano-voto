@@ -5,14 +5,14 @@
 
 .my-plan-header {
   flex: 0 0 auto;
-  min-height: 60px;
+  min-height: 64px;
   border-bottom: 1px solid var(--nav-line);
   background: var(--page-bg);
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) auto;
+  grid-template-columns: 40px minmax(0, 1fr) 40px;
   align-items: center;
-  gap: 10px;
-  padding: 0 14px;
+  gap: 0;
+  padding: 0 22px;
 }
 
 .my-plan-header__back,
@@ -24,9 +24,12 @@
   cursor: pointer;
 }
 
-.my-plan-header__back {
+.my-plan-header__back,
+.my-plan-header__logout {
   width: 40px;
   height: 40px;
+  min-width: 40px;
+  min-height: 40px;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
@@ -34,61 +37,55 @@
   padding: 0;
 }
 
-.my-plan-header__back .app-icon {
+.my-plan-header__back .app-icon,
+.my-plan-header__logout svg {
   width: 20px;
   height: 20px;
 }
 
-.my-plan-header__brand {
-  min-width: 0;
-  display: grid;
-  justify-items: center;
+.my-plan-header__logout svg {
+  stroke-width: 2.45;
 }
 
-.my-plan-header__brand strong {
+.my-plan-header__title {
+  min-width: 0;
   max-width: 100%;
-  overflow: hidden;
+  overflow: visible;
   color: var(--text-strong);
-  font-family: var(--font-display);
+  font-family: var(--font-family);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.25;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  font-size: 21px;
-  font-weight: 900;
-  line-height: 1;
+  gap: 6px;
+  text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .my-plan-header__flame {
   width: 20px;
-  height: 24px;
-  flex: 0 0 auto;
+  height: 20px;
+  flex: 0 0 20px;
   object-fit: contain;
 }
 
-.my-plan-header__brand-text {
+.my-plan-header__title span {
   min-width: 0;
-  color: var(--text-strong);
+  overflow: hidden;
+  line-height: 1.25;
+  text-overflow: ellipsis;
 }
 
-.my-plan-header__brand-text em {
-  color: var(--muted);
+.my-plan-header__title em {
+  color: var(--muted-soft);
   font-style: normal;
 }
 
 .my-plan-header__logout {
-  min-width: 52px;
-  min-height: 40px;
-  border-radius: 999px;
-  background: var(--soft);
-  background-color: var(--soft);
-  color: var(--text-strong);
-  padding: 0 13px;
-  font-size: 12px;
-  font-weight: 850;
-  line-height: 1;
+  justify-self: end;
 }
 
 .my-plan-scroll {
@@ -402,16 +399,20 @@
 
 .my-plan-share-panel .share-choice-panel__button {
   width: 100%;
-  min-height: 72px;
-  border-radius: 14px;
-  background: linear-gradient(90deg, #ffd565 0%, var(--orange) 100%);
-  color: var(--text);
-  padding: 0 12px;
-  font-family: var(--font-display);
-  font-size: 20px;
-  font-weight: 900;
-  letter-spacing: 1.4px;
-  text-transform: uppercase;
+  max-width: 512px;
+  min-height: 0;
+  justify-self: center;
+  border-radius: 999px;
+  background: var(--action, var(--orange));
+  color: var(--action-foreground, var(--text));
+  padding: 14px 24px;
+  box-shadow: 0 6px 14px rgba(255, 152, 0, 0.18);
+  font-family: var(--font-family);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .my-plan-share-panel .share-choice-panel__button svg {
@@ -420,19 +421,8 @@
 
 @media (max-width: 380px) {
   .my-plan-header {
-    grid-template-columns: 40px minmax(0, 1fr) auto;
-    gap: 6px;
-    padding-inline: 10px;
-  }
-
-  .my-plan-header__brand strong {
-    font-size: 19px;
-  }
-
-  .my-plan-header__logout {
-    min-width: 48px;
-    padding-inline: 11px;
-    font-size: 11px;
+    grid-template-columns: 40px minmax(0, 1fr) 40px;
+    padding-inline: 18px;
   }
 
   .my-plan-overview-card {
@@ -448,9 +438,12 @@
     font-size: 18px;
   }
 
-  .my-plan-share-disabled strong,
-  .my-plan-share-panel .share-choice-panel__button {
+  .my-plan-share-disabled strong {
     font-size: 18px;
+  }
+
+  .my-plan-share-panel .share-choice-panel__button {
+    font-size: 16px;
   }
 
   .my-plan-empty-choice {
@@ -464,18 +457,8 @@
   }
 
   .my-plan-header {
-    min-height: 76px;
+    min-height: 74px;
     padding: 0 var(--screen-gutter);
-  }
-
-  .my-plan-header__back {
-    border: 1px solid rgba(0, 42, 84, 0.1);
-    background: var(--surface);
-    box-shadow: 0 8px 18px rgba(0, 42, 84, 0.07);
-  }
-
-  .my-plan-header__brand strong {
-    font-size: 25px;
   }
 
   .my-plan-scroll {
@@ -536,13 +519,19 @@
   }
 
   .my-plan-share-disabled,
-  .my-plan-share-panel,
-  .my-plan-share-panel .share-choice-panel__button {
+  .my-plan-share-panel {
     min-height: 58px;
   }
 
-  .my-plan-share-disabled strong,
   .my-plan-share-panel .share-choice-panel__button {
+    min-height: 0;
+  }
+
+  .my-plan-share-disabled strong {
     font-size: 18px;
+  }
+
+  .my-plan-share-panel .share-choice-panel__button {
+    font-size: 16px;
   }
 }
