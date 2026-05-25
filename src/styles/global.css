@@ -1,20 +1,35 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
 
 :root {
-  --app-width: 500px;
+  --app-width: 430px;
   --app-height: 100dvh;
-  --page-bg: #fbffff;
-  --header-bg: #e9ecef;
-  --desktop-bg: #fbffff;
-  --desktop-primary: #002a54;
-  --desktop-primary-strong: #002a54;
-  --desktop-surface: #ffffff;
-  --desktop-border: #dedede;
-  --card-bg: #f5f5f5;
-  --nav-line: #e8ebee;
-  --text-strong: #002a54;
-  --text-main: #002a54;
-  --text-muted: #002a54;
+  --bg: #fbfcfd;
+  --text: #00000f;
+  --muted: #425166;
+  --muted-soft: #6d7887;
+  --blue: #002a54;
+  --blue-soft: #8aa8ff;
+  --blue-soft-bg: #dfe8ff;
+  --orange: #ff9800;
+  --orange-dark: #bd6400;
+  --orange-soft: #fff4e0;
+  --orange-line: #ffca8a;
+  --line: #dfe6ed;
+  --surface: #ffffff;
+  --soft: #f2f2f2;
+  --shadow: 0 18px 36px rgba(0, 42, 84, 0.08);
+  --page-bg: var(--bg);
+  --header-bg: var(--bg);
+  --desktop-bg: var(--bg);
+  --desktop-primary: var(--blue);
+  --desktop-primary-strong: var(--blue);
+  --desktop-surface: var(--surface);
+  --desktop-border: #d8e2ea;
+  --card-bg: var(--soft);
+  --nav-line: var(--line);
+  --text-strong: var(--blue);
+  --text-main: var(--blue);
+  --text-muted: rgba(0, 42, 84, 0.74);
   --tone-success: #72d552;
   --tone-success-bg: #f1ffef;
   --tone-danger: #ff575f;
@@ -28,7 +43,8 @@
   --metric-progress: 0;
   --candidate-name-size: 20px;
   --candidate-assessment-size: 10px;
-  --font-family: 'Inter', Arial, sans-serif;
+  --font-body: 'Inter', Arial, sans-serif;
+  --font-family: var(--font-body);
   --font-display: 'Plus Jakarta Sans', 'Inter', Arial, sans-serif;
 }
 
@@ -48,7 +64,7 @@ body,
 }
 
 html {
-  background: #fbffff;
+  background: var(--page-bg);
   overflow: hidden;
 }
 
@@ -56,7 +72,7 @@ body {
   display: flex;
   justify-content: center;
   overflow: hidden;
-  background: #fbffff;
+  background: var(--page-bg);
   color: var(--text-main);
   font-family: var(--font-family);
   -webkit-font-smoothing: antialiased;
@@ -71,7 +87,7 @@ body {
   min-height: 0;
   overflow: hidden;
   background: var(--page-bg);
-  box-shadow: 0 0 0 1px #111111;
+  box-shadow: 0 0 0 1px rgba(0, 42, 84, 0.12);
 }
 
 .prototype-page {
@@ -92,7 +108,7 @@ body {
   margin: 0;
   border-bottom: 1px solid var(--nav-line);
   border-radius: 0;
-  background: #fbffff;
+  background: var(--header-bg);
   color: var(--text-main);
   display: grid;
   grid-template-columns: 48px minmax(0, 1fr) 48px;
@@ -210,7 +226,7 @@ body {
   height: 42px;
   border: 0;
   border-radius: 999px;
-  background: #ffffff;
+  background: var(--surface);
   color: var(--desktop-primary-strong);
   padding: 0 18px;
   font-family: var(--font-family);
@@ -222,9 +238,9 @@ body {
 }
 
 .app-header-action--secondary {
-  background: #f7f8f9;
+  background: var(--soft);
   color: var(--text-main);
-  box-shadow: inset 0 0 0 1px #cfd3d6;
+  box-shadow: inset 0 0 0 1px var(--line);
 }
 
 .app-header-icon-action {
@@ -305,7 +321,7 @@ body {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: #fbffff;
+  background: var(--page-bg);
   color: var(--text-main);
 }
 
@@ -541,7 +557,7 @@ body {
 }
 
 .metric-circle--new {
-  color: #69746f;
+  color: var(--muted-soft);
 }
 
 @media (max-width: 420px) {
@@ -729,7 +745,7 @@ body {
     margin: 0;
     border-radius: 0;
     border-bottom: 1px solid var(--desktop-border);
-    background: #fbffff;
+    background: var(--header-bg);
     color: var(--text-main);
     display: grid;
     grid-template-columns: 44px minmax(190px, 0.72fr) 44px minmax(0, 1.28fr);
@@ -811,11 +827,11 @@ body {
 
   .prototype-scroll::-webkit-scrollbar-thumb {
     border-radius: 999px;
-    background: #c7d3ce;
+    background: rgba(0, 42, 84, 0.24);
   }
 
   .loading {
-    background: #fbffff;
+    background: var(--page-bg);
   }
 
   .loading-intro {
@@ -831,7 +847,7 @@ body {
     min-height: 110px;
     border: 1px solid var(--desktop-border);
     background: var(--desktop-surface);
-    color: #69746f;
+    color: var(--muted-soft);
   }
 }
 
@@ -847,7 +863,7 @@ body {
     padding-top: 13px;
     padding-bottom: 13px;
     gap: 14px;
-    box-shadow: 0 1px 0 rgba(17, 17, 17, 0.02), 0 12px 28px rgba(34, 36, 38, 0.04);
+    box-shadow: 0 1px 0 rgba(0, 42, 84, 0.02), 0 12px 28px rgba(0, 42, 84, 0.04);
   }
 
   .app-page-header__brand {

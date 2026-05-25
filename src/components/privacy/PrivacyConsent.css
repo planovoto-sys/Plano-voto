@@ -10,11 +10,11 @@
   max-height: calc(100dvh - 24px);
   overflow: auto;
   padding: 16px;
-  color: #1d2f25;
+  color: var(--text-main);
   background: rgba(255, 255, 255, 0.96);
-  border: 1px solid rgba(74, 74, 74, 0.22);
+  border: 1px solid rgba(0, 42, 84, 0.18);
   border-radius: 8px;
-  box-shadow: 0 18px 50px rgba(34, 36, 38, 0.18);
+  box-shadow: 0 18px 50px rgba(0, 42, 84, 0.18);
   backdrop-filter: blur(10px);
 }
 
@@ -26,7 +26,7 @@
 
 .privacy-consent h2 {
   margin: 0;
-  color: #4a4a4a;
+  color: var(--text-strong);
   font-size: 1rem;
   line-height: 1.2;
   letter-spacing: 0;
@@ -69,18 +69,18 @@
 }
 
 .privacy-consent__primary {
-  color: #ffffff;
-  background: #4a4a4a;
+  color: var(--surface);
+  background: var(--blue);
 }
 
 .privacy-consent__secondary {
-  color: #4a4a4a;
-  background: #ffffff;
-  border-color: rgba(74, 74, 74, 0.22);
+  color: var(--text-strong);
+  background: var(--surface);
+  border-color: rgba(0, 42, 84, 0.18);
 }
 
 .privacy-consent button:focus-visible {
-  outline: 3px solid rgba(74, 74, 74, 0.24);
+  outline: 3px solid rgba(0, 42, 84, 0.22);
   outline-offset: 2px;
 }
 

@@ -265,9 +265,9 @@ export default function LegalPage({ type }) {
 
           {type === 'cookies' && <CookiePreferences />}
         </section>
-      </main>
 
-      <AppFooter />
+        <AppFooter className="app-footer--scroll-content" />
+      </main>
     </div>
   );
 }

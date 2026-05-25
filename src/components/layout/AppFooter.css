@@ -1,7 +1,7 @@
 .app-footer {
   flex: 0 0 auto;
   border-top: 1px solid var(--nav-line);
-  background: #ffffff;
+  background: var(--surface);
   color: var(--text-main);
 }
 

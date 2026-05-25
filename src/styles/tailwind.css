@@ -10,20 +10,21 @@
   --breakpoint-3xl: 120rem;
 
   --font-sans: "Inter", Arial, sans-serif;
-  --color-nossovoto-text: #4a4a4a;
-  --color-nossovoto-muted: #adadad;
-  --color-nossovoto-line: #e8ebee;
+  --color-nossovoto-bg: #fbfcfd;
+  --color-nossovoto-text: #002a54;
+  --color-nossovoto-muted: #425166;
+  --color-nossovoto-line: #dfe6ed;
   --color-nossovoto-surface: #ffffff;
-  --color-nossovoto-soft: #f5f5f5;
-  --color-nossovoto-fire: #ff8b49;
-  --color-nossovoto-yellow: #ffdf59;
+  --color-nossovoto-soft: #f2f2f2;
+  --color-nossovoto-fire: #ff9800;
+  --color-nossovoto-yellow: #ffd565;
   --color-nossovoto-success: #72d552;
   --color-nossovoto-danger: #ff575f;
 }
 
 @layer components {
   .nv-screen {
-    @apply w-full min-w-0 overflow-hidden bg-nossovoto-surface text-nossovoto-text;
+    @apply w-full min-w-0 overflow-hidden bg-nossovoto-bg text-nossovoto-text;
   }
 
   .nv-scroll {

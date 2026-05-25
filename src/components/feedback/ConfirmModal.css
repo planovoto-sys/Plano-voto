@@ -8,7 +8,7 @@
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: rgba(0, 0, 0, 0.42);
+  background: rgba(0, 42, 84, 0.36);
 }
 
 .modal-container {
@@ -16,10 +16,11 @@
   max-height: calc(100dvh - 40px);
   overflow: auto;
   border-radius: 12px;
-  background: #ffffff;
+  background: var(--surface);
   padding: 24px 20px 20px;
   color: var(--text-main);
   text-align: center;
+  box-shadow: var(--shadow);
 }
 
 .modal-title {
@@ -51,9 +52,9 @@
   flex: 1 1 0;
   min-width: min(100%, 126px);
   min-height: 48px;
-  border: 1px solid #e8edf0;
+  border: 1px solid var(--line);
   border-radius: 999px;
-  background: #ffffff;
+  background: var(--surface);
   color: var(--text-strong);
   font-family: var(--font-family);
   font-size: 14px;
@@ -63,7 +64,7 @@
 }
 
 .btn-confirmar {
-  border-color: #111111;
+  border-color: var(--blue);
 }
 
 .btn-confirmar.perigo,
@@ -93,7 +94,7 @@
 }
 
 .choice-confirm-copy small {
-  color: #737b77;
+  color: var(--muted-soft);
   font-size: 12px;
   font-weight: 600;
   line-height: 1.25;
@@ -102,13 +103,13 @@
 .btn-confirmar.choice-saved {
   border-color: var(--desktop-primary);
   background: var(--desktop-primary);
-  color: #ffffff;
+  color: var(--surface);
 }
 
 .btn-confirmar.login-required {
-  border-color: #111111;
-  background: #111111;
-  color: #ffffff;
+  border-color: var(--blue);
+  background: var(--blue);
+  color: var(--surface);
 }
 
 .senator-replace-actions {
@@ -120,7 +121,7 @@
   min-height: 46px;
   border: 1px solid var(--desktop-primary);
   border-radius: 999px;
-  background: #ffffff;
+  background: var(--surface);
   color: var(--desktop-primary);
   font-family: var(--font-family);
   font-size: 13px;

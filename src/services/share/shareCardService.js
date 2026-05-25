@@ -7,6 +7,22 @@ import {
 
 const APP_SHARE_URL = import.meta.env.VITE_PUBLIC_APP_URL || 'https://nossovoto.org';
 const SHARE_YEAR = '2026';
+const SHARE_COLORS = {
+  bg: '#fbfcfd',
+  surface: '#ffffff',
+  text: '#002a54',
+  body: '#425166',
+  muted: '#6d7887',
+  line: 'rgba(0, 42, 84, 0.1)',
+  rowLine: 'rgba(0, 42, 84, 0.08)',
+  orange: '#ff9800',
+  orangeDark: '#bd6400',
+  orangeSoft: '#fff4e0',
+  success: '#72d552',
+  successSoft: '#f1ffef',
+  successLine: '#dcefd7',
+  metricLine: '#f1dfd3'
+};
 
 export const SHARE_CARD_TEMPLATES = [
   {
@@ -309,17 +325,17 @@ const drawInfoRows = (context, rows, x, y, width, options = {}) => {
 
   rows.forEach((row) => {
     const rowText = typeof row === 'string' ? row : row.text;
-    const rowColor = typeof row === 'string' ? '#25323a' : row.color || '#25323a';
+    const rowColor = typeof row === 'string' ? SHARE_COLORS.text : row.color || SHARE_COLORS.text;
     const rowFont = typeof row === 'string' ? font : row.font || font;
     context.font = rowFont;
     const wrappedLines = wrapCanvasText(context, rowText, width - 56);
     const rowHeight = Math.max(options.minHeight || 78, wrappedLines.length * lineHeight + 32);
 
-    context.fillStyle = options.background || 'rgba(255, 255, 255, 0.78)';
+    context.fillStyle = options.background || 'rgba(255, 255, 255, 0.82)';
     context.beginPath();
     drawRoundedRect(context, x, currentY, width, rowHeight, 22);
     context.fill();
-    context.strokeStyle = options.border || 'rgba(17, 17, 17, 0.08)';
+    context.strokeStyle = options.border || SHARE_COLORS.rowLine;
     context.lineWidth = 2;
     context.stroke();
 
@@ -335,11 +351,11 @@ const drawInfoRows = (context, rows, x, y, width, options = {}) => {
 };
 
 const drawStoryCta = (context, analysis, x, y, width) => {
-  context.fillStyle = '#111111';
+  context.fillStyle = SHARE_COLORS.text;
   context.beginPath();
   drawRoundedRect(context, x, y, width, 122, 30);
   context.fill();
-  context.fillStyle = '#ffffff';
+  context.fillStyle = SHARE_COLORS.surface;
   context.font = '800 36px "Plus Jakarta Sans", Arial, sans-serif';
   context.fillText('Monte o seu também', x + 34, y + 52);
   context.fillStyle = 'rgba(255, 255, 255, 0.78)';
@@ -347,16 +363,16 @@ const drawStoryCta = (context, analysis, x, y, width) => {
   context.fillText((analysis.url || APP_SHARE_URL).replace('https://', ''), x + 34, y + 94);
 };
 
-const drawMetricBox = (context, x, y, width, height, label, value, percent, color = '#ff8b49') => {
+const drawMetricBox = (context, x, y, width, height, label, value, percent, color = SHARE_COLORS.orange) => {
   const progress = clamp(percent);
   const centerX = x + width / 2;
   const centerY = y + 84;
   const radius = 58;
-  context.fillStyle = color === '#72d552' ? '#f7fff4' : '#fff8f1';
+  context.fillStyle = color === SHARE_COLORS.success ? SHARE_COLORS.successSoft : SHARE_COLORS.orangeSoft;
   context.beginPath();
   drawRoundedRect(context, x, y, width, height, 28);
   context.fill();
-  context.strokeStyle = color === '#72d552' ? '#dcefd7' : '#f1dfd3';
+  context.strokeStyle = color === SHARE_COLORS.success ? SHARE_COLORS.successLine : SHARE_COLORS.metricLine;
   context.lineWidth = 2;
   context.stroke();
 
@@ -372,7 +388,7 @@ const drawMetricBox = (context, x, y, width, height, label, value, percent, colo
   context.arc(centerX, centerY, radius, -Math.PI / 2, (-Math.PI / 2) + (Math.PI * 2 * (progress / 100)));
   context.stroke();
 
-  context.fillStyle = '#ffffff';
+  context.fillStyle = SHARE_COLORS.surface;
   context.beginPath();
   context.arc(centerX, centerY, 44, 0, Math.PI * 2);
   context.fill();
@@ -381,7 +397,7 @@ const drawMetricBox = (context, x, y, width, height, label, value, percent, colo
   context.font = '800 34px "Plus Jakarta Sans", Arial, sans-serif';
   context.textAlign = 'center';
   context.fillText(value, centerX, centerY + 11);
-  context.fillStyle = '#59645f';
+  context.fillStyle = SHARE_COLORS.muted;
   context.font = '800 28px "Plus Jakarta Sans", Arial, sans-serif';
   context.fillText(label, centerX, y + height - 42);
   context.lineCap = 'butt';
@@ -397,17 +413,17 @@ const drawShareCanvas = (templateId, analysis, canvas) => {
   canvas.height = height;
 
   const background = context.createLinearGradient(0, 0, width, height);
-  background.addColorStop(0, '#fff8ef');
-  background.addColorStop(0.5, templateId === 'termometro' ? '#f8faf9' : '#ffffff');
-  background.addColorStop(1, templateId === 'resumo' ? '#f7fff4' : '#ffffff');
+  background.addColorStop(0, SHARE_COLORS.bg);
+  background.addColorStop(0.5, templateId === 'termometro' ? SHARE_COLORS.bg : SHARE_COLORS.surface);
+  background.addColorStop(1, templateId === 'resumo' ? SHARE_COLORS.successSoft : SHARE_COLORS.surface);
   context.fillStyle = background;
   context.fillRect(0, 0, width, height);
 
-  context.fillStyle = '#ffffff';
+  context.fillStyle = SHARE_COLORS.surface;
   context.beginPath();
   drawRoundedRect(context, 62, 62, 956, 1796, 42);
   context.fill();
-  context.strokeStyle = 'rgba(17, 17, 17, 0.1)';
+  context.strokeStyle = SHARE_COLORS.line;
   context.lineWidth = 3;
   context.stroke();
 
@@ -415,60 +431,60 @@ const drawShareCanvas = (templateId, analysis, canvas) => {
   const contentWidth = 856;
   const tagText = template.tag.toUpperCase();
 
-  context.fillStyle = '#111111';
+  context.fillStyle = SHARE_COLORS.text;
   context.font = '800 38px "Plus Jakarta Sans", Arial, sans-serif';
   context.fillText('nossovoto.org', contentX, 150);
 
-  context.fillStyle = '#fff7ef';
+  context.fillStyle = SHARE_COLORS.orangeSoft;
   context.beginPath();
   const tagWidth = Math.min(340, context.measureText(tagText).width + 72);
   drawRoundedRect(context, width - contentX - tagWidth, 112, tagWidth, 54, 27);
   context.fill();
-  context.fillStyle = '#c95b18';
+  context.fillStyle = SHARE_COLORS.orangeDark;
   context.font = '800 23px "Plus Jakarta Sans", Arial, sans-serif';
   context.fillText(tagText, width - contentX - tagWidth + 36, 148);
 
   if (templateId === 'resumo') {
     drawTextBlock(context, [
-      { text: 'Meu plano de voto está pronto', font: '800 88px "Plus Jakarta Sans", Arial, sans-serif', color: '#111111', lineHeight: 92 }
-    ], { x: contentX, y: 320, maxWidth: contentWidth, font: '800 88px "Plus Jakarta Sans", Arial, sans-serif', color: '#111111', lineHeight: 92 });
-    context.fillStyle = '#39433f';
+      { text: 'Meu plano de voto está pronto', font: '800 88px "Plus Jakarta Sans", Arial, sans-serif', color: SHARE_COLORS.text, lineHeight: 92 }
+    ], { x: contentX, y: 320, maxWidth: contentWidth, font: '800 88px "Plus Jakarta Sans", Arial, sans-serif', color: SHARE_COLORS.text, lineHeight: 92 });
+    context.fillStyle = SHARE_COLORS.body;
     context.font = '800 38px "Plus Jakarta Sans", Arial, sans-serif';
     context.fillText(`${analysis.estadoNome} • ${analysis.year}`, contentX, 600);
     drawInfoRows(context, [
       'Deputado federal definido',
       'Senadores definidos',
-      { text: 'Nomes ocultos por privacidade', color: '#c95b18' }
+      { text: 'Nomes ocultos por privacidade', color: SHARE_COLORS.orangeDark }
     ], contentX, 690, contentWidth);
   } else if (templateId === 'completo') {
     const senatorOne = analysis.senatorNames[0] || 'Senador 1 definido';
     const senatorTwo = analysis.senatorNames[1] || 'Senador 2 definido';
     drawTextBlock(context, [
-      { text: 'Meu plano de voto', font: '800 92px "Plus Jakarta Sans", Arial, sans-serif', color: '#111111', lineHeight: 96 }
-    ], { x: contentX, y: 320, maxWidth: contentWidth, font: '800 92px "Plus Jakarta Sans", Arial, sans-serif', color: '#111111', lineHeight: 96 });
-    context.fillStyle = '#39433f';
+      { text: 'Meu plano de voto', font: '800 92px "Plus Jakarta Sans", Arial, sans-serif', color: SHARE_COLORS.text, lineHeight: 96 }
+    ], { x: contentX, y: 320, maxWidth: contentWidth, font: '800 92px "Plus Jakarta Sans", Arial, sans-serif', color: SHARE_COLORS.text, lineHeight: 96 });
+    context.fillStyle = SHARE_COLORS.body;
     context.font = '800 38px "Plus Jakarta Sans", Arial, sans-serif';
     context.fillText(`Estado: ${analysis.estadoNome}`, contentX, 575);
     drawInfoRows(context, [
-      { text: 'Deputado Federal', color: '#c95b18', font: '800 27px "Plus Jakarta Sans", Arial, sans-serif' },
-      { text: analysis.deputadoName || 'Deputado federal definido', color: '#111111', font: '800 42px "Plus Jakarta Sans", Arial, sans-serif' },
-      { text: 'Senadores', color: '#c95b18', font: '800 27px "Plus Jakarta Sans", Arial, sans-serif' },
-      { text: senatorOne, color: '#111111', font: '800 40px "Plus Jakarta Sans", Arial, sans-serif' },
-      { text: senatorTwo, color: '#111111', font: '800 40px "Plus Jakarta Sans", Arial, sans-serif' }
+      { text: 'Deputado Federal', color: SHARE_COLORS.orangeDark, font: '800 27px "Plus Jakarta Sans", Arial, sans-serif' },
+      { text: analysis.deputadoName || 'Deputado federal definido', color: SHARE_COLORS.text, font: '800 42px "Plus Jakarta Sans", Arial, sans-serif' },
+      { text: 'Senadores', color: SHARE_COLORS.orangeDark, font: '800 27px "Plus Jakarta Sans", Arial, sans-serif' },
+      { text: senatorOne, color: SHARE_COLORS.text, font: '800 40px "Plus Jakarta Sans", Arial, sans-serif' },
+      { text: senatorTwo, color: SHARE_COLORS.text, font: '800 40px "Plus Jakarta Sans", Arial, sans-serif' }
     ], contentX, 660, contentWidth, { minHeight: 70 });
   } else if (templateId === 'termometro') {
     drawTextBlock(context, [
-      { text: 'Meu plano em números', font: '800 88px "Plus Jakarta Sans", Arial, sans-serif', color: '#111111', lineHeight: 92 }
-    ], { x: contentX, y: 320, maxWidth: contentWidth, font: '800 88px "Plus Jakarta Sans", Arial, sans-serif', color: '#111111', lineHeight: 92 });
+      { text: 'Meu plano em números', font: '800 88px "Plus Jakarta Sans", Arial, sans-serif', color: SHARE_COLORS.text, lineHeight: 92 }
+    ], { x: contentX, y: 320, maxWidth: contentWidth, font: '800 88px "Plus Jakarta Sans", Arial, sans-serif', color: SHARE_COLORS.text, lineHeight: 92 });
     drawMetricBox(context, contentX, 650, 405, 238, 'Viabilidade geral', analysis.averageChanceLabel, analysis.averageChance);
-    drawMetricBox(context, contentX + 451, 650, 405, 238, 'Média das notas', analysis.averageScoreLabel, analysis.averageScore * 10, '#72d552');
+    drawMetricBox(context, contentX + 451, 650, 405, 238, 'Média das notas', analysis.averageScoreLabel, analysis.averageScore * 10, SHARE_COLORS.success);
     drawTextBlock(context, [
-      { text: 'Indicadores de apoio para revisar o plano.', font: '700 40px Inter, Arial, sans-serif', color: '#39433f', lineHeight: 50 }
-    ], { x: contentX, y: 1010, maxWidth: contentWidth, font: '700 40px Inter, Arial, sans-serif', color: '#39433f', lineHeight: 50 });
+      { text: 'Indicadores de apoio para revisar o plano.', font: '700 40px Inter, Arial, sans-serif', color: SHARE_COLORS.body, lineHeight: 50 }
+    ], { x: contentX, y: 1010, maxWidth: contentWidth, font: '700 40px Inter, Arial, sans-serif', color: SHARE_COLORS.body, lineHeight: 50 });
   } else {
     drawTextBlock(context, [
-      { text: 'Checklist do meu plano', font: '800 88px "Plus Jakarta Sans", Arial, sans-serif', color: '#111111', lineHeight: 92 }
-    ], { x: contentX, y: 320, maxWidth: contentWidth, font: '800 88px "Plus Jakarta Sans", Arial, sans-serif', color: '#111111', lineHeight: 92 });
+      { text: 'Checklist do meu plano', font: '800 88px "Plus Jakarta Sans", Arial, sans-serif', color: SHARE_COLORS.text, lineHeight: 92 }
+    ], { x: contentX, y: 320, maxWidth: contentWidth, font: '800 88px "Plus Jakarta Sans", Arial, sans-serif', color: SHARE_COLORS.text, lineHeight: 92 });
     drawInfoRows(context, [
       'Estado escolhido ✓',
       'Deputado federal escolhido ✓',
@@ -476,8 +492,8 @@ const drawShareCanvas = (templateId, analysis, canvas) => {
       'Rascunho revisado ✓'
     ], contentX, 650, contentWidth);
     drawTextBlock(context, [
-      { text: 'Agora é revisar antes da decisão final.', font: '700 38px Inter, Arial, sans-serif', color: '#39433f', lineHeight: 48 }
-    ], { x: contentX, y: 1120, maxWidth: contentWidth, font: '700 38px Inter, Arial, sans-serif', color: '#39433f', lineHeight: 48 });
+      { text: 'Agora é revisar antes da decisão final.', font: '700 38px Inter, Arial, sans-serif', color: SHARE_COLORS.body, lineHeight: 48 }
+    ], { x: contentX, y: 1120, maxWidth: contentWidth, font: '700 38px Inter, Arial, sans-serif', color: SHARE_COLORS.body, lineHeight: 48 });
   }
 
   drawStoryCta(context, analysis, contentX, 1630, 520);

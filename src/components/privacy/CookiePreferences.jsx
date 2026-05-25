@@ -10,13 +10,13 @@ const COOKIE_OPTIONS = [
   {
     id: 'necessary',
     title: 'Necessários',
-    description: 'Mantêm login, segurança, rascunho de escolha, cache técnico e funcionamento básico da PWA.',
+    description: 'Mantêm login, segurança, rascunho de escolha, aceite de privacidade, cache técnico e funcionamento básico da PWA.',
     locked: true
   },
   {
     id: 'analytics',
     title: 'Análise de uso',
-    description: 'Permitem medir desempenho, erros e uso geral do sistema de forma agregada para melhorar a experiência.'
+    description: 'Permitem medir desempenho, erros e uso agregado do sistema para melhorar estabilidade e experiência.'
   },
   {
     id: 'personalization',
@@ -26,7 +26,7 @@ const COOKIE_OPTIONS = [
   {
     id: 'marketing',
     title: 'Marketing e parceiros',
-    description: 'Autorizam cookies ou identificadores opcionais para campanhas, mensuração de anúncios e integrações futuras.'
+    description: 'Autorizam cookies ou identificadores opcionais para campanhas, mensuração de anúncios e integrações futuras com parceiros.'
   },
   {
     id: 'commercialData',

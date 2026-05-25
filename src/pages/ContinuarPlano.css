@@ -11,7 +11,7 @@
   width: min(100%, 420px);
   border: 1px solid var(--nav-line);
   border-radius: 10px;
-  background: #ffffff;
+  background: var(--surface);
   display: grid;
   gap: 18px;
   padding: 28px 22px;
@@ -31,7 +31,7 @@
 }
 
 .handoff-panel__flame {
-  color: #ff8b49;
+  color: var(--orange);
 }
 
 .handoff-panel p {
@@ -54,14 +54,14 @@
 
 .handoff-panel__primary {
   border: 0;
-  background: linear-gradient(90deg, #ffdf59 0%, #ff8b49 100%);
-  color: #000000;
+  background: linear-gradient(90deg, #ffd565 0%, var(--orange) 100%);
+  color: var(--text);
 }
 
 .handoff-panel__secondary {
-  border: 1px solid #111111;
-  background: #ffffff;
-  color: #111111;
+  border: 1px solid var(--blue);
+  background: var(--surface);
+  color: var(--text-strong);
 }
 
 @media (min-width: 768px) {
@@ -71,6 +71,6 @@
 
   .handoff-panel {
     border-color: var(--desktop-border);
-    box-shadow: 0 16px 42px rgba(34, 36, 38, 0.06);
+    box-shadow: 0 16px 42px rgba(0, 42, 84, 0.06);
   }
 }
