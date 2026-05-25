@@ -1140,9 +1140,10 @@
 }
 
 .candidate-thermometer__icon {
-  width: var(--candidate-status-icon-box, 18px);
-  height: var(--candidate-status-icon-box);
-  flex: 0 0 var(--candidate-status-icon-box, 18px);
+  --candidate-status-icon-safe-box: min(var(--candidate-status-icon-box, 18px), var(--candidate-badge-height, 24px));
+  width: var(--candidate-status-icon-safe-box);
+  height: var(--candidate-status-icon-safe-box);
+  flex: 0 0 var(--candidate-status-icon-safe-box);
   margin-left: 0;
   display: inline-flex;
   align-items: center;
@@ -1318,7 +1319,7 @@
     --candidate-badge-size: 8px;
     --candidate-badge-height: 23px;
     --candidate-badge-pad-inline: 8px;
-    --candidate-status-icon-box: 26px;
+    --candidate-status-icon-box: 18px;
     --candidate-status-icon-size: 16px;
     --candidate-fire-icon-width: 12px;
     --candidate-fire-icon-height: 16px;
@@ -1380,7 +1381,7 @@
     --candidate-badge-size: 8px;
     --candidate-badge-height: 23px;
     --candidate-badge-pad-inline: 8px;
-    --candidate-status-icon-box: 26px;
+    --candidate-status-icon-box: 18px;
     --candidate-status-icon-size: 16px;
     --candidate-fire-icon-width: 12px;
     --candidate-fire-icon-height: 16px;
@@ -1442,12 +1443,12 @@
   }
 
   .candidate-thermometer__icon {
-    --candidate-status-icon-box: 26px;
+    --candidate-status-icon-box: 18px;
   }
 
   .candidate-thermometer__icon--fire,
   .candidate-status-icon--fire {
-    --candidate-status-icon-box: 26px;
+    --candidate-status-icon-box: 18px;
     filter: drop-shadow(0 2px 4px rgba(255, 152, 0, 0.22));
   }
 
@@ -1635,7 +1636,7 @@
     --candidate-badge-size: 7.6px;
     --candidate-badge-height: 22px;
     --candidate-badge-pad-inline: 7px;
-    --candidate-status-icon-box: 24px;
+    --candidate-status-icon-box: 17px;
     --candidate-status-icon-size: 15px;
     --candidate-fire-icon-width: 11px;
     --candidate-fire-icon-height: 15px;
@@ -1656,12 +1657,12 @@
   }
 
   .candidate-thermometer__icon {
-    --candidate-status-icon-box: 24px;
+    --candidate-status-icon-box: 17px;
   }
 
   .candidate-thermometer__icon--fire,
   .candidate-status-icon--fire {
-    --candidate-status-icon-box: 24px;
+    --candidate-status-icon-box: 17px;
   }
 
   .select-base__continue {
@@ -1729,7 +1730,7 @@
     --candidate-badge-size: 7.2px;
     --candidate-badge-height: 21px;
     --candidate-badge-pad-inline: 6px;
-    --candidate-status-icon-box: 23px;
+    --candidate-status-icon-box: 16px;
     --candidate-status-icon-size: 14px;
     --candidate-fire-icon-width: 10px;
     --candidate-fire-icon-height: 14px;

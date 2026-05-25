@@ -63,6 +63,15 @@
   cursor: pointer;
 }
 
+.btn-modal--full {
+  width: 100%;
+  flex: 1 0 100%;
+}
+
+.modal-custom-cancel {
+  margin-top: 10px;
+}
+
 .btn-confirmar {
   border-color: var(--blue);
 }

@@ -26,6 +26,7 @@ export default function Home() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const [modalAviso, setModalAviso] = useState({ aberto: false, mensagem: '' });
   const [pendingEstado, setPendingEstado] = useState(null);
   const [busca, setBusca] = useState('');
   const buscaDiferida = useDeferredValue(busca);
@@ -120,6 +121,10 @@ export default function Home() {
       if (import.meta.env.DEV) {
         console.error("Erro ao salvar estado: ", e);
       }
+      setModalAviso({
+        aberto: true,
+        mensagem: 'Não foi possível salvar seu estado agora. Verifique sua conexão e tente novamente.'
+      });
     } finally {
       setLoading(false);
     }
@@ -146,6 +151,14 @@ export default function Home() {
         )}
       />
       <ConfirmModal isOpen={modalOpen} titulo="MUDANÇA DE ESTADO" mensagem="Ao mudar de estado, suas seleções atuais serão apagadas. Deseja continuar?" textoConfirmar="SIM" textoCancelar="NÃO" tipo="perigo" onConfirm={() => executarMudanca(pendingEstado)} onCancel={() => setModalOpen(false)} />
+      <ConfirmModal
+        isOpen={modalAviso.aberto}
+        titulo="OPS!"
+        mensagem={modalAviso.mensagem}
+        textoConfirmar="OK, ENTENDI"
+        mostrarCancelar={false}
+        onConfirm={() => setModalAviso({ aberto: false, mensagem: '' })}
+      />
     </>
   );
 }

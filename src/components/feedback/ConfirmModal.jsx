@@ -1,4 +1,4 @@
-import React from 'react';
+import { useId } from 'react';
 import './ConfirmModal.css';
 
 export default function ConfirmModal({
@@ -13,18 +13,20 @@ export default function ConfirmModal({
   children,
   tipo = 'aviso'
 }) {
+  const titleId = useId();
+
   if (!isOpen) return null;
 
   return (
     <div className="modal-overlay">
-      <div className={`modal-container modal-container--${tipo}`}>
-        <h3 className="modal-title">{titulo}</h3>
+      <div className={`modal-container modal-container--${tipo}`} role="dialog" aria-modal="true" aria-labelledby={titleId}>
+        <h3 className="modal-title" id={titleId}>{titulo}</h3>
         <div className="modal-message">{mensagem}</div>
         
         {children ? (
           <div className="modal-custom-content">
             {children}
-            <button className="btn-modal btn-cancelar" type="button" onClick={onCancel} style={{ marginTop: '10px', width: '100%' }}>
+            <button className="btn-modal btn-cancelar btn-modal--full modal-custom-cancel" type="button" onClick={onCancel}>
               DESISTIR
             </button>
           </div>
@@ -35,7 +37,7 @@ export default function ConfirmModal({
                 {textoCancelar}
               </button>
             )}
-            <button className={`btn-modal btn-confirmar ${tipo}`} type="button" onClick={onConfirm} style={{ flex: mostrarCancelar ? 1 : 'none', width: mostrarCancelar ? 'auto' : '100%' }}>
+            <button className={`btn-modal btn-confirmar ${tipo} ${mostrarCancelar ? '' : 'btn-modal--full'}`} type="button" onClick={onConfirm}>
               {textoConfirmar}
             </button>
           </div>

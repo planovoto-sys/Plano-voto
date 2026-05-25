@@ -133,6 +133,12 @@
   transform: scale(0.99);
 }
 
+.btn-comecar:disabled {
+  cursor: wait;
+  opacity: 0.72;
+  transform: none;
+}
+
 @media (max-width: 360px) {
   .login-main {
     gap: 14px;
