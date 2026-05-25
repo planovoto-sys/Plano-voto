@@ -15,7 +15,7 @@
   padding: 0 22px;
 }
 
-.my-plan-header__back,
+.my-plan-header__profile,
 .my-plan-header__logout {
   border: 0;
   background: transparent;
@@ -24,7 +24,7 @@
   cursor: pointer;
 }
 
-.my-plan-header__back,
+.my-plan-header__profile,
 .my-plan-header__logout {
   width: 40px;
   height: 40px;
@@ -37,10 +37,88 @@
   padding: 0;
 }
 
-.my-plan-header__back .app-icon,
 .my-plan-header__logout svg {
   width: 20px;
   height: 20px;
+}
+
+.my-plan-header__profile-wrap {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  justify-self: start;
+}
+
+.my-plan-header__profile {
+  overflow: visible;
+}
+
+.my-plan-header__profile-avatar {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--soft);
+  color: var(--text-strong);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(17, 17, 17, 0.08);
+}
+
+.my-plan-header__profile-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.my-plan-header__profile-initial {
+  color: var(--text-strong);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.my-plan-header__profile-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 30;
+  width: min(246px, calc(100vw - 44px));
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: 0 16px 34px rgba(17, 17, 17, 0.14);
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+}
+
+.my-plan-header__profile-popover strong,
+.my-plan-header__profile-popover span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.my-plan-header__profile-popover strong {
+  color: var(--text-strong);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 850;
+  line-height: 1.1;
+}
+
+.my-plan-header__profile-popover span {
+  color: var(--muted-soft);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.2;
 }
 
 .my-plan-header__logout svg {
@@ -102,7 +180,7 @@
 
 .my-plan-shell {
   display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   gap: 10px;
   min-width: 0;
   min-height: 0;
@@ -257,6 +335,10 @@
   line-height: 1;
 }
 
+.my-plan-choice-section .prototype-section-heading__copy {
+  margin-bottom: 8px;
+}
+
 .my-plan-choice-section .prototype-section-heading p {
   margin-top: 2px;
 }
@@ -271,7 +353,7 @@
 
 .my-plan-empty-choice {
   min-height: 94px;
-  border: 1px dashed rgba(0, 42, 84, 0.18);
+  border: 1px dashed rgba(17, 17, 17, 0.18);
   border-radius: 8px;
   background: var(--surface);
   display: grid;
@@ -306,7 +388,7 @@
   min-height: 40px;
   border: 0;
   border-radius: 999px;
-  background: var(--blue);
+  background: var(--ink);
   color: var(--surface);
   padding: 0 14px;
   font-family: var(--font-family);
@@ -315,11 +397,25 @@
   cursor: pointer;
 }
 
+.my-plan-save-invite button {
+  min-height: 48px;
+}
+
 .my-plan-actions {
+  position: sticky;
+  bottom: 8px;
+  z-index: 20;
   display: grid;
   gap: 0;
-  min-height: 80px;
-  padding: 6px 0 2px;
+  min-height: 0;
+  margin-top: 2px;
+  padding: 0;
+  background: transparent;
+  pointer-events: none;
+}
+
+.my-plan-actions > * {
+  pointer-events: auto;
 }
 
 .my-plan-save-invite,
@@ -383,7 +479,7 @@
 }
 
 .my-plan-share-panel {
-  min-height: 72px;
+  min-height: 0;
   margin-top: 0;
   border: 0;
   border-radius: 14px;
@@ -400,7 +496,7 @@
 .my-plan-share-panel .share-choice-panel__button {
   width: 100%;
   max-width: 512px;
-  min-height: 0;
+  min-height: 58px;
   justify-self: center;
   border-radius: 999px;
   background: var(--action, var(--orange));
@@ -518,13 +614,12 @@
     justify-self: center;
   }
 
-  .my-plan-share-disabled,
-  .my-plan-share-panel {
-    min-height: 58px;
+  .my-plan-share-disabled {
+    min-height: 70px;
   }
 
   .my-plan-share-panel .share-choice-panel__button {
-    min-height: 0;
+    min-height: 58px;
   }
 
   .my-plan-share-disabled strong {

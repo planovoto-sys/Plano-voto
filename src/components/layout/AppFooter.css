@@ -30,7 +30,7 @@
 }
 
 .app-footer__brand > strong {
-  color: var(--desktop-primary-strong);
+  color: var(--desktop-ink-strong);
   font-size: 18px;
   letter-spacing: 0.2px;
 }
@@ -55,7 +55,7 @@
 
 .app-footer a:hover,
 .app-footer a:focus-visible {
-  color: var(--desktop-primary-strong);
+  color: var(--desktop-ink-strong);
   outline: 0;
 }
 

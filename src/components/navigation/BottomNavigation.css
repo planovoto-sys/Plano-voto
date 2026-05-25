@@ -7,9 +7,9 @@
 }
 
 .bottom-step-nav {
-  --step-nav-muted: rgba(0, 42, 84, 0.62);
+  --step-nav-muted: rgba(17, 17, 17, 0.62);
   --step-nav-active-bg: transparent;
-  --step-nav-active-color: var(--blue);
+  --step-nav-active-color: var(--ink);
   --step-nav-accent: var(--orange);
   position: relative;
   width: 100%;
@@ -17,7 +17,7 @@
   height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
   min-height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
   flex: 0 0 auto;
-  border-top: 1px solid rgba(0, 42, 84, 0.1);
+  border-top: 1px solid rgba(17, 17, 17, 0.1);
   background: var(--page-bg);
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -173,7 +173,7 @@
     background: var(--page-bg);
     overflow: hidden;
     transform: none;
-    box-shadow: 0 -1px 0 rgba(0, 42, 84, 0.1);
+    box-shadow: 0 -1px 0 rgba(17, 17, 17, 0.1);
   }
 
   .app-page-footer--footer .bottom-step-nav {
@@ -262,7 +262,7 @@
   position: absolute;
   inset: 0;
   border: 0;
-  background: rgba(0, 42, 84, 0.14);
+  background: rgba(17, 17, 17, 0.14);
 }
 
 .options-drawer {
@@ -280,7 +280,7 @@
   flex-direction: column;
   gap: 12px;
   overflow: auto;
-  box-shadow: 0 -14px 34px rgba(0, 42, 84, 0.12);
+  box-shadow: 0 -14px 34px rgba(17, 17, 17, 0.12);
   animation: optionsDrawerIn 180ms ease-out both;
 }
 
@@ -386,7 +386,7 @@
   margin-top: 4px;
   width: 100%;
   height: 50px;
-  border: 1px solid var(--blue);
+  border: 1px solid var(--ink);
   border-radius: 999px;
   background: var(--surface);
   color: var(--text-strong);
@@ -587,7 +587,7 @@
     padding: 22px;
     margin: 0;
     gap: 16px;
-    box-shadow: 0 18px 44px rgba(0, 42, 84, 0.16);
+    box-shadow: 0 18px 44px rgba(17, 17, 17, 0.16);
     animation: optionsDesktopIn 140ms ease-out both;
     pointer-events: auto;
   }

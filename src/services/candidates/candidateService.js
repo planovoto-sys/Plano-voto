@@ -18,6 +18,8 @@ const PARTY_CACHE_MAX_AGE_MS = 12 * 60 * 60 * 1000;
 const PARTY_CACHE_MAX_STALE_MS = 7 * 24 * 60 * 60 * 1000;
 const TALLY_CACHE_MAX_AGE_MS = 2 * 60 * 1000;
 const TALLY_CACHE_MAX_STALE_MS = 30 * 60 * 1000;
+const STATE_CHOICE_CACHE_MAX_AGE_MS = 2 * 60 * 1000;
+const STATE_CHOICE_CACHE_MAX_STALE_MS = 30 * 60 * 1000;
 const CANDIDATES_COLLECTION = 'candidatos';
 const PARTY_COLLECTION = 'partidos_politicos';
 const PUBLIC_CANDIDATE_CHOICES_COLLECTION = 'publicCandidateChoices';
@@ -120,6 +122,7 @@ const removeCacheEntry = (key) => {
 const candidateCacheKey = (officeName) => `candidates:${officeName}`;
 const partyCacheKey = () => 'party-scores';
 const tallyCacheKey = (candidateId, estado = null) => `choice-counts:${ACTIVE_ELECTION_ID}:${normalizeStateCode(estado) || 'all'}:${candidateId}`;
+const stateChoiceCacheKey = (estado) => `state-choice-counts:${ACTIVE_ELECTION_ID}:${normalizeStateCode(estado) || 'all'}`;
 
 const normalizeLookupKey = (value) => (
   normalizeSearch(value).replace(/[^a-z0-9]+/g, '')
@@ -302,6 +305,75 @@ export const fetchCandidatesByOffice = async (officeName) => {
 
   writeCacheEntry(candidateCacheKey(officeName), candidates);
   return candidates;
+};
+
+export const readCachedStateChoiceCounts = (states = []) => {
+  const counts = new Map();
+
+  states
+    .map((state) => normalizeStateCode(state?.sigla ?? state?.id ?? state))
+    .filter(Boolean)
+    .forEach((stateCode) => {
+      const cached = readCacheEntry(stateChoiceCacheKey(stateCode), {
+        maxAgeMs: STATE_CHOICE_CACHE_MAX_AGE_MS,
+        maxStaleMs: STATE_CHOICE_CACHE_MAX_STALE_MS
+      });
+
+      if (cached?.value) {
+        counts.set(stateCode, {
+          ...cached.value,
+          isFresh: cached.isFresh
+        });
+      }
+    });
+
+  return counts;
+};
+
+export const fetchStateChoiceCounts = async (states = [], { forceRefresh = false } = {}) => {
+  const stateCodes = [...new Set(
+    states
+      .map((state) => normalizeStateCode(state?.sigla ?? state?.id ?? state))
+      .filter(Boolean)
+  )];
+  const counts = new Map();
+  const statesToFetch = [];
+
+  stateCodes.forEach((stateCode) => {
+    const cached = readCacheEntry(stateChoiceCacheKey(stateCode), {
+      maxAgeMs: STATE_CHOICE_CACHE_MAX_AGE_MS,
+      maxStaleMs: STATE_CHOICE_CACHE_MAX_STALE_MS
+    });
+
+    if (cached?.value) {
+      counts.set(stateCode, cached.value);
+    }
+
+    if (forceRefresh || !cached?.isFresh) {
+      statesToFetch.push(stateCode);
+    }
+  });
+
+  await Promise.all(statesToFetch.map(async (stateCode) => {
+    const choicesQuery = query(
+      collection(db, PUBLIC_CANDIDATE_CHOICES_COLLECTION),
+      where('electionId', '==', ACTIVE_ELECTION_ID),
+      where('state', '==', stateCode)
+    );
+    const countSnap = await getCountFromServer(choicesQuery);
+    const activeVoters = Math.max(0, Number(countSnap.data().count) || 0);
+    const data = {
+      schema_version: 1,
+      election_id: ACTIVE_ELECTION_ID,
+      state: stateCode,
+      active_voters: activeVoters
+    };
+
+    counts.set(stateCode, data);
+    writeCacheEntry(stateChoiceCacheKey(stateCode), data);
+  }));
+
+  return counts;
 };
 
 export const readCachedTallies = (candidateTargets, { estado = null } = {}) => {

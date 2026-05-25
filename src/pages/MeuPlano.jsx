@@ -20,7 +20,6 @@ import {
 import ShareChoicePanel from '@/components/share/ShareChoicePanel';
 import BottomNavigation from '@/components/navigation/BottomNavigation';
 import ConfirmModal from '@/components/feedback/ConfirmModal';
-import { BackIcon } from '@/components/icons/AppIcons';
 import { ChanceFlame } from '@/components/icons/ChanceFlame';
 import CandidateCard from '@/components/selection/CandidateCard';
 import {
@@ -135,6 +134,7 @@ export default function MeuPlano() {
   const [remoteDraftState, setRemoteDraftState] = useState({ userId: null, draft: null, loading: false });
   const [candidateDetailsState, setCandidateDetailsState] = useState({ signature: '', candidatesById: new Map(), loading: false });
   const [modalCampoBloqueado, setModalCampoBloqueado] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [planUrl] = useState(() => getPlanUrl());
 
   useEffect(() => {
@@ -308,14 +308,34 @@ export default function MeuPlano() {
   return (
     <div className={`my-plan-page prototype-page nv-screen ${isGuestMode ? 'my-plan-page--guest' : 'my-plan-page--saved'}`}>
       <header className="my-plan-header">
-        <button
-          className="my-plan-header__back nv-touch"
-          type="button"
-          onClick={() => navigate(BALLOT_ROUTES.senadores, { state: { bypassVoteRedirect: true } })}
-          aria-label="Voltar"
-        >
-          <BackIcon />
-        </button>
+        <div className="my-plan-header__profile-wrap">
+          <button
+            className="my-plan-header__profile nv-touch"
+            type="button"
+            onClick={() => setProfileMenuOpen((currentValue) => !currentValue)}
+            aria-label="Mostrar perfil"
+            aria-expanded={profileMenuOpen}
+          >
+            <span className="my-plan-header__profile-avatar" aria-hidden="true">
+              {profileImage ? (
+                <img
+                  className="my-plan-header__profile-image"
+                  src={profileImage}
+                  alt=""
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <span className="my-plan-header__profile-initial">{profileInitial}</span>
+              )}
+            </span>
+          </button>
+          {profileMenuOpen && (
+            <div className="my-plan-header__profile-popover" role="dialog" aria-label="Dados do perfil">
+              <strong>{profileName}</strong>
+              <span>{profileEmail}</span>
+            </div>
+          )}
+        </div>
         <h1 className="my-plan-header__title">
           <ChanceFlame className="my-plan-header__flame" size={20} />
           <span>nossovoto<em>.org</em></span>
@@ -332,25 +352,6 @@ export default function MeuPlano() {
 
       <main className="my-plan-scroll prototype-scroll nv-scroll">
         <div className="my-plan-shell">
-          <section className="my-plan-profile" aria-label="Perfil">
-            {profileImage ? (
-              <img
-                className="my-plan-profile__photo"
-                src={profileImage}
-                alt=""
-                referrerPolicy="no-referrer"
-              />
-            ) : (
-              <span className="my-plan-profile__photo my-plan-profile__photo--fallback" aria-hidden="true">
-                {profileInitial}
-              </span>
-            )}
-            <div className="my-plan-profile__copy">
-              <strong>{profileName}</strong>
-              <span>{profileEmail}</span>
-            </div>
-          </section>
-
           <section className="my-plan-overview" aria-label="Resumo do plano">
             <OverviewTile
               label="Estado"

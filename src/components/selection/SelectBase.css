@@ -75,12 +75,12 @@
   display: none;
   gap: 8px;
   padding: 18px;
-  box-shadow: 0 16px 38px rgba(0, 42, 84, 0.08);
+  box-shadow: 0 16px 38px rgba(17, 17, 17, 0.08);
 }
 
 .state-suggested-card.is-selected {
   border-color: var(--orange);
-  box-shadow: 0 0 0 2px rgba(255, 152, 0, 0.16), 0 16px 38px rgba(0, 42, 84, 0.08);
+  box-shadow: 0 0 0 2px rgba(255, 152, 0, 0.16), 0 16px 38px rgba(17, 17, 17, 0.08);
 }
 
 .state-suggested-card > span {
@@ -136,6 +136,10 @@
 .prototype-section-heading {
   margin: 0 0 10px 5px;
   min-width: 0;
+}
+
+.candidate-flow .prototype-section-heading--current {
+  margin-bottom: 0;
 }
 
 .prototype-section-heading__copy {
@@ -246,7 +250,7 @@
 
 .select-search-field input:focus,
 .candidate-search-field input:focus {
-  border-color: var(--blue);
+  border-color: var(--ink);
 }
 
 .select-search-field input::placeholder,
@@ -262,20 +266,20 @@
 }
 
 .state-card {
+  --state-card-border: rgba(17, 17, 17, 0.12);
   width: 100%;
-  height: 80px;
-  min-height: 80px;
-  border: 0;
-  border-radius: 9px;
-  background: var(--card-bg);
+  min-height: 112px;
+  border: 1px solid var(--state-card-border);
+  border-radius: 14px;
+  background: var(--surface);
   color: var(--text-main);
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
+  display: block;
   font-family: var(--font-family);
-  padding: 0 15px;
+  padding: 16px;
   text-align: left;
   cursor: pointer;
+  box-shadow: 0 12px 28px rgba(17, 17, 17, 0.06);
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 }
 
 .state-card:active,
@@ -286,12 +290,20 @@
 }
 
 .state-card.is-selected {
-  box-shadow: inset 0 0 0 2px #ff9b49;
+  border: 2px solid currentColor;
+  box-shadow:
+    0 18px 46px -20px color-mix(in srgb, currentColor 40%, transparent),
+    0 8px 28px -18px color-mix(in srgb, currentColor 30%, transparent),
+    0 0 30px -14px color-mix(in srgb, currentColor 24%, transparent);
 }
 
 .state-card--current {
   cursor: default;
-  box-shadow: inset 0 0 0 1px #ff9b49;
+  border: 2px solid currentColor;
+  box-shadow:
+    0 18px 46px -20px color-mix(in srgb, currentColor 32%, transparent),
+    0 8px 28px -18px color-mix(in srgb, currentColor 24%, transparent),
+    0 0 30px -14px color-mix(in srgb, currentColor 18%, transparent);
 }
 
 .state-card--current:active {
@@ -305,18 +317,37 @@
   min-width: 0;
 }
 
+.state-card__content {
+  display: grid;
+  align-content: center;
+  gap: 16px;
+  min-width: 0;
+  height: 100%;
+}
+
+.state-card__identity,
+.state-card__name-row {
+  min-width: 0;
+}
+
+.state-card__name-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .state-card .state-full-name {
   display: block;
   max-width: 100%;
-  overflow: hidden;
+  overflow: visible;
   color: currentColor;
   font-family: var(--font-display);
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 800;
   line-height: 1.05;
-  text-overflow: ellipsis;
+  text-overflow: clip;
   text-transform: uppercase;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .state-card .state-sigla {
@@ -325,6 +356,44 @@
   font-weight: 500;
   line-height: 1;
   text-transform: uppercase;
+}
+
+.state-card__stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  min-width: 0;
+}
+
+.state-card__pill {
+  min-width: 0;
+  min-height: 36px;
+  border: 1px solid rgba(17, 17, 17, 0.18);
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 9px;
+  color: currentColor;
+  font-size: 10.5px;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.state-card__pill svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  stroke-width: 2.2;
+}
+
+.state-card__pill span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .candidate-current-section {
@@ -382,7 +451,7 @@
 }
 
 .candidate-current-empty {
-  border: 1px dashed rgba(0, 42, 84, 0.18);
+  border: 1px dashed rgba(17, 17, 17, 0.18);
   border-radius: 8px;
   background: #fbfcfb;
   display: grid;
@@ -438,7 +507,12 @@
   grid-template-columns: minmax(0, 1fr) auto minmax(106px, max-content);
   align-items: center;
   overflow: visible;
-  box-shadow: 0 6px 16px rgba(0, 42, 84, 0.07);
+  box-shadow: 0 6px 16px rgba(17, 17, 17, 0.07);
+}
+
+.candidate-search-filter--state {
+  margin: 0 0 12px;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .candidate-search-filter__search {
@@ -451,6 +525,14 @@
   gap: 10px;
   padding: 0 13px 0 15px;
   color: var(--text-strong);
+}
+
+.candidate-search-filter--state .candidate-search-filter__search {
+  border-radius: 14px;
+}
+
+.candidate-search-filter.candidate-search-filter--state {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .candidate-search-filter__search .app-icon {
@@ -484,7 +566,7 @@
 }
 
 .candidate-search-filter__search input::placeholder {
-  color: rgba(0, 42, 84, 0.52);
+  color: rgba(17, 17, 17, 0.52);
   opacity: 1;
 }
 
@@ -555,17 +637,17 @@
   z-index: 40;
   width: min(214px, calc(100vw - 48px));
   overflow: hidden;
-  border: 1px solid rgba(0, 42, 84, 0.08);
+  border: 1px solid rgba(17, 17, 17, 0.08);
   border-radius: 18px;
   background: var(--surface);
-  box-shadow: 0 18px 38px rgba(0, 42, 84, 0.13);
+  box-shadow: 0 18px 38px rgba(17, 17, 17, 0.13);
 }
 
 .candidate-search-filter__option {
   width: 100%;
   min-height: 58px;
   border: 0;
-  border-bottom: 1px solid rgba(0, 42, 84, 0.06);
+  border-bottom: 1px solid rgba(17, 17, 17, 0.06);
   background: var(--surface);
   color: var(--text-strong);
   display: grid;
@@ -619,7 +701,7 @@
   width: 100%;
   min-height: 46px;
   margin-top: 12px;
-  border: 1px solid rgba(0, 42, 84, 0.18);
+  border: 1px solid rgba(17, 17, 17, 0.18);
   border-radius: 9px;
   background: var(--surface);
   color: var(--text-strong);
@@ -736,17 +818,19 @@
 }
 
 .candidate-card--visitor {
-  border: 1px solid rgba(0, 42, 84, 0.1);
+  border: 1px solid rgba(17, 17, 17, 0.1);
   background: var(--surface);
   color: var(--text-main);
-  box-shadow: 0 12px 28px rgba(0, 42, 84, 0.06);
+  box-shadow: 0 12px 28px rgba(17, 17, 17, 0.06);
 }
 
 .prototype-candidate-card.is-selected {
-  border-color: var(--candidate-card-border);
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, currentColor 18%, transparent),
-    0 12px 26px rgba(0, 42, 84, 0.08);
+  border: 2px solid currentColor;
+  box-shadow: none;
+}
+
+.prototype-candidate-card.is-selected::before {
+  content: none;
 }
 
 .prototype-candidate-card.is-summary {
@@ -797,11 +881,10 @@
   min-width: 0;
   max-width: 100%;
   overflow: visible;
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  column-gap: 4px;
-  row-gap: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  column-gap: 10px;
 }
 
 .candidate-card__number {
@@ -834,15 +917,39 @@
 }
 
 .candidate-card__score {
+  min-width: max-content;
   color: currentColor;
-  font-family: var(--font-display);
-  font-size: var(--candidate-score-size, 16px);
-  font-weight: 700;
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 4px;
+  font-family: var(--font-family);
+  padding-top: 2px;
+  text-align: right;
+  opacity: 0.78;
+}
+
+.candidate-card__score small {
+  color: currentColor;
+  font-family: var(--font-family);
+  font-size: 9px;
+  font-weight: 550;
+  line-height: 1;
+  opacity: 0.72;
+  text-transform: none;
+}
+
+.candidate-card__score b {
+  color: currentColor;
+  font-family: var(--font-family);
+  font-size: 12px;
+  font-weight: 650;
   line-height: 1;
   white-space: nowrap;
 }
 
 .candidate-card__score-separator {
+  display: none;
   color: currentColor;
   font-family: var(--font-display);
   font-size: var(--candidate-score-size, 16px);
@@ -873,7 +980,7 @@
 .candidate-card__remove-action {
   min-width: 82px;
   min-height: 34px;
-  border: 1px solid rgba(0, 42, 84, 0.16);
+  border: 1px solid rgba(17, 17, 17, 0.16);
   border-radius: 999px;
   background: var(--surface);
   color: var(--text-main);
@@ -1006,7 +1113,7 @@
   border-radius: 999px;
   border: 1px solid var(--candidate-bar-border);
   background: var(--candidate-thermometer-track);
-  box-shadow: inset 0 1px 2px rgba(0, 42, 84, 0.04);
+  box-shadow: inset 0 1px 2px rgba(17, 17, 17, 0.04);
 }
 
 .candidate-thermometer__fill {
@@ -1238,7 +1345,7 @@
 .select-base__continue {
   width: 100%;
   max-width: 448px;
-  min-height: 0;
+  min-height: 58px;
   border: 0;
   border-radius: 999px;
   background: var(--action, var(--orange));
@@ -1434,7 +1541,7 @@
   }
 
   .candidate-card--visitor {
-    border: 1px solid rgba(0, 42, 84, 0.08);
+    border: 1px solid rgba(17, 17, 17, 0.08);
     background: var(--surface);
     color: var(--text-main);
     box-shadow: none;
@@ -1452,10 +1559,8 @@
   }
 
   .prototype-candidate-card.is-selected {
-    border-color: var(--candidate-card-border);
-    box-shadow:
-      inset 0 0 0 1px color-mix(in srgb, currentColor 18%, transparent),
-      0 12px 26px rgba(0, 42, 84, 0.08);
+    border: 2px solid currentColor;
+    box-shadow: none;
   }
 
   .candidate-current-section .prototype-candidate-card.is-summary {
@@ -1474,9 +1579,10 @@
   }
 
   .candidate-card__name-row {
-    display: flex;
-    align-items: baseline;
-    column-gap: 4px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    column-gap: 8px;
   }
 
   .candidate-card__name-row > strong {
@@ -1538,7 +1644,7 @@
     max-width: 100%;
     flex: 0 0 auto;
     min-height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
-    border-top: 1px solid rgba(0, 42, 84, 0.1);
+    border-top: 1px solid rgba(17, 17, 17, 0.1);
     background: var(--page-bg);
     overflow: hidden;
     transform: none;
@@ -1700,16 +1806,36 @@
   }
 
   .state-card {
-    height: 68px;
-    min-height: 68px;
+    min-height: 104px;
+    padding: 12px;
   }
 
   .state-card .state-full-name {
-    font-size: 16px;
+    font-size: 15.5px;
   }
 
   .state-card .state-sigla {
     font-size: 12px;
+  }
+
+  .state-card__content {
+    gap: 12px;
+  }
+
+  .state-card__stats {
+    gap: 6px;
+  }
+
+  .state-card__pill {
+    min-height: 32px;
+    gap: 5px;
+    padding-inline: 6px;
+    font-size: 9px;
+  }
+
+  .state-card__pill svg {
+    width: 13px;
+    height: 13px;
   }
 
   .candidate-filter-tabs__item {
@@ -1784,22 +1910,21 @@
 
   .state-card-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
     gap: 14px;
   }
 
   .state-card {
-    height: 92px;
-    min-height: 92px;
+    min-height: 122px;
     border: 1px solid var(--desktop-border);
     background: var(--desktop-surface);
-    box-shadow: 0 12px 28px rgba(0, 42, 84, 0.06);
-    transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+    box-shadow: 0 12px 28px rgba(17, 17, 17, 0.06);
+    padding: 18px;
   }
 
   .state-card:hover,
   .prototype-candidate-card:hover {
-    box-shadow: 0 16px 34px rgba(0, 42, 84, 0.1);
+    box-shadow: 0 16px 34px rgba(17, 17, 17, 0.1);
     transform: translateY(-1px);
   }
 
@@ -1835,7 +1960,7 @@
   .prototype-candidate-card {
     min-height: 90px;
     border-radius: 8px;
-    box-shadow: 0 10px 24px rgba(0, 42, 84, 0.05);
+    box-shadow: 0 10px 24px rgba(17, 17, 17, 0.05);
     transition: box-shadow 160ms ease, transform 160ms ease, border-color 160ms ease;
   }
 
@@ -1859,7 +1984,7 @@
   .select-base__continue {
     width: 100%;
     max-width: 448px;
-    min-height: 0;
+    min-height: 58px;
     border-radius: 999px;
     font-size: 16px;
     padding: 14px 24px;
@@ -1885,6 +2010,7 @@
   .select-base__continue {
     width: 100%;
     max-width: 512px;
+    min-height: 58px;
   }
 }
 
@@ -1913,7 +2039,7 @@
   }
 
   .state-card-list {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
   }
 
   .candidate-list-tools {
@@ -2058,18 +2184,27 @@
   }
 
   .state-card-list {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr));
     gap: 16px;
   }
 
   .state-card {
-    height: 104px;
-    min-height: 104px;
-    padding-inline: 20px;
+    min-height: 130px;
+    padding: 22px;
   }
 
   .state-card .state-full-name {
     font-size: 22px;
+  }
+
+  .state-card__pill {
+    min-height: 42px;
+    font-size: 12px;
+  }
+
+  .state-card__pill svg {
+    width: 19px;
+    height: 19px;
   }
 
   .candidate-list-section,
@@ -2127,7 +2262,7 @@
 
   .candidate-current-selected-toggle:hover,
   .candidate-current-selected-toggle.is-active {
-    border-color: var(--blue);
+    border-color: var(--ink);
     background: var(--orange-soft);
     transform: translateY(-1px);
   }
@@ -2160,7 +2295,7 @@
 
   .candidate-filter-tabs__item:not(.is-active):hover,
   .candidate-search-button:not(.is-active):hover {
-    border-color: var(--blue);
+    border-color: var(--ink);
     background: transparent;
   }
 
@@ -2222,8 +2357,8 @@
   }
 
   .candidate-list-section .candidate-card__name-row {
-    align-items: baseline;
-    column-gap: 4px;
+    align-items: start;
+    column-gap: 10px;
   }
 
   .candidate-card__name-row > strong {
@@ -2278,7 +2413,7 @@
   }
 
   .candidate-load-more:hover {
-    border-color: var(--blue);
+    border-color: var(--ink);
     background: var(--soft);
     transform: translateY(-1px);
   }
@@ -2344,7 +2479,7 @@
   }
 
   .state-card-list {
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 390px), 1fr));
   }
 }
 

@@ -10,14 +10,14 @@ const FILTER_STORAGE_KEY = 'plano-voto:filtro-ativo';
 
 const readPersistedFilter = () => {
   if (typeof window === 'undefined') {
-    return 'reeleger';
+    return 'todos';
   }
 
   try {
     const value = window.localStorage.getItem(FILTER_STORAGE_KEY);
-    return ['reeleger', 'renovar'].includes(value) ? value : 'reeleger';
+    return ['todos', 'reeleger', 'renovar', 'selecionados'].includes(value) ? value : 'todos';
   } catch {
-    return 'reeleger';
+    return 'todos';
   }
 };
 
@@ -45,7 +45,7 @@ export const UserProvider = ({ children }) => {
             // Ignora falhas de persistência local.
           }
         }
-        setFiltroAtivo('reeleger');
+        setFiltroAtivo('todos');
       });
 
       return () => {

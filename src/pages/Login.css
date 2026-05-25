@@ -68,7 +68,7 @@
   height: clamp(132px, 40vw, 198px);
   border: 0;
   border-radius: 50%;
-  background: rgba(0, 42, 84, 0.08);
+  background: rgba(17, 17, 17, 0.08);
   color: var(--text-strong);
   display: flex;
   align-items: center;

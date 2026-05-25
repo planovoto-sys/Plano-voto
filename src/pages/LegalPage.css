@@ -12,7 +12,7 @@
 .about-header {
   flex: 0 0 auto;
   min-height: 74px;
-  border-bottom: 1px solid rgba(0, 42, 84, 0.08);
+  border-bottom: 1px solid rgba(17, 17, 17, 0.08);
   background: rgba(255, 255, 255, 0.96);
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -72,8 +72,8 @@
 }
 
 .about-header__login {
-  border: 1px solid var(--blue);
-  background: var(--blue);
+  border: 1px solid var(--ink);
+  background: var(--ink);
   color: var(--surface);
   padding: 0 18px;
 }
@@ -178,33 +178,33 @@
 }
 
 .about-secondary-action {
-  border: 1px solid var(--blue);
+  border: 1px solid var(--ink);
   background: var(--surface);
   color: var(--text-strong);
 }
 
 .about-product-preview {
   min-width: 0;
-  border: 1px solid rgba(0, 42, 84, 0.08);
+  border: 1px solid rgba(17, 17, 17, 0.08);
   border-radius: 8px;
   background:
     linear-gradient(135deg, #fffaf5 0%, var(--surface) 48%, #f7fff4 100%);
   display: grid;
   gap: 12px;
   padding: clamp(18px, 3vw, 26px);
-  box-shadow: 0 24px 58px rgba(0, 42, 84, 0.1);
+  box-shadow: 0 24px 58px rgba(17, 17, 17, 0.1);
 }
 
 .about-preview-card,
 .about-preview-panel {
   min-width: 0;
-  border: 1px solid rgba(0, 42, 84, 0.08);
+  border: 1px solid rgba(17, 17, 17, 0.08);
   border-radius: 8px;
   background: var(--surface);
   display: grid;
   gap: 5px;
   padding: 16px;
-  box-shadow: 0 12px 30px rgba(0, 42, 84, 0.06);
+  box-shadow: 0 12px 30px rgba(17, 17, 17, 0.06);
 }
 
 .about-preview-card--state {
@@ -250,7 +250,7 @@
   border-radius: 50%;
   background:
     radial-gradient(circle at center, var(--surface) 0 58%, transparent 59%),
-    conic-gradient(var(--orange) 72%, rgba(0, 42, 84, 0.12) 0);
+    conic-gradient(var(--orange) 72%, rgba(17, 17, 17, 0.12) 0);
   transform: translateY(-50%);
 }
 
@@ -280,10 +280,10 @@
 .about-section--split article,
 .about-section--text,
 .about-final-cta {
-  border: 1px solid rgba(0, 42, 84, 0.08);
+  border: 1px solid rgba(17, 17, 17, 0.08);
   border-radius: 8px;
   background: var(--surface);
-  box-shadow: 0 16px 38px rgba(0, 42, 84, 0.06);
+  box-shadow: 0 16px 38px rgba(17, 17, 17, 0.06);
 }
 
 .about-step-card {
@@ -296,7 +296,7 @@
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: var(--blue);
+  background: var(--ink);
   color: var(--surface);
   display: inline-flex;
   align-items: center;
@@ -374,7 +374,7 @@
   display: grid;
   gap: 18px;
   padding: clamp(26px, 4vw, 38px);
-  background: var(--blue);
+  background: var(--ink);
 }
 
 .about-section--text h2,
@@ -522,7 +522,7 @@
 }
 
 .legal-cta__secondary {
-  border: 1px solid var(--blue);
+  border: 1px solid var(--ink);
   background: var(--surface);
   color: var(--text-strong);
 }
@@ -642,8 +642,8 @@
 }
 
 .cookie-switch input:checked + span {
-  border-color: var(--blue);
-  background: var(--blue);
+  border-color: var(--ink);
+  background: var(--ink);
 }
 
 .cookie-switch input:checked + span::after {
@@ -652,7 +652,7 @@
 }
 
 .cookie-switch input:focus-visible + span {
-  outline: 3px solid rgba(0, 42, 84, 0.22);
+  outline: 3px solid rgba(17, 17, 17, 0.22);
   outline-offset: 2px;
 }
 
@@ -684,8 +684,8 @@
 }
 
 .cookie-settings__actions .cookie-settings__primary {
-  border-color: var(--blue);
-  background: var(--blue);
+  border-color: var(--ink);
+  background: var(--ink);
   color: var(--surface);
 }
 
@@ -762,7 +762,7 @@
     border-color: var(--desktop-border);
     border-radius: 8px;
     padding: 38px;
-    box-shadow: 0 16px 42px rgba(0, 42, 84, 0.06);
+    box-shadow: 0 16px 42px rgba(17, 17, 17, 0.06);
   }
 
   .legal-panel h1 {

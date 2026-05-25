@@ -186,7 +186,7 @@ export default function EscolherCandidatos({
   const [erroCarregamento, setErroCarregamento] = useState('');
   const [busca, setBusca] = useState('');
   const buscaDiferida = useDeferredValue(busca);
-  const [filtroLista, setFiltroLista] = useState('reeleger');
+  const [filtroLista, setFiltroLista] = useState('todos');
   const [selecionadosNaTela, setSelecionadosNaTela] = useState([]);
   const [ballotDraft, setBallotDraft] = useState(null);
   const [modalAviso, setModalAviso] = useState({ aberto: false, mensagem: '' });
@@ -203,7 +203,7 @@ export default function EscolherCandidatos({
   const tourSteps = [
     { target: '.app-help-action', title: 'AJUDA', content: 'Abre este guia sempre que você quiser revisar a tela.' },
     { target: '#tour-busca', title: 'PESQUISA', content: 'Pesquisa candidatos por nome ou partido.' },
-    { target: '.candidate-search-filter__trigger', title: 'FILTROS', content: '<b>Atuais:</b> Exibe candidatos que atuaram na última legislatura.<br><b>Novos:</b> Exibe candidatos que não atuaram na última legislatura.<br><b>Selecionados:</b> Exibe apenas os candidatos escolhidos.' },
+    { target: '.candidate-search-filter__trigger', title: 'FILTROS', content: '<b>Todos:</b> Exibe todos os candidatos disponíveis.<br><b>Atuais:</b> Exibe candidatos que atuaram na última legislatura.<br><b>Novos:</b> Exibe candidatos que não atuaram na última legislatura.<br><b>Selecionados:</b> Exibe apenas os candidatos escolhidos.' },
     { target: '.prototype-candidate-card.is-fire-featured .candidate-thermometer, .candidate-card-list .prototype-candidate-card', title: 'FOGUINHO', content: 'O foguinho destaca o candidato bem avaliado com a maior viabilidade entre as opções disponíveis.' },
     { target: '.prototype-candidate-card.is-viability-complete .candidate-thermometer, .candidate-card-list .prototype-candidate-card', title: 'VIÁVEL 100', content: 'Quando a viabilidade está em 100, esse candidato já possui grandes chances e não precisa de mais voto.' }
   ];

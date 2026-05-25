@@ -211,7 +211,7 @@ export default function CandidateCard({
     onLockedMetricClick?.();
   };
   const scoreLabel = (hasCandidateScore || hasPartyScore) ? formatScore(visibleScore) : '';
-  const partyLabel = [party, partyScore > 0 ? formatScore(partyScore) : ''].filter(Boolean).join(' | ');
+  const partyLabel = party || '';
 
   return (
     <button
@@ -231,10 +231,10 @@ export default function CandidateCard({
         <span className="candidate-card__name-row">
           <strong>{name}</strong>
           {scoreLabel && (
-            <>
-              <span className="candidate-card__score-separator" aria-hidden="true">|</span>
-              <span className="candidate-card__score">{scoreLabel}</span>
-            </>
+            <span className="candidate-card__score" aria-label={`Nota ${scoreLabel}`}>
+              <small>Nota</small>
+              <b>{scoreLabel}</b>
+            </span>
           )}
         </span>
         {partyLabel && <small>{partyLabel}</small>}

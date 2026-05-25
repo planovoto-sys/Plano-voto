@@ -8,7 +8,7 @@
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: rgba(0, 42, 84, 0.36);
+  background: rgba(17, 17, 17, 0.36);
 }
 
 .modal-container {
@@ -73,7 +73,7 @@
 }
 
 .btn-confirmar {
-  border-color: var(--blue);
+  border-color: var(--ink);
 }
 
 .btn-confirmar.perigo,
@@ -110,14 +110,14 @@
 }
 
 .btn-confirmar.choice-saved {
-  border-color: var(--desktop-primary);
-  background: var(--desktop-primary);
+  border-color: var(--desktop-ink);
+  background: var(--desktop-ink);
   color: var(--surface);
 }
 
 .btn-confirmar.login-required {
-  border-color: var(--blue);
-  background: var(--blue);
+  border-color: var(--ink);
+  background: var(--ink);
   color: var(--surface);
 }
 
@@ -128,10 +128,10 @@
 
 .senator-replace-actions button {
   min-height: 46px;
-  border: 1px solid var(--desktop-primary);
+  border: 1px solid var(--desktop-ink);
   border-radius: 999px;
   background: var(--surface);
-  color: var(--desktop-primary);
+  color: var(--desktop-ink);
   font-family: var(--font-family);
   font-size: 13px;
   font-weight: 800;

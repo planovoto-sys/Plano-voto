@@ -616,6 +616,23 @@ export default function SelectBase({
   const renderSearchField = (className = '') => {
     if (!mostrarBusca) return null;
 
+    if (isHomeState) {
+      return (
+        <div className={`candidate-search-filter candidate-search-filter--state ${className}`} id="tour-busca">
+          <label className="candidate-search-filter__search">
+            <SearchIcon />
+            <span>Pesquisar estados</span>
+            <input
+              type="search"
+              value={valorBusca}
+              onChange={handleSearchChange}
+              placeholder="Pesquisar estados"
+            />
+          </label>
+        </div>
+      );
+    }
+
     return (
       <label className={`select-search-field ${className}`} id="tour-busca">
         <SearchIcon />
@@ -708,7 +725,10 @@ export default function SelectBase({
   };
 
   const renderStateList = () => {
-    const estadoSelecionado = selecionados[0] || null;
+    const selectedState = selecionados[0] || null;
+    const estadoSelecionado = selectedState
+      ? dados.find((item) => item.id === selectedState.id) || selectedState
+      : null;
 
     return (
       <div className={`state-selection-flow nv-container ${estadoSelecionado ? 'has-current-state' : ''}`}>

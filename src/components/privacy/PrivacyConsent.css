@@ -12,9 +12,9 @@
   padding: 16px;
   color: var(--text-main);
   background: rgba(255, 255, 255, 0.96);
-  border: 1px solid rgba(0, 42, 84, 0.18);
+  border: 1px solid rgba(17, 17, 17, 0.18);
   border-radius: 8px;
-  box-shadow: 0 18px 50px rgba(0, 42, 84, 0.18);
+  box-shadow: 0 18px 50px rgba(17, 17, 17, 0.18);
   backdrop-filter: blur(10px);
 }
 
@@ -70,17 +70,17 @@
 
 .privacy-consent__primary {
   color: var(--surface);
-  background: var(--blue);
+  background: var(--ink);
 }
 
 .privacy-consent__secondary {
   color: var(--text-strong);
   background: var(--surface);
-  border-color: rgba(0, 42, 84, 0.18);
+  border-color: rgba(17, 17, 17, 0.18);
 }
 
 .privacy-consent button:focus-visible {
-  outline: 3px solid rgba(0, 42, 84, 0.22);
+  outline: 3px solid rgba(17, 17, 17, 0.22);
   outline-offset: 2px;
 }
 

@@ -55,6 +55,7 @@
 .share-choice-panel__button {
   width: 100%;
   max-width: 448px;
+  min-height: 58px;
   min-width: 0;
   border-radius: 999px;
   background: var(--action, var(--orange));
@@ -262,7 +263,7 @@
   border: 0;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.9);
-  color: var(--blue);
+  color: var(--ink);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -693,7 +694,7 @@
 }
 
 .share-gallery-actions__secondary {
-  border: 1.5px solid var(--blue) !important;
+  border: 1.5px solid var(--ink) !important;
   background: var(--surface);
   color: var(--text-strong);
 }

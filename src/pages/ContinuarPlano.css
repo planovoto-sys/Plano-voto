@@ -59,7 +59,7 @@
 }
 
 .handoff-panel__secondary {
-  border: 1px solid var(--blue);
+  border: 1px solid var(--ink);
   background: var(--surface);
   color: var(--text-strong);
 }
@@ -71,6 +71,6 @@
 
   .handoff-panel {
     border-color: var(--desktop-border);
-    box-shadow: 0 16px 42px rgba(0, 42, 84, 0.06);
+    box-shadow: 0 16px 42px rgba(17, 17, 17, 0.06);
   }
 }
