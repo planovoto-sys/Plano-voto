@@ -1,4 +1,5 @@
 import { ChanceFlame } from '@/components/icons/ChanceFlame';
+import { ChevronDownIcon } from '@/components/icons/AppIcons';
 import {
   formatScore,
   getCandidateChance,
@@ -164,7 +165,13 @@ export default function CandidateCard({
   disabled = false,
   lockPersonalizedFields = false,
   onLockedMetricClick,
-  showNumberAbove = false
+  showNumberAbove = false,
+  displayMode = 'detailed',
+  interactionMode = 'select',
+  expanded = false,
+  onToggleDetails,
+  detailsId = '',
+  selectionActionLabel = ''
 }) {
   const tone = lockPersonalizedFields ? 'visitor' : getCandidateTone(candidate);
   const name = getCandidateName(candidate);
@@ -212,53 +219,135 @@ export default function CandidateCard({
   };
   const scoreLabel = (hasCandidateScore || hasPartyScore) ? formatScore(visibleScore) : '';
   const partyLabel = party || '';
+  const isExpandable = interactionMode === 'expand';
+  const isExpanded = Boolean(expanded);
+  const isCompactMode = displayMode === 'compact';
+  const surfaceIsDetailed = !isExpandable && !isCompactMode;
+  const cardIsDetailed = surfaceIsDetailed || isExpanded;
+  const panelId = detailsId || `candidate-card-details-${String(candidate.id || name).replace(/[^a-zA-Z0-9_-]/g, '-')}`;
+  const selectionLabel = selectionActionLabel || (selected ? 'Remover escolha' : 'Escolher candidato');
+
+  const handleSurfaceClick = (event) => {
+    if (isExpandable) {
+      onToggleDetails?.(candidate, event);
+      return;
+    }
+
+    onSelect?.(event);
+  };
+
+  const renderStatusBadge = (className = '') => (
+    <span className={`candidate-card__status-badge ${className}`} aria-hidden="true">
+      <StatusIcon kind={statusIconKind} />
+    </span>
+  );
+
+  const renderExpandIndicator = () => (
+    <span className="candidate-card__expand-indicator" aria-hidden="true">
+      <ChevronDownIcon />
+    </span>
+  );
+
+  const renderLockedInsight = () => {
+    if (!showAssessmentSubtitle || !lockPersonalizedFields) return null;
+
+    return (
+      <span
+        className="candidate-card__locked-insight"
+        onClick={handleLockedFieldClick}
+      >
+        <strong>Indicadores disponíveis após login</strong>
+        <span>Entre para ver nota, viabilidade e análise personalizada.</span>
+      </span>
+    );
+  };
+
+  const renderCardBody = ({ detailed = false } = {}) => (
+    <span className="candidate-card__identity">
+      <span className="candidate-card__summary-row">
+        <span className="candidate-card__identity-copy">
+          {showNumberAbove && number && (
+            <span className="candidate-card__number">{number}</span>
+          )}
+          <span className="candidate-card__name-row">
+            <strong>{name}</strong>
+            {detailed && scoreLabel && (
+              <span className="candidate-card__score" aria-label={`Nota ${scoreLabel}`}>
+                <small>Nota</small>
+                <b>{scoreLabel}</b>
+              </span>
+            )}
+          </span>
+          {partyLabel && <small>{partyLabel}</small>}
+        </span>
+
+        {!detailed && renderStatusBadge()}
+        {!detailed && isExpandable && renderExpandIndicator()}
+      </span>
+
+      {detailed && lockPersonalizedFields ? renderLockedInsight() : (
+        <ViabilityMeter
+          value={lockPersonalizedFields ? 0 : chance}
+          tone={metricTone}
+          featured={!lockPersonalizedFields && isFireFeatured}
+          locked={false}
+          label={viabilityLabel}
+          showCaption={detailed && showAssessmentSubtitle && !lockPersonalizedFields}
+          iconKind={statusIconKind}
+          onLockedClick={!lockPersonalizedFields ? onLockedMetricClick : undefined}
+        />
+      )}
+    </span>
+  );
 
   return (
-    <button
-      className={`prototype-candidate-card nv-touch nv-no-overflow candidate-card--${tone} ${highlight ? 'is-highlight' : ''} ${selected ? 'is-selected' : ''} ${summary ? 'is-summary' : ''} ${showNumberAbove ? 'has-number-above' : ''} ${isFireFeatured ? 'is-fire-featured' : ''} ${isViabilityComplete ? 'is-viability-complete' : ''} ${isBlocked ? 'is-blocked' : ''}`}
+    <article
+      className={`prototype-candidate-card nv-touch nv-no-overflow candidate-card--${tone} ${highlight ? 'is-highlight' : ''} ${selected ? 'is-selected' : ''} ${summary ? 'is-summary' : ''} ${showNumberAbove ? 'has-number-above' : ''} ${isFireFeatured ? 'is-fire-featured' : ''} ${isViabilityComplete ? 'is-viability-complete' : ''} ${isBlocked ? 'is-blocked' : ''} ${isExpandable ? 'is-expandable' : 'is-selectable'} ${isExpanded ? 'is-expanded' : ''} ${cardIsDetailed ? 'is-detailed' : 'is-compact'}`}
       style={textFitStyle}
-      type="button"
-      onClick={onSelect}
-      disabled={disabled}
       title={summary ? `${actionLabel || 'Candidato selecionado'}: ${name}` : name}
-      aria-pressed={selected}
-      aria-disabled={candidate.isAlreadyChosen ? 'true' : undefined}
     >
-      <span className="candidate-card__identity">
-        {showNumberAbove && number && (
-          <span className="candidate-card__number">{number}</span>
-        )}
-        <span className="candidate-card__name-row">
-          <strong>{name}</strong>
-          {scoreLabel && (
-            <span className="candidate-card__score" aria-label={`Nota ${scoreLabel}`}>
-              <small>Nota</small>
-              <b>{scoreLabel}</b>
-            </span>
-          )}
-        </span>
-        {partyLabel && <small>{partyLabel}</small>}
-        {showAssessmentSubtitle && lockPersonalizedFields ? (
-          <span
-            className="candidate-card__locked-insight"
-            onClick={handleLockedFieldClick}
-          >
-            <strong>Indicadores disponíveis após login 🔒</strong>
-            <span>Entre para ver nota, viabilidade e análise personalizada.</span>
-          </span>
-        ) : !lockPersonalizedFields && (
+      <button
+        className="candidate-card__surface nv-touch"
+        type="button"
+        onClick={handleSurfaceClick}
+        disabled={disabled}
+        aria-pressed={!isExpandable ? selected : undefined}
+        aria-expanded={isExpandable ? isExpanded : undefined}
+        aria-controls={isExpandable ? panelId : undefined}
+        aria-disabled={!isExpandable && candidate.isAlreadyChosen ? 'true' : undefined}
+      >
+        {renderCardBody({ detailed: surfaceIsDetailed })}
+      </button>
+
+      {isExpandable && isExpanded && (
+        <div className="candidate-card__detail-panel" id={panelId}>
           <ViabilityMeter
-            value={chance}
+            value={lockPersonalizedFields ? 0 : chance}
             tone={metricTone}
-            featured={isFireFeatured}
+            featured={!lockPersonalizedFields && isFireFeatured}
             locked={false}
             label={viabilityLabel}
-            showCaption={showAssessmentSubtitle}
+            showCaption={showAssessmentSubtitle && !lockPersonalizedFields}
             iconKind={statusIconKind}
-            onLockedClick={onLockedMetricClick}
+            onLockedClick={!lockPersonalizedFields ? onLockedMetricClick : undefined}
           />
-        )}
-      </span>
-    </button>
+
+          {lockPersonalizedFields && (
+            renderLockedInsight()
+          )}
+
+          <button
+            className={`candidate-card__selection-action nv-touch ${selected ? 'is-selected' : ''}`}
+            type="button"
+            onClick={onSelect}
+            disabled={disabled}
+            aria-pressed={selected}
+            aria-disabled={candidate.isAlreadyChosen ? 'true' : undefined}
+          >
+            {selectionLabel}
+          </button>
+        </div>
+      )}
+    </article>
   );
 }

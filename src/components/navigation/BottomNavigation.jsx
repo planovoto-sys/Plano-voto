@@ -1,4 +1,4 @@
-import { CheckCircle2, Landmark, MapPin, Users } from 'lucide-react';
+import { CheckCircle2, MapPin } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { BALLOT_ROUTES } from '@/constants/ballot';
 import { useUser } from '@/hooks/useUser';
@@ -11,10 +11,40 @@ import {
 } from '@/services/voting/votingService';
 import './BottomNavigation.css';
 
+function DeputyIcon({ className = '', strokeWidth = 2.2 }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M3.7 7.2h16.6M3.7 7.2c0 6.3 3.7 10.4 8.3 10.4s8.3-4.1 8.3-10.4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function SenatorIcon({ className = '', strokeWidth = 2.2 }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M3.7 17.2h16.6M3.7 17.2c0-6.3 3.7-10.4 8.3-10.4s8.3 4.1 8.3 10.4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 const PROGRESS_ITEMS = [
   { id: 'estado', label: 'Estado', path: BALLOT_ROUTES.estado, Icon: MapPin },
-  { id: 'deputado', label: 'Deputados', path: BALLOT_ROUTES.deputadoFederal, Icon: Users },
-  { id: 'senador', label: 'Senadores', path: BALLOT_ROUTES.senadores, Icon: Landmark }
+  { id: 'deputado', label: 'Deputados', path: BALLOT_ROUTES.deputadoFederal, Icon: DeputyIcon },
+  { id: 'senador', label: 'Senadores', path: BALLOT_ROUTES.senadores, Icon: SenatorIcon }
 ];
 
 const NAV_ITEMS = [

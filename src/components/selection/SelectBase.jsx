@@ -104,6 +104,7 @@ export default function SelectBase({
   const location = useLocation();
   const isHomeState = variant === 'home-state';
   const isCandidateOffice = variant === 'office-deputado' || variant === 'office-senado';
+  const isDeputyOffice = variant === 'office-deputado';
   const isSenateOffice = variant === 'office-senado';
   const [selecionados, setSelecionados] = useState(selecaoInicial);
   const [candidateRenderLimit, setCandidateRenderLimit] = useState(INITIAL_CANDIDATE_RENDER_LIMIT);
@@ -125,6 +126,8 @@ export default function SelectBase({
     typeof window !== 'undefined' && window.matchMedia(DESKTOP_LAYOUT_QUERY).matches
   ));
   const [showAllSelectedInCurrentSection, setShowAllSelectedInCurrentSection] = useState(false);
+  const [senateCardMode, setSenateCardMode] = useState('compact');
+  const [expandedDeputyCandidateId, setExpandedDeputyCandidateId] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -179,7 +182,11 @@ export default function SelectBase({
 
     lastScrollTopRef.current = 0;
     queueMicrotask(() => {
-      if (!cancelled) setContinueVisible(false);
+      if (!cancelled) {
+        setContinueVisible(false);
+        setExpandedDeputyCandidateId('');
+        setSenateCardMode('compact');
+      }
     });
 
     return () => {
@@ -200,6 +207,9 @@ export default function SelectBase({
   const shouldRenderContinue = !isHomeState;
   const shouldShowContinue = shouldRenderContinue && hasRequiredSelection && continueVisible;
   const shouldShowDesktopContinue = shouldRenderContinue && hasRequiredSelection && continueVisible;
+  const candidateListInstruction = isDeputyOffice
+    ? 'Abra um candidato para escolher'
+    : 'Selecione todos os candidatos que aceita votar';
 
   useEffect(() => {
     let cancelled = false;
@@ -605,6 +615,18 @@ export default function SelectBase({
     setModalCampoBloqueado(true);
   };
 
+  const handleDeputyDetailsToggle = (candidate) => {
+    setExpandedDeputyCandidateId((currentId) => (
+      currentId === candidate.id ? '' : candidate.id
+    ));
+  };
+
+  const handleSenateCardModeToggle = () => {
+    setSenateCardMode((currentMode) => (
+      currentMode === 'compact' ? 'detailed' : 'compact'
+    ));
+  };
+
   const handleLoginFromLockedMetric = () => {
     navigate('/login', {
       state: {
@@ -841,6 +863,11 @@ export default function SelectBase({
                     featuredMetrics={featuredMetricsByCandidateId.get(candidate.id)}
                     showAssessmentSubtitle={!personalizedFieldsLocked}
                     lockPersonalizedFields={false}
+                    displayMode={isSenateOffice ? senateCardMode : 'compact'}
+                    interactionMode={isDeputyOffice ? 'expand' : 'select'}
+                    expanded={isDeputyOffice && expandedDeputyCandidateId === candidate.id}
+                    selectionActionLabel="Remover escolha"
+                    onToggleDetails={handleDeputyDetailsToggle}
                     onLockedMetricClick={handleLockedMetricClick}
                     disabled={salvandoSelecao}
                     onSelect={() => handleSelect(candidate)}
@@ -860,7 +887,7 @@ export default function SelectBase({
         <section className="candidate-list-section">
           <div className="prototype-section-heading">
             <h2>Candidatos</h2>
-            <p>Selecione todos os candidatos que aceita votar</p>
+            <p>{candidateListInstruction}</p>
           </div>
 
           <div className={`candidate-list-tools ${candidateFilterOpen ? 'is-filter-open' : ''}`}>
@@ -879,6 +906,11 @@ export default function SelectBase({
                   featuredMetrics={featuredMetricsByCandidateId.get(candidate.id)}
                   showAssessmentSubtitle
                   lockPersonalizedFields={personalizedFieldsLocked}
+                  displayMode={isSenateOffice ? senateCardMode : 'compact'}
+                  interactionMode={isDeputyOffice ? 'expand' : 'select'}
+                  expanded={isDeputyOffice && expandedDeputyCandidateId === candidate.id}
+                  selectionActionLabel={selecionados.some((item) => item.id === candidate.id) ? 'Remover escolha' : 'Escolher candidato'}
+                  onToggleDetails={handleDeputyDetailsToggle}
                   onLockedMetricClick={handleLockedMetricClick}
                   disabled={salvandoSelecao}
                   onSelect={() => handleSelect(candidate)}
@@ -958,7 +990,19 @@ export default function SelectBase({
         </div>
 
         <div className="app-page-header__actions">
-          {onHelpClick && (
+          {isSenateOffice ? (
+            <button
+              className={`app-header-mode-action card-detail-mode-toggle nv-touch ${senateCardMode === 'detailed' ? 'is-active' : ''}`}
+              type="button"
+              onClick={handleSenateCardModeToggle}
+              aria-pressed={senateCardMode === 'detailed'}
+              aria-label={senateCardMode === 'detailed' ? 'Usar cards compactos' : 'Ver detalhes dos cards'}
+              title={senateCardMode === 'detailed' ? 'Compacto' : 'Detalhes'}
+            >
+              <InfoIcon />
+              <span>{senateCardMode === 'detailed' ? 'Compacto' : 'Detalhes'}</span>
+            </button>
+          ) : onHelpClick && (
             <button
               className="app-header-icon-action app-help-action nv-touch"
               type="button"

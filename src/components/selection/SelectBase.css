@@ -14,6 +14,37 @@
   overscroll-behavior: contain;
 }
 
+.app-header-mode-action {
+  min-height: 40px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-main);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 12px;
+  font-family: var(--font-family);
+  font-size: 12px;
+  font-weight: 850;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 18%, transparent);
+}
+
+.app-header-mode-action.is-active {
+  background: var(--orange-soft);
+  color: var(--orange-dark);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 26%, transparent);
+}
+
+.app-header-mode-action .app-icon {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 17px;
+}
+
 .variant-home-state .select-base__scroll {
   --screen-gutter: 18px;
 }
@@ -266,10 +297,9 @@
 }
 
 .state-card {
-  --state-card-border: rgba(17, 17, 17, 0.12);
   width: 100%;
   min-height: 112px;
-  border: 1px solid var(--state-card-border);
+  border: 0;
   border-radius: 14px;
   background: var(--surface);
   color: var(--text-main);
@@ -290,8 +320,8 @@
 }
 
 .state-card.is-selected {
-  border: 2px solid currentColor;
   box-shadow:
+    inset 0 0 0 2px currentColor,
     0 18px 46px -20px color-mix(in srgb, currentColor 40%, transparent),
     0 8px 28px -18px color-mix(in srgb, currentColor 30%, transparent),
     0 0 30px -14px color-mix(in srgb, currentColor 24%, transparent);
@@ -299,8 +329,8 @@
 
 .state-card--current {
   cursor: default;
-  border: 2px solid currentColor;
   box-shadow:
+    inset 0 0 0 2px currentColor,
     0 18px 46px -20px color-mix(in srgb, currentColor 32%, transparent),
     0 8px 28px -18px color-mix(in srgb, currentColor 24%, transparent),
     0 0 30px -14px color-mix(in srgb, currentColor 18%, transparent);
@@ -742,7 +772,7 @@
   position: relative;
   width: 100%;
   min-height: 98px;
-  border: 1px solid var(--candidate-card-border);
+  border: 0;
   border-radius: 14px;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -753,9 +783,10 @@
   color: var(--candidate-card-fg);
   text-align: left;
   font-family: var(--font-family);
-  cursor: pointer;
+  cursor: default;
   overflow: hidden;
-  box-shadow: 0 10px 24px rgba(28, 39, 34, 0.04);
+  box-shadow: none;
+  transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 }
 
 .prototype-candidate-card.is-blocked {
@@ -765,6 +796,34 @@
 .prototype-candidate-card:disabled {
   cursor: wait;
   opacity: 1;
+}
+
+.candidate-card__surface {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  display: block;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.candidate-card__surface:disabled {
+  cursor: wait;
+}
+
+.candidate-card__surface:focus-visible,
+.candidate-card__selection-action:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+
+.prototype-candidate-card.is-expandable.is-expanded > .candidate-card__surface .candidate-thermometer {
+  display: none;
 }
 
 .candidate-card--success {
@@ -814,19 +873,18 @@
   background: #ffffff;
   color: #69746f;
   --candidate-card-border: var(--nav-line);
-  box-shadow: 0 10px 24px rgba(28, 39, 34, 0.04);
+  box-shadow: none;
 }
 
 .candidate-card--visitor {
-  border: 1px solid rgba(17, 17, 17, 0.1);
+  border: 0;
   background: var(--surface);
   color: var(--text-main);
-  box-shadow: 0 12px 28px rgba(17, 17, 17, 0.06);
+  box-shadow: none;
 }
 
 .prototype-candidate-card.is-selected {
-  border: 2px solid currentColor;
-  box-shadow: none;
+  box-shadow: inset 0 0 0 2px currentColor;
 }
 
 .prototype-candidate-card.is-selected::before {
@@ -867,6 +925,10 @@
   --assessment-icon-fg: #eaeaea;
 }
 
+.prototype-candidate-card.is-compact {
+  min-height: 108px;
+}
+
 .candidate-card__identity {
   min-width: 0;
   max-width: 100%;
@@ -875,6 +937,76 @@
   flex-direction: column;
   justify-content: center;
   gap: 0;
+}
+
+.candidate-card__summary-row {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.candidate-card__identity-copy {
+  min-width: 0;
+  max-width: 100%;
+  display: grid;
+  align-content: center;
+  gap: 0;
+}
+
+.candidate-card__status-badge {
+  --candidate-status-badge-size: calc(var(--candidate-metric-size, 56px) * 0.7);
+  width: var(--candidate-status-badge-size);
+  height: var(--candidate-status-badge-size);
+  border: 1px solid color-mix(in srgb, currentColor 42%, transparent);
+  border-radius: 50%;
+  background: color-mix(in srgb, currentColor 6%, transparent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: currentColor;
+  opacity: 0.78;
+}
+
+.candidate-card__status-badge .candidate-status-icon {
+  width: calc(var(--candidate-status-badge-size) * 0.58);
+  height: calc(var(--candidate-status-badge-size) * 0.58);
+  opacity: 0.72;
+}
+
+.candidate-card__status-badge .candidate-status-icon--fire {
+  width: calc(var(--candidate-status-badge-size) * 0.46);
+  height: calc(var(--candidate-status-badge-size) * 0.62);
+  opacity: 0.9;
+}
+
+.candidate-card__expand-indicator {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 8%, white);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: currentColor;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 24%, transparent);
+  opacity: 0.78;
+  pointer-events: none;
+  transition: background-color 160ms ease, box-shadow 160ms ease, opacity 160ms ease, transform 160ms ease;
+}
+
+.candidate-card__expand-indicator .app-icon {
+  width: 13px;
+  height: 13px;
+}
+
+.prototype-candidate-card.is-expanded .candidate-card__expand-indicator {
+  transform: rotate(180deg);
+  background: color-mix(in srgb, currentColor 14%, white);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 34%, transparent);
+  opacity: 0.92;
 }
 
 .candidate-card__name-row {
@@ -914,6 +1046,16 @@
   text-transform: uppercase;
   white-space: normal;
   overflow-wrap: anywhere;
+}
+
+.prototype-candidate-card.is-compact .candidate-card__name-row > strong {
+  font-size: var(--candidate-name-size, 18px);
+  line-height: 1.02;
+}
+
+.prototype-candidate-card.is-compact .candidate-card__identity small {
+  font-size: 13px;
+  font-weight: 650;
 }
 
 .candidate-card__score {
@@ -1083,6 +1225,61 @@
   font-size: 10px;
   font-weight: 700;
   line-height: 1.25;
+}
+
+.candidate-card__detail-panel {
+  min-width: 0;
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+  border-top: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+  padding-top: 12px;
+}
+
+.candidate-card__selection-action {
+  width: 100%;
+  min-height: 46px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--orange);
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 18px;
+  font-family: var(--font-family);
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 10px 22px -16px rgba(255, 139, 73, 0.72);
+  transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.candidate-card__selection-action:not(:disabled):hover {
+  background: var(--orange-dark, #f05a24);
+  box-shadow: 0 12px 24px -16px rgba(255, 139, 73, 0.82);
+}
+
+.candidate-card__selection-action:not(:disabled):active {
+  transform: scale(0.99);
+}
+
+.candidate-card__selection-action.is-selected {
+  background: color-mix(in srgb, currentColor 8%, white);
+  color: currentColor;
+  box-shadow: inset 0 0 0 1px currentColor;
+}
+
+.candidate-card__selection-action.is-selected:not(:disabled):hover {
+  background: color-mix(in srgb, currentColor 14%, white);
+  box-shadow: inset 0 0 0 1px currentColor;
+}
+
+.candidate-card__selection-action:disabled {
+  cursor: wait;
+  opacity: 0.7;
 }
 
 .candidate-thermometer {
@@ -1541,7 +1738,7 @@
   }
 
   .candidate-card--visitor {
-    border: 1px solid rgba(17, 17, 17, 0.08);
+    border: 0;
     background: var(--surface);
     color: var(--text-main);
     box-shadow: none;
@@ -1559,8 +1756,7 @@
   }
 
   .prototype-candidate-card.is-selected {
-    border: 2px solid currentColor;
-    box-shadow: none;
+    box-shadow: inset 0 0 0 2px currentColor;
   }
 
   .candidate-current-section .prototype-candidate-card.is-summary {
@@ -1916,16 +2112,23 @@
 
   .state-card {
     min-height: 122px;
-    border: 1px solid var(--desktop-border);
+    border: 0;
     background: var(--desktop-surface);
-    box-shadow: 0 12px 28px rgba(17, 17, 17, 0.06);
+    box-shadow: none;
     padding: 18px;
   }
 
   .state-card:hover,
   .prototype-candidate-card:hover {
-    box-shadow: 0 16px 34px rgba(17, 17, 17, 0.1);
+    box-shadow: 0 14px 30px rgba(17, 17, 17, 0.08);
     transform: translateY(-1px);
+  }
+
+  .state-card.is-selected:hover,
+  .prototype-candidate-card.is-selected:hover {
+    box-shadow:
+      inset 0 0 0 2px currentColor,
+      0 14px 30px rgba(17, 17, 17, 0.08);
   }
 
   .prototype-section-heading {
