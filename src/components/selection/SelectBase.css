@@ -956,7 +956,7 @@
 }
 
 .candidate-card__status-badge {
-  --candidate-status-badge-size: calc(var(--candidate-metric-size, 56px) * 0.7);
+  --candidate-status-badge-size: clamp(28px, calc(var(--candidate-metric-size, 56px) * 0.54), 34px);
   width: var(--candidate-status-badge-size);
   height: var(--candidate-status-badge-size);
   border: 1px solid color-mix(in srgb, currentColor 42%, transparent);
@@ -1046,16 +1046,6 @@
   text-transform: uppercase;
   white-space: normal;
   overflow-wrap: anywhere;
-}
-
-.prototype-candidate-card.is-compact .candidate-card__name-row > strong {
-  font-size: var(--candidate-name-size, 18px);
-  line-height: 1.02;
-}
-
-.prototype-candidate-card.is-compact .candidate-card__identity small {
-  font-size: 13px;
-  font-weight: 650;
 }
 
 .candidate-card__score {

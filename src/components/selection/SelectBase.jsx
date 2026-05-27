@@ -126,8 +126,7 @@ export default function SelectBase({
     typeof window !== 'undefined' && window.matchMedia(DESKTOP_LAYOUT_QUERY).matches
   ));
   const [showAllSelectedInCurrentSection, setShowAllSelectedInCurrentSection] = useState(false);
-  const [senateCardMode, setSenateCardMode] = useState('compact');
-  const [expandedDeputyCandidateId, setExpandedDeputyCandidateId] = useState('');
+  const [candidateCardMode, setCandidateCardMode] = useState('compact');
 
   useEffect(() => {
     let cancelled = false;
@@ -184,8 +183,7 @@ export default function SelectBase({
     queueMicrotask(() => {
       if (!cancelled) {
         setContinueVisible(false);
-        setExpandedDeputyCandidateId('');
-        setSenateCardMode('compact');
+        setCandidateCardMode('compact');
       }
     });
 
@@ -208,7 +206,7 @@ export default function SelectBase({
   const shouldShowContinue = shouldRenderContinue && hasRequiredSelection && continueVisible;
   const shouldShowDesktopContinue = shouldRenderContinue && hasRequiredSelection && continueVisible;
   const candidateListInstruction = isDeputyOffice
-    ? 'Abra um candidato para escolher'
+    ? 'Selecione o candidato que aceita votar'
     : 'Selecione todos os candidatos que aceita votar';
 
   useEffect(() => {
@@ -615,14 +613,8 @@ export default function SelectBase({
     setModalCampoBloqueado(true);
   };
 
-  const handleDeputyDetailsToggle = (candidate) => {
-    setExpandedDeputyCandidateId((currentId) => (
-      currentId === candidate.id ? '' : candidate.id
-    ));
-  };
-
-  const handleSenateCardModeToggle = () => {
-    setSenateCardMode((currentMode) => (
+  const handleCandidateCardModeToggle = () => {
+    setCandidateCardMode((currentMode) => (
       currentMode === 'compact' ? 'detailed' : 'compact'
     ));
   };
@@ -863,11 +855,9 @@ export default function SelectBase({
                     featuredMetrics={featuredMetricsByCandidateId.get(candidate.id)}
                     showAssessmentSubtitle={!personalizedFieldsLocked}
                     lockPersonalizedFields={false}
-                    displayMode={isSenateOffice ? senateCardMode : 'compact'}
-                    interactionMode={isDeputyOffice ? 'expand' : 'select'}
-                    expanded={isDeputyOffice && expandedDeputyCandidateId === candidate.id}
+                    displayMode={candidateCardMode}
+                    interactionMode="select"
                     selectionActionLabel="Remover escolha"
-                    onToggleDetails={handleDeputyDetailsToggle}
                     onLockedMetricClick={handleLockedMetricClick}
                     disabled={salvandoSelecao}
                     onSelect={() => handleSelect(candidate)}
@@ -906,11 +896,9 @@ export default function SelectBase({
                   featuredMetrics={featuredMetricsByCandidateId.get(candidate.id)}
                   showAssessmentSubtitle
                   lockPersonalizedFields={personalizedFieldsLocked}
-                  displayMode={isSenateOffice ? senateCardMode : 'compact'}
-                  interactionMode={isDeputyOffice ? 'expand' : 'select'}
-                  expanded={isDeputyOffice && expandedDeputyCandidateId === candidate.id}
+                  displayMode={candidateCardMode}
+                  interactionMode="select"
                   selectionActionLabel={selecionados.some((item) => item.id === candidate.id) ? 'Remover escolha' : 'Escolher candidato'}
-                  onToggleDetails={handleDeputyDetailsToggle}
                   onLockedMetricClick={handleLockedMetricClick}
                   disabled={salvandoSelecao}
                   onSelect={() => handleSelect(candidate)}
@@ -990,17 +978,17 @@ export default function SelectBase({
         </div>
 
         <div className="app-page-header__actions">
-          {isSenateOffice ? (
+          {isCandidateOffice ? (
             <button
-              className={`app-header-mode-action card-detail-mode-toggle nv-touch ${senateCardMode === 'detailed' ? 'is-active' : ''}`}
+              className={`app-header-mode-action card-detail-mode-toggle nv-touch ${candidateCardMode === 'detailed' ? 'is-active' : ''}`}
               type="button"
-              onClick={handleSenateCardModeToggle}
-              aria-pressed={senateCardMode === 'detailed'}
-              aria-label={senateCardMode === 'detailed' ? 'Usar cards compactos' : 'Ver detalhes dos cards'}
-              title={senateCardMode === 'detailed' ? 'Compacto' : 'Detalhes'}
+              onClick={handleCandidateCardModeToggle}
+              aria-pressed={candidateCardMode === 'detailed'}
+              aria-label={candidateCardMode === 'detailed' ? 'Usar cards compactos' : 'Ver detalhes dos cards'}
+              title={candidateCardMode === 'detailed' ? 'Compacto' : 'Detalhes'}
             >
               <InfoIcon />
-              <span>{senateCardMode === 'detailed' ? 'Compacto' : 'Detalhes'}</span>
+              <span>{candidateCardMode === 'detailed' ? 'Compacto' : 'Detalhes'}</span>
             </button>
           ) : onHelpClick && (
             <button

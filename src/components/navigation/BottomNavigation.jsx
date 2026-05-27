@@ -80,7 +80,7 @@ const NAV_ITEMS = [
   ...PROGRESS_ITEMS,
   {
     id: 'nossovoto',
-    label: 'Nosso Voto',
+    label: 'NossoVoto',
     path: BALLOT_ROUTES.meuPlano,
     Icon: FireMaskIcon,
     brand: true,
