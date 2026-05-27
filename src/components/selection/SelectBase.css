@@ -15,8 +15,10 @@
 }
 
 .app-header-mode-action {
+  position: relative;
   max-width: 100%;
-  min-height: 40px;
+  height: 28px;
+  min-height: 28px;
   border: 0;
   border-radius: 999px;
   background: transparent;
@@ -24,15 +26,22 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  padding: 0 12px;
+  gap: 5px;
+  padding: 0 9px;
   font-family: var(--font-family);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 850;
   line-height: 1;
   white-space: nowrap;
   cursor: pointer;
   box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 18%, transparent);
+}
+
+.app-header-mode-action::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 999px;
 }
 
 .app-header-mode-action span {
@@ -49,9 +58,9 @@
 }
 
 .app-header-mode-action .app-icon {
-  width: 17px;
-  height: 17px;
-  flex: 0 0 17px;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
 }
 
 .variant-home-state .select-base__scroll {
@@ -1576,16 +1585,17 @@
 
 @media (max-width: 420px) {
   .app-header-mode-action {
-    min-height: 36px;
-    gap: 4px;
-    padding: 0 8px;
-    font-size: 11px;
+    height: 18px;
+    min-height: 18px;
+    gap: 3px;
+    padding: 0 5px;
+    font-size: 10px;
   }
 
   .app-header-mode-action .app-icon {
-    width: 14px;
-    height: 14px;
-    flex-basis: 14px;
+    width: 10px;
+    height: 10px;
+    flex-basis: 10px;
   }
 
   .prototype-section-heading h2 {
@@ -1895,16 +1905,17 @@
   }
 
   .app-header-mode-action {
-    min-height: 34px;
-    gap: 3px;
-    padding: 0 6px;
-    font-size: 10.5px;
+    height: 18px;
+    min-height: 18px;
+    gap: 2px;
+    padding: 0 5px;
+    font-size: 10px;
   }
 
   .app-header-mode-action .app-icon {
-    width: 13px;
-    height: 13px;
-    flex-basis: 13px;
+    width: 10px;
+    height: 10px;
+    flex-basis: 10px;
   }
 
   .candidate-list-tools {
@@ -2127,17 +2138,18 @@
 
 @media (max-width: 340px) {
   .app-header-mode-action {
-    width: 40px;
-    min-width: 40px;
-    min-height: 40px;
+    width: 18px;
+    min-width: 18px;
+    height: 18px;
+    min-height: 18px;
     gap: 0;
     padding: 0;
   }
 
   .app-header-mode-action .app-icon {
-    width: 17px;
-    height: 17px;
-    flex-basis: 17px;
+    width: 10px;
+    height: 10px;
+    flex-basis: 10px;
   }
 
   .app-header-mode-action span {
