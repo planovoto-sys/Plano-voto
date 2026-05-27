@@ -836,50 +836,50 @@
 }
 
 .candidate-card--success {
-  --candidate-card-bg: #fbfff9;
+  --candidate-card-bg: #effbea;
   --candidate-card-fg: #4d9849;
   --candidate-card-border: #d4e7cf;
   --candidate-card-line: #e3efdf;
-  --candidate-assessment-bg: #e4f3df;
+  --candidate-assessment-bg: #d9f0d1;
   --candidate-viability-fill: #4d9849;
-  --candidate-viability-track: #edf7e9;
+  --candidate-viability-track: #dcf0d6;
   --candidate-thermometer-fill: #4d9849;
-  --candidate-thermometer-track: #e4f1df;
-  --candidate-bar-border: #c7e3bd;
+  --candidate-thermometer-track: #d8edd1;
+  --candidate-bar-border: #b7dcae;
   --assessment-icon-bg: #4d9849;
   --assessment-icon-fg: #edf7e9;
 }
 
 .candidate-card--neutral {
-  --candidate-card-bg: #f7f7f7;
+  --candidate-card-bg: #eeeeee;
   --candidate-card-fg: #b4b4b4;
-  --candidate-assessment-bg: #eaeaea;
+  --candidate-assessment-bg: #dddddd;
   --candidate-viability-fill: #b4b4b4;
-  --candidate-viability-track: #eaeaea;
+  --candidate-viability-track: #dddddd;
   --candidate-thermometer-fill: #b4b4b4;
-  --candidate-thermometer-track: #eeeeee;
-  --candidate-bar-border: #d8d8d8;
+  --candidate-thermometer-track: #dddddd;
+  --candidate-bar-border: #cfcfcf;
   --assessment-icon-bg: #b4b4b4;
   --assessment-icon-fg: #eaeaea;
 }
 
 .candidate-card--danger {
-  --candidate-card-bg: #fff3f3;
+  --candidate-card-bg: #ffe8ea;
   --candidate-card-fg: #ff5757;
-  --candidate-assessment-bg: #ffdcdc;
+  --candidate-assessment-bg: #ffcfd2;
   --candidate-viability-fill: #ff5757;
-  --candidate-viability-track: #ffdcdc;
+  --candidate-viability-track: #ffcfd2;
   --candidate-thermometer-fill: #ff6b6b;
-  --candidate-thermometer-track: #ffdada;
-  --candidate-bar-border: #ffb7b7;
+  --candidate-thermometer-track: #ffcfd2;
+  --candidate-bar-border: #ffa8ad;
   --assessment-icon-bg: #ff5757;
-  --assessment-icon-fg: #ffdcdc;
-  --candidate-card-border: #ffc8c8;
-  --candidate-card-line: #ffdcdc;
+  --assessment-icon-fg: #ffe3e5;
+  --candidate-card-border: #ffb7bd;
+  --candidate-card-line: #ffcfd2;
 }
 
 .candidate-card--new {
-  background: #ffffff;
+  background: #f1f3f1;
   color: #69746f;
   --candidate-card-border: var(--nav-line);
   box-shadow: none;
@@ -887,7 +887,7 @@
 
 .candidate-card--visitor {
   border: 0;
-  background: var(--surface);
+  background: #f4f5f3;
   color: var(--text-main);
   box-shadow: none;
 }
@@ -906,30 +906,30 @@
 }
 
 .prototype-candidate-card.is-fire-featured {
-  --candidate-card-bg: #fffaf4;
+  --candidate-card-bg: #ffefdf;
   --candidate-card-fg: #f05a24;
   --candidate-card-border: #ff914d;
   --candidate-card-line: #f2dcc9;
-  --candidate-assessment-bg: #ffe8d2;
+  --candidate-assessment-bg: #ffd9b4;
   --candidate-viability-fill: #f05a24;
-  --candidate-viability-track: #ffe8d2;
+  --candidate-viability-track: #ffd9b4;
   --candidate-thermometer-fill: linear-gradient(90deg, #ff8f13 0%, #ff8f13 100%);
-  --candidate-thermometer-track: #fff0df;
-  --candidate-bar-border: #ffc38e;
+  --candidate-thermometer-track: #ffe0bf;
+  --candidate-bar-border: #ffb56f;
   --assessment-icon-bg: transparent;
   --assessment-icon-fg: #f05a24;
   --metric-feature-color: #f05a24;
 }
 
 .prototype-candidate-card.is-viability-complete {
-  --candidate-card-bg: #f7f7f7;
+  --candidate-card-bg: #eeeeee;
   --candidate-card-fg: #b4b4b4;
-  --candidate-assessment-bg: #eaeaea;
+  --candidate-assessment-bg: #dddddd;
   --candidate-viability-fill: #b4b4b4;
-  --candidate-viability-track: #eaeaea;
+  --candidate-viability-track: #dddddd;
   --candidate-thermometer-fill: #b4b4b4;
-  --candidate-thermometer-track: #eeeeee;
-  --candidate-bar-border: #d8d8d8;
+  --candidate-thermometer-track: #dddddd;
+  --candidate-bar-border: #cfcfcf;
   --assessment-icon-bg: #b4b4b4;
   --assessment-icon-fg: #eaeaea;
 }
@@ -1372,9 +1372,11 @@
   min-width: 0;
   overflow: hidden;
   height: var(--candidate-badge-height, 30px);
-  border: 1px solid currentColor;
+  border: 0;
   border-radius: 999px;
-  background: color-mix(in srgb, currentColor 4%, transparent);
+  background: color-mix(in srgb, currentColor 14%, rgba(255, 255, 255, 0.68));
+  -webkit-backdrop-filter: blur(12px) saturate(1.25);
+  backdrop-filter: blur(12px) saturate(1.25);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1387,6 +1389,10 @@
   text-overflow: ellipsis;
   text-transform: uppercase;
   white-space: nowrap;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.58),
+    inset 0 -1px 0 color-mix(in srgb, currentColor 10%, transparent),
+    0 8px 18px color-mix(in srgb, currentColor 10%, transparent);
 }
 
 .candidate-thermometer__caption-main {
@@ -1569,6 +1575,19 @@
 }
 
 @media (max-width: 420px) {
+  .app-header-mode-action {
+    min-height: 36px;
+    gap: 4px;
+    padding: 0 8px;
+    font-size: 11px;
+  }
+
+  .app-header-mode-action .app-icon {
+    width: 14px;
+    height: 14px;
+    flex-basis: 14px;
+  }
+
   .prototype-section-heading h2 {
     font-size: 16px;
   }
@@ -1735,20 +1754,20 @@
 
   .candidate-card--new {
     border-color: var(--candidate-card-border);
-    background: #f4f4f4;
+    background: #f1f3f1;
     color: #a9a9a9;
     box-shadow: none;
   }
 
   .candidate-card--visitor {
     border: 0;
-    background: var(--surface);
+    background: #f4f5f3;
     color: var(--text-main);
     box-shadow: none;
   }
 
   .prototype-candidate-card.is-fire-featured {
-    --candidate-card-bg: #fffaf4;
+    --candidate-card-bg: #ffefdf;
     --candidate-card-fg: #f05a24;
   }
 
@@ -1876,15 +1895,16 @@
   }
 
   .app-header-mode-action {
-    width: 40px;
-    min-width: 40px;
-    min-height: 40px;
-    gap: 0;
-    padding: 0;
+    min-height: 34px;
+    gap: 3px;
+    padding: 0 6px;
+    font-size: 10.5px;
   }
 
-  .app-header-mode-action span {
-    display: none;
+  .app-header-mode-action .app-icon {
+    width: 13px;
+    height: 13px;
+    flex-basis: 13px;
   }
 
   .candidate-list-tools {
@@ -2102,6 +2122,26 @@
 
   .candidate-card__name-row > strong {
     font-size: var(--candidate-score-size, var(--candidate-name-tiny-size, 14px));
+  }
+}
+
+@media (max-width: 340px) {
+  .app-header-mode-action {
+    width: 40px;
+    min-width: 40px;
+    min-height: 40px;
+    gap: 0;
+    padding: 0;
+  }
+
+  .app-header-mode-action .app-icon {
+    width: 17px;
+    height: 17px;
+    flex-basis: 17px;
+  }
+
+  .app-header-mode-action span {
+    display: none;
   }
 }
 
