@@ -1,5 +1,6 @@
-import { CheckCircle2, MapPin } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import flameMaskUrl from '@/assets/nossovoto-flame-mask.png';
 import { BALLOT_ROUTES } from '@/constants/ballot';
 import { useUser } from '@/hooks/useUser';
 import {
@@ -41,6 +42,36 @@ function SenatorIcon({ className = '', strokeWidth = 2.2 }) {
   );
 }
 
+function FlameMaskIcon({
+  className = '',
+  size,
+  style,
+  ...props
+}) {
+  const iconStyle = {
+    backgroundColor: 'currentColor',
+    WebkitMaskImage: `url(${flameMaskUrl})`,
+    WebkitMaskPosition: 'center',
+    WebkitMaskRepeat: 'no-repeat',
+    WebkitMaskSize: 'contain',
+    maskImage: `url(${flameMaskUrl})`,
+    maskPosition: 'center',
+    maskRepeat: 'no-repeat',
+    maskSize: 'contain',
+    ...(size ? { width: size, height: size, flexBasis: size } : {}),
+    ...style
+  };
+
+  return (
+    <span
+      className={className}
+      aria-hidden="true"
+      style={iconStyle}
+      {...props}
+    />
+  );
+}
+
 const PROGRESS_ITEMS = [
   { id: 'estado', label: 'Estado', path: BALLOT_ROUTES.estado, Icon: MapPin },
   { id: 'deputado', label: 'Deputados', path: BALLOT_ROUTES.deputadoFederal, Icon: DeputyIcon },
@@ -49,7 +80,14 @@ const PROGRESS_ITEMS = [
 
 const NAV_ITEMS = [
   ...PROGRESS_ITEMS,
-  { id: 'nossovoto', label: 'Nosso Voto', path: BALLOT_ROUTES.meuPlano, Icon: CheckCircle2, brand: true }
+  {
+    id: 'nossovoto',
+    label: 'Nosso Voto',
+    path: BALLOT_ROUTES.meuPlano,
+    Icon: FlameMaskIcon,
+    brand: true,
+    strokeWidth: null
+  }
 ];
 
 const STEP_BY_PATH = {
@@ -104,6 +142,7 @@ export default function BottomNavigation({ currentStep, placement = 'footer' }) 
       <nav className="bottom-step-nav" aria-label="Etapas do voto">
         {visibleItems.map((item) => {
           const StepIcon = item.Icon;
+          const iconProps = item.strokeWidth === null ? {} : { strokeWidth: item.strokeWidth ?? 2.2 };
           const isActive = activeStep === item.id;
           const isDisabled = !isActive && !enabledByStep[item.id];
           const itemIndex = PROGRESS_ITEMS.findIndex((progressItem) => progressItem.id === item.id);
@@ -129,7 +168,11 @@ export default function BottomNavigation({ currentStep, placement = 'footer' }) 
               aria-disabled={isDisabled}
               disabled={isDisabled}
             >
-              <StepIcon className="bottom-step-nav__icon" strokeWidth={2.2} aria-hidden="true" />
+              <StepIcon
+                className="bottom-step-nav__icon"
+                {...iconProps}
+                aria-hidden="true"
+              />
               <span className="bottom-step-nav__label">{item.label}</span>
             </button>
           );
