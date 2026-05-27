@@ -11,6 +11,7 @@
   --step-nav-active-bg: transparent;
   --step-nav-active-color: var(--ink);
   --step-nav-accent: var(--orange);
+  --step-nav-icon-size: 24px;
   position: relative;
   width: 100%;
   max-width: 100%;
@@ -90,9 +91,9 @@
 }
 
 .bottom-step-nav__item--brand .bottom-step-nav__icon {
-  width: 22px;
-  height: 22px;
-  flex-basis: 22px;
+  width: var(--step-nav-icon-size);
+  height: var(--step-nav-icon-size);
+  flex-basis: var(--step-nav-icon-size);
 }
 
 .bottom-step-nav__item--brand.is-active {
@@ -105,25 +106,25 @@
 }
 
 .bottom-step-nav__icon {
-  width: 22px;
-  height: 22px;
-  flex: 0 0 22px;
+  width: var(--step-nav-icon-size);
+  height: var(--step-nav-icon-size);
+  flex: 0 0 var(--step-nav-icon-size);
   border-radius: 0;
   background: transparent;
   color: currentColor;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 1px;
+  padding: 0;
 }
 
 .bottom-step-nav__item--deputado .bottom-step-nav__icon,
 .bottom-step-nav__item--senador .bottom-step-nav__icon {
-  width: 24px;
-  height: 22px;
-  flex-basis: 24px;
+  width: var(--step-nav-icon-size);
+  height: var(--step-nav-icon-size);
+  flex-basis: var(--step-nav-icon-size);
   margin-bottom: 0;
-  padding: 1px;
+  padding: 0;
   transform: none;
 }
 
@@ -192,18 +193,18 @@
   }
 
   .bottom-step-nav__icon {
-    width: 22px;
-    height: 22px;
-    flex-basis: 22px;
+    width: var(--step-nav-icon-size);
+    height: var(--step-nav-icon-size);
+    flex-basis: var(--step-nav-icon-size);
   }
 
   .bottom-step-nav__item--deputado .bottom-step-nav__icon,
   .bottom-step-nav__item--senador .bottom-step-nav__icon {
-    width: 24px;
-    height: 22px;
-    flex-basis: 24px;
+    width: var(--step-nav-icon-size);
+    height: var(--step-nav-icon-size);
+    flex-basis: var(--step-nav-icon-size);
     margin-bottom: 0;
-    padding: 1px;
+    padding: 0;
     transform: none;
   }
 }
@@ -227,19 +228,19 @@
   }
 
   .bottom-step-nav__icon {
-    width: 21px;
-    height: 21px;
-    flex-basis: 21px;
-    padding: 1px;
+    width: var(--step-nav-icon-size);
+    height: var(--step-nav-icon-size);
+    flex-basis: var(--step-nav-icon-size);
+    padding: 0;
   }
 
   .bottom-step-nav__item--deputado .bottom-step-nav__icon,
   .bottom-step-nav__item--senador .bottom-step-nav__icon {
-    width: 23px;
-    height: 21px;
-    flex-basis: 23px;
+    width: var(--step-nav-icon-size);
+    height: var(--step-nav-icon-size);
+    flex-basis: var(--step-nav-icon-size);
     margin-bottom: 0;
-    padding: 1px;
+    padding: 0;
     transform: none;
   }
 }
@@ -508,22 +509,22 @@
   }
 
   .app-page-footer--header .bottom-step-nav__icon {
-    width: 28px;
-    height: 27px;
-    flex: 0 0 27px;
+    width: var(--step-nav-icon-size);
+    height: var(--step-nav-icon-size);
+    flex: 0 0 var(--step-nav-icon-size);
     background: transparent;
     color: var(--step-nav-muted);
-    padding: 1px;
+    padding: 0;
     box-shadow: none;
   }
 
   .app-page-footer--header .bottom-step-nav__item--deputado .bottom-step-nav__icon,
   .app-page-footer--header .bottom-step-nav__item--senador .bottom-step-nav__icon {
-    width: 30px;
-    height: 27px;
-    flex-basis: 30px;
+    width: var(--step-nav-icon-size);
+    height: var(--step-nav-icon-size);
+    flex-basis: var(--step-nav-icon-size);
     margin-bottom: 0;
-    padding: 1px;
+    padding: 0;
     transform: none;
   }
 
@@ -547,10 +548,10 @@
   }
 
   .app-page-footer--header .bottom-step-nav__item--brand .bottom-step-nav__icon {
-    width: 28px;
-    height: 27px;
-    flex-basis: 27px;
-    padding: 1px;
+    width: var(--step-nav-icon-size);
+    height: var(--step-nav-icon-size);
+    flex-basis: var(--step-nav-icon-size);
+    padding: 0;
   }
 
   .app-page-footer--header .bottom-step-nav__label {
@@ -656,26 +657,26 @@
   }
 
   .app-page-footer--header .bottom-step-nav__icon {
-    width: 23px;
-    height: 23px;
-    flex-basis: 23px;
-    padding: 1px;
+    width: var(--step-nav-icon-size);
+    height: var(--step-nav-icon-size);
+    flex-basis: var(--step-nav-icon-size);
+    padding: 0;
   }
 
   .app-page-footer--header .bottom-step-nav__item--deputado .bottom-step-nav__icon,
   .app-page-footer--header .bottom-step-nav__item--senador .bottom-step-nav__icon {
-    width: 25px;
-    height: 23px;
-    flex-basis: 25px;
+    width: var(--step-nav-icon-size);
+    height: var(--step-nav-icon-size);
+    flex-basis: var(--step-nav-icon-size);
     margin-bottom: 0;
-    padding: 1px;
+    padding: 0;
     transform: none;
   }
 
   .app-page-footer--header .bottom-step-nav__item--brand .bottom-step-nav__icon {
-    width: 23px;
-    height: 23px;
-    flex-basis: 23px;
+    width: var(--step-nav-icon-size);
+    height: var(--step-nav-icon-size);
+    flex-basis: var(--step-nav-icon-size);
   }
 
   .app-page-footer--header .bottom-step-nav__label {
