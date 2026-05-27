@@ -115,10 +115,10 @@ body {
   background: var(--header-bg);
   color: var(--text-main);
   display: grid;
-  grid-template-columns: 48px minmax(0, 1fr) 48px;
+  grid-template-columns: minmax(40px, 1fr) minmax(0, max-content) minmax(40px, 1fr);
   align-items: center;
-  gap: 0;
-  padding: 0 26px;
+  gap: 8px;
+  padding: 0 var(--screen-gutter);
   text-align: center;
 }
 
@@ -177,7 +177,7 @@ body {
 
 .app-page-header__copy {
   min-width: 0;
-  max-width: min(100%, 17.5rem);
+  max-width: 100%;
   grid-column: 2;
   grid-row: 1;
   justify-self: center;
@@ -217,7 +217,9 @@ body {
 
 .app-page-header__actions {
   width: auto;
+  max-width: 100%;
   min-height: 0;
+  min-width: 0;
   grid-column: 3;
   grid-row: 1;
   display: flex;
@@ -306,9 +308,9 @@ body {
   font-weight: 600;
   line-height: 1;
   letter-spacing: 0;
-  max-width: none;
-  overflow: visible;
-  text-overflow: clip;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
   text-transform: none;
   white-space: nowrap;
 }
@@ -571,8 +573,9 @@ body {
 
   .prototype-page > .app-page-header {
     min-height: 64px;
-    grid-template-columns: 40px minmax(0, 1fr) 40px;
-    padding: 0 22px;
+    grid-template-columns: minmax(40px, 1fr) minmax(0, max-content) minmax(40px, 1fr);
+    gap: 8px;
+    padding: 0 var(--screen-gutter);
   }
 
   .prototype-page > .app-page-header h1 {
@@ -616,8 +619,9 @@ body {
 
   .prototype-page > .app-page-header {
     min-height: 64px;
-    grid-template-columns: 40px minmax(0, 1fr) 40px;
-    padding: 0 18px;
+    grid-template-columns: minmax(40px, 1fr) minmax(0, max-content) minmax(40px, 1fr);
+    gap: 6px;
+    padding: 0 var(--screen-gutter);
   }
 
   .prototype-page > .app-page-header h1 {
@@ -762,7 +766,7 @@ body {
     background: var(--header-bg);
     color: var(--text-main);
     display: grid;
-    grid-template-columns: 44px minmax(190px, 0.72fr) 44px minmax(0, 1.28fr);
+    grid-template-columns: 44px minmax(190px, 0.72fr) minmax(40px, max-content) minmax(0, 1.28fr);
     align-items: center;
     gap: 12px;
     padding: 12px var(--screen-gutter);
