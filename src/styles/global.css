@@ -304,7 +304,7 @@ body {
   margin: 0;
   color: var(--text-main);
   font-family: var(--font-family);
-  font-size: 16px;
+  font-size: 19px;
   font-weight: 600;
   line-height: 1;
   letter-spacing: 0;
@@ -579,7 +579,7 @@ body {
   }
 
   .prototype-page > .app-page-header h1 {
-    font-size: 16px;
+    font-size: 19px;
   }
 
   .loading-intro__brand {
@@ -625,7 +625,7 @@ body {
   }
 
   .prototype-page > .app-page-header h1 {
-    font-size: 16px;
+    font-size: 18.5px;
   }
 
   .app-header-back-button,
@@ -670,7 +670,7 @@ body {
   }
 
   .prototype-page > .app-page-header h1 {
-    font-size: 16px;
+    font-size: 17.5px;
   }
 
   .loading-intro {
@@ -701,7 +701,7 @@ body {
 
 @media (min-width: 421px) and (max-width: 479px) {
   .prototype-page > .app-page-header h1 {
-    font-size: 16px;
+    font-size: 19px;
   }
 }
 
