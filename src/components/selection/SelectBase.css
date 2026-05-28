@@ -1585,17 +1585,17 @@
 
 @media (max-width: 420px) {
   .app-header-mode-action {
-    height: 18px;
-    min-height: 18px;
-    gap: 3px;
-    padding: 0 5px;
-    font-size: 10px;
+    height: 22px;
+    min-height: 22px;
+    gap: 4px;
+    padding: 0 7px;
+    font-size: 10.5px;
   }
 
   .app-header-mode-action .app-icon {
-    width: 10px;
-    height: 10px;
-    flex-basis: 10px;
+    width: 12px;
+    height: 12px;
+    flex-basis: 12px;
   }
 
   .prototype-section-heading h2 {
@@ -1905,17 +1905,17 @@
   }
 
   .app-header-mode-action {
-    height: 18px;
-    min-height: 18px;
-    gap: 2px;
-    padding: 0 5px;
+    height: 20px;
+    min-height: 20px;
+    gap: 3px;
+    padding: 0 6px;
     font-size: 10px;
   }
 
   .app-header-mode-action .app-icon {
-    width: 10px;
-    height: 10px;
-    flex-basis: 10px;
+    width: 11px;
+    height: 11px;
+    flex-basis: 11px;
   }
 
   .candidate-list-tools {
@@ -2138,18 +2138,18 @@
 
 @media (max-width: 340px) {
   .app-header-mode-action {
-    width: 18px;
-    min-width: 18px;
-    height: 18px;
-    min-height: 18px;
+    width: 22px;
+    min-width: 22px;
+    height: 22px;
+    min-height: 22px;
     gap: 0;
     padding: 0;
   }
 
   .app-header-mode-action .app-icon {
-    width: 10px;
-    height: 10px;
-    flex-basis: 10px;
+    width: 12px;
+    height: 12px;
+    flex-basis: 12px;
   }
 
   .app-header-mode-action span {
