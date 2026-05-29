@@ -14,7 +14,7 @@ const STEPS = [
   { id: 'estado', label: 'Estado', path: BALLOT_ROUTES.estado },
   { id: 'deputado', label: 'Deputados', path: BALLOT_ROUTES.deputadoFederal },
   { id: 'senador', label: 'Senadores', path: BALLOT_ROUTES.senadores },
-  { id: 'nossovoto', label: 'NossoVoto', path: BALLOT_ROUTES.meuPlano }
+  { id: 'nossovoto', label: 'nossovoto', path: BALLOT_ROUTES.meuPlano }
 ];
 
 const STEP_BY_PATH = {

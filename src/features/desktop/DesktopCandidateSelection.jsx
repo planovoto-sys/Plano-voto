@@ -58,7 +58,7 @@ function DesktopPlanSidebar({ draftStateLabel, selectedCandidates, officeCopy, o
 
       <p>{officeCopy.missing(selectedCount)}</p>
       <button className="desktop-button-secondary nv-touch" type="button" onClick={onReview}>
-        Ver NossoVoto
+        Ver nossovoto
       </button>
     </aside>
   );
@@ -112,6 +112,18 @@ export default function DesktopCandidateSelection({
           >
             {officeCopy.subtitle}
           </DesktopPageIntro>
+
+          <DesktopActionBar>
+            <button className="desktop-button-primary nv-touch" type="button" onClick={onContinue} disabled={loading}>
+              Continuar
+            </button>
+            <button className="desktop-button-secondary nv-touch" type="button" onClick={() => onFilterSelect({ id: 'selecionados', mode: 'selecionados' })}>
+              Ver selecionados
+            </button>
+            <button className="desktop-button-ghost nv-touch" type="button" onClick={onBack}>
+              Voltar
+            </button>
+          </DesktopActionBar>
 
           <div className="desktop-candidate-toolbar">
             <label className="desktop-candidate-search">
@@ -170,15 +182,6 @@ export default function DesktopCandidateSelection({
               <span>No celular, a navegação completa fica mais simples.</span>
             </div>
           )}
-
-          <DesktopActionBar>
-            <button className="desktop-button-primary nv-touch" type="button" onClick={onContinue} disabled={loading}>
-              Continuar
-            </button>
-            <button className="desktop-button-secondary nv-touch" type="button" onClick={() => onFilterSelect({ id: 'selecionados', mode: 'selecionados' })}>
-              Ver selecionados
-            </button>
-          </DesktopActionBar>
         </section>
 
         <DesktopMobileHandoffPanel handoff={handoff} title="A seleção completa é no celular" />

@@ -13,8 +13,7 @@ export default function DesktopStateSelection({
   onStateSelect,
   onContinue,
   loading,
-  draft,
-  onHelpClick
+  draft
 }) {
   const handoff = useDesktopHandoff(draft);
 
@@ -44,6 +43,20 @@ export default function DesktopStateSelection({
             />
           </label>
 
+          <DesktopActionBar>
+            <button
+              className="desktop-button-primary nv-touch"
+              type="button"
+              onClick={onContinue}
+              disabled={!selectedState || loading}
+            >
+              Continuar com prévia
+            </button>
+            <span className="desktop-state-panel__hint">
+              Para salvar seu plano, continue pelo celular.
+            </span>
+          </DesktopActionBar>
+
           <div className="desktop-state-grid" id="tour-lista">
             {states.length > 0 ? states.map((state) => {
               const isSelected = selectedState?.sigla === state.sigla;
@@ -68,25 +81,6 @@ export default function DesktopStateSelection({
               </div>
             )}
           </div>
-
-          <DesktopActionBar>
-            <button
-              className="desktop-button-primary nv-touch"
-              type="button"
-              onClick={onContinue}
-              disabled={!selectedState || loading}
-            >
-              Continuar com prévia
-            </button>
-            {onHelpClick && (
-              <button className="desktop-button-secondary nv-touch" type="button" onClick={onHelpClick}>
-                Como funciona
-              </button>
-            )}
-            <span className="desktop-state-panel__hint">
-              Para salvar seu plano, continue pelo celular.
-            </span>
-          </DesktopActionBar>
         </section>
 
         <DesktopMobileHandoffPanel handoff={handoff} title="Comece aqui, continue no celular" />

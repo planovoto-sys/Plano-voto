@@ -160,7 +160,6 @@ export default function Home() {
           }}
           loading={(!isVisitorMode && userLoading) || loading}
           draft={currentDraft}
-          onHelpClick={() => setIsTourOpen(true)}
         />
 
         <ConfirmModal isOpen={modalOpen} titulo="MUDANÇA DE ESTADO" mensagem="Ao mudar de estado, suas seleções atuais serão apagadas. Deseja continuar?" textoConfirmar="SIM" textoCancelar="NÃO" tipo="perigo" onConfirm={() => executarMudanca(pendingEstado)} onCancel={() => setModalOpen(false)} />

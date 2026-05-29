@@ -81,7 +81,7 @@ export default function DesktopPlanSummary({
         <section className="desktop-summary-main">
           <DesktopPageIntro
             badge="Revisão"
-            title="Seu NossoVoto"
+            title="nossovoto"
             limitText="Use o computador para revisar. Salve, compartilhe e continue pelo celular."
           >
             Revise suas escolhas no computador e continue pelo celular para salvar e compartilhar.
@@ -97,6 +97,22 @@ export default function DesktopPlanSummary({
             <strong>{hasCompletePlan ? 'Seu plano está pronto para continuar no celular' : 'Seu plano ainda está incompleto'}</strong>
             <span>{missingText}</span>
           </div>
+
+          <DesktopActionBar>
+            <button className="desktop-button-secondary nv-touch" type="button" onClick={() => onNavigate(BALLOT_ROUTES.estado)}>
+              Trocar estado
+            </button>
+            <button className="desktop-button-secondary nv-touch" type="button" onClick={() => onNavigate(BALLOT_ROUTES.deputadoFederal)}>
+              Editar deputado
+            </button>
+            <button className="desktop-button-primary nv-touch" type="button" onClick={() => onNavigate(BALLOT_ROUTES.senadores)}>
+              Escolher senadores
+            </button>
+            <button className="desktop-button-ghost nv-touch" type="button" onClick={onBack}>
+              <ArrowLeft aria-hidden="true" />
+              Voltar
+            </button>
+          </DesktopActionBar>
 
           <ReviewSection
             title="Deputado Federal"
@@ -115,22 +131,6 @@ export default function DesktopPlanSummary({
             emptyTitle="Nenhum senador escolhido"
             emptyCaption="Escolha dois senadores para liberar o QR do rascunho."
           />
-
-          <DesktopActionBar>
-            <button className="desktop-button-secondary nv-touch" type="button" onClick={() => onNavigate(BALLOT_ROUTES.estado)}>
-              Trocar estado
-            </button>
-            <button className="desktop-button-secondary nv-touch" type="button" onClick={() => onNavigate(BALLOT_ROUTES.deputadoFederal)}>
-              Editar deputado
-            </button>
-            <button className="desktop-button-primary nv-touch" type="button" onClick={() => onNavigate(BALLOT_ROUTES.senadores)}>
-              Escolher senadores
-            </button>
-            <button className="desktop-button-ghost nv-touch" type="button" onClick={onBack}>
-              <ArrowLeft aria-hidden="true" />
-              Voltar
-            </button>
-          </DesktopActionBar>
         </section>
 
         <DesktopMobileHandoffPanel handoff={handoff} title="Finalize pelo celular" />

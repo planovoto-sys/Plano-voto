@@ -1,4 +1,5 @@
 import DesktopHeader from './DesktopHeader';
+import AppFooter from '@/shared/ui/layout/AppFooter';
 import './desktop.css';
 
 export default function DesktopShell({
@@ -18,6 +19,7 @@ export default function DesktopShell({
       />
       <main className="desktop-main nv-scroll">
         {children}
+        <AppFooter className="app-footer--scroll-content desktop-footer" />
       </main>
     </div>
   );
