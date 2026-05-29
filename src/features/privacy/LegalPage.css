@@ -567,6 +567,10 @@
   margin: 8px 0 0;
 }
 
+.legal-footer.app-footer--scroll-content {
+  margin-top: clamp(38px, 7vw, 64px);
+}
+
 .cookie-settings {
   display: grid;
   gap: 18px;
