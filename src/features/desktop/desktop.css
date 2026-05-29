@@ -325,14 +325,14 @@
 
 .desktop-qr-card__visual {
   aspect-ratio: 1;
-  width: min(100%, 232px);
+  width: min(100%, 320px);
   justify-self: center;
   border: 1px solid rgba(17, 17, 17, 0.08);
   border-radius: 18px;
   background: linear-gradient(180deg, #ffffff 0%, #fffaf5 100%);
   display: grid;
   place-items: center;
-  padding: 16px;
+  padding: 12px;
 }
 
 .desktop-qr-card__visual img {

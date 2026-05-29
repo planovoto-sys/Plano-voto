@@ -13,7 +13,8 @@ const routeOrder = [
   '/escolher-deputado-federal',
   '/escolher-senadores',
   '/meu-plano',
-  '/continuar-plano'
+  '/continuar-plano',
+  '/c'
 ];
 
 export const getRouteRank = (pathname = '') => {
@@ -23,6 +24,10 @@ export const getRouteRank = (pathname = '') => {
 
   if (normalizedPath.startsWith('/continuar-plano')) {
     return routeOrder.indexOf('/continuar-plano');
+  }
+
+  if (normalizedPath.startsWith('/c/')) {
+    return routeOrder.indexOf('/c');
   }
 
   return -1;

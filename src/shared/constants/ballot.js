@@ -24,7 +24,8 @@ export const BALLOT_ROUTES = {
   senador1: '/escolher-senador-1',
   senador2: '/escolher-senador-2',
   meuPlano: '/meu-plano',
-  continuarPlano: '/continuar-plano'
+  continuarPlano: '/continuar-plano',
+  continuarPlanoCurto: '/c'
 };
 
 export const BALLOT_FLOW_STEPS = [

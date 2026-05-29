@@ -78,6 +78,11 @@ export const persistBallotDraft = (userId, draft) => localDraftRepository.persis
 
 export const readVisitorBallotDraft = (estado = null) => readBallotDraft(VISITOR_DRAFT_STORAGE_ID, estado);
 
+export const persistVisitorBallotDraft = (draft) => persistBallotDraft(
+  VISITOR_DRAFT_STORAGE_ID,
+  normalizeDraft(draft, draft?.estado)
+);
+
 export const getVisitorBallotEstado = (fallbackEstado = null) => {
   const draft = readVisitorBallotDraft(fallbackEstado);
   return draft.estado || fallbackEstado || null;

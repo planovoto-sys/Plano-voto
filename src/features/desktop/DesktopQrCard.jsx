@@ -2,7 +2,7 @@ import { Link2, QrCode } from 'lucide-react';
 
 export default function DesktopQrCard({ handoff, primaryLabel }) {
   const isLoading = handoff.status === 'loading';
-  const label = primaryLabel || (handoff.isLoggedIn ? 'Gerar QR do rascunho' : 'Entrar para gerar QR');
+  const label = primaryLabel || 'Gerar QR do rascunho';
   const defaultMessage = handoff.hasEstado
     ? 'Escaneie para continuar no celular.'
     : 'Escolha seu estado para liberar o QR Code do rascunho.';

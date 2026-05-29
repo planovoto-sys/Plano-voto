@@ -4,6 +4,7 @@ import QRCode from 'qrcode';
 import { BALLOT_ROUTES } from '@/shared/constants/ballot';
 import { useUser } from '@/shared/hooks/useUser';
 import {
+  createLocalPlanHandoffUrl,
   createPlanHandoffToken,
   getBallotProgress,
   normalizeDraft
@@ -11,16 +12,23 @@ import {
 
 const buildQrCode = (url) => QRCode.toDataURL(url, {
   margin: 1,
-  width: 240,
+  width: 320,
   color: {
     dark: '#171717',
     light: '#ffffff'
   }
 });
 
+const ENABLE_SECURE_HANDOFF = import.meta.env.VITE_ENABLE_SECURE_HANDOFF === 'true';
+
 const getOrigin = () => (
   typeof window === 'undefined' ? 'https://nossovoto.org' : window.location.origin
 );
+
+const isLocalOrigin = () => {
+  if (typeof window === 'undefined') return false;
+  return ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname);
+};
 
 const getFallbackRoute = (progress) => {
   if (!progress?.hasEstado) return BALLOT_ROUTES.estado;
@@ -38,7 +46,15 @@ export function useDesktopHandoff(draft) {
   const location = useLocation();
   const normalizedDraft = useMemo(() => normalizeDraft(draft), [draft]);
   const progress = useMemo(() => getBallotProgress(normalizedDraft), [normalizedDraft]);
-  const fallbackUrl = useMemo(() => `${getOrigin()}${getFallbackRoute(progress)}`, [progress]);
+  const fallbackUrl = useMemo(() => {
+    if (!progress.hasEstado) return `${getOrigin()}${getFallbackRoute(progress)}`;
+
+    try {
+      return createLocalPlanHandoffUrl(normalizedDraft, getOrigin());
+    } catch {
+      return `${getOrigin()}${getFallbackRoute(progress)}`;
+    }
+  }, [normalizedDraft, progress]);
   const [state, setState] = useState({
     status: 'idle',
     url: fallbackUrl,
@@ -70,6 +86,19 @@ export function useDesktopHandoff(draft) {
     };
   }, [fallbackUrl]);
 
+  const generateLocalHandoff = async (message) => {
+    const localUrl = createLocalPlanHandoffUrl(normalizedDraft, getOrigin());
+    const qr = await buildQrCode(localUrl);
+
+    setState({
+      status: 'local-ready',
+      url: localUrl,
+      qr,
+      message
+    });
+    return true;
+  };
+
   const generate = async () => {
     if (!progress.hasEstado) {
       setState((currentState) => ({
@@ -80,18 +109,8 @@ export function useDesktopHandoff(draft) {
       return false;
     }
 
-    if (!user?.uid) {
-      setState((currentState) => ({
-        ...currentState,
-        status: 'login-required',
-        message: 'Entre para gerar um QR Code seguro do seu rascunho.'
-      }));
-      navigate('/login', {
-        state: {
-          from: `${location.pathname}${location.search}`
-        }
-      });
-      return false;
+    if (!user?.uid || isLocalOrigin() || !ENABLE_SECURE_HANDOFF) {
+      return generateLocalHandoff('QR local gerado. Ele leva este rascunho para o celular sem usar servidor.');
     }
 
     setState((currentState) => ({
@@ -116,14 +135,30 @@ export function useDesktopHandoff(draft) {
       return true;
     } catch (error) {
       const auth = isAuthError(error);
-      setState((currentState) => ({
-        ...currentState,
-        status: auth ? 'login-required' : 'error',
-        message: auth
-          ? 'Entre para gerar um QR Code seguro do seu rascunho.'
-          : error?.message || 'Não foi possível gerar o QR Code agora.'
-      }));
-      return false;
+      if (auth) {
+        setState((currentState) => ({
+          ...currentState,
+          status: 'login-required',
+          message: 'Entre novamente para gerar um QR Code seguro do seu rascunho.'
+        }));
+        navigate('/login', {
+          state: {
+            from: `${location.pathname}${location.search}`
+          }
+        });
+        return false;
+      }
+
+      try {
+        return await generateLocalHandoff('A função segura não respondeu agora. Use este QR local para continuar no celular.');
+      } catch (localError) {
+        setState((currentState) => ({
+          ...currentState,
+          status: 'error',
+          message: localError?.message || error?.message || 'Não foi possível gerar o QR Code agora.'
+        }));
+        return false;
+      }
     }
   };
 

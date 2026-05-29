@@ -4,6 +4,10 @@ import { BALLOT_ROUTES } from '@/shared/constants/ballot';
 import { useUser } from '@/shared/hooks/useUser';
 import {
   getBallotProgress,
+  LOCAL_PLAN_HANDOFF_TOKEN,
+  LOCAL_PLAN_HANDOFF_SHORT_TOKEN,
+  persistVisitorBallotDraft,
+  readLocalPlanHandoffDraft,
   redeemPlanHandoffToken,
   saveBallotDraftToAccount
 } from '@/features/ballot';
@@ -19,19 +23,70 @@ export default function ContinuarPlano() {
   const location = useLocation();
   const redeemStartedRef = useRef(false);
   const [status, setStatus] = useState({ type: 'idle', message: '' });
+  const isLocalToken = token === LOCAL_PLAN_HANDOFF_TOKEN || token === LOCAL_PLAN_HANDOFF_SHORT_TOKEN;
 
   useEffect(() => {
-    if (userLoading || !user?.uid || !token || redeemStartedRef.current) return;
+    if (userLoading || !isLocalToken || redeemStartedRef.current) return;
+
+    let draft = null;
+    try {
+      draft = readLocalPlanHandoffDraft(location.hash);
+    } catch {
+      queueMicrotask(() => setStatus({
+        type: 'error',
+        message: 'Este QR Code local está inválido. Gere um novo QR Code no desktop.'
+      }));
+      return;
+    }
+
+    if (!draft?.estado) {
+      queueMicrotask(() => setStatus({
+        type: 'error',
+        message: 'Este QR Code local não trouxe um estado válido. Gere um novo QR Code no desktop.'
+      }));
+      return;
+    }
 
     redeemStartedRef.current = true;
-    setStatus({ type: 'loading', message: 'Carregando seu plano no celular...' });
+    queueMicrotask(() => setStatus({ type: 'loading', message: 'Carregando seu rascunho no celular...' }));
+
+    const persistDraft = user?.uid
+      ? saveBallotDraftToAccount(user.uid, draft)
+      : Promise.resolve(persistVisitorBallotDraft(draft));
+
+    persistDraft
+      .then((savedDraft) => {
+        notify.success('Rascunho carregado pelo QR Code.', { dedupeKey: 'local-handoff-loaded' });
+        const progress = getBallotProgress(savedDraft);
+        navigate(progress.isComplete ? BALLOT_ROUTES.meuPlano : progress.nextRoute || BALLOT_ROUTES.estado, {
+          replace: true,
+          state: {
+            bypassVoteRedirect: true,
+            flowNotice: 'Rascunho carregado neste celular.'
+          }
+        });
+      })
+      .catch(() => {
+        notify.error('Não foi possível carregar este rascunho.', { dedupeKey: 'local-handoff-error' });
+        setStatus({
+          type: 'error',
+          message: 'Não foi possível carregar este rascunho. Gere um novo QR Code no desktop.'
+        });
+      });
+  }, [isLocalToken, location.hash, navigate, notify, user?.uid, userLoading]);
+
+  useEffect(() => {
+    if (isLocalToken || userLoading || !user?.uid || !token || redeemStartedRef.current) return;
+
+    redeemStartedRef.current = true;
+    queueMicrotask(() => setStatus({ type: 'loading', message: 'Carregando seu plano no celular...' }));
 
     redeemPlanHandoffToken(token)
       .then((draft) => saveBallotDraftToAccount(user.uid, draft))
       .then((savedDraft) => {
         notify.success('Plano carregado pelo QR Code.', { dedupeKey: 'handoff-loaded' });
         const progress = getBallotProgress(savedDraft);
-        navigate(progress.nextRoute || BALLOT_ROUTES.estado, {
+        navigate(progress.isComplete ? BALLOT_ROUTES.meuPlano : progress.nextRoute || BALLOT_ROUTES.estado, {
           replace: true,
           state: {
             bypassVoteRedirect: true,
@@ -46,7 +101,7 @@ export default function ContinuarPlano() {
           message: 'Este QR Code expirou ou já foi usado. Gere um novo QR Code no desktop.'
         });
       });
-  }, [navigate, notify, token, user?.uid, userLoading]);
+  }, [isLocalToken, navigate, notify, token, user?.uid, userLoading]);
 
   const handleLogin = () => {
     navigate('/login', {

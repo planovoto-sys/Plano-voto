@@ -7,6 +7,7 @@ Todas as mudanças relevantes deste projeto serão documentadas aqui.
 ### Adicionado
 - Cria a camada `src/features/desktop/` para a experiência desktop OS 04, com shell, header, navegação por etapas, intro, QR Code, painel de continuidade mobile, lista de recursos bloqueados e action bar.
 - Adiciona handoff desktop com QR/link de rascunho, tratamento de login necessário, plano incompleto e cópia de link.
+- Adiciona fallback local para QR Code de rascunho quando a Cloud Function de handoff não estiver disponível.
 
 ### Alterado
 - Redesenha Estado no desktop como wizard com busca refinada, grid compacto e painel lateral para continuar no celular.
