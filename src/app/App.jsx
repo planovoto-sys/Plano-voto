@@ -156,6 +156,12 @@ function AppRoutes({ rootElement, publicExplorationRoute, privateRedirect }) {
           <Route path="/cookies" element={<LegalPage type="cookies" />} />
           <Route path="/politica-de-privacidade" element={<LegalPage type="privacidade" />} />
           <Route path="/lgpd" element={<LegalPage type="lgpd" />} />
+          <Route path="/termos-de-uso" element={<LegalPage type="termos" />} />
+          <Route path="/aviso-eleitoral" element={<LegalPage type="avisoEleitoral" />} />
+          <Route path="/dados-no-dispositivo" element={<LegalPage type="dadosNoDispositivo" />} />
+          <Route path="/excluir-dados" element={<LegalPage type="excluirDados" />} />
+          <Route path="/central-de-privacidade" element={<LegalPage type="centralPrivacidade" />} />
+          <Route path="/fornecedores" element={<LegalPage type="fornecedores" />} />
           <Route path="/sobre-nos" element={<LegalPage type="sobre" />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

@@ -1,4 +1,5 @@
 import { Smartphone } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import DesktopLockedFeatureList from './DesktopLockedFeatureList';
 import DesktopQrCard from './DesktopQrCard';
 
@@ -18,6 +19,9 @@ export default function DesktopMobileHandoffPanel({ handoff, title = 'Continue p
 
       <DesktopLockedFeatureList />
       <DesktopQrCard handoff={handoff} />
+      <Link className="desktop-mobile-handoff-panel__legal-link" to="/aviso-eleitoral">
+        Aviso Eleitoral: o app não realiza votação oficial.
+      </Link>
     </aside>
   );
 }

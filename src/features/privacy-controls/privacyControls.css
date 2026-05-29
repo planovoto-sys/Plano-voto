@@ -1,0 +1,132 @@
+.privacy-control-center,
+.privacy-control-panel {
+  min-width: 0;
+  border: 1px solid var(--nav-line);
+  border-radius: 10px;
+  background: var(--surface);
+  display: grid;
+  gap: 18px;
+  margin-top: 28px;
+  padding: 20px;
+}
+
+.privacy-control-center__heading,
+.privacy-control-panel__heading {
+  display: grid;
+  gap: 8px;
+}
+
+.privacy-control-center__heading > span,
+.privacy-control-panel__heading > span {
+  color: var(--orange-dark);
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.privacy-control-center h2,
+.privacy-control-panel h2 {
+  margin: 0;
+  color: var(--text-strong);
+  font-size: 22px;
+  font-weight: 950;
+  line-height: 1.1;
+}
+
+.privacy-control-panel p,
+.privacy-control-link span,
+.privacy-account-box p,
+.privacy-confirm-field span {
+  margin: 0;
+  color: var(--muted-soft);
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.privacy-control-links,
+.privacy-control-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.privacy-control-link {
+  min-width: 0;
+  border: 1px solid rgba(17, 17, 17, 0.08);
+  border-radius: 10px;
+  background: var(--soft);
+  color: var(--text-main);
+  display: grid;
+  gap: 6px;
+  padding: 16px;
+  text-decoration: none;
+}
+
+.privacy-control-link strong,
+.privacy-account-box strong {
+  color: var(--text-strong);
+  font-size: 15px;
+  font-weight: 950;
+  line-height: 1.15;
+}
+
+.privacy-control-action {
+  min-height: 48px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-strong);
+  font-family: var(--font-family);
+  font-size: 13px;
+  font-weight: 900;
+  padding: 0 16px;
+  cursor: pointer;
+}
+
+.privacy-control-action--danger {
+  border-color: rgba(190, 55, 55, 0.34);
+  color: var(--tone-danger);
+}
+
+.privacy-control-action:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.privacy-control-panel__status {
+  border-top: 1px solid var(--nav-line);
+  padding-top: 14px;
+}
+
+.privacy-account-box,
+.privacy-confirm-field {
+  min-width: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.privacy-confirm-field input {
+  min-height: 48px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text-strong);
+  font-family: var(--font-family);
+  font-size: 16px;
+  font-weight: 850;
+  padding: 0 14px;
+}
+
+.privacy-control-panel--compact {
+  margin-top: 14px;
+  padding: 16px;
+}
+
+@media (min-width: 768px) {
+  .privacy-control-links,
+  .privacy-control-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

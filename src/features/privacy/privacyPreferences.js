@@ -72,3 +72,21 @@ export const acceptAllOptionalPrivacyPreferences = () => savePrivacyPreferences(
   marketing: true,
   commercialData: true
 });
+
+export const resetCookiePermissions = () => {
+  if (canUseStorage()) {
+    try {
+      window.localStorage.removeItem(PRIVACY_PREFERENCES_KEY);
+      window.localStorage.removeItem(LEGACY_PRIVACY_CONSENT_KEY);
+      window.localStorage.removeItem(`${LEGACY_PRIVACY_CONSENT_KEY}:accepted-at`);
+    } catch {
+      // Se o navegador bloquear localStorage, a próxima leitura volta ao padrão da sessão.
+    }
+  }
+
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('nossovoto:privacy-preferences-reset'));
+  }
+
+  return { ...DEFAULT_PRIVACY_PREFERENCES };
+};

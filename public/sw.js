@@ -1,4 +1,4 @@
-const CACHE_VERSION = '1.4.2-20260508';
+const CACHE_VERSION = '1.6.1-20260529';
 const APP_CACHE = `meuvoto-app-${CACHE_VERSION}`;
 const STATIC_CACHE = `meuvoto-static-${CACHE_VERSION}`;
 const APP_SHELL = [

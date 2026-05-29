@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { ClearIcon, DownloadIcon, ShareIcon } from '@/shared/icons/AppIcons';
 import { useNotify } from '@/features/notifications/useNotify';
@@ -362,6 +363,7 @@ export default function ShareChoicePanel({ shareData, className = '' }) {
   const notify = useNotify();
   const [isOpen, setIsOpen] = useState(false);
   const [templateId, setTemplateId] = useState('resumo');
+  const [shareNoticeAccepted, setShareNoticeAccepted] = useState(false);
   const [status, setStatus] = useState('');
   const analysis = useMemo(() => createShareAnalysis(shareData), [shareData]);
 
@@ -443,6 +445,25 @@ export default function ShareChoicePanel({ shareData, className = '' }) {
         </header>
 
         <div className="share-modal__body">
+          <div className="share-modal__notice">
+            <strong>Revise antes de compartilhar</strong>
+            <p>
+              Depois que você enviar para redes sociais ou aplicativos de mensagem, o controle sobre a circulação
+              depende da plataforma escolhida.
+            </p>
+            <label>
+              <input
+                type="checkbox"
+                checked={shareNoticeAccepted}
+                onChange={(event) => setShareNoticeAccepted(event.target.checked)}
+              />
+              <span>Entendo que o conteúdo compartilhado pode circular fora do nossovoto.org.</span>
+            </label>
+            <div className="share-modal__notice-links">
+              <Link to="/aviso-eleitoral">Aviso Eleitoral</Link>
+              <Link to="/politica-de-privacidade">Política de Privacidade</Link>
+            </div>
+          </div>
           <ShareMainGallery
             activeTemplateId={templateId}
             analysis={analysis}

@@ -408,6 +408,15 @@
   color: #ffd565;
 }
 
+.about-inline-link {
+  width: fit-content;
+  color: #ffd565;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.2;
+  text-decoration: none;
+}
+
 .about-section--split article {
   display: grid;
   gap: 12px;
@@ -521,6 +530,40 @@
   margin: 9px 0 0;
 }
 
+.legal-nav {
+  min-width: 0;
+  border-bottom: 1px solid var(--nav-line);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 18px 0;
+}
+
+.legal-nav a {
+  min-height: 38px;
+  border: 1px solid var(--nav-line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-main);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 13px;
+  font-size: 12px;
+  font-weight: 850;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.legal-nav a:hover,
+.legal-nav a:focus-visible,
+.legal-nav a.is-active {
+  border-color: rgba(255, 153, 0, 0.36);
+  background: rgba(255, 153, 0, 0.08);
+  color: var(--text-strong);
+}
+
 .legal-cta {
   display: grid;
   gap: 10px;
@@ -565,6 +608,52 @@
 
 .legal-section p {
   margin: 8px 0 0;
+}
+
+.legal-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  margin-top: 30px;
+  border: 1px solid var(--nav-line);
+  border-radius: 10px;
+  background: var(--surface);
+  overflow-x: auto;
+}
+
+.legal-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+}
+
+.legal-table caption {
+  color: var(--text-strong);
+  padding: 16px 18px;
+  font-size: 16px;
+  font-weight: 950;
+  line-height: 1.15;
+  text-align: left;
+}
+
+.legal-table th,
+.legal-table td {
+  border-top: 1px solid var(--nav-line);
+  padding: 13px 14px;
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: left;
+  vertical-align: top;
+}
+
+.legal-table th {
+  background: var(--soft);
+  color: var(--text-strong);
+  font-weight: 950;
+}
+
+.legal-table td {
+  color: var(--muted-soft);
+  font-weight: 650;
 }
 
 .legal-footer.app-footer--scroll-content {
@@ -632,6 +721,15 @@
   overflow-wrap: anywhere;
 }
 
+.cookie-option__copy em {
+  color: var(--text-main);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 850;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
 .cookie-switch {
   position: relative;
   width: 54px;
@@ -688,7 +786,7 @@
 
 .cookie-settings__actions {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
 }
 

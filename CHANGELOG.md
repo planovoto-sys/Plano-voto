@@ -2,6 +2,20 @@
 
 Todas as mudanças relevantes deste projeto serão documentadas aqui.
 
+## [1.6.1] - 2026-05-29
+
+### Adicionado
+- Implementa OS 05 com Central de Privacidade, Termos de Uso, Aviso Eleitoral, Dados no dispositivo, Exclusão de dados e Fornecedores.
+- Adiciona controles reais para apagar rascunho local, dados offline, cache de candidatos, permissões de cookies e tudo deste navegador.
+- Adiciona tabela objetiva de dados tratados, tabela de cookies e tabela de fornecedores nas páginas legais.
+- Cria documentação interna em `docs/legal/` com matriz de bases legais, RIPD simplificado, plano de incidentes e checklist de revisão jurídica.
+
+### Alterado
+- Revisa Cookies, Política de Privacidade e LGPD para dados sensíveis, QR Code, cache offline, compartilhamento e controles do usuário.
+- Atualiza o banner de privacidade para aceitar necessários, personalizar ou aceitar opcionais.
+- Adiciona aviso de QR Code e aviso de compartilhamento antes de enviar conteúdo para plataformas externas.
+- Amplia o footer com links de legal e privacidade.
+
 ## [1.6.0] - 2026-05-29
 
 ### Adicionado

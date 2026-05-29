@@ -1,13 +1,24 @@
 import { useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BALLOT_ROUTES } from '@/shared/constants/ballot';
-import { LEGAL_PAGE_CONTENT } from '@/shared/constants/legalPages';
+import {
+  COOKIE_CATEGORY_ROWS,
+  LEGAL_PAGE_CONTENT,
+  PRIVACY_DATA_ROWS,
+  PROVIDER_ROWS
+} from '@/shared/constants/legalPages';
 import { useDesktopExperience } from '@/shared/hooks/useDesktopExperience';
 import { useUser } from '@/shared/hooks/useUser';
 import AppFooter from '@/shared/ui/layout/AppFooter';
+import AccountDeletionPanel from '@/features/privacy-controls/AccountDeletionPanel';
+import LocalDataActions from '@/features/privacy-controls/LocalDataActions';
+import PrivacyControlCenter from '@/features/privacy-controls/PrivacyControlCenter';
 import CookiePreferences from '@/features/privacy/CookiePreferences';
 import { ChanceFlame } from '@/shared/icons/ChanceFlame';
+import LegalNavigation from './LegalNavigation';
+import LegalTable from './LegalTable';
 import './LegalPage.css';
+import '@/features/privacy-controls/privacyControls.css';
 
 const HOW_IT_WORKS = [
   {
@@ -41,6 +52,61 @@ const WITH_LOGIN = [
   'Ver indicadores personalizados',
   'Continuar pelo celular com QR Code temporário'
 ];
+
+const COOKIE_COLUMNS = [
+  { key: 'categoria', label: 'Categoria' },
+  { key: 'finalidade', label: 'Finalidade' },
+  { key: 'obrigatorio', label: 'Obrigatório?' },
+  { key: 'controle', label: 'Pode desativar?' },
+  { key: 'exemplos', label: 'Exemplos' }
+];
+
+const PRIVACY_DATA_COLUMNS = [
+  { key: 'dado', label: 'Dado' },
+  { key: 'finalidade', label: 'Finalidade' },
+  { key: 'base', label: 'Base/hipótese' },
+  { key: 'local', label: 'Onde pode ser salvo' },
+  { key: 'retencao', label: 'Retenção' },
+  { key: 'controle', label: 'Controle do usuário' }
+];
+
+const PROVIDER_COLUMNS = [
+  { key: 'categoria', label: 'Categoria' },
+  { key: 'finalidade', label: 'Finalidade' },
+  { key: 'dados', label: 'Dados possíveis' },
+  { key: 'exemplo', label: 'Exemplo de fornecedor' }
+];
+
+function LegalPageExtras({ type }) {
+  if (type === 'cookies') {
+    return (
+      <>
+        <LegalTable caption="Categorias de cookies e controles" columns={COOKIE_COLUMNS} rows={COOKIE_CATEGORY_ROWS} />
+        <CookiePreferences />
+      </>
+    );
+  }
+
+  if (type === 'privacidade') {
+    return (
+      <LegalTable caption="Tabela objetiva de dados tratados" columns={PRIVACY_DATA_COLUMNS} rows={PRIVACY_DATA_ROWS} />
+    );
+  }
+
+  if (type === 'dadosNoDispositivo') return <LocalDataActions />;
+
+  if (type === 'excluirDados') return <AccountDeletionPanel />;
+
+  if (type === 'centralPrivacidade') return <PrivacyControlCenter />;
+
+  if (type === 'fornecedores') {
+    return (
+      <LegalTable caption="Categorias de fornecedores e operadores" columns={PROVIDER_COLUMNS} rows={PROVIDER_ROWS} />
+    );
+  }
+
+  return null;
+}
 
 function AboutLanding({ user, isDesktopExperience, onPrimaryCta, onLoginCta }) {
   const aboutMainRef = useRef(null);
@@ -110,6 +176,7 @@ function AboutLanding({ user, isDesktopExperience, onPrimaryCta, onLoginCta }) {
           <a href="#como-funciona">Como funciona</a>
           <a href="#privacidade">Privacidade</a>
           <a href="#celular">Celular</a>
+          <Link to="/aviso-eleitoral">Aviso Eleitoral</Link>
         </nav>
 
         <div className="about-header__actions">
@@ -216,6 +283,7 @@ function AboutLanding({ user, isDesktopExperience, onPrimaryCta, onLoginCta }) {
             substituem sua pesquisa, sua opinião ou sua decisão final. Sempre revise dados, compare
             informações e escolha de forma consciente.
           </p>
+          <Link className="about-inline-link" to="/aviso-eleitoral">Entenda o Aviso Eleitoral</Link>
         </section>
 
         <section className="about-section about-section--split" id="privacidade" data-scroll-reveal>
@@ -259,6 +327,64 @@ export default function LegalPage({ type }) {
   const content = LEGAL_PAGE_CONTENT[type] || LEGAL_PAGE_CONTENT.cookies;
   const isAboutPage = type === 'sobre';
 
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+
+    const previousTitle = document.title;
+    const previousDescription = document.querySelector('meta[name="description"]')?.getAttribute('content') || '';
+    const previousRobots = document.querySelector('meta[name="robots"]')?.getAttribute('content') || '';
+    let descriptionMeta = document.querySelector('meta[name="description"]');
+    let robotsMeta = document.querySelector('meta[name="robots"]');
+    let canonicalLink = document.querySelector('link[rel="canonical"]');
+    const previousCanonical = canonicalLink?.getAttribute('href') || '';
+    const createdDescription = !descriptionMeta;
+    const createdRobots = !robotsMeta;
+    const createdCanonical = !canonicalLink;
+
+    if (!descriptionMeta) {
+      descriptionMeta = document.createElement('meta');
+      descriptionMeta.setAttribute('name', 'description');
+      document.head.appendChild(descriptionMeta);
+    }
+
+    if (!robotsMeta) {
+      robotsMeta = document.createElement('meta');
+      robotsMeta.setAttribute('name', 'robots');
+      document.head.appendChild(robotsMeta);
+    }
+
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonicalLink);
+    }
+
+    document.title = content.meta?.title || `${content.title} | nossovoto.org`;
+    descriptionMeta.setAttribute('content', content.meta?.description || content.subtitle || '');
+    robotsMeta.setAttribute('content', content.meta?.noindex ? 'noindex,follow' : 'index,follow');
+    canonicalLink.setAttribute('href', `https://nossovoto.org${content.meta?.path || window.location.pathname}`);
+
+    return () => {
+      document.title = previousTitle;
+      if (createdDescription) descriptionMeta.remove();
+      else descriptionMeta.setAttribute('content', previousDescription);
+      if (createdRobots) robotsMeta.remove();
+      else robotsMeta.setAttribute('content', previousRobots);
+      if (createdCanonical) canonicalLink.remove();
+      else canonicalLink.setAttribute('href', previousCanonical);
+    };
+  }, [content]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.location.hash) return undefined;
+
+    const timeoutId = window.setTimeout(() => {
+      document.getElementById(window.location.hash.slice(1))?.scrollIntoView({ block: 'start' });
+    }, 80);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [type]);
+
   const handlePrimaryCta = () => {
     navigate(BALLOT_ROUTES.estado, { state: { bypassVoteRedirect: true } });
   };
@@ -292,19 +418,9 @@ export default function LegalPage({ type }) {
           <div className="legal-panel__heading">
             <h1>{content.title}</h1>
             <p>{content.subtitle}</p>
-            {isAboutPage && (
-              <div className="legal-cta">
-                <button className="legal-cta__primary nv-touch" type="button" onClick={handlePrimaryCta}>
-                  {user?.uid ? 'Ver candidatos' : (isDesktopExperience ? 'Começar sem login' : 'Começar')}
-                </button>
-                {!user?.uid && (
-                  <button className="legal-cta__secondary nv-touch" type="button" onClick={handleLoginCta}>
-                    Fazer login
-                  </button>
-                )}
-              </div>
-            )}
           </div>
+
+          <LegalNavigation />
 
           <div className="legal-section-list">
             {content.sections.map((section) => (
@@ -319,7 +435,7 @@ export default function LegalPage({ type }) {
             ))}
           </div>
 
-          {type === 'cookies' && <CookiePreferences />}
+          <LegalPageExtras type={type} />
         </section>
 
         <AppFooter className="app-footer--scroll-content legal-footer" />

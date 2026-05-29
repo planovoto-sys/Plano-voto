@@ -1,10 +1,9 @@
 import { Link } from 'react-router-dom';
+import { LEGAL_NAV_LINKS } from '@/shared/constants/legalPages';
 import './AppFooter.css';
 
 const footerLinks = [
-  { label: 'Cookies', path: '/cookies' },
-  { label: 'Política de Privacidade', path: '/politica-de-privacidade' },
-  { label: 'LGPD', path: '/lgpd' },
+  ...LEGAL_NAV_LINKS,
   { label: 'Sobre nós', path: '/sobre-nos' }
 ];
 
@@ -20,7 +19,7 @@ export default function AppFooter({ className = '' }) {
         </div>
 
         <nav className="app-footer__links" aria-label="Informações legais">
-          <strong>Links legais</strong>
+          <strong>Legal e privacidade</strong>
           {footerLinks.map((link) => (
             <Link key={link.path} to={link.path}>
               {link.label}

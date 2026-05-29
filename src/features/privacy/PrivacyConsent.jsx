@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
+  acceptAllOptionalPrivacyPreferences,
   acceptOnlyNecessaryPrivacyPreferences,
   hasSavedPrivacyPreferences
 } from '@/features/privacy/privacyPreferences';
@@ -11,8 +12,23 @@ export default function PrivacyConsent() {
   const [accepted, setAccepted] = useState(hasSavedPrivacyPreferences);
   const [expanded, setExpanded] = useState(false);
 
-  const acceptPolicy = () => {
+  useEffect(() => {
+    const showConsentAgain = () => {
+      setAccepted(false);
+      setExpanded(false);
+    };
+
+    window.addEventListener('nossovoto:privacy-preferences-reset', showConsentAgain);
+    return () => window.removeEventListener('nossovoto:privacy-preferences-reset', showConsentAgain);
+  }, []);
+
+  const acceptNecessary = () => {
     acceptOnlyNecessaryPrivacyPreferences();
+    setAccepted(true);
+  };
+
+  const acceptOptional = () => {
+    acceptAllOptionalPrivacyPreferences();
     setAccepted(true);
   };
 
@@ -28,20 +44,19 @@ export default function PrivacyConsent() {
       <div className="privacy-consent__copy">
         <h2 id="privacy-consent-title">Privacidade e permissões</h2>
         <p>
-          Usamos cookies técnicos do Firebase/Google para autenticação e armazenamento local para manter seu
-          rascunho de voto, preferências e recibo no aparelho. A PWA não solicita câmera, microfone ou geolocalização.
+          Usamos recursos necessários para login, segurança, rascunho e funcionamento da PWA. Recursos opcionais
+          de análise, personalização, marketing e estudos agregados dependem da sua permissão.
         </p>
 
         {expanded && (
           <div className="privacy-consent__details">
             <p>
               Dados públicos de candidatos podem ficar em cache para melhorar o carregamento em redes lentas.
-              O voto confirmado é enviado somente pela função segura do Firebase e não fica gravado como voto
-              editável no navegador.
+              O app organiza um plano pessoal e não realiza votação oficial.
             </p>
             <p>
-              Você pode limpar esses dados nas configurações do navegador a qualquer momento; isso pode apagar
-              rascunhos e preferências salvas neste dispositivo.
+              Você pode limpar esses dados na Central de Privacidade, na página de cookies ou nas configurações
+              do navegador. Isso pode apagar rascunhos e preferências salvas neste dispositivo.
             </p>
           </div>
         )}
@@ -54,8 +69,11 @@ export default function PrivacyConsent() {
         <button className="privacy-consent__secondary" type="button" onClick={openCustomization}>
           Personalizar
         </button>
-        <button className="privacy-consent__primary" type="button" onClick={acceptPolicy}>
-          Entendi
+        <button className="privacy-consent__secondary" type="button" onClick={acceptNecessary}>
+          Aceitar necessários
+        </button>
+        <button className="privacy-consent__primary" type="button" onClick={acceptOptional}>
+          Aceitar opcionais
         </button>
       </div>
     </section>
