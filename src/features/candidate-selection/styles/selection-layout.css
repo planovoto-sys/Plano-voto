@@ -70,6 +70,21 @@
   flex: 0 0 18px;
 }
 
+.app-header-icon-action.card-detail-mode-toggle {
+  border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.app-header-icon-action.card-detail-mode-toggle.is-active {
+  background: var(--orange-soft);
+  color: var(--orange-dark);
+  border-color: color-mix(in srgb, currentColor 26%, transparent);
+}
+
 .app-header-mode-menu {
   position: absolute;
   top: calc(100% + 8px);

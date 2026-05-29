@@ -68,10 +68,8 @@ export default function SelectBase({
   const [selecionados, setSelecionados] = useState(selecaoInicial);
   const [candidateRenderLimit, setCandidateRenderLimit] = useState(INITIAL_CANDIDATE_RENDER_LIMIT);
   const [candidateFilterOpen, setCandidateFilterOpen] = useState(false);
-  const [modeMenuOpen, setModeMenuOpen] = useState(false);
   const candidateSearchInputRef = useRef(null);
   const candidateFilterRef = useRef(null);
-  const modeMenuRef = useRef(null);
   const lastScrollTopRef = useRef(0);
   const [continueVisible, setContinueVisible] = useState(false);
   const [senateChoicesSaved, setSenateChoicesSaved] = useState(false);
@@ -138,27 +136,6 @@ export default function SelectBase({
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [candidateFilterOpen]);
-
-  useEffect(() => {
-    if (!modeMenuOpen || typeof document === 'undefined') return undefined;
-
-    const handlePointerDown = (event) => {
-      if (modeMenuRef.current?.contains(event.target)) return;
-      setModeMenuOpen(false);
-    };
-
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') setModeMenuOpen(false);
-    };
-
-    document.addEventListener('pointerdown', handlePointerDown);
-    document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [modeMenuOpen]);
 
   useEffect(() => {
     let cancelled = false;
@@ -643,7 +620,10 @@ export default function SelectBase({
       });
     }
     setCandidateCardMode(nextMode);
-    setModeMenuOpen(false);
+  };
+
+  const handleCandidateCardModeToggle = () => {
+    handleCandidateCardModeSelect(candidateCardMode === 'detailed' ? 'compact' : 'detailed');
   };
 
   const handleLoginFromLockedMetric = () => {
@@ -1020,53 +1000,16 @@ export default function SelectBase({
 
         <div className="app-page-header__actions">
           {isCandidateOffice ? (
-            <div
-              className={`app-header-mode-picker ${modeMenuOpen ? 'is-open' : ''}`}
-              ref={modeMenuRef}
+            <button
+              className={`app-header-icon-action app-help-action card-detail-mode-toggle nv-touch ${candidateCardMode === 'detailed' ? 'is-active' : ''}`}
+              type="button"
+              onClick={handleCandidateCardModeToggle}
+              aria-label={candidateCardMode === 'detailed' ? 'Usar visualização resumida' : 'Usar visualização detalhada'}
+              aria-pressed={candidateCardMode === 'detailed'}
+              title={candidateCardMode === 'detailed' ? 'Usar visualização resumida' : 'Usar visualização detalhada'}
             >
-              <button
-                className={`app-header-mode-action card-detail-mode-toggle nv-touch ${candidateCardMode === 'detailed' ? 'is-active' : ''}`}
-                type="button"
-                onClick={() => setModeMenuOpen((currentValue) => !currentValue)}
-                aria-expanded={modeMenuOpen}
-                aria-haspopup="menu"
-                aria-label="Modo de exibição dos cards"
-                title="Modo de exibição dos cards"
-              >
-                <InfoIcon />
-              </button>
-
-              {modeMenuOpen && (
-                <div className="app-header-mode-menu" role="menu" aria-labelledby="app-header-mode-menu-title">
-                  <span
-                    className="app-header-mode-menu__title"
-                    id="app-header-mode-menu-title"
-                    role="presentation"
-                  >
-                    Modo de exibição
-                  </span>
-                  {CARD_MODE_OPTIONS.map((option) => {
-                    const isActive = candidateCardMode === option.id;
-
-                    return (
-                      <button
-                        key={option.id}
-                        className={`app-header-mode-menu__option ${isActive ? 'is-active' : ''}`}
-                        type="button"
-                        role="menuitemradio"
-                        aria-checked={isActive}
-                        onClick={() => handleCandidateCardModeSelect(option.id)}
-                      >
-                        <span className="app-header-mode-menu__check" aria-hidden="true">
-                          {isActive && <CheckIcon />}
-                        </span>
-                        <span>{option.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+              <InfoIcon />
+            </button>
           ) : onHelpClick && (
             <button
               className="app-header-icon-action app-help-action nv-touch"
