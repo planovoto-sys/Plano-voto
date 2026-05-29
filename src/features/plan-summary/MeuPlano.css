@@ -1,0 +1,890 @@
+.my-plan-page {
+  background: var(--page-bg);
+  overflow-x: hidden;
+}
+
+.my-plan-header {
+  flex: 0 0 auto;
+  min-height: 64px;
+  border-bottom: 1px solid var(--nav-line);
+  background: var(--page-bg);
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 40px;
+  align-items: center;
+  gap: 0;
+  padding: 0 22px;
+}
+
+.my-plan-header__profile,
+.my-plan-header__logout {
+  border: 0;
+  background: transparent;
+  color: var(--text-strong);
+  font-family: var(--font-family);
+  cursor: pointer;
+}
+
+.my-plan-header__profile,
+.my-plan-header__logout {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.my-plan-header__logout svg {
+  width: 20px;
+  height: 20px;
+}
+
+.my-plan-header__profile-wrap {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  justify-self: start;
+}
+
+.my-plan-header__profile {
+  overflow: visible;
+}
+
+.my-plan-header__profile-avatar {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--soft);
+  color: var(--text-strong);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(17, 17, 17, 0.08);
+}
+
+.my-plan-header__profile-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.my-plan-header__profile-initial {
+  color: var(--text-strong);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.my-plan-header__profile-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 30;
+  width: min(246px, calc(100vw - 44px));
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: 0 16px 34px rgba(17, 17, 17, 0.14);
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+}
+
+.my-plan-header__profile-popover strong,
+.my-plan-header__profile-popover span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.my-plan-header__profile-popover strong {
+  color: var(--text-strong);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 850;
+  line-height: 1.1;
+}
+
+.my-plan-header__profile-popover span {
+  color: var(--muted-soft);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+.my-plan-header__logout svg {
+  stroke-width: 2.45;
+}
+
+.my-plan-header__title {
+  min-width: 0;
+  max-width: 100%;
+  overflow: visible;
+  color: var(--text-strong);
+  font-family: var(--font-family);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.my-plan-header__flame {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  object-fit: contain;
+}
+
+.my-plan-header__title span {
+  min-width: 0;
+  overflow: hidden;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+}
+
+.my-plan-header__title em {
+  color: var(--muted-soft);
+  font-style: normal;
+}
+
+.my-plan-header__logout {
+  justify-self: end;
+}
+
+.my-plan-scroll {
+  background: var(--page-bg);
+  padding: 8px clamp(12px, 3.5vw, 18px) calc(12px + env(safe-area-inset-bottom, 0px));
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.my-plan-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.my-plan-shell {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.my-plan-profile {
+  min-width: 0;
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--page-bg);
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  padding: 5px 9px;
+}
+
+.my-plan-profile__photo {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--soft);
+  color: var(--text-strong);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  object-fit: cover;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.my-plan-profile__copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.my-plan-profile__copy strong,
+.my-plan-profile__copy span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.my-plan-profile__copy strong {
+  color: var(--text-strong);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.my-plan-profile__copy span {
+  color: var(--muted-soft);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.1;
+}
+
+.my-plan-overview {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  min-width: 0;
+}
+
+.my-plan-overview-card {
+  min-width: 0;
+  min-height: 64px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--soft);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  align-items: center;
+  justify-items: center;
+  gap: 2px;
+  padding: 7px 4px 8px;
+  text-align: center;
+}
+
+.my-plan-overview-card span {
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--text-strong);
+  font-family: var(--font-display);
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.my-plan-overview-card strong {
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--text-strong);
+  font-family: var(--font-display);
+  font-size: clamp(18px, 4.8vw, 21px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.my-plan-overview-card small {
+  display: none;
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--muted-soft);
+  font-size: 10px;
+  font-weight: 750;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.my-plan-mobile-handoff {
+  display: none;
+}
+
+.my-plan-choices {
+  display: grid;
+  grid-template-rows: auto auto;
+  align-content: start;
+  gap: 6px;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.my-plan-choice-section {
+  align-content: start;
+  gap: 2px;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  padding-top: 0;
+}
+
+.my-plan-choice-section + .my-plan-choice-section {
+  padding-top: 8px;
+}
+
+.my-plan-choice-section .prototype-section-heading {
+  margin-bottom: 0;
+  line-height: 1;
+}
+
+.my-plan-choice-section .prototype-section-heading__copy {
+  margin-bottom: 8px;
+}
+
+.my-plan-choice-section .prototype-section-heading p {
+  margin-top: 2px;
+}
+
+.my-plan-choice-list {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  gap: 8px;
+  padding-top: 0;
+}
+
+.my-plan-empty-choice {
+  min-height: 94px;
+  border: 1px dashed rgba(17, 17, 17, 0.18);
+  border-radius: 8px;
+  background: var(--surface);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+}
+
+.my-plan-empty-choice div {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.my-plan-empty-choice strong {
+  color: var(--text-strong);
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.my-plan-empty-choice span {
+  color: var(--muted-soft);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.my-plan-save-invite button,
+.my-plan-continue-button {
+  min-height: 40px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--surface);
+  padding: 0 14px;
+  font-family: var(--font-family);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.my-plan-save-invite button,
+.my-plan-continue-button {
+  min-height: 48px;
+}
+
+.my-plan-actions {
+  position: sticky;
+  bottom: 8px;
+  z-index: 20;
+  display: grid;
+  gap: 0;
+  min-height: 0;
+  margin-top: 2px;
+  padding: 0;
+  background: transparent;
+  pointer-events: none;
+}
+
+.my-plan-actions > * {
+  pointer-events: auto;
+}
+
+.my-plan-save-invite,
+.my-plan-share-disabled,
+.my-plan-continue-button {
+  width: 100%;
+  max-width: 448px;
+  justify-self: center;
+  border: 0;
+  border-radius: 999px;
+  background: var(--action, var(--orange));
+  display: grid;
+  align-items: center;
+  justify-items: center;
+  gap: 4px;
+  min-height: 58px;
+  padding: 14px 24px;
+  box-shadow: var(--action-shadow);
+}
+
+.my-plan-share-disabled {
+  opacity: 0.5;
+}
+
+.my-plan-save-invite strong,
+.my-plan-share-disabled strong,
+.my-plan-continue-button strong {
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.my-plan-save-invite span,
+.my-plan-share-disabled span {
+  color: rgba(0, 0, 15, 0.72);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.15;
+  text-align: center;
+}
+
+.my-plan-save-invite {
+  min-height: 0;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  align-items: initial;
+  justify-items: stretch;
+  gap: 8px;
+  padding: 12px;
+}
+
+.my-plan-save-invite strong {
+  color: var(--text-strong);
+  font-size: 15px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.my-plan-save-invite span {
+  color: var(--muted-soft);
+  font-size: 12px;
+  line-height: 1.3;
+  text-align: left;
+}
+
+.my-plan-share-panel {
+  min-height: 0;
+  margin-top: 0;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  padding: 0;
+}
+
+.my-plan-share-panel .share-choice-panel__copy {
+  display: none;
+}
+
+.my-plan-share-panel .share-choice-panel__button {
+  width: 100%;
+  max-width: 512px;
+  min-height: 58px;
+  justify-self: center;
+  border-radius: 999px;
+  background: var(--action, var(--orange));
+  color: var(--action-foreground, var(--text));
+  padding: 14px 24px;
+  box-shadow: 0 6px 14px rgba(255, 152, 0, 0.18);
+  font-family: var(--font-family);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.my-plan-share-panel .share-choice-panel__button svg {
+  display: none;
+}
+
+@media (max-width: 380px) {
+  .my-plan-header {
+    grid-template-columns: 40px minmax(0, 1fr) 40px;
+    padding-inline: 18px;
+  }
+
+  .my-plan-overview-card {
+    min-height: 62px;
+    padding-inline: 4px;
+  }
+
+  .my-plan-overview-card span {
+    font-size: 10px;
+  }
+
+  .my-plan-overview-card strong {
+    font-size: 18px;
+  }
+
+  .my-plan-share-disabled strong {
+    font-size: 18px;
+  }
+
+  .my-plan-share-panel .share-choice-panel__button {
+    font-size: 16px;
+  }
+
+  .my-plan-empty-choice {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .my-plan-page {
+    background: var(--desktop-bg);
+  }
+
+  .my-plan-header {
+    min-height: 74px;
+    padding: 0 var(--screen-gutter);
+  }
+
+  .my-plan-scroll {
+    padding: 24px var(--screen-gutter) 24px;
+  }
+
+  .my-plan-shell {
+    max-width: 960px;
+    gap: 14px;
+  }
+
+  .my-plan-profile {
+    min-height: 54px;
+    grid-template-columns: 42px minmax(0, 1fr);
+    gap: 12px;
+    padding: 6px 12px;
+  }
+
+  .my-plan-profile__photo {
+    width: 42px;
+    height: 42px;
+    font-size: 16px;
+  }
+
+  .my-plan-profile__copy strong {
+    font-size: 16px;
+  }
+
+  .my-plan-profile__copy span {
+    font-size: 13px;
+  }
+
+  .my-plan-overview-card {
+    min-height: 86px;
+    padding: 12px;
+  }
+
+  .my-plan-overview-card span {
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .my-plan-overview-card strong {
+    font-size: 22px;
+  }
+
+  .my-plan-overview-card small {
+    font-size: 11px;
+  }
+
+  .my-plan-choices {
+    gap: 14px;
+  }
+
+  .my-plan-actions {
+    max-width: 720px;
+    width: 100%;
+    justify-self: center;
+  }
+
+  .my-plan-share-disabled {
+    min-height: 70px;
+  }
+
+  .my-plan-share-panel .share-choice-panel__button {
+    min-height: 58px;
+  }
+
+  .my-plan-share-disabled strong {
+    font-size: 18px;
+  }
+
+  .my-plan-share-panel .share-choice-panel__button {
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .my-plan-scroll {
+    padding: 30px clamp(44px, 6vw, 86px) 28px;
+  }
+
+  .my-plan-shell {
+    width: min(100%, 1160px);
+    max-width: none;
+    height: auto;
+    min-height: calc(var(--app-height) - 74px - 86px);
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "overview handoff"
+      "choices handoff"
+      "actions handoff";
+    align-items: start;
+    gap: 16px clamp(24px, 3vw, 36px);
+  }
+
+  .my-plan-overview {
+    grid-area: overview;
+    gap: 10px;
+  }
+
+  .my-plan-overview-card {
+    min-height: 78px;
+    align-content: center;
+    padding: 12px 10px;
+  }
+
+  .my-plan-overview-card strong {
+    font-size: clamp(20px, 1.8vw, 24px);
+  }
+
+  .my-plan-overview-card small {
+    display: block;
+  }
+
+  .my-plan-choices {
+    grid-area: choices;
+    gap: 10px;
+    overflow: visible;
+  }
+
+  .my-plan-choice-section {
+    gap: 4px;
+    overflow: visible;
+  }
+
+  .my-plan-choice-section + .my-plan-choice-section {
+    padding-top: 4px;
+  }
+
+  .my-plan-choice-section .prototype-section-heading__copy {
+    margin-bottom: 6px;
+  }
+
+  .my-plan-choice-list {
+    gap: 10px;
+    overflow: visible;
+  }
+
+  .my-plan-choice-list .prototype-candidate-card {
+    --candidate-card-pad-left: 20px;
+    --candidate-card-pad-right: 20px;
+    --candidate-metric-size: 52px;
+    --candidate-name-size: clamp(15px, 1vw, 17px);
+    --candidate-score-size: clamp(13px, 0.82vw, 15px);
+    --candidate-bar-height: 12px;
+    --candidate-caption-size: 10px;
+    --candidate-badge-size: 10px;
+    --candidate-badge-height: 28px;
+    --candidate-badge-pad-inline: 12px;
+    --candidate-status-icon-box: 18px;
+    --candidate-status-icon-size: 18px;
+    --candidate-fire-icon-width: 16px;
+    --candidate-fire-icon-height: 21px;
+    min-height: 104px;
+    border-radius: 12px;
+    padding-block: 14px 12px;
+  }
+
+  .my-plan-choice-list .candidate-card__identity small {
+    font-size: 12px;
+  }
+
+  .my-plan-choice-list .candidate-thermometer {
+    margin-top: 8px;
+  }
+
+  .my-plan-actions {
+    position: static;
+    grid-area: actions;
+    width: 100%;
+    max-width: none;
+    justify-self: stretch;
+    margin-top: 6px;
+    pointer-events: auto;
+  }
+
+  .my-plan-actions > * {
+    width: min(100%, 520px);
+    justify-self: start;
+  }
+
+  .my-plan-mobile-handoff {
+    grid-area: handoff;
+    position: sticky;
+    top: 24px;
+    min-width: 0;
+    border: 1px solid var(--desktop-border);
+    border-radius: 8px;
+    background: var(--surface);
+    display: grid;
+    gap: 16px;
+    padding: 22px;
+    box-shadow: 0 16px 42px rgba(17, 17, 17, 0.06);
+  }
+
+  .my-plan-mobile-handoff__copy {
+    display: grid;
+    gap: 9px;
+    min-width: 0;
+  }
+
+  .my-plan-mobile-handoff__copy > span {
+    width: fit-content;
+    border: 1px solid rgba(255, 139, 73, 0.25);
+    border-radius: 999px;
+    background: var(--orange-soft);
+    color: var(--orange-dark);
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 11px;
+    font-size: 11px;
+    font-weight: 950;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  .my-plan-mobile-handoff__copy svg,
+  .my-plan-mobile-handoff__actions svg {
+    width: 16px;
+    height: 16px;
+    flex: 0 0 16px;
+  }
+
+  .my-plan-mobile-handoff h2 {
+    margin: 0;
+    color: var(--text-strong);
+    font-size: clamp(27px, 2.5vw, 36px);
+    font-weight: 950;
+    line-height: 1.02;
+  }
+
+  .my-plan-mobile-handoff p {
+    margin: 0;
+    color: var(--muted-soft);
+    font-size: 14px;
+    font-weight: 650;
+    line-height: 1.45;
+  }
+
+  .my-plan-mobile-handoff__qr {
+    aspect-ratio: 1;
+    width: min(100%, 230px);
+    justify-self: center;
+    border: 1px solid rgba(17, 17, 17, 0.08);
+    border-radius: 8px;
+    background:
+      linear-gradient(180deg, #ffffff 0%, #fffaf5 100%);
+    display: grid;
+    place-items: center;
+    padding: 16px;
+  }
+
+  .my-plan-mobile-handoff__qr img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+  }
+
+  .my-plan-mobile-handoff__qr > svg {
+    width: 96px;
+    height: 96px;
+    color: rgba(17, 17, 17, 0.24);
+    stroke-width: 1.8;
+  }
+
+  .my-plan-mobile-handoff__actions {
+    display: grid;
+    gap: 9px;
+  }
+
+  .my-plan-mobile-handoff__primary,
+  .my-plan-mobile-handoff__secondary {
+    min-height: 46px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 18px;
+    font-family: var(--font-family);
+    font-size: 13px;
+    font-weight: 900;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .my-plan-mobile-handoff__primary {
+    border: 0;
+    background: linear-gradient(90deg, #ffd565 0%, var(--orange) 100%);
+    color: var(--text);
+    box-shadow: 0 10px 22px rgba(255, 152, 0, 0.18);
+  }
+
+  .my-plan-mobile-handoff__primary:disabled {
+    cursor: wait;
+    opacity: 0.68;
+  }
+
+  .my-plan-mobile-handoff__secondary {
+    border: 1px solid var(--ink);
+    background: var(--surface);
+    color: var(--text-strong);
+  }
+
+  .my-plan-mobile-handoff__status {
+    border-top: 1px solid rgba(17, 17, 17, 0.08);
+    padding-top: 14px;
+    font-size: 12px !important;
+    line-height: 1.35 !important;
+  }
+}
+
+@media (min-width: 1280px) {
+  .my-plan-shell {
+    width: min(100%, 1220px);
+    grid-template-columns: minmax(0, 1fr) minmax(340px, 400px);
+  }
+}

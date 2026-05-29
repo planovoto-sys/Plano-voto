@@ -1,0 +1,12 @@
+.app-shell {
+  isolation: isolate;
+}
+
+.app-main {
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.app-main::-webkit-scrollbar {
+  display: none;
+}

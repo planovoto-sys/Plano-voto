@@ -1,0 +1,97 @@
+.page-transition {
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--page-bg);
+  transform-origin: center;
+  animation-fill-mode: both;
+}
+
+.page-transition--forward {
+  animation-name: pageFrameSettle;
+}
+
+.page-transition--back {
+  animation-name: pageFrameSettle;
+}
+
+.page-transition--fade {
+  animation-name: pageEnterFade;
+  animation-duration: 300ms;
+}
+
+.page-transition--reduced {
+  animation: none;
+}
+
+@keyframes pageEnterFade {
+  from {
+    opacity: 0.52;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.page-transition--forward .prototype-scroll,
+.page-transition--forward .my-plan-scroll,
+.page-transition--forward .app-main,
+.page-transition--forward .select-base__continue-shell {
+  animation: pageContentForward 520ms cubic-bezier(.2, .8, .18, 1) both;
+  will-change: transform;
+}
+
+.page-transition--back .prototype-scroll,
+.page-transition--back .my-plan-scroll,
+.page-transition--back .app-main,
+.page-transition--back .select-base__continue-shell {
+  animation: pageContentBack 520ms cubic-bezier(.2, .8, .18, 1) both;
+  will-change: transform;
+}
+
+@keyframes pageContentForward {
+  from {
+    transform: translate3d(100%, 0, 0);
+  }
+
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes pageContentBack {
+  from {
+    transform: translate3d(-100%, 0, 0);
+  }
+
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes pageFrameSettle {
+  from,
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-transition {
+    animation: none;
+  }
+
+  .page-transition--forward .prototype-scroll,
+  .page-transition--forward .my-plan-scroll,
+  .page-transition--forward .app-main,
+  .page-transition--forward .select-base__continue-shell,
+  .page-transition--back .prototype-scroll,
+  .page-transition--back .my-plan-scroll,
+  .page-transition--back .app-main,
+  .page-transition--back .select-base__continue-shell {
+    animation: none;
+  }
+}

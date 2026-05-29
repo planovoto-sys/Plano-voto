@@ -1,0 +1,18 @@
+.animated-list {
+  contain: layout style;
+}
+
+.animated-list__item {
+  min-width: 0;
+}
+
+.animated-list__item > .prototype-candidate-card {
+  width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animated-list__item {
+    transition: none !important;
+    transform: none !important;
+  }
+}

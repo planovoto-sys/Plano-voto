@@ -1,0 +1,840 @@
+.prototype-candidate-card {
+  --candidate-card-pad-left: 20px;
+  --candidate-card-pad-right: 20px;
+  --candidate-metric-size: 56px;
+  --candidate-name-size: 18px;
+  --candidate-score-size: 14px;
+  --candidate-card-border: rgba(105, 116, 111, 0.18);
+  --candidate-card-line: rgba(105, 116, 111, 0.14);
+  --candidate-bar-height: 14px;
+  --candidate-bar-border: rgba(105, 116, 111, 0.28);
+  --candidate-caption-size: 10px;
+  --candidate-badge-size: 10px;
+  --candidate-badge-height: 27px;
+  --candidate-badge-pad-inline: 12px;
+  --candidate-status-icon-box: 18px;
+  --candidate-status-icon-size: 19px;
+  --candidate-fire-icon-width: 16px;
+  --candidate-fire-icon-height: 21px;
+  --metric-feature-color: #ff914d;
+  --candidate-card-bg: #ffffff;
+  --candidate-card-fg: #69746f;
+  --candidate-assessment-bg: color-mix(in srgb, currentColor 16%, white);
+  --candidate-viability-fill: currentColor;
+  --candidate-viability-track: rgba(169, 169, 169, 0.28);
+  --candidate-thermometer-fill: currentColor;
+  --candidate-thermometer-track: #f0f2ef;
+  --assessment-icon-bg: #a9a9a9;
+  --assessment-icon-fg: #ffffff;
+  position: relative;
+  width: 100%;
+  min-height: 98px;
+  border: 0;
+  border-radius: 14px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  gap: 5px;
+  padding: 12px var(--candidate-card-pad-right) 11px var(--candidate-card-pad-left);
+  background: var(--candidate-card-bg);
+  color: var(--candidate-card-fg);
+  text-align: left;
+  font-family: var(--font-family);
+  cursor: default;
+  overflow: hidden;
+  box-shadow: none;
+  transition: background-color var(--motion-fast) var(--ease-standard), box-shadow var(--motion-fast) var(--ease-standard), transform var(--motion-fast) var(--ease-standard);
+}
+
+.prototype-candidate-card.is-promoted {
+  animation: promotedPulse 1200ms var(--ease-standard);
+}
+
+.prototype-candidate-card.is-selection-added {
+  animation: candidateSelectionAdded 720ms var(--ease-standard);
+}
+
+.prototype-candidate-card.is-selection-removed {
+  animation: candidateSelectionRemoved 720ms var(--ease-standard);
+}
+
+.prototype-candidate-card.is-blocked {
+  cursor: not-allowed;
+}
+
+.prototype-candidate-card:disabled {
+  cursor: wait;
+  opacity: 1;
+}
+
+.candidate-card__surface {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  display: block;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.candidate-card__surface:disabled {
+  cursor: wait;
+}
+
+.candidate-card__surface:focus-visible,
+.candidate-card__selection-action:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+
+.prototype-candidate-card.is-expandable.is-expanded > .candidate-card__surface .candidate-thermometer {
+  display: none;
+}
+
+.candidate-card--success {
+  --candidate-card-bg: #effbea;
+  --candidate-card-fg: #4d9849;
+  --candidate-card-border: #d4e7cf;
+  --candidate-card-line: #e3efdf;
+  --candidate-assessment-bg: #d9f0d1;
+  --candidate-viability-fill: #4d9849;
+  --candidate-viability-track: #dcf0d6;
+  --candidate-thermometer-fill: #4d9849;
+  --candidate-thermometer-track: #d8edd1;
+  --candidate-bar-border: #b7dcae;
+  --assessment-icon-bg: #4d9849;
+  --assessment-icon-fg: #edf7e9;
+}
+
+.candidate-card--neutral {
+  --candidate-card-bg: #eeeeee;
+  --candidate-card-fg: #b4b4b4;
+  --candidate-assessment-bg: #dddddd;
+  --candidate-viability-fill: #b4b4b4;
+  --candidate-viability-track: #dddddd;
+  --candidate-thermometer-fill: #b4b4b4;
+  --candidate-thermometer-track: #dddddd;
+  --candidate-bar-border: #cfcfcf;
+  --assessment-icon-bg: #b4b4b4;
+  --assessment-icon-fg: #eaeaea;
+}
+
+.candidate-card--danger {
+  --candidate-card-bg: #ffe8ea;
+  --candidate-card-fg: #ff5757;
+  --candidate-assessment-bg: #ffcfd2;
+  --candidate-viability-fill: #ff5757;
+  --candidate-viability-track: #ffcfd2;
+  --candidate-thermometer-fill: #ff6b6b;
+  --candidate-thermometer-track: #ffcfd2;
+  --candidate-bar-border: #ffa8ad;
+  --assessment-icon-bg: #ff5757;
+  --assessment-icon-fg: #ffe3e5;
+  --candidate-card-border: #ffb7bd;
+  --candidate-card-line: #ffcfd2;
+}
+
+.candidate-card--new {
+  background: #f1f3f1;
+  color: #69746f;
+  --candidate-card-border: var(--nav-line);
+  box-shadow: none;
+}
+
+.candidate-card--visitor {
+  border: 0;
+  background: #f4f5f3;
+  color: var(--text-main);
+  box-shadow: none;
+}
+
+.prototype-candidate-card.is-selected {
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--orange) 48%, transparent),
+    0 8px 18px rgba(17, 17, 17, 0.06);
+}
+
+.prototype-candidate-card.is-selected::before {
+  content: none;
+}
+
+.prototype-candidate-card.is-summary {
+  grid-template-columns: minmax(0, 1fr);
+  padding-right: var(--candidate-card-pad-right);
+}
+
+.prototype-candidate-card.is-fire-featured {
+  --candidate-card-bg: #ffefdf;
+  --candidate-card-fg: #f05a24;
+  --candidate-card-border: #ff914d;
+  --candidate-card-line: #f2dcc9;
+  --candidate-assessment-bg: #ffd9b4;
+  --candidate-viability-fill: #f05a24;
+  --candidate-viability-track: #ffd9b4;
+  --candidate-thermometer-fill: linear-gradient(90deg, #ff8f13 0%, #ff8f13 100%);
+  --candidate-thermometer-track: #ffe0bf;
+  --candidate-bar-border: #ffb56f;
+  --assessment-icon-bg: transparent;
+  --assessment-icon-fg: #f05a24;
+  --metric-feature-color: #f05a24;
+}
+
+.prototype-candidate-card.is-viability-complete {
+  --candidate-card-bg: #eeeeee;
+  --candidate-card-fg: #b4b4b4;
+  --candidate-assessment-bg: #dddddd;
+  --candidate-viability-fill: #b4b4b4;
+  --candidate-viability-track: #dddddd;
+  --candidate-thermometer-fill: #b4b4b4;
+  --candidate-thermometer-track: #dddddd;
+  --candidate-bar-border: #cfcfcf;
+  --assessment-icon-bg: #b4b4b4;
+  --assessment-icon-fg: #eaeaea;
+}
+
+.prototype-candidate-card.is-compact {
+  min-height: 108px;
+}
+
+.candidate-card__identity {
+  min-width: 0;
+  max-width: 100%;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0;
+}
+
+.candidate-card__summary-row {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.candidate-card__identity-copy {
+  min-width: 0;
+  max-width: 100%;
+  display: grid;
+  align-content: center;
+  gap: 4px;
+}
+
+.candidate-card__status-badge {
+  --candidate-status-badge-size: clamp(28px, calc(var(--candidate-metric-size, 56px) * 0.54), 34px);
+  width: var(--candidate-status-badge-size);
+  height: var(--candidate-status-badge-size);
+  border: 1px solid color-mix(in srgb, currentColor 42%, transparent);
+  border-radius: 50%;
+  background: color-mix(in srgb, currentColor 6%, transparent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: currentColor;
+  opacity: 0.78;
+}
+
+.candidate-card__status-badge .candidate-status-icon {
+  width: calc(var(--candidate-status-badge-size) * 0.58);
+  height: calc(var(--candidate-status-badge-size) * 0.58);
+  opacity: 0.72;
+}
+
+.candidate-card__status-badge .candidate-status-icon--fire {
+  width: calc(var(--candidate-status-badge-size) * 0.68);
+  height: calc(var(--candidate-status-badge-size) * 0.9);
+  opacity: 0.9;
+}
+
+.candidate-card__expand-indicator {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 8%, white);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: currentColor;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 24%, transparent);
+  opacity: 0.78;
+  pointer-events: none;
+  transition: background-color 160ms ease, box-shadow 160ms ease, opacity 160ms ease, transform 160ms ease;
+}
+
+.candidate-card__expand-indicator .app-icon {
+  width: 13px;
+  height: 13px;
+}
+
+.prototype-candidate-card.is-expanded .candidate-card__expand-indicator {
+  transform: rotate(180deg);
+  background: color-mix(in srgb, currentColor 14%, white);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 34%, transparent);
+  opacity: 0.92;
+}
+
+.candidate-card__name-row {
+  min-width: 0;
+  max-width: 100%;
+  overflow: visible;
+  display: block;
+}
+
+.candidate-card__number {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  color: currentColor;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.candidate-card__text-line,
+.candidate-card__party-row {
+  min-width: 0;
+  max-width: 100%;
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+
+.candidate-card__text-line--name {
+  align-items: center;
+}
+
+.candidate-card__score-chip {
+  flex: 0 0 auto;
+  min-width: 34px;
+  height: 20px;
+  border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 8%, white);
+  color: currentColor;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 7px;
+  font-family: var(--font-family);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.candidate-card__score-chip--party {
+  min-width: 32px;
+  height: 18px;
+  font-size: 9px;
+  font-weight: 750;
+  opacity: 0.78;
+}
+
+.candidate-card__score-chip.is-empty {
+  opacity: 0.48;
+}
+
+.candidate-card__name-row strong {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: visible;
+  color: currentColor;
+  font-family: var(--font-display);
+  font-size: var(--candidate-score-size, var(--candidate-name-size, 20px));
+  font-weight: 800;
+  line-height: 1.03;
+  text-overflow: clip;
+  text-transform: uppercase;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.candidate-card__score {
+  min-width: max-content;
+  color: currentColor;
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 4px;
+  font-family: var(--font-family);
+  padding-top: 2px;
+  text-align: right;
+  opacity: 0.78;
+}
+
+.candidate-card__score small {
+  color: currentColor;
+  font-family: var(--font-family);
+  font-size: 9px;
+  font-weight: 550;
+  line-height: 1;
+  opacity: 0.72;
+  text-transform: none;
+}
+
+.candidate-card__score b {
+  color: currentColor;
+  font-family: var(--font-family);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.candidate-card__score-separator {
+  display: none;
+  color: currentColor;
+  font-family: var(--font-display);
+  font-size: var(--candidate-score-size, 16px);
+  font-weight: 700;
+  line-height: 1;
+  opacity: 0.72;
+}
+
+.prototype-candidate-card.has-number-above .candidate-card__identity {
+  gap: 2px;
+}
+
+.candidate-card__identity small {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: visible;
+  margin-top: 0;
+  color: currentColor;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.08;
+  text-overflow: clip;
+  text-transform: uppercase;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.candidate-card__remove-action {
+  min-width: 82px;
+  min-height: 34px;
+  border: 1px solid rgba(17, 17, 17, 0.16);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-main);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.candidate-card__assessment {
+  width: fit-content;
+  max-width: 100%;
+  min-height: 18px;
+  overflow: visible;
+  margin-top: 6px;
+  border-radius: 999px;
+  background: var(--candidate-assessment-bg);
+  color: currentColor;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 6px;
+  font-size: var(--candidate-assessment-size, 10px);
+  font-weight: 800;
+  line-height: 1;
+  white-space: normal;
+}
+
+.candidate-card__assessment-icon {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 12px;
+  border-radius: 50%;
+  background: var(--assessment-icon-bg);
+  color: var(--assessment-icon-fg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: none;
+}
+
+.prototype-candidate-card.is-fire-featured .candidate-card__assessment-icon,
+.candidate-card__assessment--fire .candidate-card__assessment-icon {
+  background: transparent;
+  color: #ff914d;
+}
+
+.candidate-card__assessment--fire {
+  align-self: flex-start;
+  margin-left: 0;
+}
+
+.candidate-card__assessment-icon svg,
+.candidate-card__assessment-icon img {
+  width: 9px;
+  height: 11px;
+  flex: 0 0 auto;
+  color: currentColor;
+  object-fit: contain;
+}
+
+.candidate-card__assessment span {
+  min-width: 0;
+  overflow: visible;
+  text-overflow: clip;
+  line-height: 1.12;
+}
+
+.candidate-card__locked-insight {
+  width: min(100%, 360px);
+  margin-top: 9px;
+  border: 1px solid rgba(255, 139, 73, 0.28);
+  border-radius: 8px;
+  background: #fffaf5;
+  color: #39433f;
+  display: grid;
+  gap: 3px;
+  padding: 9px 11px;
+  cursor: pointer;
+}
+
+.candidate-card__locked-insight strong {
+  color: var(--text-strong);
+  font-size: 11px;
+  font-weight: 950;
+  line-height: 1.15;
+  text-transform: none;
+}
+
+.candidate-card__locked-insight span {
+  color: var(--muted-soft);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.candidate-card__detail-panel {
+  min-width: 0;
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+  border-top: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+  padding-top: 12px;
+}
+
+.candidate-card__selection-action {
+  width: 100%;
+  min-height: 46px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--orange);
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 18px;
+  font-family: var(--font-family);
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 10px 22px -16px rgba(255, 139, 73, 0.72);
+  transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.candidate-card__selection-action:not(:disabled):hover {
+  background: var(--orange-dark, #f05a24);
+  box-shadow: 0 12px 24px -16px rgba(255, 139, 73, 0.82);
+}
+
+.candidate-card__selection-action:not(:disabled):active {
+  transform: scale(0.99);
+}
+
+.candidate-card__selection-action.is-selected {
+  background: color-mix(in srgb, currentColor 8%, white);
+  color: currentColor;
+  box-shadow: inset 0 0 0 1px currentColor;
+}
+
+.candidate-card__selection-action.is-selected:not(:disabled):hover {
+  background: color-mix(in srgb, currentColor 14%, white);
+  box-shadow: inset 0 0 0 1px currentColor;
+}
+
+.candidate-card__selection-action:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.candidate-thermometer {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  gap: 0;
+  margin-top: 10px;
+  color: currentColor;
+}
+
+.candidate-thermometer__meter-row {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--candidate-bar-height, 26px);
+  display: block;
+}
+
+.candidate-thermometer__track {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: var(--candidate-bar-height, 26px);
+  height: var(--candidate-bar-height, 26px);
+  overflow: hidden;
+  border-radius: 999px;
+  border: 0;
+  background: var(--candidate-thermometer-track);
+  box-shadow: none;
+}
+
+.candidate-thermometer__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  z-index: 1;
+  min-height: 100%;
+  width: var(--thermometer-progress, 0%);
+  border-radius: inherit;
+  background: var(--candidate-thermometer-fill);
+  transition: all 0.5s ease;
+}
+
+.candidate-thermometer__tick {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  z-index: 2;
+  width: 1px;
+  background: color-mix(in srgb, currentColor 42%, white 58%);
+  box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.42);
+  opacity: 0.9;
+}
+
+.candidate-thermometer__tick--first {
+  left: 25%;
+}
+
+.candidate-thermometer__tick--second {
+  left: 50%;
+}
+
+.candidate-thermometer__tick--third {
+  left: 75%;
+}
+
+.candidate-thermometer__caption {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  margin-top: 9px;
+  border-top: 0;
+  padding-top: 0;
+  color: currentColor;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: var(--candidate-caption-size, 10.5px);
+  font-weight: 600;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.candidate-thermometer__caption-main,
+.candidate-thermometer__badge {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  height: var(--candidate-badge-height, 30px);
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 8%, white);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--candidate-badge-pad-inline, 12px);
+  color: currentColor;
+  font-family: var(--font-family);
+  font-size: var(--candidate-badge-size, 9.5px);
+  font-weight: 800;
+  line-height: 1;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: none;
+}
+
+@keyframes promotedPulse {
+  0% {
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, currentColor 42%, transparent),
+      0 0 0 0 color-mix(in srgb, currentColor 18%, transparent);
+  }
+
+  38% {
+    box-shadow:
+      inset 0 0 0 2px color-mix(in srgb, currentColor 55%, transparent),
+      0 12px 30px -18px color-mix(in srgb, currentColor 44%, transparent);
+  }
+
+  100% {
+    box-shadow: none;
+  }
+}
+
+@keyframes candidateSelectionAdded {
+  0% {
+    box-shadow: none;
+    transform: scale(1);
+  }
+
+  34% {
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, var(--orange) 52%, transparent),
+      0 10px 22px rgba(255, 152, 0, 0.14);
+    transform: scale(1.006);
+  }
+
+  100% {
+    box-shadow: none;
+    transform: scale(1);
+  }
+}
+
+@keyframes candidateSelectionRemoved {
+  0% {
+    box-shadow: none;
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  34% {
+    box-shadow:
+      inset 0 0 0 1px rgba(17, 17, 17, 0.14),
+      0 8px 18px rgba(17, 17, 17, 0.06);
+    transform: scale(0.996);
+    opacity: 0.86;
+  }
+
+  100% {
+    box-shadow: none;
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.candidate-thermometer__caption-main {
+  gap: 5px;
+}
+
+.candidate-thermometer__caption strong,
+.candidate-thermometer__caption em {
+  display: inline;
+  color: currentColor;
+  font-family: var(--font-family);
+  font-size: inherit;
+  font-style: normal;
+  font-weight: 800;
+  line-height: inherit;
+  text-transform: inherit;
+}
+
+.candidate-thermometer__caption strong {
+  font-weight: 800;
+}
+
+.candidate-thermometer__badge {
+  justify-content: flex-end;
+  gap: 0;
+}
+
+.candidate-thermometer__badge em {
+  min-width: 0;
+  overflow: hidden;
+  text-align: right;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.candidate-thermometer__caption b {
+  font-weight: 700;
+}
+
+.candidate-thermometer--featured .candidate-thermometer__fill {
+  background: linear-gradient(90deg, var(--orange) 0%, var(--orange) 100%);
+  box-shadow: none;
+}
+
+.candidate-thermometer--featured.is-filled .candidate-thermometer__fill {
+  animation: candidateThermometerPulse 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes candidateThermometerPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .candidate-thermometer--featured .candidate-thermometer__fill {
+    animation: none;
+  }
+}
+
+.candidate-status-icon {
+  position: static;
+  z-index: 1;
+  width: var(--candidate-status-icon-size, 24px);
+  height: var(--candidate-status-icon-size, 24px);
+  pointer-events: none;
+  color: currentColor;
+  opacity: 0.72;
+  filter: none;
+  object-fit: contain;
+}
+
+.candidate-status-icon--fire {
+  width: var(--candidate-fire-icon-width, 17px);
+  height: var(--candidate-fire-icon-height, 22px);
+  opacity: 0.92;
+  filter: drop-shadow(0 2px 4px rgba(255, 152, 0, 0.22));
+  transform: none;
+}

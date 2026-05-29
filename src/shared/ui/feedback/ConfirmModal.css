@@ -1,0 +1,160 @@
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  width: 100%;
+  height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(var(--app-safe-top) + 16px) 16px calc(var(--app-safe-bottom) + 16px);
+  background: rgba(17, 17, 17, 0.36);
+}
+
+.modal-container {
+  width: min(100%, 360px);
+  max-height: calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 32px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  border-radius: var(--app-radius-modal);
+  background: var(--surface);
+  padding: 24px 20px 20px;
+  color: var(--text-main);
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+.modal-title {
+  margin: 0 0 12px;
+  color: var(--text-strong);
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: 1px;
+  overflow-wrap: anywhere;
+}
+
+.modal-message {
+  margin: 0 0 22px;
+  color: var(--text-main);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.modal-actions {
+  position: sticky;
+  bottom: 0;
+  background: var(--surface);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.btn-modal {
+  flex: 1 1 0;
+  min-width: min(100%, 126px);
+  min-height: 48px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-strong);
+  font-family: var(--font-family);
+  font-size: 14px;
+  font-weight: 700;
+  white-space: normal;
+  cursor: pointer;
+}
+
+.btn-modal--full {
+  width: 100%;
+  flex: 1 0 100%;
+}
+
+.modal-custom-cancel {
+  margin-top: 10px;
+}
+
+.btn-confirmar {
+  border-color: var(--ink);
+}
+
+.btn-confirmar.perigo,
+.btn-confirmar.low-score,
+.btn-confirmar.high-chance {
+  border-color: var(--tone-danger);
+  color: var(--tone-danger);
+}
+
+.low-score-highlight {
+  display: block;
+  margin-top: 10px;
+  color: var(--tone-danger);
+  font-weight: 800;
+}
+
+.choice-confirm-copy {
+  display: grid;
+  gap: 8px;
+}
+
+.choice-confirm-copy strong {
+  color: var(--text-strong);
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.choice-confirm-copy small {
+  color: var(--muted-soft);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.btn-confirmar.choice-saved {
+  border-color: var(--desktop-ink);
+  background: var(--desktop-ink);
+  color: var(--surface);
+}
+
+.btn-confirmar.login-required {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--surface);
+}
+
+.senator-replace-actions {
+  display: grid;
+  gap: 8px;
+}
+
+.senator-replace-actions button {
+  min-height: 46px;
+  border: 1px solid var(--desktop-ink);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--desktop-ink);
+  font-family: var(--font-family);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.senator-replace-actions button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+@media (max-width: 360px) {
+  .modal-container {
+    padding: 22px 16px 16px;
+  }
+
+  .btn-modal {
+    min-width: 100%;
+    font-size: 12px;
+  }
+}
