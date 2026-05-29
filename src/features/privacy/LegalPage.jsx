@@ -136,11 +136,11 @@ function AboutLanding({ user, isDesktopExperience, onPrimaryCta, onLoginCta }) {
               e salvar um rascunho antes da decisão final.
             </p>
             <p className="about-hero__support">
-              Comece sem login, explore os candidatos do seu estado e entre apenas quando quiser salvar seu plano.
+              Use o computador para conhecer e revisar. A experiência completa acontece no celular.
             </p>
             <div className="about-hero__actions">
               <button className="about-primary-action nv-touch" type="button" onClick={onPrimaryCta}>
-                {user?.uid ? 'Ver candidatos' : 'Começar sem login'}
+                Ver prévia dos candidatos
               </button>
               {!user?.uid && (
                 <button className="about-secondary-action nv-touch" type="button" onClick={onLoginCta}>
@@ -240,9 +240,9 @@ function AboutLanding({ user, isDesktopExperience, onPrimaryCta, onLoginCta }) {
 
         <section className="about-final-cta" data-scroll-reveal>
           <span className="about-eyebrow">Pronto para experimentar?</span>
-          <h2>Comece agora sem login</h2>
+          <h2>Conheça no computador e continue pelo celular</h2>
           <button className="about-primary-action nv-touch" type="button" onClick={onPrimaryCta}>
-            Começar sem login
+            Ver prévia dos candidatos
           </button>
         </section>
 

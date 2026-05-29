@@ -2,6 +2,18 @@
 
 Todas as mudanças relevantes deste projeto serão documentadas aqui.
 
+## [1.6.0] - 2026-05-29
+
+### Adicionado
+- Cria a camada `src/features/desktop/` para a experiência desktop OS 04, com shell, header, navegação por etapas, intro, QR Code, painel de continuidade mobile, lista de recursos bloqueados e action bar.
+- Adiciona handoff desktop com QR/link de rascunho, tratamento de login necessário, plano incompleto e cópia de link.
+
+### Alterado
+- Redesenha Estado no desktop como wizard com busca refinada, grid compacto e painel lateral para continuar no celular.
+- Redesenha Candidatos no desktop em três áreas: resumo do plano, lista compacta de candidatos e painel sticky de celular.
+- Redesenha NossoVoto no desktop como revisão de plano com tiles, ações de edição/voltar e QR Code como CTA principal.
+- Refina a tela Sobre Nós mantendo a composição aprovada e ajustando CTAs para a prévia desktop.
+
 ## [1.4.0] - 2026-05-05
 
 ### Adicionado

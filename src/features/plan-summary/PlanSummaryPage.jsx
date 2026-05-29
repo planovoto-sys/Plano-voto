@@ -1,16 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
-import QRCode from 'qrcode';
-import { Link2, LogIn, LogOut, QrCode, Smartphone } from 'lucide-react';
+import { LogIn, LogOut } from 'lucide-react';
 import { BALLOT_ROUTES } from '@/shared/constants/ballot';
 import { AVERAGE_ELECTED_VOTES_BY_OFFICE } from '@/shared/constants/candidates';
 import { STATE_NAMES } from '@/shared/constants/states';
 import { useUser } from '@/shared/hooks/useUser';
+import { useDesktopLayout } from '@/features/desktop/useDesktopLayout';
 import { auth } from '@/shared/firebase/firebase';
 import {
   fetchRemoteBallotDraft,
-  createPlanHandoffToken,
   fetchCandidatesByIds,
   readBallotDraft,
   readVisitorBallotDraft
@@ -24,6 +23,7 @@ import BottomNavigation from '@/app/shell/BottomNavigation';
 import ConfirmModal from '@/shared/ui/feedback/ConfirmModal';
 import { ChanceFlame } from '@/shared/icons/ChanceFlame';
 import CandidateCard from '@/features/candidate-selection/CandidateCard';
+import DesktopPlanSummary from '@/features/desktop/DesktopPlanSummary';
 import {
   calculateCandidateChance,
   formatScore,
@@ -54,20 +54,6 @@ const getPlanUrl = () => {
   if (typeof window === 'undefined') return 'https://nossovoto.org/meu-plano';
   return `${window.location.origin}${BALLOT_ROUTES.meuPlano}`;
 };
-
-const getSiteUrl = () => {
-  if (typeof window === 'undefined') return 'https://nossovoto.org';
-  return window.location.origin;
-};
-
-const buildQrCode = (url) => QRCode.toDataURL(url, {
-  margin: 1,
-  width: 224,
-  color: {
-    dark: '#171717',
-    light: '#ffffff'
-  }
-});
 
 const getDraftOfficeCandidates = (draft, officeKey) => {
   if (!draft) return [];
@@ -145,20 +131,13 @@ export default function MeuPlano() {
   const navigate = useNavigate();
   const location = useLocation();
   const isGuestMode = !user?.uid;
+  const isDesktopLayout = useDesktopLayout();
   const localDraft = user?.uid ? readBallotDraft(user.uid, userData?.estado) : readVisitorBallotDraft();
   const [remoteDraftState, setRemoteDraftState] = useState({ userId: null, draft: null, loading: false });
   const [candidateDetailsState, setCandidateDetailsState] = useState({ signature: '', candidatesById: new Map(), loading: false });
   const [modalCampoBloqueado, setModalCampoBloqueado] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [planUrl] = useState(() => getPlanUrl());
-  const [mobileSiteUrl] = useState(() => getSiteUrl());
-  const [mobileSiteQr, setMobileSiteQr] = useState('');
-  const [handoffState, setHandoffState] = useState({
-    loading: false,
-    url: '',
-    qr: '',
-    message: ''
-  });
 
   useEffect(() => {
     if (!user?.uid) return undefined;
@@ -184,22 +163,6 @@ export default function MeuPlano() {
       cancelled = true;
     };
   }, [user?.uid, userData?.estado]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    buildQrCode(mobileSiteUrl)
-      .then((qr) => {
-        if (!cancelled) setMobileSiteQr(qr);
-      })
-      .catch(() => {
-        if (!cancelled) setMobileSiteQr('');
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [mobileSiteUrl]);
 
   const currentDraft = remoteDraftState.userId === user?.uid && remoteDraftState.draft
     ? remoteDraftState.draft
@@ -289,8 +252,6 @@ export default function MeuPlano() {
   const profileInitial = (profileName || 'N').trim().charAt(0).toUpperCase();
   const hasCompletePlan = Boolean(deputadosFederais.length > 0 && senadores.length >= 2 && estadoSigla);
   const canSharePlan = !isGuestMode && hasCompletePlan;
-  const handoffUrl = handoffState.url || mobileSiteUrl;
-  const handoffQr = handoffState.qr || mobileSiteQr;
   const shareData = canSharePlan ? {
     estadoSigla,
     estadoNome,
@@ -314,64 +275,6 @@ export default function MeuPlano() {
     handleEdit(getNextMissingRoute());
   };
 
-  const handleGenerateMobileHandoff = async () => {
-    if (!hasCompletePlan) {
-      setHandoffState((currentState) => ({
-        ...currentState,
-        message: 'Complete deputado federal e dois senadores antes de gerar o QR Code do rascunho.'
-      }));
-      return;
-    }
-
-    if (isGuestMode) {
-      handleLogin();
-      return;
-    }
-
-    setHandoffState((currentState) => ({
-      ...currentState,
-      loading: true,
-      message: ''
-    }));
-
-    try {
-      const result = await createPlanHandoffToken(currentDraft);
-      const token = result?.token || result?.handoffToken || result?.id;
-      if (!token) throw new Error('Token não retornado.');
-
-      const nextUrl = `${window.location.origin}${BALLOT_ROUTES.continuarPlano}/${encodeURIComponent(token)}`;
-      const nextQr = await buildQrCode(nextUrl);
-
-      setHandoffState({
-        loading: false,
-        url: nextUrl,
-        qr: nextQr,
-        message: 'QR Code pronto para abrir este rascunho no celular.'
-      });
-    } catch (error) {
-      setHandoffState((currentState) => ({
-        ...currentState,
-        loading: false,
-        message: error?.message || 'Não foi possível gerar o QR Code agora.'
-      }));
-    }
-  };
-
-  const handleCopyMobileLink = async () => {
-    try {
-      await navigator.clipboard.writeText(handoffUrl);
-      setHandoffState((currentState) => ({
-        ...currentState,
-        message: 'Link copiado para abrir no celular.'
-      }));
-    } catch {
-      setHandoffState((currentState) => ({
-        ...currentState,
-        message: 'Não foi possível copiar automaticamente. Use o QR Code ao lado.'
-      }));
-    }
-  };
-
   const handleLogin = () => {
     navigate('/login', {
       state: {
@@ -387,6 +290,20 @@ export default function MeuPlano() {
   const handleLogout = async () => {
     await signOut(auth);
     navigate('/', { replace: true });
+  };
+
+  const handleDesktopNavigate = (route) => {
+    navigate(route, { state: { bypassVoteRedirect: true } });
+  };
+
+  const getDesktopBackRoute = () => {
+    if (!estadoSigla) return BALLOT_ROUTES.estado;
+    if (senadores.length > 0 || deputadosFederais.length > 0) return BALLOT_ROUTES.senadores;
+    return BALLOT_ROUTES.deputadoFederal;
+  };
+
+  const handleDesktopBack = () => {
+    navigate(getDesktopBackRoute(), { state: { bypassVoteRedirect: true } });
   };
 
   const renderChoiceCard = (candidate, route) => (
@@ -412,6 +329,23 @@ export default function MeuPlano() {
           </span>
         </div>
       </div>
+    );
+  }
+
+  if (isDesktopLayout) {
+    return (
+      <DesktopPlanSummary
+        draft={currentDraft}
+        estadoSigla={estadoSigla}
+        estadoNome={estadoNome}
+        averageScore={averageScore}
+        averageChance={averageChance}
+        deputadosFederais={deputadosFederais}
+        senadores={senadores}
+        hasCompletePlan={hasCompletePlan}
+        onNavigate={handleDesktopNavigate}
+        onBack={handleDesktopBack}
+      />
     );
   }
 
@@ -482,57 +416,6 @@ export default function MeuPlano() {
               tone="viability"
             />
           </section>
-
-          <aside className="my-plan-mobile-handoff" aria-label="Continuar no celular">
-            <div className="my-plan-mobile-handoff__copy">
-              <span>
-                <Smartphone aria-hidden="true" />
-                Continue pelo celular
-              </span>
-              <h2>Use o computador só para revisar.</h2>
-              <p>
-                Escaneie o QR Code ou copie o link para abrir o Nosso Voto no celular.
-              </p>
-            </div>
-
-            <div className="my-plan-mobile-handoff__qr" aria-label="QR Code para abrir no celular">
-              {handoffQr ? (
-                <img src={handoffQr} alt="" />
-              ) : (
-                <QrCode aria-hidden="true" />
-              )}
-            </div>
-
-            <div className="my-plan-mobile-handoff__actions">
-              <button
-                className="my-plan-mobile-handoff__primary nv-touch"
-                type="button"
-                onClick={handleGenerateMobileHandoff}
-                disabled={handoffState.loading}
-              >
-                <QrCode aria-hidden="true" />
-                <span>
-                  {handoffState.loading
-                    ? 'Gerando...'
-                    : (isGuestMode ? 'Entrar para gerar QR' : 'Gerar QR do rascunho')}
-                </span>
-              </button>
-              <button
-                className="my-plan-mobile-handoff__secondary nv-touch"
-                type="button"
-                onClick={handleCopyMobileLink}
-              >
-                <Link2 aria-hidden="true" />
-                <span>Copiar link</span>
-              </button>
-            </div>
-
-            <p className="my-plan-mobile-handoff__status" role="status">
-              {handoffState.message || (hasCompletePlan
-                ? 'No desktop, a revisão fica resumida. A continuidade acontece melhor no celular.'
-                : 'Finalize as escolhas para liberar o QR Code do seu rascunho.')}
-            </p>
-          </aside>
 
           <section className="my-plan-choices" aria-label="Candidatos escolhidos">
             <section className="candidate-current-section my-plan-choice-section">

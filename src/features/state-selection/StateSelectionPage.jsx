@@ -1,4 +1,4 @@
-import { useDeferredValue, useState, useMemo } from 'react';
+import { useDeferredValue, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BRAZILIAN_STATES } from '@/shared/constants/states';
 import { BALLOT_ROUTES } from '@/shared/constants/ballot';
@@ -20,6 +20,8 @@ import { normalizeStateCode } from '@/shared/utils/state';
 import ConfirmModal from '@/shared/ui/feedback/ConfirmModal';
 import TourModal from '@/shared/ui/feedback/TourModal';
 import SelectBase from '@/features/candidate-selection/SelectBase';
+import DesktopStateSelection from '@/features/desktop/DesktopStateSelection';
+import { useDesktopLayout } from '@/features/desktop/useDesktopLayout';
 
 export default function Home() {
   const { user, userData, loading: userLoading } = useUser();
@@ -30,6 +32,8 @@ export default function Home() {
   const [pendingEstado, setPendingEstado] = useState(null);
   const [busca, setBusca] = useState('');
   const buscaDiferida = useDeferredValue(busca);
+  const [desktopSelectedStateCode, setDesktopSelectedStateCode] = useState('');
+  const isDesktopLayout = useDesktopLayout();
   
   const [isTourOpen, setIsTourOpen] = useState(false);
   const isVisitorMode = !user?.uid;
@@ -42,6 +46,12 @@ export default function Home() {
   ];
 
   const selecaoInicial = estadoSelecionado ? BRAZILIAN_STATES.filter(estado => estado.sigla === estadoSelecionado) : [];
+  const desktopSelectedState = useMemo(() => {
+    const selectedCode = desktopSelectedStateCode || estadoSelecionado;
+    return selectedCode
+      ? BRAZILIAN_STATES.find((estado) => estado.sigla === selectedCode) || null
+      : null;
+  }, [desktopSelectedStateCode, estadoSelecionado]);
 
   const listaExibida = useMemo(() => {
     const termo = normalizeSearch(buscaDiferida);
@@ -55,6 +65,10 @@ export default function Home() {
       return nome.includes(termo) || sigla.includes(termo) || nomeCompleto.includes(termo);
     });
   }, [buscaDiferida]);
+
+  const currentDraft = user?.uid
+    ? readBallotDraft(user.uid, userData?.estado)
+    : readVisitorBallotDraft(estadoSelecionado);
 
   const handleConfirmar = async (selecionados) => {
     flowLog('home.confirm-state.start', {
@@ -129,6 +143,38 @@ export default function Home() {
       setLoading(false);
     }
   };
+
+  if (isDesktopLayout) {
+    return (
+      <>
+        <TourModal steps={tourSteps} isOpen={isTourOpen} onClose={() => setIsTourOpen(false)} />
+
+        <DesktopStateSelection
+          states={listaExibida}
+          selectedState={desktopSelectedState}
+          searchValue={busca}
+          onSearchChange={setBusca}
+          onStateSelect={(estado) => setDesktopSelectedStateCode(estado.sigla)}
+          onContinue={() => {
+            if (desktopSelectedState) handleConfirmar([desktopSelectedState]);
+          }}
+          loading={(!isVisitorMode && userLoading) || loading}
+          draft={currentDraft}
+          onHelpClick={() => setIsTourOpen(true)}
+        />
+
+        <ConfirmModal isOpen={modalOpen} titulo="MUDANÇA DE ESTADO" mensagem="Ao mudar de estado, suas seleções atuais serão apagadas. Deseja continuar?" textoConfirmar="SIM" textoCancelar="NÃO" tipo="perigo" onConfirm={() => executarMudanca(pendingEstado)} onCancel={() => setModalOpen(false)} />
+        <ConfirmModal
+          isOpen={modalAviso.aberto}
+          titulo="OPS!"
+          mensagem={modalAviso.mensagem}
+          textoConfirmar="OK, ENTENDI"
+          mostrarCancelar={false}
+          onConfirm={() => setModalAviso({ aberto: false, mensagem: '' })}
+        />
+      </>
+    );
+  }
 
   return (
     <>

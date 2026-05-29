@@ -42,6 +42,7 @@ lerna-debug.log*
 *.sw?
 
 # generated docs / QA artifacts
+artifacts/
 docs/generated-app-docs/pdf_pages/
 docs/generated-app-docs/structure_pdf_pages/
 docs/generated-app-docs/screenshots/

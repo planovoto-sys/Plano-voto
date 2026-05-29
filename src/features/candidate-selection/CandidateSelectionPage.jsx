@@ -35,6 +35,8 @@ import ConfirmModal from '@/shared/ui/feedback/ConfirmModal';
 import FlowToast from '@/shared/ui/feedback/FlowToast';
 import TourModal from '@/shared/ui/feedback/TourModal';
 import SelectBase from '@/features/candidate-selection/SelectBase';
+import DesktopCandidateSelection from '@/features/desktop/DesktopCandidateSelection';
+import { useDesktopLayout } from '@/features/desktop/useDesktopLayout';
 
 const getCandidateElectionFilter = (candidate) => {
   const values = [
@@ -191,6 +193,7 @@ export default function EscolherCandidatos({
   const [ballotDraft, setBallotDraft] = useState(null);
   const [modalAviso, setModalAviso] = useState({ aberto: false, mensagem: '' });
   const [isTourOpen, setIsTourOpen] = useState(false);
+  const isDesktopLayout = useDesktopLayout();
 
   const userId = user?.uid;
   const isGuestMode = !userId;
@@ -691,6 +694,96 @@ export default function EscolherCandidatos({
   const draftStateLabel = estadoDoFluxo
     ? `${STATE_NAMES[estadoDoFluxo] || estadoDoFluxo} (${estadoDoFluxo})`
     : '';
+
+  const currentDraftForDesktop = ballotDraft || (userId
+    ? readBallotDraft(userId, estadoDoFluxo)
+    : readVisitorBallotDraft(estadoDoFluxo));
+
+  const handleDesktopCandidateSelect = async (candidate) => {
+    if (candidate.isAlreadyChosen) {
+      setModalAviso({
+        aberto: true,
+        mensagem: 'Esse candidato já foi escolhido em outra etapa.'
+      });
+      return;
+    }
+
+    const alreadySelected = selecionadosNaTela.some((item) => item.id === candidate.id);
+    let nextSelection;
+
+    if (alreadySelected) {
+      nextSelection = selecionadosNaTela.filter((item) => item.id !== candidate.id);
+    } else if (isSenadoresUnificados) {
+      if (selecionadosNaTela.length >= 2) {
+        setModalAviso({
+          aberto: true,
+          mensagem: 'Você já escolheu 2 senadores. Remova um para trocar.'
+        });
+        return;
+      }
+      nextSelection = [...selecionadosNaTela, candidate];
+    } else {
+      nextSelection = [candidate];
+    }
+
+    await handleSelectionChange(nextSelection, {
+      completed: isSenadoresUnificados ? nextSelection.length >= 2 : nextSelection.length >= 1
+    });
+  };
+
+  const handleDesktopContinue = async () => {
+    const minimumSelection = isSenadoresUnificados ? 2 : 1;
+
+    if (selecionadosNaTela.length < minimumSelection) {
+      setModalAviso({
+        aberto: true,
+        mensagem: isSenadoresUnificados
+          ? 'Escolha 2 senadores para continuar.'
+          : 'Escolha 1 deputado federal para continuar.'
+      });
+      return;
+    }
+
+    await handleAvancar(selecionadosNaTela, { alreadySaved: true });
+  };
+
+  if (isDesktopLayout) {
+    return (
+      <>
+        <FlowToast key={`${location.key}-${location.state?.flowNotice || ''}`} message={location.state?.flowNotice || ''} />
+        <TourModal steps={tourSteps} isOpen={isTourOpen} onClose={() => setIsTourOpen(false)} />
+
+        <DesktopCandidateSelection
+          variant={chaveBanco === 'deputado_federal' ? 'office-deputado' : 'office-senado'}
+          candidates={listaExibida}
+          selectedCandidates={selecionadosNaTela}
+          featuredCandidateId={featuredCandidateId}
+          searchValue={busca}
+          onSearchChange={setBusca}
+          filterItems={CANDIDATE_FILTERS}
+          activeFilterId={filtroLista}
+          onFilterSelect={handleSubNavigation}
+          onCandidateSelect={handleDesktopCandidateSelect}
+          onContinue={handleDesktopContinue}
+          onBack={() => navigate(rotaAnterior || BALLOT_ROUTES.estado, { state: { bypassVoteRedirect: true } })}
+          onReview={() => navigate(BALLOT_ROUTES.meuPlano, { state: { bypassVoteRedirect: true } })}
+          loading={(!isGuestMode && userLoading) || loading}
+          draft={currentDraftForDesktop}
+          draftStateLabel={draftStateLabel}
+          personalizedFieldsLocked={isGuestMode}
+        />
+
+        <ConfirmModal
+          isOpen={modalAviso.aberto}
+          titulo="OPS!"
+          mensagem={modalAviso.mensagem}
+          textoConfirmar="OK, ENTENDI"
+          mostrarCancelar={false}
+          onConfirm={() => setModalAviso({ aberto: false, mensagem: '' })}
+        />
+      </>
+    );
+  }
 
   return (
     <>
