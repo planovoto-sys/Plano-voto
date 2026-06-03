@@ -69,6 +69,10 @@ class FirestoreCandidateChoiceRepository {
     return doc(db, 'elections', ACTIVE_ELECTION_ID, 'ballot_drafts', userId);
   }
 
+  userRef(userId) {
+    return doc(db, 'users', userId);
+  }
+
   createChoiceDocId() {
     return doc(collection(db, PUBLIC_CANDIDATE_CHOICES_COLLECTION)).id;
   }
@@ -149,6 +153,12 @@ class FirestoreCandidateChoiceRepository {
         this.buildPublicChoicePayload(normalizedDraft, updatedAt),
         { merge: false }
       );
+      transaction.set(this.userRef(userId), {
+        estado: normalizedDraft.estado,
+        role: 'voter',
+        schema_version: 1,
+        updated_at: updatedAt
+      }, { merge: true });
     });
 
     return persistBallotDraft(userId, responseDraft);
@@ -161,7 +171,7 @@ const saveBallotStateDirectly = async (userId, estado) => {
   const activeEstado = normalizeStateCode(estado);
   if (!activeEstado) throw new VotingError('STATE_REQUIRED', 'Escolha um estado antes de continuar.');
 
-  const previousDraft = readBallotDraft(userId, activeEstado);
+  const previousDraft = readBallotDraft(userId);
   const nextDraft = previousDraft.estado === activeEstado
     ? normalizeDraft({ ...previousDraft, estado: activeEstado, updated_at: new Date().toISOString() }, activeEstado)
     : createEmptyBallotDraft(activeEstado);

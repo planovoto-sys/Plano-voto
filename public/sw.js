@@ -1,13 +1,16 @@
-const CACHE_VERSION = '1.6.1-20260529';
-const APP_CACHE = `meuvoto-app-${CACHE_VERSION}`;
-const STATIC_CACHE = `meuvoto-static-${CACHE_VERSION}`;
+const CACHE_VERSION = '1.6.3-20260602';
+const APP_CACHE = `nossovoto-app-${CACHE_VERSION}`;
+const STATIC_CACHE = `nossovoto-static-${CACHE_VERSION}`;
 const APP_SHELL = [
   '/',
   '/index.html',
-  '/manifest.json',
-  '/icons/vl-192.png',
-  '/icons/vl-512.png'
+  '/manifest.json?v=1.6.3-20260602',
+  '/icons/favicon-32.png?v=1.6.3-20260602',
+  '/icons/apple-touch-icon.png?v=1.6.3-20260602',
+  '/icons/nossovoto-192.png?v=1.6.3-20260602',
+  '/icons/nossovoto-512.png?v=1.6.3-20260602'
 ];
+const CURRENT_CACHES = [APP_CACHE, STATIC_CACHE];
 const NAVIGATION_TIMEOUT_MS = 4500;
 
 const isSameOrigin = (url) => url.origin === self.location.origin;
@@ -41,7 +44,9 @@ self.addEventListener('activate', (event) => {
     caches.keys()
       .then((cacheNames) => Promise.all(
         cacheNames
-          .filter((cacheName) => cacheName.startsWith('meuvoto-') && ![APP_CACHE, STATIC_CACHE].includes(cacheName))
+          .filter((cacheName) => (
+            /^(meuvoto|nossovoto)-/.test(cacheName) && !CURRENT_CACHES.includes(cacheName)
+          ))
           .map((cacheName) => caches.delete(cacheName))
       ))
       .then(() => self.clients.claim())

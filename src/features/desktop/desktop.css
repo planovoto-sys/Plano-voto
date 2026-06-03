@@ -851,7 +851,7 @@
 
 .desktop-candidate-card__score {
   min-width: 42px;
-  border: 1px solid rgba(17, 17, 17, 0.12);
+  border: 0;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.72);
   color: currentColor;
@@ -941,7 +941,7 @@
 
 .desktop-candidate-card__footer strong,
 .desktop-candidate-card__footer em {
-  border: 1px solid rgba(17, 17, 17, 0.08);
+  border: 0;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.65);
   color: currentColor;

@@ -317,7 +317,7 @@
   flex: 0 0 auto;
   min-width: 34px;
   height: 20px;
-  border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+  border: 0;
   border-radius: 999px;
   background: color-mix(in srgb, currentColor 8%, white);
   color: currentColor;
@@ -621,10 +621,16 @@
   inset: 0 auto 0 0;
   z-index: 1;
   min-height: 100%;
-  width: var(--thermometer-progress, 0%);
+  width: 100%;
   border-radius: inherit;
   background: var(--candidate-thermometer-fill);
-  transition: all 0.5s ease;
+  transform: scaleX(var(--thermometer-scale, 0));
+  transform-origin: left center;
+  transition:
+    transform 420ms cubic-bezier(0.2, 0.8, 0.18, 1),
+    box-shadow 180ms ease,
+    opacity 180ms ease;
+  will-change: transform, opacity;
 }
 
 .candidate-thermometer__tick {
@@ -676,7 +682,7 @@
   min-width: 0;
   overflow: hidden;
   height: var(--candidate-badge-height, 30px);
-  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  border: 0;
   border-radius: 999px;
   background: color-mix(in srgb, currentColor 8%, white);
   -webkit-backdrop-filter: none;
@@ -798,7 +804,8 @@
   box-shadow: none;
 }
 
-.candidate-thermometer--featured.is-filled .candidate-thermometer__fill {
+.candidate-thermometer--featured.is-filled .candidate-thermometer__fill,
+.candidate-thermometer__fill.animate-pulse {
   animation: candidateThermometerPulse 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
@@ -816,6 +823,11 @@
 @media (prefers-reduced-motion: reduce) {
   .candidate-thermometer--featured .candidate-thermometer__fill {
     animation: none;
+  }
+
+  .candidate-thermometer__fill {
+    transition: none;
+    will-change: auto;
   }
 }
 

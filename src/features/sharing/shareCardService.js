@@ -651,7 +651,7 @@ export const copyShareText = async (templateId, shareData) => {
 
 export const shareTemplate = async (templateId, shareData) => {
   const text = buildShareText(templateId, shareData);
-  const title = 'Compartilhar meu plano no Nosso Voto';
+  const title = 'Compartilhar meu plano no nossovoto';
 
   if (navigator.share) {
     try {

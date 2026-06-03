@@ -706,14 +706,19 @@ STYLE_UTIL_ASSET_FILES = [
         "purpose": "Normaliza UFs/nomes de estados e extrai estado de candidatos a partir de campos variados.",
     },
     {
-        "path": "src/assets/nossovoto-flame.svg",
-        "area": "Asset front",
-        "purpose": "Vetor da chama usada na marca e no componente ChanceFlame.",
-    },
-    {
         "path": "src/assets/icone-fogo.png",
         "area": "Asset front",
         "purpose": "Icone raster de fogo usado como mascara/icone na navegacao e elementos visuais.",
+    },
+    {
+        "path": "src/assets/nossovoto-192.png",
+        "area": "Asset front",
+        "purpose": "Icone oficial do nossovoto em 192x192 para reuso interno e documentacao visual.",
+    },
+    {
+        "path": "src/assets/nossovoto-512.png",
+        "area": "Asset front",
+        "purpose": "Icone oficial do nossovoto em 512x512 para reuso interno e documentacao visual.",
     },
 ]
 
@@ -730,12 +735,12 @@ PUBLIC_FILES = [
         "purpose": "Service worker: caches de app/static, fallback offline para navegacao e limpeza de caches antigos.",
     },
     {
-        "path": "public/icons/vl-192.png",
+        "path": "public/icons/nossovoto-192.png",
         "area": "PWA asset",
         "purpose": "Icone 192x192 maskable/any para manifest, favicon e atalhos de instalacao.",
     },
     {
-        "path": "public/icons/vl-512.png",
+        "path": "public/icons/nossovoto-512.png",
         "area": "PWA asset",
         "purpose": "Icone 512x512 maskable/any para instalacao PWA e lojas/launchers.",
     },
@@ -768,9 +773,9 @@ DOC_FILES = [
         "purpose": "Explica o modelo Firestore para escolhas publicas, choiceDocId, contagem e limites de privacidade.",
     },
     {
-        "path": "docs/assets/VL logo-source.png",
+        "path": "docs/assets/nossovoto-512.png",
         "area": "Asset docs",
-        "purpose": "Arquivo de origem visual/logotipo guardado como referencia documental.",
+        "purpose": "Arquivo visual oficial do icone/logotipo guardado como referencia documental.",
     },
     {
         "path": "docs/generated-app-docs/build_documentation.py",

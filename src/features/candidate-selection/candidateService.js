@@ -433,6 +433,17 @@ export const invalidateCandidateTalliesCache = (candidateTargets, { estado = nul
     });
 };
 
+export const invalidateStateChoiceCountsCache = (states = []) => {
+  const stateList = Array.isArray(states) ? states : [states];
+
+  stateList
+    .map((state) => normalizeStateCode(state?.sigla ?? state?.id ?? state))
+    .filter(Boolean)
+    .forEach((stateCode) => {
+      removeCacheEntry(stateChoiceCacheKey(stateCode));
+    });
+};
+
 export const fetchCandidateTallies = async (candidateTargets, { forceRefresh = false, estado = null } = {}) => {
   const targetsByKey = new Map();
 

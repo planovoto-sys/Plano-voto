@@ -21,6 +21,7 @@ import {
 import ShareChoicePanel from '@/features/sharing/ShareChoicePanel';
 import BottomNavigation from '@/app/shell/BottomNavigation';
 import ConfirmModal from '@/shared/ui/feedback/ConfirmModal';
+import LoadingScreen from '@/shared/ui/feedback/LoadingScreen';
 import { ChanceFlame } from '@/shared/icons/ChanceFlame';
 import CandidateCard from '@/features/candidate-selection/CandidateCard';
 import DesktopPlanSummary from '@/features/desktop/DesktopPlanSummary';
@@ -321,15 +322,7 @@ export default function MeuPlano() {
   );
 
   if (!isGuestMode && userLoading && !currentDraft) {
-    return (
-      <div className="loading nv-screen" role="status" aria-live="polite">
-        <div className="loading-intro" aria-label="Carregando">
-          <span className="loading-intro__mark" aria-hidden="true">
-            <ChanceFlame className="loading-intro__flame" size={82} />
-          </span>
-        </div>
-      </div>
-    );
+    return <LoadingScreen className="nv-screen" />;
   }
 
   if (isDesktopLayout) {

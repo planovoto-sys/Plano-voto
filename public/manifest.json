@@ -6,13 +6,13 @@
   "lang": "pt-BR",
   "icons": [
     {
-      "src": "/icons/vl-192.png",
+      "src": "/icons/nossovoto-192.png?v=1.6.3-20260602",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/vl-512.png",
+      "src": "/icons/nossovoto-512.png?v=1.6.3-20260602",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any maskable"

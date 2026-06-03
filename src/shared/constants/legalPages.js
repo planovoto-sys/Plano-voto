@@ -677,7 +677,7 @@ export const LEGAL_PAGE_CONTENT = {
   },
   sobre: {
     title: 'Sobre nós',
-    subtitle: 'Conheça o propósito do projeto Nosso Voto e experimente o plano antes de criar uma conta.',
+    subtitle: 'Conheça o propósito do projeto nossovoto e experimente o plano antes de criar uma conta.',
     sections: [
       {
         heading: 'Objetivo do projeto',

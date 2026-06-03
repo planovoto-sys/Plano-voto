@@ -40,34 +40,38 @@
 .page-transition--forward .my-plan-scroll,
 .page-transition--forward .app-main,
 .page-transition--forward .select-base__continue-shell {
-  animation: pageContentForward 520ms cubic-bezier(.2, .8, .18, 1) both;
-  will-change: transform;
+  animation: pageContentForward 260ms cubic-bezier(.2, .8, .18, 1) both;
+  will-change: transform, opacity;
 }
 
 .page-transition--back .prototype-scroll,
 .page-transition--back .my-plan-scroll,
 .page-transition--back .app-main,
 .page-transition--back .select-base__continue-shell {
-  animation: pageContentBack 520ms cubic-bezier(.2, .8, .18, 1) both;
-  will-change: transform;
+  animation: pageContentBack 260ms cubic-bezier(.2, .8, .18, 1) both;
+  will-change: transform, opacity;
 }
 
 @keyframes pageContentForward {
   from {
-    transform: translate3d(100%, 0, 0);
+    opacity: 0.82;
+    transform: translate3d(16px, 0, 0);
   }
 
   to {
+    opacity: 1;
     transform: translate3d(0, 0, 0);
   }
 }
 
 @keyframes pageContentBack {
   from {
-    transform: translate3d(-100%, 0, 0);
+    opacity: 0.82;
+    transform: translate3d(-16px, 0, 0);
   }
 
   to {
+    opacity: 1;
     transform: translate3d(0, 0, 0);
   }
 }

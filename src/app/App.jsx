@@ -4,7 +4,7 @@ import { CANDIDATE_ROUTES } from '@/shared/constants/candidateRoutes';
 import { BALLOT_ROUTES } from '@/shared/constants/ballot';
 import { useDesktopExperience } from '@/shared/hooks/useDesktopExperience';
 import { useUser } from '@/shared/hooks/useUser';
-import { ChanceFlame } from '@/shared/icons/ChanceFlame';
+import LoadingScreen from '@/shared/ui/feedback/LoadingScreen';
 import PrivacyConsent from '@/features/privacy/PrivacyConsent';
 import PageTransition from '@/features/motion/PageTransition';
 import {
@@ -26,7 +26,6 @@ const EscolherCandidatos = lazy(loadEscolherCandidatos);
 const LegalPage = lazy(loadLegalPage);
 const MeuPlano = lazy(loadMeuPlano);
 const ContinuarPlano = lazy(loadContinuarPlano);
-const LOADING_WORD = 'nossovoto';
 const INTRO_MIN_DURATION_MS = 1600;
 
 const renderCandidateRoute = (config) => (
@@ -42,29 +41,6 @@ const renderCandidateRoute = (config) => (
     chaveGrupos={config.chaveGrupos}
   />
 );
-
-function LoadingScreen() {
-  return (
-    <div className="loading loading--intro" role="status" aria-live="polite">
-      <div className="loading-intro" aria-label="Carregando">
-        <span className="loading-intro__mark" aria-hidden="true">
-          <ChanceFlame className="loading-intro__flame" size={82} />
-        </span>
-        <span className="loading-intro__word" aria-hidden="true">
-          {Array.from(LOADING_WORD).map((letter, index) => (
-            <span
-              key={`${letter}-${index}`}
-              style={{ '--letter-index': index }}
-            >
-              {letter}
-            </span>
-          ))}
-        </span>
-        <span className="sr-only">Carregando nossovoto</span>
-      </div>
-    </div>
-  );
-}
 
 const getResumeNotice = (progress) => {
   if (!progress?.hasEstado) return '';

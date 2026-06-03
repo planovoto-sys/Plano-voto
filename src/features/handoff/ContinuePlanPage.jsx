@@ -12,6 +12,7 @@ import {
   saveBallotDraftToAccount
 } from '@/features/ballot';
 import { ChanceFlame } from '@/shared/icons/ChanceFlame';
+import LoadingScreen from '@/shared/ui/feedback/LoadingScreen';
 import { useNotify } from '@/features/notifications/useNotify';
 import './ContinuarPlano.css';
 
@@ -112,15 +113,7 @@ export default function ContinuarPlano() {
   };
 
   if (userLoading || status.type === 'loading') {
-    return (
-      <div className="loading nv-screen" role="status" aria-live="polite">
-        <div className="loading-intro" aria-label="Carregando">
-          <span className="loading-intro__mark" aria-hidden="true">
-            <ChanceFlame className="loading-intro__flame" size={82} />
-          </span>
-        </div>
-      </div>
-    );
+    return <LoadingScreen className="nv-screen" />;
   }
 
   return (

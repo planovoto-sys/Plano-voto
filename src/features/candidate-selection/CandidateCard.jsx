@@ -14,6 +14,7 @@ import {
 function ViabilityMeter({ value, tone, featured = false, locked = false, label = '', showCaption = true, onLockedClick }) {
   const numericValue = Number(value) || 0;
   const progress = Math.max(0, Math.min(100, numericValue));
+  const progressScale = progress / 100;
   const displayValue = Math.round(progress);
   const isComplete = progress >= 100;
   const shouldAnimateFill = featured && progress > 0 && !locked;
@@ -38,7 +39,7 @@ function ViabilityMeter({ value, tone, featured = false, locked = false, label =
   return (
     <span
       className={`candidate-thermometer candidate-thermometer--${tone} ${featured ? 'candidate-thermometer--featured' : ''} ${progress > 0 ? 'is-filled' : ''} ${isComplete ? 'is-complete' : ''} ${locked ? 'is-locked' : ''}`}
-      style={{ '--metric-progress': progress, '--thermometer-progress': `${progress}%` }}
+      style={{ '--metric-progress': progress, '--thermometer-progress': `${progress}%`, '--thermometer-scale': progressScale }}
       role={locked ? 'button' : undefined}
       tabIndex={locked ? 0 : undefined}
       aria-label={locked ? 'Campo de viabilidade bloqueado' : undefined}

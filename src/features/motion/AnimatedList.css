@@ -4,6 +4,8 @@
 
 .animated-list__item {
   min-width: 0;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 .animated-list__item > .prototype-candidate-card {

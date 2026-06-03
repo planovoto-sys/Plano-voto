@@ -8,6 +8,7 @@ import { BackIcon, CheckIcon, ChevronDownIcon, FilterIcon, InfoIcon, SearchIcon 
 import ShareChoicePanel from '@/features/sharing/ShareChoicePanel';
 import { useNotify } from '@/features/notifications/useNotify';
 import AnimatedList from '@/features/motion/AnimatedList';
+import LoadingScreen from '@/shared/ui/feedback/LoadingScreen';
 import { flowLog, flowWarn } from '@/shared/utils/debugFlow';
 import {
   getCandidateChance,
@@ -24,6 +25,13 @@ import {
   haveSameSelectionIds
 } from './selectBaseViewModel';
 import './SelectBase.css';
+
+const formatStateInfoNumber = (value) => {
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue)) return '--';
+
+  return new Intl.NumberFormat('pt-BR').format(numericValue);
+};
 
 export default function SelectBase({
   titulo,
@@ -56,7 +64,11 @@ export default function SelectBase({
   personalizedFieldsLocked = false,
   draftStateLabel = '',
   draftIsLocal = false,
-  renderItem
+  renderItem,
+  onStateDetailsOpen,
+  stateDetailsByCode = {},
+  stateDetailsStatus = 'idle',
+  stateDetailsError = ''
 }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -68,8 +80,12 @@ export default function SelectBase({
   const [selecionados, setSelecionados] = useState(selecaoInicial);
   const [candidateRenderLimit, setCandidateRenderLimit] = useState(INITIAL_CANDIDATE_RENDER_LIMIT);
   const [candidateFilterOpen, setCandidateFilterOpen] = useState(false);
+  const [candidateCardModeOpen, setCandidateCardModeOpen] = useState(false);
+  const [stateInfoOpen, setStateInfoOpen] = useState(false);
   const candidateSearchInputRef = useRef(null);
   const candidateFilterRef = useRef(null);
+  const candidateCardModeRef = useRef(null);
+  const stateInfoRef = useRef(null);
   const lastScrollTopRef = useRef(0);
   const [continueVisible, setContinueVisible] = useState(false);
   const [senateChoicesSaved, setSenateChoicesSaved] = useState(false);
@@ -138,6 +154,48 @@ export default function SelectBase({
   }, [candidateFilterOpen]);
 
   useEffect(() => {
+    if (!candidateCardModeOpen || typeof document === 'undefined') return undefined;
+
+    const handlePointerDown = (event) => {
+      if (candidateCardModeRef.current?.contains(event.target)) return;
+      setCandidateCardModeOpen(false);
+    };
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setCandidateCardModeOpen(false);
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [candidateCardModeOpen]);
+
+  useEffect(() => {
+    if (!stateInfoOpen || typeof document === 'undefined') return undefined;
+
+    const handlePointerDown = (event) => {
+      if (stateInfoRef.current?.contains(event.target)) return;
+      setStateInfoOpen(false);
+    };
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setStateInfoOpen(false);
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [stateInfoOpen]);
+
+  useEffect(() => {
     let cancelled = false;
 
     lastScrollTopRef.current = 0;
@@ -145,6 +203,8 @@ export default function SelectBase({
       if (!cancelled) {
         setContinueVisible(false);
         setCandidateCardMode('compact');
+        setCandidateCardModeOpen(false);
+        setStateInfoOpen(false);
       }
     });
 
@@ -173,6 +233,14 @@ export default function SelectBase({
   const candidateListInstruction = isDeputyOffice
     ? 'Selecione o candidato que aceita votar'
     : 'Selecione todos os candidatos que aceita votar';
+  const selectedHomeState = useMemo(() => {
+    if (!isHomeState) return null;
+
+    const selectedState = selecionados[0] || null;
+    if (!selectedState) return null;
+
+    return dados.find((item) => item.id === selectedState.id || item.sigla === selectedState.sigla) || selectedState;
+  }, [dados, isHomeState, selecionados]);
 
   useEffect(() => {
     let cancelled = false;
@@ -620,10 +688,7 @@ export default function SelectBase({
       });
     }
     setCandidateCardMode(nextMode);
-  };
-
-  const handleCandidateCardModeToggle = () => {
-    handleCandidateCardModeSelect(candidateCardMode === 'detailed' ? 'compact' : 'detailed');
+    setCandidateCardModeOpen(false);
   };
 
   const handleLoginFromLockedMetric = () => {
@@ -701,6 +766,7 @@ export default function SelectBase({
               className="candidate-search-filter__trigger nv-touch"
               type="button"
               onClick={() => {
+                setCandidateCardModeOpen(false);
                 setCandidateFilterOpen((currentValue) => !currentValue);
               }}
               aria-expanded={candidateFilterOpen}
@@ -740,6 +806,70 @@ export default function SelectBase({
               </div>
             )}
           </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderStateInfoCard = () => {
+    const stateCode = selectedHomeState?.sigla || '';
+    const details = stateCode ? stateDetailsByCode[stateCode] : null;
+    const isLoadingDetails = stateDetailsStatus === 'loading' && (
+      !details || details.candidateCount === undefined || details.activeVoters === undefined
+    );
+    const candidateCountLabel = isLoadingDetails
+      ? 'Carregando'
+      : formatStateInfoNumber(details?.candidateCount);
+    const activeVotersLabel = isLoadingDetails
+      ? 'Carregando'
+      : formatStateInfoNumber(details?.activeVoters);
+
+    return (
+      <div className="app-header-state-info-card" role="dialog" aria-label="Detalhes dos estados">
+        <div className="state-info-card__header">
+          <span>Detalhes do estado</span>
+          <strong>{selectedHomeState ? `${selectedHomeState.nome} (${selectedHomeState.sigla})` : 'Estados'}</strong>
+          <p>
+            {selectedHomeState
+              ? 'Resumo da prévia disponível para este estado.'
+              : 'Selecione um estado para ver candidatos e eleitores ativos no app.'}
+          </p>
+        </div>
+
+        <dl className="state-info-card__metrics">
+          <div className="state-info-card__metric">
+            <dt>Estados exibidos</dt>
+            <dd>{formatStateInfoNumber(dados.length)}</dd>
+          </div>
+          <div className="state-info-card__metric">
+            <dt>Candidatos</dt>
+            <dd>{selectedHomeState ? candidateCountLabel : '--'}</dd>
+          </div>
+          <div className="state-info-card__metric state-info-card__metric--wide">
+            <dt>Eleitores no app</dt>
+            <dd>{selectedHomeState ? activeVotersLabel : '--'}</dd>
+          </div>
+        </dl>
+
+        <p className="state-info-card__note">
+          Eleitores no app indica atividade no nossovoto e não substitui dados oficiais da Justiça Eleitoral.
+        </p>
+
+        {stateDetailsError && (
+          <p className="state-info-card__status" role="alert">{stateDetailsError}</p>
+        )}
+
+        {onHelpClick && (
+          <button
+            className="state-info-card__guide nv-touch"
+            type="button"
+            onClick={() => {
+              setStateInfoOpen(false);
+              onHelpClick();
+            }}
+          >
+            Ver guia da tela
+          </button>
         )}
       </div>
     );
@@ -962,15 +1092,7 @@ export default function SelectBase({
   );
 
   if (carregando && !isCandidateOffice) {
-    return (
-      <div className="loading nv-screen" role="status" aria-live="polite">
-        <div className="loading-intro" aria-label="Carregando">
-          <span className="loading-intro__mark" aria-hidden="true">
-            <ChanceFlame className="loading-intro__flame" size={82} />
-          </span>
-        </div>
-      </div>
-    );
+    return <LoadingScreen className="nv-screen" />;
   }
 
   return (
@@ -1000,16 +1122,77 @@ export default function SelectBase({
 
         <div className="app-page-header__actions">
           {isCandidateOffice ? (
-            <button
-              className={`app-header-icon-action app-help-action card-detail-mode-toggle nv-touch ${candidateCardMode === 'detailed' ? 'is-active' : ''}`}
-              type="button"
-              onClick={handleCandidateCardModeToggle}
-              aria-label={candidateCardMode === 'detailed' ? 'Usar visualização resumida' : 'Usar visualização detalhada'}
-              aria-pressed={candidateCardMode === 'detailed'}
-              title={candidateCardMode === 'detailed' ? 'Usar visualização resumida' : 'Usar visualização detalhada'}
+            <div
+              className={`app-header-mode-picker ${candidateCardModeOpen ? 'is-open' : ''}`}
+              ref={candidateCardModeRef}
             >
-              <InfoIcon />
-            </button>
+              <button
+                className={`app-header-icon-action app-help-action app-header-mode-action card-detail-mode-toggle nv-touch ${candidateCardMode === 'detailed' ? 'is-active' : ''}`}
+                type="button"
+                onClick={() => {
+                  setCandidateFilterOpen(false);
+                  setCandidateCardModeOpen((currentValue) => !currentValue);
+                }}
+                aria-expanded={candidateCardModeOpen}
+                aria-haspopup="menu"
+                aria-label="Selecionar modo de visualização dos candidatos"
+                title="Modo de visualização"
+              >
+                <InfoIcon />
+              </button>
+
+              {candidateCardModeOpen && (
+                <div className="app-header-mode-menu" role="menu" aria-label="Modo de visualização dos candidatos">
+                  <span className="app-header-mode-menu__title">Visualização</span>
+                  {CARD_MODE_OPTIONS.map((option) => {
+                    const isActive = candidateCardMode === option.id;
+
+                    return (
+                      <button
+                        key={option.id}
+                        className={`app-header-mode-menu__option ${isActive ? 'is-active' : ''}`}
+                        type="button"
+                        role="menuitemradio"
+                        aria-checked={isActive}
+                        onClick={() => handleCandidateCardModeSelect(option.id)}
+                      >
+                        <span className="app-header-mode-menu__check" aria-hidden="true">
+                          {isActive && <CheckIcon />}
+                        </span>
+                        <span>{option.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ) : isHomeState ? (
+            <div
+              className={`app-header-mode-picker app-header-state-info ${stateInfoOpen ? 'is-open' : ''}`}
+              ref={stateInfoRef}
+            >
+              <button
+                className="app-header-icon-action app-help-action app-header-mode-action state-detail-info-toggle nv-touch"
+                type="button"
+                onClick={() => {
+                  setCandidateFilterOpen(false);
+                  setCandidateCardModeOpen(false);
+                  setStateInfoOpen((currentValue) => {
+                    const nextValue = !currentValue;
+                    if (nextValue) onStateDetailsOpen?.();
+                    return nextValue;
+                  });
+                }}
+                aria-expanded={stateInfoOpen}
+                aria-haspopup="dialog"
+                aria-label="Ver detalhes dos estados"
+                title="Detalhes dos estados"
+              >
+                <InfoIcon />
+              </button>
+
+              {stateInfoOpen && renderStateInfoCard()}
+            </div>
           ) : onHelpClick && (
             <button
               className="app-header-icon-action app-help-action nv-touch"

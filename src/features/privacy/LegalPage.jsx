@@ -199,7 +199,7 @@ function AboutLanding({ user, isDesktopExperience, onPrimaryCta, onLoginCta }) {
             <span className="about-eyebrow">Plano de voto simples, revisável e seguro</span>
             <h1>Monte seu plano de voto com mais clareza</h1>
             <p>
-              O Nosso Voto ajuda você a organizar seus candidatos por cargo, revisar suas escolhas
+              O nossovoto ajuda você a organizar seus candidatos por cargo, revisar suas escolhas
               e salvar um rascunho antes da decisão final.
             </p>
             <p className="about-hero__support">

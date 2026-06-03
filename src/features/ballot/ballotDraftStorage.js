@@ -92,7 +92,7 @@ export const saveVisitorBallotState = async (estado) => {
   const activeEstado = normalizeStateCode(estado);
   if (!activeEstado) throw new VotingError('STATE_REQUIRED', 'Escolha um estado antes de continuar.');
 
-  const previousDraft = readVisitorBallotDraft(activeEstado);
+  const previousDraft = readVisitorBallotDraft();
   const nextDraft = previousDraft.estado === activeEstado
     ? normalizeDraft({ ...previousDraft, estado: activeEstado, updated_at: new Date().toISOString() }, activeEstado)
     : createEmptyBallotDraft(activeEstado);
