@@ -27,8 +27,8 @@
   min-width: 40px;
   height: 40px;
   min-height: 40px;
-  border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
-  border-radius: 999px;
+  border: 0;
+  border-radius: 0;
   background: transparent;
   color: var(--text-main);
   display: inline-flex;
@@ -59,19 +59,24 @@
 
 .app-header-mode-action.is-active,
 .app-header-mode-picker.is-open .app-header-mode-action {
-  background: var(--orange-soft);
-  color: var(--orange-dark);
-  border-color: color-mix(in srgb, currentColor 26%, transparent);
+  background: transparent;
+  color: var(--text-main);
 }
 
 .app-header-mode-action .app-icon {
-  width: 18px;
-  height: 18px;
-  flex: 0 0 18px;
+  width: 23px;
+  height: 23px;
+  flex: 0 0 23px;
+}
+
+.app-header-mode-action.is-active .app-icon {
+  color: var(--orange-dark);
 }
 
 .app-header-icon-action.card-detail-mode-toggle {
-  border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   transition:
     background-color 160ms ease,
     border-color 160ms ease,
@@ -80,13 +85,14 @@
 }
 
 .app-header-icon-action.card-detail-mode-toggle.is-active {
-  background: var(--orange-soft);
-  color: var(--orange-dark);
-  border-color: color-mix(in srgb, currentColor 26%, transparent);
+  background: transparent;
+  color: var(--text-main);
 }
 
 .app-header-icon-action.state-detail-info-toggle {
-  border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   transition:
     background-color 160ms ease,
     border-color 160ms ease,
@@ -95,9 +101,8 @@
 }
 
 .app-header-state-info.is-open .state-detail-info-toggle {
-  background: var(--orange-soft);
+  background: transparent;
   color: var(--orange-dark);
-  border-color: color-mix(in srgb, currentColor 26%, transparent);
 }
 
 .app-header-mode-menu {
@@ -539,14 +544,14 @@
 
 .state-card {
   width: 100%;
-  min-height: 86px;
+  min-height: 98px;
   border: 0;
   border-radius: 14px;
   background: var(--surface);
   color: var(--text-main);
   display: block;
   font-family: var(--font-family);
-  padding: 12px 14px;
+  padding: 16px 20px;
   text-align: left;
   cursor: pointer;
   box-shadow: 0 12px 28px rgba(17, 17, 17, 0.06);
@@ -578,9 +583,10 @@
 }
 
 .state-centered-name {
-  display: grid;
-  justify-items: start;
-  gap: 2px;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
   min-width: 0;
 }
 
@@ -619,10 +625,18 @@
 
 .state-card .state-sigla {
   color: currentColor;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 17px;
+  font-weight: 800;
   line-height: 1;
   text-transform: uppercase;
+}
+
+.state-card .state-name-separator {
+  color: currentColor;
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1;
 }
 
 .state-card__stats {

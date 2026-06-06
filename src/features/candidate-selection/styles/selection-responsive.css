@@ -11,9 +11,9 @@
   }
 
   .app-header-mode-action .app-icon {
-    width: 17px;
-    height: 17px;
-    flex-basis: 17px;
+    width: 22px;
+    height: 22px;
+    flex-basis: 22px;
   }
 
   .prototype-section-heading h2 {
@@ -207,8 +207,8 @@
 
   .prototype-candidate-card.is-selected {
     box-shadow:
-      inset 0 0 0 1px color-mix(in srgb, var(--orange) 42%, transparent),
-      0 10px 22px rgba(17, 17, 17, 0.06);
+      inset 0 0 0 2px color-mix(in srgb, currentColor 68%, transparent),
+      0 10px 22px color-mix(in srgb, currentColor 12%, transparent);
   }
 
   .candidate-current-section .prototype-candidate-card.is-summary {
@@ -305,7 +305,7 @@
   }
 
   .select-base__continue-shell.is-hidden {
-    transform: translateY(12px);
+    transform: translateY(calc(100% + 10px));
   }
 
   .select-base-container > .app-page-footer--footer .bottom-step-nav {
@@ -330,9 +330,9 @@
   }
 
   .app-header-mode-action .app-icon {
-    width: 16px;
-    height: 16px;
-    flex-basis: 16px;
+    width: 21px;
+    height: 21px;
+    flex-basis: 21px;
   }
 
   .candidate-list-tools {
@@ -461,8 +461,8 @@
   }
 
   .state-card {
-    min-height: 76px;
-    padding: 10px 11px;
+    min-height: 92px;
+    padding: 15px 16px;
   }
 
   .state-card .state-full-name {
@@ -470,7 +470,11 @@
   }
 
   .state-card .state-sigla {
-    font-size: 12px;
+    font-size: 15.5px;
+  }
+
+  .state-card .state-name-separator {
+    font-size: 15.5px;
   }
 
   .state-card__content {
@@ -559,9 +563,9 @@
   }
 
   .app-header-mode-action .app-icon {
-    width: 14px;
-    height: 14px;
-    flex-basis: 14px;
+    width: 19px;
+    height: 19px;
+    flex-basis: 19px;
   }
 
   .app-header-mode-action span {
@@ -591,11 +595,11 @@
   }
 
   .state-card {
-    min-height: 94px;
+    min-height: 100px;
     border: 0;
     background: var(--desktop-surface);
     box-shadow: none;
-    padding: 14px 16px;
+    padding: 18px 20px;
   }
 
   .state-card:hover,
@@ -607,14 +611,14 @@
   .state-card.is-selected:hover,
   .prototype-candidate-card.is-selected:hover {
     box-shadow:
-      inset 0 0 0 1px color-mix(in srgb, var(--orange) 42%, transparent),
-      0 10px 22px rgba(17, 17, 17, 0.06);
+      inset 0 0 0 2px color-mix(in srgb, currentColor 68%, transparent),
+      0 10px 22px color-mix(in srgb, currentColor 12%, transparent);
   }
 
   .prototype-candidate-card.is-selected:hover {
     box-shadow:
-      inset 0 0 0 1px color-mix(in srgb, var(--orange) 50%, transparent),
-      0 10px 22px rgba(17, 17, 17, 0.07);
+      inset 0 0 0 2px color-mix(in srgb, currentColor 76%, transparent),
+      0 10px 22px color-mix(in srgb, currentColor 14%, transparent);
   }
 
   .prototype-section-heading {
@@ -878,8 +882,8 @@
   }
 
   .state-card {
-    min-height: 98px;
-    padding: 16px;
+    min-height: 104px;
+    padding: 20px;
   }
 
   .state-card .state-full-name {

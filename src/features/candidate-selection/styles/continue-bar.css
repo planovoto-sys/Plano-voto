@@ -15,9 +15,9 @@
   overflow: hidden;
   opacity: 1;
   pointer-events: none;
-  visibility: visible;
   transform: translateY(0);
-  transition: opacity 180ms ease, transform 220ms ease, visibility 180ms ease;
+  will-change: transform;
+  transition: transform 420ms var(--ease-emphasized, cubic-bezier(.2, 0, 0, 1.15));
 }
 
 .select-base__continue-shell > * {
@@ -37,14 +37,8 @@
 }
 
 .select-base__continue-shell.is-hidden {
-  max-height: 0;
-  padding-top: 0;
-  padding-bottom: 0;
-  border-top: 0;
-  opacity: 0;
   pointer-events: none;
-  visibility: hidden;
-  transform: translateY(12px);
+  transform: translateY(calc(100% + 10px));
 }
 
 .select-base__continue-shell.is-hidden > * {

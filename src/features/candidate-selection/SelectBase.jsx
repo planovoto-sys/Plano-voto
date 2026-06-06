@@ -223,16 +223,15 @@ export default function SelectBase({
   const visibleRows = Number.isFinite(linhasVisiveis) ? linhasVisiveis : 5;
   const screenCopy = getScreenCopy({ variant, titulo, subtitulo });
   const hasRequiredSelection = selecionados.length >= requiredSelectionCount;
+  const hasAnySelection = selecionados.length > 0;
   const selectedSignature = useMemo(() => (
     selecionados.map((candidate) => candidate.id).filter(Boolean).sort().join('|')
   ), [selecionados]);
   const showSavedSenateSharePanel = isSenateOffice && senateChoicesSaved && hasRequiredSelection && Boolean(shareData);
-  const shouldRenderContinue = !isHomeState;
-  const shouldShowContinue = shouldRenderContinue && (hasRequiredSelection ? continueVisible : true);
-  const shouldShowDesktopContinue = shouldRenderContinue && (hasRequiredSelection ? continueVisible : true);
-  const candidateListInstruction = isDeputyOffice
-    ? 'Selecione o candidato que aceita votar'
-    : 'Selecione todos os candidatos que aceita votar';
+  const shouldRenderContinue = hasAnySelection;
+  const shouldShowContinue = shouldRenderContinue && (!isCandidateOffice || continueVisible);
+  const shouldShowDesktopContinue = shouldRenderContinue;
+  const candidateListInstruction = 'Selecione todos os candidatos que aceita votar';
   const selectedHomeState = useMemo(() => {
     if (!isHomeState) return null;
 
@@ -246,13 +245,13 @@ export default function SelectBase({
     let cancelled = false;
 
     queueMicrotask(() => {
-      if (!cancelled) setContinueVisible(hasRequiredSelection);
+      if (!cancelled) setContinueVisible(hasAnySelection);
     });
 
     return () => {
       cancelled = true;
     };
-  }, [hasRequiredSelection, isHomeState]);
+  }, [hasAnySelection, selectedSignature]);
 
   useEffect(() => {
     if (!isSenateOffice) return undefined;
@@ -473,7 +472,12 @@ export default function SelectBase({
     const currentTop = event.currentTarget.scrollTop;
     const diff = currentTop - lastScrollTopRef.current;
 
-    if (!hasRequiredSelection) {
+    if (!isCandidateOffice) {
+      lastScrollTopRef.current = currentTop;
+      return;
+    }
+
+    if (!hasAnySelection) {
       if (continueVisible) setContinueVisible(false);
       lastScrollTopRef.current = currentTop;
       return;
@@ -680,13 +684,6 @@ export default function SelectBase({
   };
 
   const handleCandidateCardModeSelect = (nextMode) => {
-    const optionLabel = CARD_MODE_OPTIONS.find((option) => option.id === nextMode)?.label || nextMode;
-    if (nextMode !== candidateCardMode) {
-      notify.info(`Modo de exibição: ${optionLabel}.`, {
-        dedupeKey: `card-mode-${nextMode}`,
-        duration: 2600
-      });
-    }
     setCandidateCardMode(nextMode);
     setCandidateCardModeOpen(false);
   };
@@ -727,7 +724,7 @@ export default function SelectBase({
           type="search"
           value={valorBusca}
           onChange={handleSearchChange}
-          placeholder={isHomeState ? '' : 'Pesquisa'}
+          placeholder={isHomeState ? '' : 'Pesquisar candidatos ou partidos'}
         />
       </label>
     );
@@ -745,13 +742,13 @@ export default function SelectBase({
         {mostrarBusca && (
           <label className="candidate-search-filter__search">
             <SearchIcon />
-            <span>Pesquisar candidatos</span>
+            <span>Pesquisar candidatos ou partidos</span>
             <input
               ref={candidateSearchInputRef}
               type="search"
               value={valorBusca}
               onChange={handleSearchChange}
-              placeholder="Pesquisar candidatos"
+              placeholder="Pesquisar candidatos ou partidos"
             />
           </label>
         )}
@@ -1143,7 +1140,7 @@ export default function SelectBase({
 
               {candidateCardModeOpen && (
                 <div className="app-header-mode-menu" role="menu" aria-label="Modo de visualização dos candidatos">
-                  <span className="app-header-mode-menu__title">Visualização</span>
+                  <span className="app-header-mode-menu__title">Modo de exibição</span>
                   {CARD_MODE_OPTIONS.map((option) => {
                     const isActive = candidateCardMode === option.id;
 

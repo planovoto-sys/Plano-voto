@@ -312,7 +312,7 @@ export default function Home() {
         linhasVisiveis={6}
         variant="home-state"
         currentStep="estado"
-        autoAvancarAoSelecionar={true}
+        autoAvancarAoSelecionar={false}
         onHelpClick={() => setIsTourOpen(true)}
         onStateDetailsOpen={loadStateDetails}
         stateDetailsByCode={stateDetailsByCode}
@@ -324,6 +324,7 @@ export default function Home() {
               <span className="state-card__name-row">
                 <span className="state-centered-name">
                   <span className="state-full-name">{estado.nome}</span>
+                  <span className="state-name-separator" aria-hidden="true">-</span>
                   <span className="state-sigla">{estado.sigla}</span>
                 </span>
               </span>

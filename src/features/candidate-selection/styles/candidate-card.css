@@ -154,8 +154,8 @@
 
 .prototype-candidate-card.is-selected {
   box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--orange) 48%, transparent),
-    0 8px 18px rgba(17, 17, 17, 0.06);
+    inset 0 0 0 2px color-mix(in srgb, currentColor 68%, transparent),
+    0 8px 18px color-mix(in srgb, currentColor 12%, transparent);
 }
 
 .prototype-candidate-card.is-selected::before {
@@ -223,7 +223,7 @@
   max-width: 100%;
   display: grid;
   align-content: center;
-  gap: 4px;
+  gap: 1px;
 }
 
 .candidate-card__status-badge {
@@ -241,15 +241,20 @@
 }
 
 .candidate-card__status-badge .candidate-status-icon {
-  width: calc(var(--candidate-status-badge-size) * 0.58);
-  height: calc(var(--candidate-status-badge-size) * 0.58);
-  opacity: 0.72;
+  width: calc(var(--candidate-status-badge-size) * 0.68);
+  height: calc(var(--candidate-status-badge-size) * 0.68);
+  opacity: 0.82;
 }
 
 .candidate-card__status-badge .candidate-status-icon--fire {
-  width: calc(var(--candidate-status-badge-size) * 0.68);
-  height: calc(var(--candidate-status-badge-size) * 0.9);
+  width: calc(var(--candidate-status-badge-size) * 0.74);
+  height: calc(var(--candidate-status-badge-size) * 0.96);
   opacity: 0.9;
+}
+
+.candidate-status-icon--thumb-up {
+  transform: scaleX(-1);
+  transform-origin: center;
 }
 
 .candidate-card__expand-indicator {
@@ -317,9 +322,9 @@
   flex: 0 0 auto;
   min-width: 34px;
   height: 20px;
-  border: 0;
+  border: 1px solid color-mix(in srgb, currentColor 24%, transparent);
   border-radius: 999px;
-  background: color-mix(in srgb, currentColor 8%, white);
+  background: color-mix(in srgb, currentColor 15%, white);
   color: currentColor;
   display: inline-flex;
   align-items: center;
@@ -337,7 +342,7 @@
   height: 18px;
   font-size: 9px;
   font-weight: 750;
-  opacity: 0.78;
+  opacity: 0.9;
 }
 
 .candidate-card__score-chip.is-empty {
@@ -682,9 +687,9 @@
   min-width: 0;
   overflow: hidden;
   height: var(--candidate-badge-height, 30px);
-  border: 0;
+  border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
   border-radius: 999px;
-  background: color-mix(in srgb, currentColor 8%, white);
+  background: color-mix(in srgb, currentColor 14%, white);
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
   display: inline-flex;

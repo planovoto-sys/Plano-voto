@@ -576,7 +576,7 @@
 }
 
 .desktop-state-card {
-  min-height: 72px;
+  min-height: 96px;
   border: 1px solid rgba(17, 17, 17, 0.06);
   border-radius: 18px;
   background: #fff;
@@ -584,8 +584,8 @@
   display: grid;
   align-content: center;
   justify-items: start;
-  gap: 5px;
-  padding: 16px 18px;
+  gap: 0;
+  padding: 20px;
   font-family: var(--font-family);
   text-align: left;
   cursor: pointer;
@@ -606,7 +606,7 @@
 }
 
 .desktop-state-card strong {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 850;
   letter-spacing: 0;
   line-height: 1.05;
@@ -779,6 +779,7 @@
 }
 
 .desktop-candidate-card {
+  --desktop-candidate-accent: rgba(17, 17, 17, 0.42);
   min-width: 0;
   min-height: 96px;
   border: 1px solid rgba(17, 17, 17, 0.08);
@@ -797,16 +798,19 @@
 }
 
 .desktop-candidate-card--success {
+  --desktop-candidate-accent: #478f48;
   background: rgba(71, 143, 72, 0.08);
   border-color: rgba(71, 143, 72, 0.22);
 }
 
 .desktop-candidate-card--danger {
+  --desktop-candidate-accent: #e64646;
   background: rgba(230, 70, 70, 0.08);
   border-color: rgba(230, 70, 70, 0.2);
 }
 
 .desktop-candidate-card--featured {
+  --desktop-candidate-accent: #f05a24;
   background: rgba(255, 153, 0, 0.09);
   border-color: rgba(255, 153, 0, 0.28);
 }
@@ -814,12 +818,15 @@
 .desktop-candidate-card--complete,
 .desktop-candidate-card--locked,
 .desktop-candidate-card--neutral {
+  --desktop-candidate-accent: #8a8a8a;
   background: #f8f9f8;
 }
 
 .desktop-candidate-card.is-selected {
-  border-color: rgba(255, 153, 0, 0.55);
-  box-shadow: 0 0 0 3px rgba(255, 153, 0, 0.08), 0 18px 44px rgba(17, 17, 17, 0.06);
+  border-color: color-mix(in srgb, var(--desktop-candidate-accent) 78%, #111 10%);
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--desktop-candidate-accent) 20%, transparent),
+    0 18px 44px rgba(17, 17, 17, 0.06);
 }
 
 .desktop-candidate-card__button {

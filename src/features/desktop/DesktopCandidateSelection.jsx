@@ -114,9 +114,11 @@ export default function DesktopCandidateSelection({
           </DesktopPageIntro>
 
           <DesktopActionBar>
-            <button className="desktop-button-primary nv-touch" type="button" onClick={onContinue} disabled={loading}>
-              Continuar
-            </button>
+            {selectedCandidates.length > 0 && (
+              <button className="desktop-button-primary nv-touch" type="button" onClick={onContinue} disabled={loading}>
+                Continuar
+              </button>
+            )}
             <button className="desktop-button-secondary nv-touch" type="button" onClick={() => onFilterSelect({ id: 'selecionados', mode: 'selecionados' })}>
               Ver selecionados
             </button>
@@ -127,12 +129,12 @@ export default function DesktopCandidateSelection({
 
           <div className="desktop-candidate-toolbar">
             <label className="desktop-candidate-search">
-              <span>Pesquisar candidatos</span>
+              <span>Pesquisar candidatos ou partidos</span>
               <Search aria-hidden="true" />
               <input
                 value={searchValue}
                 onChange={(event) => onSearchChange(event.target.value)}
-                placeholder="Pesquisar por nome, partido ou número"
+                placeholder="Pesquisar candidatos ou partidos"
               />
             </label>
 

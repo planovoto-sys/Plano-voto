@@ -288,7 +288,7 @@ export default function CandidateCard({
           )}
           <span className="candidate-card__name-row">
             <span className="candidate-card__text-line candidate-card__text-line--name">
-              {renderScoreChip(
+              {detailed && renderScoreChip(
                 candidateScoreLabel,
                 'candidate',
                 hasCandidateScore ? `Nota do candidato ${candidateScoreLabel}` : 'Nota do candidato indisponível',
@@ -299,7 +299,7 @@ export default function CandidateCard({
           </span>
           {partyLabel && (
             <span className="candidate-card__party-row">
-              {renderScoreChip(
+              {detailed && renderScoreChip(
                 partyScoreLabel,
                 'party',
                 hasPartyScore ? `Nota do partido ${partyScoreLabel}` : 'Nota do partido indisponível',

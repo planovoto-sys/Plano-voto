@@ -97,7 +97,7 @@
 }
 
 .bottom-step-nav__item--brand .bottom-step-nav__icon {
-  --bottom-nav-brand-mask-size: 25px 25px;
+  --bottom-nav-brand-mask-size: 22px 22px;
   width: var(--step-nav-icon-size);
   height: var(--step-nav-icon-size);
   flex-basis: var(--step-nav-icon-size);

@@ -44,14 +44,16 @@ export default function DesktopStateSelection({
           </label>
 
           <DesktopActionBar>
-            <button
-              className="desktop-button-primary nv-touch"
-              type="button"
-              onClick={onContinue}
-              disabled={!selectedState || loading}
-            >
-              Continuar com prévia
-            </button>
+            {selectedState && (
+              <button
+                className="desktop-button-primary nv-touch"
+                type="button"
+                onClick={onContinue}
+                disabled={loading}
+              >
+                Continuar com prévia
+              </button>
+            )}
             <span className="desktop-state-panel__hint">
               Para salvar seu plano, continue pelo celular.
             </span>
@@ -70,8 +72,7 @@ export default function DesktopStateSelection({
                   disabled={loading}
                   aria-pressed={isSelected}
                 >
-                  <strong>{state.nome}</strong>
-                  <span>{state.sigla}</span>
+                  <strong>{state.nome} - {state.sigla}</strong>
                 </button>
               );
             }) : (
