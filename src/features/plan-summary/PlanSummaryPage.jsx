@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
-import { LogIn, LogOut } from 'lucide-react';
+import { ArrowRight, LogIn, LogOut, Star, TrendingUp } from 'lucide-react';
 import { BALLOT_ROUTES } from '@/shared/constants/ballot';
 import { AVERAGE_ELECTED_VOTES_BY_OFFICE } from '@/shared/constants/candidates';
 import { STATE_NAMES } from '@/shared/constants/states';
@@ -106,13 +106,57 @@ const mergeCandidateDetails = (storedCandidate, fetchedCandidate, tally) => {
   };
 };
 
-function OverviewTile({ label, value, caption, tone = 'neutral' }) {
+const getScoreStarFills = (score) => {
+  const normalizedScore = Math.max(0, Math.min(10, Number(score) || 0)) / 2;
+  return Array.from({ length: 5 }, (_, index) => (
+    Math.max(0, Math.min(1, normalizedScore - index))
+  ));
+};
+
+const getViabilityLabel = (chance) => {
+  if (chance >= 80) return 'Excelente';
+  if (chance >= 60) return 'Boa';
+  if (chance >= 35) return 'Regular';
+  return 'Baixa';
+};
+
+const getPlanInsightText = ({ hasCompletePlan, averageScore, averageChance }) => {
+  if (!hasCompletePlan) return 'Escolha seus candidatos para continuar.';
+  if (averageScore >= 7 && averageChance >= 60) return 'Seu plano está equilibrado, mas ainda pode melhorar.';
+  if (averageScore >= 7) return 'Seu plano tem bons nomes, mas pode ganhar viabilidade.';
+  if (averageChance >= 60) return 'Seu plano tem boa viabilidade, mas pode melhorar na nota geral.';
+  return 'Revise suas escolhas para fortalecer seu plano de voto.';
+};
+
+function ScoreStars({ score }) {
   return (
-    <article className={`my-plan-overview-card my-plan-overview-card--${tone}`}>
-      <span>{label}</span>
-      <strong>{value}</strong>
-      <small>{caption}</small>
-    </article>
+    <span className="my-plan-overview__stars" aria-hidden="true">
+      {getScoreStarFills(score).map((fill, index) => (
+        <span
+          key={index}
+          className="my-plan-overview__star"
+          style={{ '--star-fill': `${Math.round(fill * 100)}%` }}
+        >
+          <Star className="my-plan-overview__star-base" />
+          <span className="my-plan-overview__star-fill">
+            <Star />
+          </span>
+        </span>
+      ))}
+    </span>
+  );
+}
+
+function PlanViabilityGauge({ chance }) {
+  const progress = Math.max(0, Math.min(100, Math.round(chance)));
+  const viabilityLabel = getViabilityLabel(progress);
+
+  return (
+    <div className="my-plan-overview__gauge" style={{ '--viability-angle': `${progress * 1.8}deg` }}>
+      <span className="my-plan-overview__gauge-arc" aria-hidden="true" />
+      <strong>{progress}%</strong>
+      <small>{viabilityLabel}</small>
+    </div>
   );
 }
 
@@ -316,6 +360,7 @@ export default function MeuPlano() {
       actionLabel="Candidato escolhido"
       lockPersonalizedFields={false}
       showNumberAbove
+      numberFallback="000000"
       onSelect={() => handleEdit(route)}
       onLockedMetricClick={handleLockedFieldClick}
     />
@@ -390,24 +435,38 @@ export default function MeuPlano() {
       <main className="my-plan-scroll prototype-scroll nv-scroll">
         <div className="my-plan-shell">
           <section className="my-plan-overview" aria-label="Resumo do plano">
-            <OverviewTile
-              label="Estado"
-              value={estadoSigla || '--'}
-              caption={estadoSigla ? estadoNome : 'Escolha seu estado'}
-              tone="state"
-            />
-            <OverviewTile
-              label="Nota"
-              value={averageScore > 0 ? formatScore(averageScore) : '--'}
-              caption="Média das notas"
-              tone="score"
-            />
-            <OverviewTile
-              label="Viabilidade"
-              value={`${Math.round(averageChance)}%`}
-              caption="Média do plano"
-              tone="viability"
-            />
+            <div className="my-plan-overview__metrics">
+              <article className="my-plan-overview__metric my-plan-overview__metric--state">
+                <strong className="my-plan-overview__state-code">{estadoSigla || '--'}</strong>
+                <small>{estadoSigla ? estadoNome : 'Escolha seu estado'}</small>
+              </article>
+
+              <article className="my-plan-overview__metric my-plan-overview__metric--score">
+                <strong className="my-plan-overview__score">
+                  {averageScore > 0 ? formatScore(averageScore) : '--'}
+                </strong>
+                <ScoreStars score={averageScore} />
+              </article>
+
+              <article className="my-plan-overview__metric my-plan-overview__metric--viability">
+                <PlanViabilityGauge chance={averageChance} />
+              </article>
+            </div>
+
+            <div className="my-plan-overview__insight">
+              <span className="my-plan-overview__insight-icon" aria-hidden="true">
+                <TrendingUp />
+              </span>
+              <p>{getPlanInsightText({ hasCompletePlan, averageScore, averageChance })}</p>
+              <button
+                className="my-plan-overview__suggestions nv-touch"
+                type="button"
+                onClick={hasCompletePlan ? () => handleEdit(BALLOT_ROUTES.deputadoFederal) : handleContinuePlan}
+              >
+                <span>Ver sugestões</span>
+                <ArrowRight aria-hidden="true" />
+              </button>
+            </div>
           </section>
 
           <section className="my-plan-choices" aria-label="Candidatos escolhidos">

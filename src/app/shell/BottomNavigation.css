@@ -97,7 +97,7 @@
 }
 
 .bottom-step-nav__item--brand .bottom-step-nav__icon {
-  --bottom-nav-brand-mask-size: 22px 22px;
+  --bottom-nav-brand-mask-size: 20px 20px;
   width: var(--step-nav-icon-size);
   height: var(--step-nav-icon-size);
   flex-basis: var(--step-nav-icon-size);
@@ -727,5 +727,47 @@
 
   .app-page-footer--header .bottom-step-nav__item {
     padding-inline: 15px;
+  }
+}
+
+@media (orientation: landscape) and (max-width: 1100px) and (max-height: 480px) {
+  .app-page-footer--header {
+    display: none;
+  }
+
+  .app-page-footer--footer {
+    position: relative;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    z-index: 100;
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-height: calc(52px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid rgba(17, 17, 17, 0.1);
+    background: var(--page-bg);
+    overflow: hidden;
+  }
+
+  .app-page-footer--footer .bottom-step-nav {
+    --step-nav-icon-size: 20px;
+    height: calc(52px + env(safe-area-inset-bottom, 0px));
+    min-height: calc(52px + env(safe-area-inset-bottom, 0px));
+    border-top: 0;
+    display: grid;
+    padding: 3px 18px calc(3px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .app-page-footer--footer .bottom-step-nav__item {
+    height: 44px;
+    gap: 1px;
+    padding-top: 5px;
+    font-size: 10px;
+  }
+
+  .app-page-footer--footer .bottom-step-nav__label {
+    min-height: 13px;
+    line-height: 1.15;
   }
 }

@@ -7,7 +7,6 @@ import { ChanceFlame } from '@/shared/icons/ChanceFlame';
 import { BackIcon, CheckIcon, ChevronDownIcon, FilterIcon, InfoIcon, SearchIcon } from '@/shared/icons/AppIcons';
 import ShareChoicePanel from '@/features/sharing/ShareChoicePanel';
 import { useNotify } from '@/features/notifications/useNotify';
-import AnimatedList from '@/features/motion/AnimatedList';
 import LoadingScreen from '@/shared/ui/feedback/LoadingScreen';
 import { flowLog, flowWarn } from '@/shared/utils/debugFlow';
 import {
@@ -97,8 +96,6 @@ export default function SelectBase({
   const [modalErroSalvar, setModalErroSalvar] = useState({ aberto: false, mensagem: '' });
   const [modalCampoBloqueado, setModalCampoBloqueado] = useState(false);
   const [salvandoSelecao, setSalvandoSelecao] = useState(false);
-  const [selectionFeedback, setSelectionFeedback] = useState(null);
-  const selectionFeedbackTimerRef = useRef(null);
   const [isDesktopLayout, setIsDesktopLayout] = useState(() => (
     typeof window !== 'undefined' && window.matchMedia(DESKTOP_LAYOUT_QUERY).matches
   ));
@@ -212,10 +209,6 @@ export default function SelectBase({
       cancelled = true;
     };
   }, [variant]);
-
-  useEffect(() => () => {
-    window.clearTimeout(selectionFeedbackTimerRef.current);
-  }, []);
 
   const effectiveLimit = Number.isFinite(limiteSelecao) ? limiteSelecao : null;
   const requiredSelectionCount = isCandidateOffice ? minimoSelecao : (effectiveLimit || 1);
@@ -377,7 +370,6 @@ export default function SelectBase({
   );
 
   const currentSectionCandidates = showSelectedInCurrentSection ? selecionados : selectedPreviewCandidates;
-  const shouldAnimateCandidateList = !String(valorBusca || '').trim();
 
   const currentSelectionSubtitle = useMemo(() => {
     if (!isCandidateOffice || currentSectionCandidates.length === 0) return null;
@@ -436,16 +428,6 @@ export default function SelectBase({
   }, [currentSectionCandidates, featuredMetricsByCandidateId, isCandidateOffice, isSenateOffice]);
 
   const revealContinue = () => setContinueVisible(true);
-
-  const recordSelectionFeedback = (candidateId, type, source = 'list') => {
-    if (!candidateId || !isCandidateOffice) return;
-
-    window.clearTimeout(selectionFeedbackTimerRef.current);
-    setSelectionFeedback({ candidateId, type, source, token: Date.now() });
-    selectionFeedbackTimerRef.current = window.setTimeout(() => {
-      setSelectionFeedback(null);
-    }, 760);
-  };
 
   const getRequiredSelectionMessage = () => {
     if (isSenateOffice) {
@@ -554,7 +536,6 @@ export default function SelectBase({
 
     const nextSelecionados = [...selecionados, item];
     const completed = hasSelectionLimit && nextSelecionados.length === effectiveLimit;
-    recordSelectionFeedback(item.id, 'added', 'list');
     const didCommit = await commitSelection(nextSelecionados, { autoConfirm: autoAvancarAoSelecionar && completed, completed });
     return didCommit;
   };
@@ -565,7 +546,6 @@ export default function SelectBase({
     const jaSelecionado = selecionados.find((v) => v.id === item.id);
     if (jaSelecionado) {
       flowLog('select.item.remove', { titulo, itemId: item.id, itemLabel: getCandidateName(item) || item.nome || item.sigla || item.id });
-      recordSelectionFeedback(item.id, 'removed', 'list');
       await commitSelection(selecionados.filter((v) => v.id !== item.id));
       return;
     }
@@ -978,12 +958,8 @@ export default function SelectBase({
             )}
 
             {hasCurrentCandidates ? (
-              <AnimatedList
-                className={`candidate-current-list ${isSenateOffice ? 'candidate-current-list--double' : ''}`}
-                items={currentSectionCandidates}
-                getKey={(candidate) => candidate.id}
-                disabled={false}
-                renderItem={(candidate, { isPromoted }) => (
+              <div className={`candidate-current-list ${isSenateOffice ? 'candidate-current-list--double' : ''}`}>
+                {currentSectionCandidates.map((candidate) => (
                   <CandidateCard
                     key={candidate.id}
                     candidate={candidate}
@@ -999,11 +975,9 @@ export default function SelectBase({
                     onLockedMetricClick={handleLockedMetricClick}
                     disabled={salvandoSelecao}
                     onSelect={() => handleSelect(candidate)}
-                    promoted={isPromoted}
-                    selectionFeedback={selectionFeedback?.candidateId === candidate.id && selectionFeedback.source === 'current' ? selectionFeedback.type : ''}
                   />
-                )}
-              />
+                ))}
+              </div>
             ) : (
               <div className={`candidate-current-list ${isSenateOffice ? 'candidate-current-list--double' : ''}`}>
                 <div className="candidate-current-empty">
@@ -1029,12 +1003,8 @@ export default function SelectBase({
           </div>
 
           {dados.length > 0 ? (
-            <AnimatedList
-              className="candidate-card-list nv-card-grid"
-              items={visibleSecondaryCandidates}
-              getKey={(candidate) => candidate.id}
-              disabled={!shouldAnimateCandidateList}
-              renderItem={(candidate, { isPromoted }) => (
+            <div className="candidate-card-list nv-card-grid">
+              {visibleSecondaryCandidates.map((candidate) => (
                 <CandidateCard
                   key={candidate.id}
                   candidate={candidate}
@@ -1048,11 +1018,9 @@ export default function SelectBase({
                   onLockedMetricClick={handleLockedMetricClick}
                   disabled={salvandoSelecao}
                   onSelect={() => handleSelect(candidate)}
-                  promoted={isPromoted}
-                  selectionFeedback={selectionFeedback?.candidateId === candidate.id && selectionFeedback.source === 'list' ? selectionFeedback.type : ''}
                 />
-              )}
-            />
+              ))}
+            </div>
             ) : (
             <div className="no-data">{emptyMessage}</div>
           )}

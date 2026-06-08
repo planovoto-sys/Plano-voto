@@ -294,18 +294,18 @@
   }
 
   .select-base__continue-shell {
-    position: absolute;
-    left: 0;
-    right: 0;
+    position: fixed;
+    left: 50%;
+    right: auto;
     bottom: calc(var(--bottom-nav-height) + var(--app-safe-bottom) + 10px);
     z-index: 90;
-    width: 100%;
+    width: min(100%, var(--app-width, 430px));
     max-width: 100%;
-    transform: none;
+    transform: translate3d(-50%, var(--continue-shell-offset-y), 0);
   }
 
   .select-base__continue-shell.is-hidden {
-    transform: translateY(calc(100% + 10px));
+    --continue-shell-offset-y: calc(100% + 10px);
   }
 
   .select-base-container > .app-page-footer--footer .bottom-step-nav {
@@ -573,6 +573,51 @@
   }
 }
 
+@media (min-width: 744px) and (max-width: 1023px) {
+  .select-base__scroll {
+    padding: clamp(30px, 4.5vw, 46px) var(--screen-gutter) 32px;
+  }
+
+  .candidate-flow,
+  .state-selection-flow {
+    width: min(100%, 900px);
+    margin: 0 auto;
+    gap: clamp(22px, 3.4vw, 30px);
+  }
+
+  .state-card-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+    gap: 14px;
+  }
+
+  .state-card {
+    min-height: 100px;
+    padding: 18px 20px;
+  }
+
+  .candidate-current-list--double {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .candidate-card-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+    gap: 16px;
+    padding-top: 14px;
+  }
+
+  .candidate-list-tools {
+    width: min(100%, 760px);
+  }
+
+  .candidate-current-section .prototype-candidate-card {
+    width: 100%;
+  }
+}
+
 @media (min-width: 768px) {
   .select-base__scroll {
     padding: 34px var(--screen-gutter) calc(106px + env(safe-area-inset-bottom, 0px));
@@ -784,6 +829,75 @@
   .select-base__continue {
     width: 100%;
     max-width: 448px;
+  }
+}
+
+@media (orientation: landscape) and (max-width: 1100px) and (max-height: 480px) {
+  .select-base__scroll {
+    padding: 14px var(--screen-gutter) 18px;
+  }
+
+  .variant-home-state .select-base__scroll {
+    --screen-gutter: clamp(12px, 2.8vw, 22px);
+  }
+
+  .candidate-flow,
+  .state-selection-flow {
+    gap: 14px;
+  }
+
+  .state-selection-intro {
+    display: none;
+  }
+
+  .state-card-list,
+  .candidate-card-list {
+    gap: 10px;
+    padding-top: 8px;
+  }
+
+  .candidate-list-tools {
+    margin-bottom: 4px;
+  }
+
+  .candidate-list-tools__row {
+    gap: 6px;
+  }
+
+  .candidate-search-filter {
+    min-height: 38px;
+    border-radius: 12px;
+  }
+
+  .candidate-filter-tabs__item {
+    min-height: 38px;
+    height: 38px;
+  }
+
+  .candidate-list-section .prototype-candidate-card,
+  .candidate-current-section .prototype-candidate-card {
+    --candidate-card-pad-left: 12px;
+    --candidate-card-pad-right: 12px;
+    --candidate-metric-size: 48px;
+    --candidate-name-size: 15px;
+    --candidate-score-size: 11.5px;
+    --candidate-bar-height: 12px;
+    --candidate-caption-size: 8px;
+    --candidate-badge-size: 8px;
+    --candidate-badge-height: 22px;
+    --candidate-badge-pad-inline: 8px;
+    min-height: 86px;
+    padding-block: 8px;
+  }
+
+  .select-base__continue-shell {
+    bottom: calc(var(--bottom-nav-height) + var(--app-safe-bottom) + 6px);
+  }
+
+  .select-base__continue {
+    min-height: 48px;
+    max-width: 420px;
+    padding: 12px 22px;
   }
 }
 
@@ -1293,4 +1407,31 @@
 .candidate-list-section .prototype-candidate-card.candidate-card--visitor,
 .candidate-current-section .prototype-candidate-card.candidate-card--visitor {
   grid-template-columns: minmax(0, 1fr);
+}
+
+.candidate-card-list .prototype-candidate-card,
+.candidate-card-list .prototype-candidate-card:hover,
+.candidate-card-list .prototype-candidate-card:active,
+.candidate-card-list .prototype-candidate-card.is-selected,
+.candidate-card-list .prototype-candidate-card.is-promoted,
+.candidate-card-list .prototype-candidate-card.is-selection-added,
+.candidate-card-list .prototype-candidate-card.is-selection-removed {
+  animation: none;
+  transform: none;
+  transition: none;
+}
+
+.candidate-card-list .candidate-thermometer__fill,
+.candidate-card-list .candidate-thermometer__fill.animate-pulse,
+.candidate-card-list .candidate-thermometer--featured .candidate-thermometer__fill {
+  animation: none;
+  transition: none;
+  will-change: auto;
+}
+
+.candidate-card-list .candidate-card__selection-action,
+.candidate-card-list .candidate-card__expand-indicator {
+  animation: none;
+  transition: none;
+  will-change: auto;
 }

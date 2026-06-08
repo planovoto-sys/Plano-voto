@@ -76,7 +76,7 @@ function ViabilityMeter({ value, tone, featured = false, locked = false, label =
 
 const getCandidateNumber = (candidate = {}) => {
   const value = candidate.Numero ?? candidate.numero ?? candidate.number ?? '';
-  return String(value || '').trim();
+  return String(value ?? '').trim();
 };
 
 const getSingleLineSize = (value, sizes) => {
@@ -171,6 +171,7 @@ export default function CandidateCard({
   lockPersonalizedFields = false,
   onLockedMetricClick,
   showNumberAbove = false,
+  numberFallback = '',
   displayMode = 'detailed',
   interactionMode = 'select',
   expanded = false,
@@ -184,6 +185,7 @@ export default function CandidateCard({
   const name = getCandidateName(candidate);
   const party = getCandidateParty(candidate);
   const number = getCandidateNumber(candidate);
+  const displayNumber = number || String(numberFallback || '').trim();
   const candidateScore = getCandidateDisplayScore(candidate);
   const partyScore = getCandidatePartyScore(candidate);
   const chance = getCandidateChance(candidate);
@@ -283,8 +285,8 @@ export default function CandidateCard({
     <span className="candidate-card__identity">
       <span className="candidate-card__summary-row">
         <span className="candidate-card__identity-copy">
-          {showNumberAbove && number && (
-            <span className="candidate-card__number">{number}</span>
+          {showNumberAbove && displayNumber && (
+            <span className="candidate-card__number">{displayNumber}</span>
           )}
           <span className="candidate-card__name-row">
             <span className="candidate-card__text-line candidate-card__text-line--name">

@@ -2,6 +2,14 @@
 
 Todas as mudanças relevantes deste projeto serão documentadas aqui.
 
+## [1.5.2] - 2026-06-08
+
+### Ajustado
+- Refina a experiência mobile de NossoVoto com novo resumo visual, cards compactos e número de candidato com fallback `000000`.
+- Ajusta responsividade para celulares, tablets e telas em paisagem, reduzindo cortes, exageros de escala e rolagens indesejadas.
+- Remove efeitos de reordenação e animações da lista de candidatos para deixar a rolagem mais estável.
+- Corrige espaçamentos dos chips de nota, comportamento do botão de continuar/compartilhar e proporção do ícone na navegação inferior.
+
 ## [1.6.1] - 2026-05-29
 
 ### Adicionado

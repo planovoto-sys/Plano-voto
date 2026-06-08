@@ -1,11 +1,13 @@
 .select-base__continue-shell {
-  position: absolute;
-  left: 0;
-  right: 0;
+  --continue-shell-offset-y: 0;
+  position: fixed;
+  left: 50%;
+  right: auto;
   bottom: calc(var(--bottom-nav-height) + var(--app-safe-bottom) + 10px);
   z-index: 36;
   display: flex;
   justify-content: center;
+  width: min(100%, var(--app-width, 430px));
   max-height: none;
   padding: 0 var(--screen-gutter);
   border-top: 0;
@@ -15,7 +17,7 @@
   overflow: hidden;
   opacity: 1;
   pointer-events: none;
-  transform: translateY(0);
+  transform: translate3d(-50%, var(--continue-shell-offset-y), 0);
   will-change: transform;
   transition: transform 420ms var(--ease-emphasized, cubic-bezier(.2, 0, 0, 1.15));
 }
@@ -37,8 +39,8 @@
 }
 
 .select-base__continue-shell.is-hidden {
+  --continue-shell-offset-y: calc(100% + 10px);
   pointer-events: none;
-  transform: translateY(calc(100% + 10px));
 }
 
 .select-base__continue-shell.is-hidden > * {

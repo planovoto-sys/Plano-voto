@@ -19,6 +19,7 @@
   --metric-feature-color: #ff914d;
   --candidate-card-bg: #ffffff;
   --candidate-card-fg: #69746f;
+  --candidate-tag-bg: color-mix(in srgb, var(--candidate-card-bg) 78%, currentColor 12%);
   --candidate-assessment-bg: color-mix(in srgb, currentColor 16%, white);
   --candidate-viability-fill: currentColor;
   --candidate-viability-track: rgba(169, 169, 169, 0.28);
@@ -108,6 +109,7 @@
   --candidate-bar-border: #b7dcae;
   --assessment-icon-bg: #4d9849;
   --assessment-icon-fg: #edf7e9;
+  --candidate-tag-bg: #dff2d9;
 }
 
 .candidate-card--neutral {
@@ -121,6 +123,7 @@
   --candidate-bar-border: #cfcfcf;
   --assessment-icon-bg: #b4b4b4;
   --assessment-icon-fg: #eaeaea;
+  --candidate-tag-bg: #dedede;
 }
 
 .candidate-card--danger {
@@ -136,6 +139,7 @@
   --assessment-icon-fg: #ffe3e5;
   --candidate-card-border: #ffb7bd;
   --candidate-card-line: #ffcfd2;
+  --candidate-tag-bg: #ffd4d8;
 }
 
 .candidate-card--new {
@@ -149,6 +153,7 @@
   border: 0;
   background: #f4f5f3;
   color: var(--text-main);
+  --candidate-tag-bg: #e8ebe7;
   box-shadow: none;
 }
 
@@ -181,6 +186,7 @@
   --assessment-icon-bg: transparent;
   --assessment-icon-fg: #f05a24;
   --metric-feature-color: #f05a24;
+  --candidate-tag-bg: #ffd8ad;
 }
 
 .prototype-candidate-card.is-viability-complete {
@@ -194,6 +200,7 @@
   --candidate-bar-border: #cfcfcf;
   --assessment-icon-bg: #b4b4b4;
   --assessment-icon-fg: #eaeaea;
+  --candidate-tag-bg: #dedede;
 }
 
 .prototype-candidate-card.is-compact {
@@ -322,9 +329,9 @@
   flex: 0 0 auto;
   min-width: 34px;
   height: 20px;
-  border: 1px solid color-mix(in srgb, currentColor 24%, transparent);
+  border: 0;
   border-radius: 999px;
-  background: color-mix(in srgb, currentColor 15%, white);
+  background: var(--candidate-tag-bg);
   color: currentColor;
   display: inline-flex;
   align-items: center;
@@ -687,9 +694,9 @@
   min-width: 0;
   overflow: hidden;
   height: var(--candidate-badge-height, 30px);
-  border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+  border: 0;
   border-radius: 999px;
-  background: color-mix(in srgb, currentColor 14%, white);
+  background: var(--candidate-tag-bg);
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
   display: inline-flex;
