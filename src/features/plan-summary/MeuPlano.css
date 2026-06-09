@@ -259,8 +259,8 @@
   background: var(--surface);
   display: grid;
   gap: 0;
-  padding: clamp(14px, 4vw, 20px);
-  box-shadow: 0 14px 34px rgba(17, 17, 17, 0.08);
+  padding: clamp(9px, 2.8vw, 14px);
+  box-shadow: 0 10px 24px rgba(17, 17, 17, 0.07);
 }
 
 .my-plan-overview__metrics {
@@ -272,12 +272,12 @@
 
 .my-plan-overview__metric {
   min-width: 0;
-  min-height: 82px;
+  min-height: 66px;
   display: grid;
   align-content: center;
   justify-items: center;
-  gap: 5px;
-  padding: 0 clamp(6px, 2.8vw, 16px);
+  gap: 3px;
+  padding: 0 clamp(4px, 2.2vw, 12px);
   text-align: center;
 }
 
@@ -291,7 +291,7 @@
   overflow: hidden;
   color: var(--text-strong);
   font-family: var(--font-display);
-  font-size: clamp(34px, 10.2vw, 52px);
+  font-size: clamp(29px, 8.8vw, 44px);
   font-weight: 850;
   line-height: 1;
   letter-spacing: 0;
@@ -307,7 +307,7 @@
   max-width: 100%;
   overflow: hidden;
   color: var(--muted);
-  font-size: clamp(10px, 2.8vw, 13px);
+  font-size: clamp(9px, 2.4vw, 12px);
   font-weight: 650;
   line-height: 1.15;
   text-overflow: ellipsis;
@@ -324,9 +324,9 @@
 
 .my-plan-overview__star {
   position: relative;
-  width: 14px;
-  height: 14px;
-  flex: 0 0 14px;
+  width: 12px;
+  height: 12px;
+  flex: 0 0 12px;
   color: var(--overview-green);
 }
 
@@ -354,22 +354,22 @@
 
 .my-plan-overview__gauge {
   position: relative;
-  width: 84px;
+  width: 72px;
   max-width: 100%;
-  height: 62px;
+  height: 50px;
   display: grid;
   align-content: end;
   justify-items: center;
-  padding-top: 16px;
+  padding-top: 12px;
 }
 
 .my-plan-overview__gauge-arc {
   position: absolute;
-  top: 4px;
+  top: 3px;
   left: 50%;
-  width: 80px;
-  height: 40px;
-  border-radius: 80px 80px 0 0;
+  width: 68px;
+  height: 34px;
+  border-radius: 68px 68px 0 0;
   background:
     conic-gradient(
       from 270deg at 50% 100%,
@@ -378,8 +378,8 @@
       transparent 180deg
     );
   transform: translateX(-50%);
-  mask: radial-gradient(farthest-side at 50% 100%, transparent calc(100% - 10px), #000 calc(100% - 9px));
-  -webkit-mask: radial-gradient(farthest-side at 50% 100%, transparent calc(100% - 10px), #000 calc(100% - 9px));
+  mask: radial-gradient(farthest-side at 50% 100%, transparent calc(100% - 9px), #000 calc(100% - 8px));
+  -webkit-mask: radial-gradient(farthest-side at 50% 100%, transparent calc(100% - 9px), #000 calc(100% - 8px));
 }
 
 .my-plan-overview__gauge strong {
@@ -387,7 +387,7 @@
   z-index: 1;
   color: var(--text-strong);
   font-family: var(--font-display);
-  font-size: clamp(16px, 4.7vw, 22px);
+  font-size: clamp(14px, 4vw, 20px);
   font-weight: 800;
   line-height: 1;
   transform: translateY(1px);
@@ -397,70 +397,9 @@
   position: relative;
   z-index: 1;
   color: var(--overview-green);
-  font-size: clamp(11px, 3vw, 14px);
+  font-size: clamp(9px, 2.6vw, 12px);
   font-weight: 800;
   line-height: 1.1;
-}
-
-.my-plan-overview__insight {
-  min-width: 0;
-  border-top: 1px solid var(--overview-line);
-  display: grid;
-  grid-template-columns: 42px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 12px;
-  margin-top: 14px;
-  padding-top: 12px;
-}
-
-.my-plan-overview__insight-icon {
-  width: 42px;
-  height: 42px;
-  border-radius: 10px;
-  background: var(--overview-green-soft);
-  color: var(--overview-green);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.my-plan-overview__insight-icon svg {
-  width: 22px;
-  height: 22px;
-  stroke-width: 2.6;
-}
-
-.my-plan-overview__insight p {
-  min-width: 0;
-  margin: 0;
-  color: var(--text-strong);
-  font-size: clamp(13px, 3.4vw, 16px);
-  font-weight: 650;
-  line-height: 1.28;
-}
-
-.my-plan-overview__suggestions {
-  border: 0;
-  background: transparent;
-  color: var(--overview-green);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  padding: 8px 0 8px 8px;
-  font-family: var(--font-family);
-  font-size: clamp(12px, 3.2vw, 14px);
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: 0;
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.my-plan-overview__suggestions svg {
-  width: 17px;
-  height: 17px;
-  stroke-width: 2.7;
 }
 
 .my-plan-mobile-handoff {
@@ -474,7 +413,7 @@
   gap: 6px;
   min-width: 0;
   min-height: 0;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .my-plan-choice-section {
@@ -482,7 +421,7 @@
   gap: 2px;
   min-width: 0;
   min-height: 0;
-  overflow: visible;
+  overflow: hidden;
   padding-top: 0;
 }
 
@@ -506,7 +445,7 @@
 .my-plan-choice-list {
   min-width: 0;
   min-height: 0;
-  overflow: visible;
+  overflow: hidden;
   gap: 6px;
   padding-top: 0;
 }
@@ -526,10 +465,10 @@
   --candidate-status-icon-size: 16px;
   --candidate-fire-icon-width: 13px;
   --candidate-fire-icon-height: 17px;
-  min-height: 86px;
+  min-height: 92px;
   border-radius: 12px;
   gap: 3px;
-  padding-block: 8px;
+  padding-block: 8px 11px;
 }
 
 .my-plan-choice-list .candidate-card__identity-copy {
@@ -564,7 +503,8 @@
 }
 
 .my-plan-choice-list .candidate-thermometer__caption {
-  margin-top: 7px;
+  margin-top: 6px;
+  min-height: var(--candidate-badge-height, 22px);
 }
 
 .my-plan-empty-choice {
@@ -620,7 +560,7 @@
 
 .my-plan-actions {
   position: static;
-  z-index: 20;
+  z-index: auto;
   display: grid;
   gap: 0;
   min-height: 0;
@@ -724,109 +664,105 @@
   background: var(--action, var(--orange));
   color: var(--action-foreground, var(--text));
   padding: 14px 24px;
-  box-shadow: 0 6px 14px rgba(255, 152, 0, 0.18);
+  box-shadow: none;
   font-family: var(--font-family);
   font-size: 16px;
   font-weight: 600;
   line-height: 1.25;
   letter-spacing: 0;
   text-transform: none;
+  transition: none;
+}
+
+.my-plan-share-panel .share-choice-panel__button:not(:disabled):hover,
+.my-plan-share-panel .share-choice-panel__button:not(:disabled):active {
+  box-shadow: none;
+  transform: none;
 }
 
 .my-plan-share-panel .share-choice-panel__button svg {
   display: none;
 }
 
-@media (max-width: 380px) {
+@media (max-width: 399px) {
   .my-plan-header {
     grid-template-columns: 40px minmax(0, 1fr) 40px;
-    padding-inline: 18px;
+    min-height: 58px;
+    padding-inline: 16px;
+  }
+
+  .my-plan-header__profile,
+  .my-plan-header__logout,
+  .my-plan-header__profile-wrap {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+  }
+
+  .my-plan-header__profile-avatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  .my-plan-scroll {
+    padding: 5px 10px 7px;
+  }
+
+  .my-plan-shell {
+    gap: 5px;
   }
 
   .my-plan-overview {
-    border-radius: 14px;
-    padding: 8px 10px 9px;
+    border-radius: 13px;
+    padding: 6px 8px 7px;
+    box-shadow: 0 8px 22px rgba(17, 17, 17, 0.06);
   }
 
   .my-plan-overview__metric {
-    min-height: 54px;
-    gap: 3px;
-    padding-inline: 4px;
+    min-height: 44px;
+    gap: 2px;
+    padding-inline: 3px;
   }
 
   .my-plan-overview__state-code,
   .my-plan-overview__score {
-    font-size: 29px;
+    font-size: 25px;
   }
 
   .my-plan-overview__metric small {
-    font-size: 9px;
-    line-height: 1.05;
+    font-size: 8.5px;
+    line-height: 1;
   }
 
   .my-plan-overview__star {
-    width: 10px;
-    height: 10px;
-    flex-basis: 10px;
+    width: 9px;
+    height: 9px;
+    flex-basis: 9px;
   }
 
   .my-plan-overview__gauge {
-    width: 62px;
-    height: 42px;
-    padding-top: 10px;
+    width: 52px;
+    height: 34px;
+    padding-top: 8px;
   }
 
   .my-plan-overview__gauge-arc {
-    width: 60px;
-    height: 30px;
-    border-radius: 60px 60px 0 0;
+    top: 3px;
+    width: 50px;
+    height: 25px;
+    border-radius: 50px 50px 0 0;
+    mask: radial-gradient(farthest-side at 50% 100%, transparent calc(100% - 7px), #000 calc(100% - 6px));
+    -webkit-mask: radial-gradient(farthest-side at 50% 100%, transparent calc(100% - 7px), #000 calc(100% - 6px));
   }
 
   .my-plan-overview__gauge strong {
-    font-size: 15.5px;
+    font-size: 13px;
     transform: translateY(1px);
   }
 
   .my-plan-overview__gauge small {
-    font-size: 8.5px;
-  }
-
-  .my-plan-overview__insight {
-    grid-template-columns: 28px minmax(0, 1fr) auto;
-    gap: 7px;
-    margin-top: 8px;
-    padding-top: 8px;
-  }
-
-  .my-plan-overview__insight-icon {
-    width: 28px;
-    height: 28px;
-    border-radius: 7px;
-  }
-
-  .my-plan-overview__insight-icon svg {
-    width: 16px;
-    height: 16px;
-  }
-
-  .my-plan-overview__insight p {
-    font-size: 10.8px;
-    font-weight: 650;
-    line-height: 1.18;
-  }
-
-  .my-plan-overview__suggestions {
-    grid-column: auto;
-    justify-self: end;
-    gap: 4px;
-    padding: 3px 0 3px 4px;
-    font-size: 11px;
-    font-weight: 850;
-  }
-
-  .my-plan-overview__suggestions svg {
-    width: 13px;
-    height: 13px;
+    font-size: 7.5px;
   }
 
   .my-plan-choices {
@@ -851,6 +787,126 @@
 
   .my-plan-empty-choice {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 743px) and (max-height: 780px) {
+  .my-plan-shell {
+    gap: 4px;
+  }
+
+  .my-plan-overview {
+    padding: 5px 8px 6px;
+  }
+
+  .my-plan-overview__metric {
+    min-height: 39px;
+  }
+
+  .my-plan-overview__state-code,
+  .my-plan-overview__score {
+    font-size: 24px;
+  }
+
+  .my-plan-overview__gauge {
+    width: 50px;
+    height: 32px;
+    padding-top: 7px;
+  }
+
+  .my-plan-overview__gauge-arc {
+    width: 48px;
+    height: 24px;
+    border-radius: 48px 48px 0 0;
+    mask: radial-gradient(farthest-side at 50% 100%, transparent calc(100% - 7px), #000 calc(100% - 6px));
+    -webkit-mask: radial-gradient(farthest-side at 50% 100%, transparent calc(100% - 7px), #000 calc(100% - 6px));
+  }
+
+  .my-plan-overview__gauge strong {
+    font-size: 12.5px;
+  }
+
+  .my-plan-overview__gauge small {
+    font-size: 7.5px;
+  }
+
+  .my-plan-choices {
+    gap: 4px;
+  }
+
+  .my-plan-choice-section + .my-plan-choice-section {
+    padding-top: 4px;
+  }
+
+  .my-plan-choice-section .prototype-section-heading__copy {
+    margin-bottom: 4px;
+  }
+
+  .my-plan-choice-list {
+    gap: 5px;
+  }
+
+  .my-plan-choice-list .prototype-candidate-card {
+    --candidate-card-pad-left: 12px;
+    --candidate-card-pad-right: 12px;
+    --candidate-metric-size: 38px;
+    --candidate-score-size: 10.2px;
+    --candidate-bar-height: 8px;
+    --candidate-caption-size: 7px;
+    --candidate-badge-size: 7px;
+    --candidate-badge-height: 16px;
+    --candidate-badge-pad-inline: 7px;
+    --candidate-status-icon-box: 15px;
+    --candidate-status-icon-size: 14px;
+    min-height: 78px;
+    border-radius: 11px;
+    gap: 1px;
+    padding-block: 5px 7px;
+  }
+
+  .my-plan-choice-list .candidate-card__number {
+    font-size: 10.5px;
+  }
+
+  .my-plan-choice-list .candidate-card__identity-copy {
+    gap: 0;
+  }
+
+  .my-plan-choice-list .candidate-card__identity small {
+    font-size: 8.5px;
+    line-height: 1;
+  }
+
+  .my-plan-choice-list .candidate-card__score-chip {
+    min-width: 27px;
+    height: 15px;
+    padding-inline: 5px;
+    font-size: 8px;
+  }
+
+  .my-plan-choice-list .candidate-card__score-chip--party {
+    min-width: 26px;
+    height: 14px;
+    font-size: 7.6px;
+  }
+
+  .my-plan-choice-list .candidate-thermometer {
+    margin-top: 4px;
+  }
+
+  .my-plan-choice-list .candidate-thermometer__caption {
+    min-height: 16px;
+    margin-top: 3px;
+  }
+
+  .my-plan-actions {
+    align-self: end;
+    padding-top: 2px;
+  }
+
+  .my-plan-share-panel .share-choice-panel__button,
+  .my-plan-continue-button {
+    min-height: 52px;
   }
 }
 
@@ -952,17 +1008,6 @@
   .my-plan-overview__gauge-arc {
     width: 118px;
     height: 59px;
-  }
-
-  .my-plan-overview__insight {
-    grid-template-columns: 48px minmax(0, 1fr) auto;
-    margin-top: 22px;
-    padding-top: 18px;
-  }
-
-  .my-plan-overview__insight-icon {
-    width: 48px;
-    height: 48px;
   }
 
   .my-plan-choices {
@@ -1289,18 +1334,6 @@
 
   .my-plan-overview__gauge strong {
     font-size: 15px;
-  }
-
-  .my-plan-overview__insight {
-    grid-template-columns: 30px minmax(0, 1fr) auto;
-    gap: 8px;
-    margin-top: 8px;
-    padding-top: 8px;
-  }
-
-  .my-plan-overview__insight-icon {
-    width: 30px;
-    height: 30px;
   }
 
   .my-plan-choices {

@@ -2,6 +2,14 @@
 
 Todas as mudanças relevantes deste projeto serão documentadas aqui.
 
+## [1.5.3] - 2026-06-09
+
+### Corrigido
+- Compacta o resumo do Meu Plano em telas estreitas/baixas, removendo o bloco de insight para liberar espaço útil.
+- Corrige sobreposição dos cards de candidatos com o botão Compartilhar em alturas reduzidas.
+- Remove o efeito flutuante do botão Compartilhar no Meu Plano.
+- Ajusta o respiro das tags de viabilidade dos cards para não encostarem na borda.
+
 ## [1.5.2] - 2026-06-08
 
 ### Ajustado

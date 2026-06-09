@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
-import { ArrowRight, LogIn, LogOut, Star, TrendingUp } from 'lucide-react';
+import { LogIn, LogOut, Star } from 'lucide-react';
 import { BALLOT_ROUTES } from '@/shared/constants/ballot';
 import { AVERAGE_ELECTED_VOTES_BY_OFFICE } from '@/shared/constants/candidates';
 import { STATE_NAMES } from '@/shared/constants/states';
@@ -118,14 +118,6 @@ const getViabilityLabel = (chance) => {
   if (chance >= 60) return 'Boa';
   if (chance >= 35) return 'Regular';
   return 'Baixa';
-};
-
-const getPlanInsightText = ({ hasCompletePlan, averageScore, averageChance }) => {
-  if (!hasCompletePlan) return 'Escolha seus candidatos para continuar.';
-  if (averageScore >= 7 && averageChance >= 60) return 'Seu plano está equilibrado, mas ainda pode melhorar.';
-  if (averageScore >= 7) return 'Seu plano tem bons nomes, mas pode ganhar viabilidade.';
-  if (averageChance >= 60) return 'Seu plano tem boa viabilidade, mas pode melhorar na nota geral.';
-  return 'Revise suas escolhas para fortalecer seu plano de voto.';
 };
 
 function ScoreStars({ score }) {
@@ -453,20 +445,6 @@ export default function MeuPlano() {
               </article>
             </div>
 
-            <div className="my-plan-overview__insight">
-              <span className="my-plan-overview__insight-icon" aria-hidden="true">
-                <TrendingUp />
-              </span>
-              <p>{getPlanInsightText({ hasCompletePlan, averageScore, averageChance })}</p>
-              <button
-                className="my-plan-overview__suggestions nv-touch"
-                type="button"
-                onClick={hasCompletePlan ? () => handleEdit(BALLOT_ROUTES.deputadoFederal) : handleContinuePlan}
-              >
-                <span>Ver sugestões</span>
-                <ArrowRight aria-hidden="true" />
-              </button>
-            </div>
           </section>
 
           <section className="my-plan-choices" aria-label="Candidatos escolhidos">
