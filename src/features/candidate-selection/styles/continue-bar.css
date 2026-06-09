@@ -1,14 +1,16 @@
 .select-base__continue-shell {
   --continue-shell-offset-y: 0;
   position: fixed;
-  left: 50%;
-  right: auto;
+  left: 0;
+  right: 0;
   bottom: calc(var(--bottom-nav-height) + var(--app-safe-bottom) + 10px);
   z-index: 36;
   display: flex;
   justify-content: center;
-  width: min(100%, var(--app-width, 430px));
+  width: min(100vw, var(--app-width, 430px));
+  max-width: 100vw;
   max-height: none;
+  margin: 0 auto;
   padding: 0 var(--screen-gutter);
   border-top: 0;
   background: transparent;
@@ -17,7 +19,7 @@
   overflow: hidden;
   opacity: 1;
   pointer-events: none;
-  transform: translate3d(-50%, var(--continue-shell-offset-y), 0);
+  transform: translate3d(0, var(--continue-shell-offset-y), 0);
   will-change: transform;
   transition: transform 420ms var(--ease-emphasized, cubic-bezier(.2, 0, 0, 1.15));
 }

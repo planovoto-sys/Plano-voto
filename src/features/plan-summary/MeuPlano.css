@@ -259,8 +259,8 @@
   background: var(--surface);
   display: grid;
   gap: 0;
-  padding: clamp(9px, 2.8vw, 14px);
-  box-shadow: 0 10px 24px rgba(17, 17, 17, 0.07);
+  padding: clamp(13px, 3.6vw, 18px);
+  box-shadow: 0 11px 26px rgba(17, 17, 17, 0.07);
 }
 
 .my-plan-overview__metrics {
@@ -272,7 +272,7 @@
 
 .my-plan-overview__metric {
   min-width: 0;
-  min-height: 66px;
+  min-height: 82px;
   display: grid;
   align-content: center;
   justify-items: center;
@@ -291,7 +291,7 @@
   overflow: hidden;
   color: var(--text-strong);
   font-family: var(--font-display);
-  font-size: clamp(29px, 8.8vw, 44px);
+  font-size: clamp(36px, 10vw, 52px);
   font-weight: 850;
   line-height: 1;
   letter-spacing: 0;
@@ -324,9 +324,9 @@
 
 .my-plan-overview__star {
   position: relative;
-  width: 12px;
-  height: 12px;
-  flex: 0 0 12px;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
   color: var(--overview-green);
 }
 
@@ -354,9 +354,9 @@
 
 .my-plan-overview__gauge {
   position: relative;
-  width: 72px;
+  width: 86px;
   max-width: 100%;
-  height: 50px;
+  height: 61px;
   display: grid;
   align-content: end;
   justify-items: center;
@@ -367,9 +367,9 @@
   position: absolute;
   top: 3px;
   left: 50%;
-  width: 68px;
-  height: 34px;
-  border-radius: 68px 68px 0 0;
+  width: 82px;
+  height: 41px;
+  border-radius: 82px 82px 0 0;
   background:
     conic-gradient(
       from 270deg at 50% 100%,
@@ -387,7 +387,7 @@
   z-index: 1;
   color: var(--text-strong);
   font-family: var(--font-display);
-  font-size: clamp(14px, 4vw, 20px);
+  font-size: clamp(17px, 4.8vw, 22px);
   font-weight: 800;
   line-height: 1;
   transform: translateY(1px);
@@ -397,7 +397,7 @@
   position: relative;
   z-index: 1;
   color: var(--overview-green);
-  font-size: clamp(9px, 2.6vw, 12px);
+  font-size: clamp(10.5px, 2.8vw, 13px);
   font-weight: 800;
   line-height: 1.1;
 }
@@ -715,54 +715,54 @@
 
   .my-plan-overview {
     border-radius: 13px;
-    padding: 6px 8px 7px;
+    padding: 12px 14px 13px;
     box-shadow: 0 8px 22px rgba(17, 17, 17, 0.06);
   }
 
   .my-plan-overview__metric {
-    min-height: 44px;
-    gap: 2px;
-    padding-inline: 3px;
+    min-height: 70px;
+    gap: 3px;
+    padding-inline: 4px;
   }
 
   .my-plan-overview__state-code,
   .my-plan-overview__score {
-    font-size: 25px;
+    font-size: 37px;
   }
 
   .my-plan-overview__metric small {
-    font-size: 8.5px;
-    line-height: 1;
+    font-size: 10.5px;
+    line-height: 1.05;
   }
 
   .my-plan-overview__star {
-    width: 9px;
-    height: 9px;
-    flex-basis: 9px;
+    width: 12px;
+    height: 12px;
+    flex-basis: 12px;
   }
 
   .my-plan-overview__gauge {
-    width: 52px;
-    height: 34px;
-    padding-top: 8px;
+    width: 74px;
+    height: 51px;
+    padding-top: 10px;
   }
 
   .my-plan-overview__gauge-arc {
     top: 3px;
-    width: 50px;
-    height: 25px;
-    border-radius: 50px 50px 0 0;
-    mask: radial-gradient(farthest-side at 50% 100%, transparent calc(100% - 7px), #000 calc(100% - 6px));
-    -webkit-mask: radial-gradient(farthest-side at 50% 100%, transparent calc(100% - 7px), #000 calc(100% - 6px));
+    width: 72px;
+    height: 36px;
+    border-radius: 72px 72px 0 0;
+    mask: radial-gradient(farthest-side at 50% 100%, transparent calc(100% - 8px), #000 calc(100% - 7px));
+    -webkit-mask: radial-gradient(farthest-side at 50% 100%, transparent calc(100% - 8px), #000 calc(100% - 7px));
   }
 
   .my-plan-overview__gauge strong {
-    font-size: 13px;
+    font-size: 17px;
     transform: translateY(1px);
   }
 
   .my-plan-overview__gauge small {
-    font-size: 7.5px;
+    font-size: 9.5px;
   }
 
   .my-plan-choices {
@@ -796,38 +796,38 @@
   }
 
   .my-plan-overview {
-    padding: 5px 8px 6px;
+    padding: 10px 12px 11px;
   }
 
   .my-plan-overview__metric {
-    min-height: 39px;
+    min-height: 66px;
   }
 
   .my-plan-overview__state-code,
   .my-plan-overview__score {
-    font-size: 24px;
+    font-size: 35px;
   }
 
   .my-plan-overview__gauge {
-    width: 50px;
-    height: 32px;
-    padding-top: 7px;
+    width: 70px;
+    height: 49px;
+    padding-top: 9px;
   }
 
   .my-plan-overview__gauge-arc {
-    width: 48px;
-    height: 24px;
-    border-radius: 48px 48px 0 0;
-    mask: radial-gradient(farthest-side at 50% 100%, transparent calc(100% - 7px), #000 calc(100% - 6px));
-    -webkit-mask: radial-gradient(farthest-side at 50% 100%, transparent calc(100% - 7px), #000 calc(100% - 6px));
+    width: 68px;
+    height: 34px;
+    border-radius: 68px 68px 0 0;
+    mask: radial-gradient(farthest-side at 50% 100%, transparent calc(100% - 8px), #000 calc(100% - 7px));
+    -webkit-mask: radial-gradient(farthest-side at 50% 100%, transparent calc(100% - 8px), #000 calc(100% - 7px));
   }
 
   .my-plan-overview__gauge strong {
-    font-size: 12.5px;
+    font-size: 16.8px;
   }
 
   .my-plan-overview__gauge small {
-    font-size: 7.5px;
+    font-size: 9.4px;
   }
 
   .my-plan-choices {
