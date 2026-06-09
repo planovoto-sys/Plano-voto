@@ -9,7 +9,7 @@
 .bottom-step-nav {
   --step-nav-muted: rgba(17, 17, 17, 0.62);
   --step-nav-active-bg: transparent;
-  --step-nav-active-color: var(--ink);
+  --step-nav-active-color: var(--orange);
   --step-nav-accent: var(--orange);
   --step-nav-icon-size: 24px;
   --step-nav-state-icon-width: 20px;
@@ -153,8 +153,12 @@
 
 .bottom-step-nav__item.is-active .bottom-step-nav__icon {
   background: transparent;
-  color: currentColor;
+  color: var(--step-nav-active-color);
   box-shadow: none;
+}
+
+.bottom-step-nav__item.is-active .bottom-step-nav__label {
+  color: var(--step-nav-active-color);
 }
 
 .bottom-step-nav__item.is-future .bottom-step-nav__icon {
