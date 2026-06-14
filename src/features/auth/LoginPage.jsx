@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { signInWithPopup } from 'firebase/auth';
 import { useLocation, useNavigate } from 'react-router-dom';
 import FlowToast from '@/shared/ui/feedback/FlowToast';
-import { ChanceFlame } from '@/shared/icons/ChanceFlame';
+import LogoCompleta from '@/shared/ui/brand/LogoCompleta';
 import { useUser } from '@/shared/hooks/useUser';
 import { auth, firebaseReady, googleProvider } from '@/shared/firebase/firebase';
 import { mergeVisitorBallotDraftIntoAccount } from '@/features/ballot';
@@ -65,10 +65,7 @@ function Login() {
     <div className="login-wrapper nv-screen">
       <FlowToast key={loginNotice?.id || 'login-toast'} message={loginNotice?.message || ''} />
       <main className="login-main nv-container-narrow">
-        <h1 className="login-brand" aria-label="nossovoto.org">
-          <ChanceFlame className="login-brand__flame" size={62} />
-          <span>nossovoto<em>.org</em></span>
-        </h1>
+        <LogoCompleta as="h1" />
 
         <div className="video-card">
           <button className="play-button nv-touch" type="button" aria-label="Reproduzir vídeo" onClick={() => showLoginNotice('Vídeo em breve.')}>
@@ -78,7 +75,7 @@ function Login() {
 
         <button className="btn-comecar nv-touch" type="button" onClick={handleGoogleLogin} disabled={loginSubmitting}>
           <strong>{loginSubmitting ? 'ENTRANDO' : 'COMEÇAR'}</strong>
-          <span>Entre para montar seu plano</span>
+          <span>Assista ao vídeo antes de começar</span>
         </button>
       </main>
     </div>

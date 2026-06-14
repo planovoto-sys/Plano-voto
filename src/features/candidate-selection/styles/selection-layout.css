@@ -89,22 +89,6 @@
   color: var(--text-main);
 }
 
-.app-header-icon-action.state-detail-info-toggle {
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  transition:
-    background-color 160ms ease,
-    border-color 160ms ease,
-    color 160ms ease,
-    transform 160ms ease;
-}
-
-.app-header-state-info.is-open .state-detail-info-toggle {
-  background: transparent;
-  color: var(--orange-dark);
-}
-
 .app-header-mode-menu {
   position: absolute;
   top: calc(100% + 8px);
@@ -175,120 +159,6 @@
 .app-header-mode-menu__check .app-icon {
   width: 18px;
   height: 18px;
-}
-
-.app-header-state-info-card {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  z-index: 45;
-  width: min(318px, calc(100vw - 32px));
-  border: 1px solid rgba(17, 17, 17, 0.08);
-  border-radius: 22px;
-  background: var(--surface);
-  color: var(--text-main);
-  box-shadow: 0 20px 44px rgba(17, 17, 17, 0.14);
-  padding: 16px;
-  text-align: left;
-}
-
-.state-info-card__header {
-  display: grid;
-  gap: 6px;
-  margin-bottom: 14px;
-}
-
-.state-info-card__header > span {
-  color: var(--orange-dark);
-  font-family: var(--font-family);
-  font-size: 11px;
-  font-weight: 900;
-  line-height: 1;
-  text-transform: uppercase;
-}
-
-.state-info-card__header strong {
-  color: var(--text-strong);
-  font-family: var(--font-display);
-  font-size: 20px;
-  font-weight: 900;
-  line-height: 1.05;
-}
-
-.state-info-card__header p,
-.state-info-card__note,
-.state-info-card__status {
-  margin: 0;
-  color: var(--text-muted);
-  font-family: var(--font-family);
-  font-size: 12px;
-  font-weight: 650;
-  line-height: 1.4;
-}
-
-.state-info-card__metrics {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin: 0;
-}
-
-.state-info-card__metric {
-  min-width: 0;
-  min-height: 74px;
-  border: 1px solid rgba(17, 17, 17, 0.08);
-  border-radius: 16px;
-  background: color-mix(in srgb, var(--surface) 88%, var(--orange-soft));
-  display: grid;
-  align-content: center;
-  gap: 7px;
-  padding: 11px 12px;
-}
-
-.state-info-card__metric--wide {
-  grid-column: 1 / -1;
-  min-height: 68px;
-}
-
-.state-info-card__metric dt {
-  color: var(--text-muted);
-  font-size: 11px;
-  font-weight: 850;
-  line-height: 1.1;
-}
-
-.state-info-card__metric dd {
-  margin: 0;
-  min-width: 0;
-  color: var(--text-strong);
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 900;
-  line-height: 1;
-  overflow-wrap: anywhere;
-}
-
-.state-info-card__note {
-  margin-top: 12px;
-}
-
-.state-info-card__status {
-  margin-top: 10px;
-  color: #b24511;
-}
-
-.state-info-card__guide {
-  width: 100%;
-  height: 42px;
-  margin-top: 14px;
-  border: 0;
-  border-radius: 999px;
-  background: var(--text-main);
-  color: var(--surface);
-  font-family: var(--font-family);
-  font-size: 13px;
-  font-weight: 850;
-  cursor: pointer;
 }
 
 .variant-home-state .select-base__scroll {
@@ -402,7 +272,6 @@
   opacity: 0.62;
 }
 
-.state-current-section,
 .state-selection-panel,
 .candidate-current-section,
 .candidate-list-section {
@@ -545,7 +414,7 @@
 .state-card {
   width: 100%;
   min-height: 98px;
-  border: 0;
+  border: 2px solid transparent;
   border-radius: 14px;
   background: var(--surface);
   color: var(--text-main);
@@ -566,9 +435,8 @@
 }
 
 .state-card.is-selected {
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, currentColor 34%, transparent),
-    0 10px 24px -18px color-mix(in srgb, currentColor 28%, transparent);
+  border: 1px solid color-mix(in srgb, var(--surface) 68%, var(--text-main) 18%);
+  box-shadow: 0 10px 24px -20px rgba(17, 17, 17, 0.18);
 }
 
 .state-card--current {
@@ -583,10 +451,8 @@
 }
 
 .state-centered-name {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 6px;
+  display: grid;
+  gap: 7px;
   min-width: 0;
 }
 
@@ -616,27 +482,23 @@
   font-family: var(--font-display);
   font-size: 17px;
   font-weight: 800;
-  line-height: 1;
+  line-height: 1.06;
   text-overflow: clip;
-  text-transform: uppercase;
+  text-transform: none;
   white-space: normal;
   overflow-wrap: anywhere;
 }
 
-.state-card .state-sigla {
-  color: currentColor;
-  font-size: 17px;
-  font-weight: 800;
-  line-height: 1;
-  text-transform: uppercase;
+.prototype-section-heading--state p {
+  margin-top: 0;
 }
 
-.state-card .state-name-separator {
+.state-card .state-sigla {
   color: currentColor;
-  font-family: var(--font-display);
-  font-size: 17px;
-  font-weight: 800;
+  font-size: 13px;
+  font-weight: 600;
   line-height: 1;
+  text-transform: uppercase;
 }
 
 .state-card__stats {

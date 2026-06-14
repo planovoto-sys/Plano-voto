@@ -1,8 +1,7 @@
-import { useCallback, useDeferredValue, useMemo, useState } from 'react';
+import { useDeferredValue, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BRAZILIAN_STATES } from '@/shared/constants/states';
 import { BALLOT_ROUTES } from '@/shared/constants/ballot';
-import { CANDIDATE_ROUTES } from '@/shared/constants/candidateRoutes';
 import { useUser } from '@/shared/hooks/useUser';
 import {
   clearVoteReceipt,
@@ -18,96 +17,16 @@ import {
 } from '@/features/ballot';
 import { flowError, flowLog, flowWarn } from '@/shared/utils/debugFlow';
 import { normalizeSearch } from '@/shared/utils/search';
-import { getCandidateStateCode, normalizeStateCode } from '@/shared/utils/state';
+import { normalizeStateCode } from '@/shared/utils/state';
 import ConfirmModal from '@/shared/ui/feedback/ConfirmModal';
 import TourModal from '@/shared/ui/feedback/TourModal';
 import SelectBase from '@/features/candidate-selection/SelectBase';
 import {
-  fetchCandidatesByOffice,
-  fetchStateChoiceCounts,
   invalidateCandidateTalliesCache,
-  invalidateStateChoiceCountsCache,
-  readCachedCandidatesByOffice,
-  readCachedStateChoiceCounts
+  invalidateStateChoiceCountsCache
 } from '@/features/candidate-selection/candidateService';
 import DesktopStateSelection from '@/features/desktop/DesktopStateSelection';
 import { useDesktopLayout } from '@/features/desktop/useDesktopLayout';
-
-const STATE_DETAIL_OFFICES = [
-  CANDIDATE_ROUTES.deputadoFederal.cargo,
-  CANDIDATE_ROUTES.senadores.cargo
-];
-
-const mergeStateChoiceCounts = (detailsByCode, choiceCounts) => {
-  const nextDetails = { ...detailsByCode };
-
-  choiceCounts.forEach((choiceData, stateCode) => {
-    nextDetails[stateCode] = {
-      ...nextDetails[stateCode],
-      activeVoters: Math.max(0, Number(choiceData?.active_voters) || 0)
-    };
-  });
-
-  return nextDetails;
-};
-
-const mergeCandidateCounts = (detailsByCode, candidateCounts) => {
-  const nextDetails = { ...detailsByCode };
-
-  candidateCounts.forEach((candidateCount, stateCode) => {
-    nextDetails[stateCode] = {
-      ...nextDetails[stateCode],
-      candidateCount
-    };
-  });
-
-  return nextDetails;
-};
-
-const buildCandidateCountsByState = (deputyCandidates = [], senatorCandidates = []) => {
-  const counts = new Map(BRAZILIAN_STATES.map((estado) => [estado.sigla, 0]));
-
-  deputyCandidates.forEach((candidate) => {
-    const stateCode = getCandidateStateCode(candidate) || 'TODOS';
-
-    if (stateCode === 'TODOS') {
-      counts.forEach((currentCount, code) => counts.set(code, currentCount + 1));
-      return;
-    }
-
-    if (counts.has(stateCode)) {
-      counts.set(stateCode, counts.get(stateCode) + 1);
-    }
-  });
-
-  senatorCandidates.forEach((candidate) => {
-    const stateCode = getCandidateStateCode(candidate, { allowPartyFallback: true });
-
-    if (counts.has(stateCode)) {
-      counts.set(stateCode, counts.get(stateCode) + 1);
-    }
-  });
-
-  return counts;
-};
-
-const readCandidatesForDetails = async (officeName) => {
-  const cachedCandidates = readCachedCandidatesByOffice(officeName);
-
-  if (cachedCandidates?.isFresh && Array.isArray(cachedCandidates.value)) {
-    return cachedCandidates.value;
-  }
-
-  try {
-    return await fetchCandidatesByOffice(officeName);
-  } catch (error) {
-    if (Array.isArray(cachedCandidates?.value)) {
-      return cachedCandidates.value;
-    }
-
-    throw error;
-  }
-};
 
 export default function Home() {
   const { user, userData, loading: userLoading } = useUser();
@@ -119,9 +38,6 @@ export default function Home() {
   const [busca, setBusca] = useState('');
   const buscaDiferida = useDeferredValue(busca);
   const [desktopSelectedStateCode, setDesktopSelectedStateCode] = useState('');
-  const [stateDetailsByCode, setStateDetailsByCode] = useState({});
-  const [stateDetailsStatus, setStateDetailsStatus] = useState('idle');
-  const [stateDetailsError, setStateDetailsError] = useState('');
   const isDesktopLayout = useDesktopLayout();
   
   const [isTourOpen, setIsTourOpen] = useState(false);
@@ -158,36 +74,6 @@ export default function Home() {
   const currentDraft = user?.uid
     ? readBallotDraft(user.uid, userData?.estado)
     : readVisitorBallotDraft(estadoSelecionado);
-
-  const loadStateDetails = useCallback(async () => {
-    if (stateDetailsStatus === 'loading' || stateDetailsStatus === 'ready') return;
-
-    setStateDetailsStatus('loading');
-    setStateDetailsError('');
-
-    const cachedChoiceCounts = readCachedStateChoiceCounts(BRAZILIAN_STATES);
-    if (cachedChoiceCounts.size > 0) {
-      setStateDetailsByCode((currentDetails) => mergeStateChoiceCounts(currentDetails, cachedChoiceCounts));
-    }
-
-    try {
-      const [choiceCounts, deputyCandidates, senatorCandidates] = await Promise.all([
-        fetchStateChoiceCounts(BRAZILIAN_STATES),
-        readCandidatesForDetails(STATE_DETAIL_OFFICES[0]),
-        readCandidatesForDetails(STATE_DETAIL_OFFICES[1])
-      ]);
-      const candidateCounts = buildCandidateCountsByState(deputyCandidates, senatorCandidates);
-
-      setStateDetailsByCode((currentDetails) => (
-        mergeCandidateCounts(mergeStateChoiceCounts(currentDetails, choiceCounts), candidateCounts)
-      ));
-      setStateDetailsStatus('ready');
-    } catch (error) {
-      flowWarn('home.state-details.error', { message: error?.message });
-      setStateDetailsStatus('error');
-      setStateDetailsError('Nao foi possivel atualizar os detalhes agora.');
-    }
-  }, [stateDetailsStatus]);
 
   const handleConfirmar = async (selecionados) => {
     flowLog('home.confirm-state.start', {
@@ -312,19 +198,14 @@ export default function Home() {
         linhasVisiveis={6}
         variant="home-state"
         currentStep="estado"
-        autoAvancarAoSelecionar={false}
+        autoAvancarAoSelecionar={true}
         onHelpClick={() => setIsTourOpen(true)}
-        onStateDetailsOpen={loadStateDetails}
-        stateDetailsByCode={stateDetailsByCode}
-        stateDetailsStatus={stateDetailsStatus}
-        stateDetailsError={stateDetailsError}
         renderItem={(estado) => (
           <div className="state-card__content">
             <span className="state-card__identity">
               <span className="state-card__name-row">
                 <span className="state-centered-name">
                   <span className="state-full-name">{estado.nome}</span>
-                  <span className="state-name-separator" aria-hidden="true">-</span>
                   <span className="state-sigla">{estado.sigla}</span>
                 </span>
               </span>

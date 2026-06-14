@@ -25,13 +25,6 @@ import {
 } from './selectBaseViewModel';
 import './SelectBase.css';
 
-const formatStateInfoNumber = (value) => {
-  const numericValue = Number(value);
-  if (!Number.isFinite(numericValue)) return '--';
-
-  return new Intl.NumberFormat('pt-BR').format(numericValue);
-};
-
 export default function SelectBase({
   titulo,
   subtitulo = '',
@@ -63,11 +56,7 @@ export default function SelectBase({
   personalizedFieldsLocked = false,
   draftStateLabel = '',
   draftIsLocal = false,
-  renderItem,
-  onStateDetailsOpen,
-  stateDetailsByCode = {},
-  stateDetailsStatus = 'idle',
-  stateDetailsError = ''
+  renderItem
 }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -80,11 +69,9 @@ export default function SelectBase({
   const [candidateRenderLimit, setCandidateRenderLimit] = useState(INITIAL_CANDIDATE_RENDER_LIMIT);
   const [candidateFilterOpen, setCandidateFilterOpen] = useState(false);
   const [candidateCardModeOpen, setCandidateCardModeOpen] = useState(false);
-  const [stateInfoOpen, setStateInfoOpen] = useState(false);
   const candidateSearchInputRef = useRef(null);
   const candidateFilterRef = useRef(null);
   const candidateCardModeRef = useRef(null);
-  const stateInfoRef = useRef(null);
   const lastScrollTopRef = useRef(0);
   const [continueVisible, setContinueVisible] = useState(false);
   const [senateChoicesSaved, setSenateChoicesSaved] = useState(false);
@@ -172,27 +159,6 @@ export default function SelectBase({
   }, [candidateCardModeOpen]);
 
   useEffect(() => {
-    if (!stateInfoOpen || typeof document === 'undefined') return undefined;
-
-    const handlePointerDown = (event) => {
-      if (stateInfoRef.current?.contains(event.target)) return;
-      setStateInfoOpen(false);
-    };
-
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') setStateInfoOpen(false);
-    };
-
-    document.addEventListener('pointerdown', handlePointerDown);
-    document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [stateInfoOpen]);
-
-  useEffect(() => {
     let cancelled = false;
 
     lastScrollTopRef.current = 0;
@@ -201,7 +167,6 @@ export default function SelectBase({
         setContinueVisible(false);
         setCandidateCardMode('compact');
         setCandidateCardModeOpen(false);
-        setStateInfoOpen(false);
       }
     });
 
@@ -221,24 +186,18 @@ export default function SelectBase({
     selecionados.map((candidate) => candidate.id).filter(Boolean).sort().join('|')
   ), [selecionados]);
   const showSavedSenateSharePanel = isSenateOffice && senateChoicesSaved && hasRequiredSelection && Boolean(shareData);
-  const shouldRenderContinue = hasAnySelection;
-  const shouldShowContinue = shouldRenderContinue && (!isCandidateOffice || continueVisible);
+  const shouldRenderContinue = hasAnySelection && !isHomeState;
+  const shouldShowContinue = shouldRenderContinue && continueVisible;
   const shouldShowDesktopContinue = shouldRenderContinue;
   const candidateListInstruction = 'Selecione todos os candidatos que aceita votar';
-  const selectedHomeState = useMemo(() => {
-    if (!isHomeState) return null;
-
-    const selectedState = selecionados[0] || null;
-    if (!selectedState) return null;
-
-    return dados.find((item) => item.id === selectedState.id || item.sigla === selectedState.sigla) || selectedState;
-  }, [dados, isHomeState, selecionados]);
-
   useEffect(() => {
     let cancelled = false;
 
     queueMicrotask(() => {
-      if (!cancelled) setContinueVisible(hasAnySelection);
+      if (!cancelled) {
+        lastScrollTopRef.current = 0;
+        setContinueVisible(hasAnySelection);
+      }
     });
 
     return () => {
@@ -453,11 +412,6 @@ export default function SelectBase({
   const handleScroll = (event) => {
     const currentTop = event.currentTarget.scrollTop;
     const diff = currentTop - lastScrollTopRef.current;
-
-    if (!isCandidateOffice) {
-      lastScrollTopRef.current = currentTop;
-      return;
-    }
 
     if (!hasAnySelection) {
       if (continueVisible) setContinueVisible(false);
@@ -788,94 +742,11 @@ export default function SelectBase({
     );
   };
 
-  const renderStateInfoCard = () => {
-    const stateCode = selectedHomeState?.sigla || '';
-    const details = stateCode ? stateDetailsByCode[stateCode] : null;
-    const isLoadingDetails = stateDetailsStatus === 'loading' && (
-      !details || details.candidateCount === undefined || details.activeVoters === undefined
-    );
-    const candidateCountLabel = isLoadingDetails
-      ? 'Carregando'
-      : formatStateInfoNumber(details?.candidateCount);
-    const activeVotersLabel = isLoadingDetails
-      ? 'Carregando'
-      : formatStateInfoNumber(details?.activeVoters);
-
-    return (
-      <div className="app-header-state-info-card" role="dialog" aria-label="Detalhes dos estados">
-        <div className="state-info-card__header">
-          <span>Detalhes do estado</span>
-          <strong>{selectedHomeState ? `${selectedHomeState.nome} (${selectedHomeState.sigla})` : 'Estados'}</strong>
-          <p>
-            {selectedHomeState
-              ? 'Resumo da prévia disponível para este estado.'
-              : 'Selecione um estado para ver candidatos e eleitores ativos no app.'}
-          </p>
-        </div>
-
-        <dl className="state-info-card__metrics">
-          <div className="state-info-card__metric">
-            <dt>Estados exibidos</dt>
-            <dd>{formatStateInfoNumber(dados.length)}</dd>
-          </div>
-          <div className="state-info-card__metric">
-            <dt>Candidatos</dt>
-            <dd>{selectedHomeState ? candidateCountLabel : '--'}</dd>
-          </div>
-          <div className="state-info-card__metric state-info-card__metric--wide">
-            <dt>Eleitores no app</dt>
-            <dd>{selectedHomeState ? activeVotersLabel : '--'}</dd>
-          </div>
-        </dl>
-
-        <p className="state-info-card__note">
-          Eleitores no app indica atividade no nossovoto e não substitui dados oficiais da Justiça Eleitoral.
-        </p>
-
-        {stateDetailsError && (
-          <p className="state-info-card__status" role="alert">{stateDetailsError}</p>
-        )}
-
-        {onHelpClick && (
-          <button
-            className="state-info-card__guide nv-touch"
-            type="button"
-            onClick={() => {
-              setStateInfoOpen(false);
-              onHelpClick();
-            }}
-          >
-            Ver guia da tela
-          </button>
-        )}
-      </div>
-    );
-  };
-
   const renderStateList = () => {
-    const selectedState = selecionados[0] || null;
-    const estadoSelecionado = selectedState
-      ? dados.find((item) => item.id === selectedState.id) || selectedState
-      : null;
-
     return (
-      <div className={`state-selection-flow nv-container ${estadoSelecionado ? 'has-current-state' : ''}`}>
-        {estadoSelecionado && (
-          <section className="state-current-section state-current-section--mobile" aria-label="Meu estado">
-            <div className="prototype-section-heading">
-              <h2>Meu estado</h2>
-              <p>Estado em que você vota</p>
-            </div>
-
-            <article className="state-card state-card--current">
-              {renderItem ? renderItem(estadoSelecionado) : <span>{estadoSelecionado.sigla || estadoSelecionado.nome}</span>}
-            </article>
-          </section>
-        )}
-
+      <div className="state-selection-flow nv-container">
         <section className="state-selection-panel" aria-label="Estados">
-          <div className="prototype-section-heading">
-            <h2>Estados</h2>
+          <div className="prototype-section-heading prototype-section-heading--state">
             <p>Selecione o estado onde você vota</p>
           </div>
 
@@ -1131,34 +1002,7 @@ export default function SelectBase({
                 </div>
               )}
             </div>
-          ) : isHomeState ? (
-            <div
-              className={`app-header-mode-picker app-header-state-info ${stateInfoOpen ? 'is-open' : ''}`}
-              ref={stateInfoRef}
-            >
-              <button
-                className="app-header-icon-action app-help-action app-header-mode-action state-detail-info-toggle nv-touch"
-                type="button"
-                onClick={() => {
-                  setCandidateFilterOpen(false);
-                  setCandidateCardModeOpen(false);
-                  setStateInfoOpen((currentValue) => {
-                    const nextValue = !currentValue;
-                    if (nextValue) onStateDetailsOpen?.();
-                    return nextValue;
-                  });
-                }}
-                aria-expanded={stateInfoOpen}
-                aria-haspopup="dialog"
-                aria-label="Ver detalhes dos estados"
-                title="Detalhes dos estados"
-              >
-                <InfoIcon />
-              </button>
-
-              {stateInfoOpen && renderStateInfoCard()}
-            </div>
-          ) : onHelpClick && (
+          ) : !isHomeState && onHelpClick && (
             <button
               className="app-header-icon-action app-help-action nv-touch"
               type="button"

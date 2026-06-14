@@ -17,12 +17,7 @@ function ViabilityMeter({ value, tone, featured = false, locked = false, label =
   const progressScale = progress / 100;
   const displayValue = Math.round(progress);
   const isComplete = progress >= 100;
-  const shouldAnimateFill = featured && progress > 0 && !locked;
-  const fillGlowStyle = shouldAnimateFill
-    ? {
-        boxShadow: '0 0 14px rgba(255, 145, 77, 0.5), 0 0 28px rgba(255, 152, 0, 0.24)'
-      }
-    : undefined;
+  const shouldAnimateFill = false;
   const handleLockedClick = (event) => {
     if (!locked) return;
 
@@ -50,7 +45,6 @@ function ViabilityMeter({ value, tone, featured = false, locked = false, label =
         <span className="candidate-thermometer__track" aria-hidden="true">
           <span
             className={`candidate-thermometer__fill ${shouldAnimateFill ? 'animate-pulse' : ''}`.trim()}
-            style={fillGlowStyle}
           ></span>
           <span className="candidate-thermometer__tick candidate-thermometer__tick--first"></span>
           <span className="candidate-thermometer__tick candidate-thermometer__tick--second"></span>
@@ -58,10 +52,10 @@ function ViabilityMeter({ value, tone, featured = false, locked = false, label =
         </span>
       </span>
       {showCaption && (
-        <span className="candidate-thermometer__caption">
+        <span className={`candidate-thermometer__caption ${featured ? 'candidate-thermometer__caption--featured' : ''}`.trim()}>
           <span className="candidate-thermometer__caption-main">
-            <span>Viabilidade:</span>
             <strong>{displayValue}%</strong>
+            <span>VIÁVEL</span>
           </span>
           {label && (
             <span className="candidate-thermometer__badge">
@@ -111,10 +105,10 @@ const getAssessment = ({ isFireFeatured, isViabilityComplete, systemScore }) => 
 };
 
 const getViabilityLabel = ({ progress, isFireFeatured, isViabilityComplete, systemScore }) => {
-  if (isViabilityComplete || progress >= 100) return 'META ATINGIDA';
-  if (isFireFeatured && systemScore > 7) return 'MUITO INTERESSANTE';
-  if (systemScore > 0 && systemScore < 7) return 'NOTA BAIXA';
-  if (systemScore >= 7) return 'INTERESSANTE';
+  if (isViabilityComplete || progress >= 100) return 'VIABILIDADE ATINGIDA';
+  if (isFireFeatured && systemScore > 7) return 'MAIS VIÁVEL';
+  if (systemScore > 0 && systemScore < 7) return 'MAL AVALIADO';
+  if (systemScore >= 7) return 'BEM AVALIADO';
   return 'EM ANÁLISE';
 };
 
@@ -277,7 +271,7 @@ export default function CandidateCard({
       className={`candidate-card__score-chip candidate-card__score-chip--${type} ${isEmpty ? 'is-empty' : ''}`}
       aria-label={ariaLabel}
     >
-      {label}
+      <b>{label}</b>
     </span>
   );
 

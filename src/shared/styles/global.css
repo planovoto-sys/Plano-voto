@@ -21,7 +21,7 @@
   --app-safe-top: env(safe-area-inset-top, 0px);
   --app-safe-bottom: env(safe-area-inset-bottom, 0px);
   --app-header-height: 56px;
-  --app-bottom-nav-height: 58px;
+  --app-bottom-nav-height: 76px;
   --app-gutter: clamp(14px, 4vw, 20px);
   --app-radius-card: 16px;
   --app-radius-modal: 22px;
@@ -954,7 +954,7 @@ body {
 @media (min-width: 768px) {
   :root {
     --app-width: 100%;
-    --app-bottom-nav-height: 58px;
+    --app-bottom-nav-height: 76px;
     --app-gutter: clamp(28px, 4vw, 64px);
   }
 

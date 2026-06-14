@@ -352,55 +352,95 @@
   color: var(--overview-green);
 }
 
-.my-plan-overview__gauge {
-  position: relative;
-  width: 86px;
-  max-width: 100%;
-  height: 61px;
-  display: grid;
-  align-content: end;
-  justify-items: center;
-  padding-top: 12px;
+/* ========================================================
+   NOVO TERMÔMETRO DE VIABILIDADE DO PLANO
+   ======================================================== */
+.my-plan-overview__metric--viability {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
 }
 
-.my-plan-overview__gauge-arc {
-  position: absolute;
-  top: 3px;
-  left: 50%;
-  width: 82px;
-  height: 41px;
-  border-radius: 82px 82px 0 0;
-  background:
-    conic-gradient(
-      from 270deg at 50% 100%,
-      var(--overview-green) 0 var(--viability-angle),
-      var(--overview-green-soft) var(--viability-angle) 180deg,
-      transparent 180deg
-    );
-  transform: translateX(-50%);
-  mask: radial-gradient(farthest-side at 50% 100%, transparent calc(100% - 9px), #000 calc(100% - 8px));
-  -webkit-mask: radial-gradient(farthest-side at 50% 100%, transparent calc(100% - 9px), #000 calc(100% - 8px));
+.viability-thermometer-container {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(6px, 1.5vw, 12px);
+  width: 100%;
+  max-width: 240px; 
 }
 
-.my-plan-overview__gauge strong {
-  position: relative;
-  z-index: 1;
-  color: var(--text-strong);
+.viability-thermometer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.viability-thermometer__title {
+  font-family: var(--font-family);
+  font-size: clamp(11px, 2.5vw, 13px);
+  font-weight: 700;
+  color: var(--text-main);
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.viability-thermometer__title strong {
   font-family: var(--font-display);
-  font-size: clamp(17px, 4.8vw, 22px);
-  font-weight: 800;
-  line-height: 1;
-  transform: translateY(1px);
+  font-size: clamp(18px, 5vw, 26px);
+  font-weight: 900;
+  color: var(--text-strong);
+  letter-spacing: -0.5px;
 }
 
-.my-plan-overview__gauge small {
-  position: relative;
-  z-index: 1;
-  color: var(--overview-green);
-  font-size: clamp(10.5px, 2.8vw, 13px);
+.viability-thermometer__badge {
+  background-color: #dcf7d7; 
+  color: #4d9849; 
+  padding: clamp(2px, 0.5vw, 4px) clamp(6px, 1.5vw, 10px);
+  border-radius: 9999px;
+  font-family: var(--font-family);
+  font-size: clamp(8px, 2vw, 10px);
   font-weight: 800;
-  line-height: 1.1;
+  text-transform: uppercase;
 }
+
+.viability-thermometer__track {
+  position: relative;
+  width: 100%;
+  height: 7px; 
+  background-color: #f0f2ef;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.viability-thermometer__fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: #90df72;
+  border-radius: 999px;
+  transition: width 0.8s cubic-bezier(0.2, 0.8, 0.18, 1); 
+  will-change: width;
+}
+
+.viability-thermometer__tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.8);
+  z-index: 2;
+}
+
+.viability-thermometer__tick--first { left: 25%; }
+.viability-thermometer__tick--second { left: 50%; }
+.viability-thermometer__tick--third { left: 75%; }
+
+/* ======================================================== */
 
 .my-plan-mobile-handoff {
   display: none;
@@ -741,30 +781,6 @@
     flex-basis: 12px;
   }
 
-  .my-plan-overview__gauge {
-    width: 74px;
-    height: 51px;
-    padding-top: 10px;
-  }
-
-  .my-plan-overview__gauge-arc {
-    top: 3px;
-    width: 72px;
-    height: 36px;
-    border-radius: 72px 72px 0 0;
-    mask: radial-gradient(farthest-side at 50% 100%, transparent calc(100% - 8px), #000 calc(100% - 7px));
-    -webkit-mask: radial-gradient(farthest-side at 50% 100%, transparent calc(100% - 8px), #000 calc(100% - 7px));
-  }
-
-  .my-plan-overview__gauge strong {
-    font-size: 17px;
-    transform: translateY(1px);
-  }
-
-  .my-plan-overview__gauge small {
-    font-size: 9.5px;
-  }
-
   .my-plan-choices {
     gap: 4px;
   }
@@ -806,28 +822,6 @@
   .my-plan-overview__state-code,
   .my-plan-overview__score {
     font-size: 35px;
-  }
-
-  .my-plan-overview__gauge {
-    width: 70px;
-    height: 49px;
-    padding-top: 9px;
-  }
-
-  .my-plan-overview__gauge-arc {
-    width: 68px;
-    height: 34px;
-    border-radius: 68px 68px 0 0;
-    mask: radial-gradient(farthest-side at 50% 100%, transparent calc(100% - 8px), #000 calc(100% - 7px));
-    -webkit-mask: radial-gradient(farthest-side at 50% 100%, transparent calc(100% - 8px), #000 calc(100% - 7px));
-  }
-
-  .my-plan-overview__gauge strong {
-    font-size: 16.8px;
-  }
-
-  .my-plan-overview__gauge small {
-    font-size: 9.4px;
   }
 
   .my-plan-choices {
@@ -998,16 +992,6 @@
     width: 19px;
     height: 19px;
     flex-basis: 19px;
-  }
-
-  .my-plan-overview__gauge {
-    width: 124px;
-    height: 92px;
-  }
-
-  .my-plan-overview__gauge-arc {
-    width: 118px;
-    height: 59px;
   }
 
   .my-plan-choices {
@@ -1318,22 +1302,6 @@
   .my-plan-overview__state-code,
   .my-plan-overview__score {
     font-size: 30px;
-  }
-
-  .my-plan-overview__gauge {
-    width: 64px;
-    height: 44px;
-    padding-top: 10px;
-  }
-
-  .my-plan-overview__gauge-arc {
-    width: 62px;
-    height: 31px;
-    border-radius: 62px 62px 0 0;
-  }
-
-  .my-plan-overview__gauge strong {
-    font-size: 15px;
   }
 
   .my-plan-choices {

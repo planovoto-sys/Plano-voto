@@ -144,10 +144,26 @@ function PlanViabilityGauge({ chance }) {
   const viabilityLabel = getViabilityLabel(progress);
 
   return (
-    <div className="my-plan-overview__gauge" style={{ '--viability-angle': `${progress * 1.8}deg` }}>
-      <span className="my-plan-overview__gauge-arc" aria-hidden="true" />
-      <strong>{progress}%</strong>
-      <small>{viabilityLabel}</small>
+    <div className="viability-thermometer-container">
+      {/* Cabeçalho com o Texto e a Badge */}
+      <div className="viability-thermometer__header">
+        <span className="viability-thermometer__title">
+          <strong>{progress}%</strong> VIÁVEL
+        </span>
+   
+      </div>
+
+      {/* Barra do Termômetro */}
+      <div className="viability-thermometer__track">
+        <div 
+          className="viability-thermometer__fill" 
+          style={{ width: `${progress}%` }}
+        ></div>
+        {/* Marcações de 25%, 50% e 75% */}
+        <span className="viability-thermometer__tick viability-thermometer__tick--first"></span>
+        <span className="viability-thermometer__tick viability-thermometer__tick--second"></span>
+        <span className="viability-thermometer__tick viability-thermometer__tick--third"></span>
+      </div>
     </div>
   );
 }

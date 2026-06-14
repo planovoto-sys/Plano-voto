@@ -13,11 +13,11 @@ import {
 } from '@/features/ballot';
 import './BottomNavigation.css';
 
-const NAV_ICON_STROKE_WIDTH = 1.75;
+const NAV_ICON_STROKE_WIDTH = 2.1;
 
 function DeputyIcon({ className = '', strokeWidth = NAV_ICON_STROKE_WIDTH }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+    <svg className={className} viewBox="0 4 24 16" aria-hidden="true">
       <path
         d="M3.7 7.2h16.6M3.7 7.2c0 6.3 3.7 10.4 8.3 10.4s8.3-4.1 8.3-10.4"
         fill="none"
@@ -32,7 +32,7 @@ function DeputyIcon({ className = '', strokeWidth = NAV_ICON_STROKE_WIDTH }) {
 
 function SenatorIcon({ className = '', strokeWidth = NAV_ICON_STROKE_WIDTH }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+    <svg className={className} viewBox="0 4 24 16" aria-hidden="true">
       <path
         d="M3.7 17.2h16.6M3.7 17.2c0-6.3 3.7-10.4 8.3-10.4s8.3 4.1 8.3 10.4"
         fill="none"

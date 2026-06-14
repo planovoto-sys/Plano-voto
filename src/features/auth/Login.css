@@ -3,78 +3,45 @@
   height: var(--app-height);
   min-height: 100dvh;
   overflow: hidden;
-  background: var(--page-bg);
+  background: #fff;
 }
 
 .login-main {
   width: 100%;
+  max-width: min(100%, 498px);
   height: 100%;
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 18px;
-  padding: calc(var(--app-safe-top) + 28px) var(--screen-gutter) calc(var(--app-safe-bottom) + 14px);
-}
-
-.login-brand {
-  min-width: 0;
-  margin: 0;
-  color: var(--text-strong);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: clamp(6px, 2vw, 10px);
-  font-size: clamp(20px, 7vw, 43px);
-  font-weight: 900;
-  line-height: 1;
-  letter-spacing: 0;
-  white-space: nowrap;
-}
-
-.login-brand__flame {
-  width: clamp(24px, 8vw, 48px);
-  height: auto;
-  flex: 0 0 auto;
-  object-fit: contain;
-  transform: translateY(-5px);
-}
-
-.login-brand span {
-  display: block;
-  min-width: 0;
-  text-overflow: clip;
-}
-
-.login-brand em {
-  color: var(--muted);
-  font-style: normal;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  align-items: stretch;
+  gap: clamp(18px, 3.6vh, 36px);
+  padding: calc(var(--app-safe-top) + clamp(34px, 6vh, 54px)) 18px calc(var(--app-safe-bottom) + clamp(14px, 2.5vh, 28px));
 }
 
 .video-card {
   width: 100%;
+  height: 100%;
   min-height: 0;
   max-width: 100%;
-  height: auto;
-  aspect-ratio: 16 / 11;
+  aspect-ratio: auto;
   justify-self: stretch;
-  flex: 0 1 auto;
-  border-radius: 9px;
-  border: 1px solid var(--line);
-  background: var(--surface);
+  border-radius: 10px;
+  border: 0;
+  background: #f3f3f3;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 
 .play-button {
-  width: clamp(132px, 40vw, 198px);
-  height: clamp(132px, 40vw, 198px);
+  width: clamp(150px, 40vw, 198px);
+  height: clamp(150px, 40vw, 198px);
   border: 0;
   border-radius: 50%;
-  background: rgba(17, 17, 17, 0.08);
+  background: #b8b8b8;
   color: var(--text-strong);
   display: flex;
   align-items: center;
@@ -89,24 +56,24 @@
 .play-icon {
   width: 0;
   height: 0;
-  border-top: clamp(30px, 9.2vw, 46px) solid transparent;
-  border-bottom: clamp(30px, 9.2vw, 46px) solid transparent;
-  border-left: clamp(52px, 16vw, 80px) solid var(--text);
-  margin-left: clamp(9px, 2.8vw, 14px);
+  border-top: clamp(35px, 9.2vw, 46px) solid transparent;
+  border-bottom: clamp(35px, 9.2vw, 46px) solid transparent;
+  border-left: clamp(60px, 16vw, 80px) solid #eef1f3;
+  margin-left: clamp(10px, 2.8vw, 14px);
 }
 
 .btn-comecar {
   width: 100%;
-  min-height: 88px;
+  min-height: clamp(78px, 9vh, 88px);
   border: 0;
-  border-radius: 9px;
-  background: linear-gradient(90deg, #ffd565 0%, var(--orange) 100%);
+  border-radius: 20px;
+  background: linear-gradient(90deg, #ffe162 0%, #ff8a4d 100%);
   color: var(--text);
   font-family: var(--font-family);
   display: grid;
   place-items: center;
   align-content: center;
-  gap: 8px;
+  gap: 3px;
   cursor: pointer;
 }
 
@@ -122,17 +89,17 @@
 }
 
 .btn-comecar strong {
-  font-size: clamp(25px, 6.1vw, 31px);
+  font-size: clamp(22px, 5.4vw, 28px);
   font-weight: 900;
-  line-height: 1.05;
-  letter-spacing: 1.7px;
+  line-height: 1;
+  letter-spacing: 1.6px;
 }
 
 .btn-comecar span {
-  font-size: clamp(14px, 3.4vw, 17px);
-  font-weight: 500;
-  line-height: 1.15;
-  letter-spacing: 1px;
+  font-size: clamp(10px, 2.45vw, 12px);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: 0;
 }
 
 .btn-comecar:active {
@@ -147,40 +114,28 @@
 
 @media (max-width: 360px) {
   .login-main {
-    gap: 14px;
-    padding-top: calc(var(--app-safe-top) + 22px);
-  }
-
-  .login-brand {
-    gap: 5px;
-    font-size: clamp(19px, 6.4vw, 23px);
-  }
-
-  .login-brand__flame {
-    width: clamp(23px, 7.4vw, 27px);
-    transform: translateY(-4px);
+    gap: 16px;
+    padding: calc(var(--app-safe-top) + 28px) 14px calc(var(--app-safe-bottom) + 12px);
   }
 
   .btn-comecar {
-    min-height: 72px;
+    min-height: 74px;
+    border-radius: 18px;
   }
 }
 
 @media (max-width: 320px) {
   .login-main {
-    padding: calc(var(--app-safe-top) + 18px) 10px calc(var(--app-safe-bottom) + 10px);
-  }
-
-  .login-brand {
-    font-size: 19px;
-  }
-
-  .login-brand__flame {
-    width: 23px;
+    gap: 12px;
+    padding: calc(var(--app-safe-top) + 20px) 10px calc(var(--app-safe-bottom) + 10px);
   }
 
   .btn-comecar {
     min-height: 68px;
+  }
+
+  .btn-comecar strong {
+    font-size: 19px;
   }
 }
 
@@ -205,6 +160,7 @@
 
   .video-card {
     min-height: 430px;
+    aspect-ratio: 16 / 11;
   }
 
   .btn-comecar {
@@ -226,7 +182,7 @@
     padding: clamp(30px, 4vw, 44px);
   }
 
-  .login-brand {
+  .login-main > .logo-completa {
     grid-column: 1;
     grid-row: 1;
     align-self: start;
@@ -234,7 +190,7 @@
     font-size: clamp(32px, 3.4vw, 44px);
   }
 
-  .login-brand__flame {
+  .login-main > .logo-completa .logo-completa__flame {
     width: clamp(35px, 3.6vw, 48px);
   }
 

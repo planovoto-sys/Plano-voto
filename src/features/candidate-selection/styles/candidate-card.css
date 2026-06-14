@@ -20,6 +20,7 @@
   --candidate-card-bg: #ffffff;
   --candidate-card-fg: #69746f;
   --candidate-tag-bg: color-mix(in srgb, var(--candidate-card-bg) 78%, currentColor 12%);
+  --candidate-selection-border: color-mix(in srgb, var(--candidate-card-bg) 70%, currentColor 30%);
   --candidate-assessment-bg: color-mix(in srgb, currentColor 16%, white);
   --candidate-viability-fill: currentColor;
   --candidate-viability-track: rgba(169, 169, 169, 0.28);
@@ -110,6 +111,7 @@
   --assessment-icon-bg: #4d9849;
   --assessment-icon-fg: #edf7e9;
   --candidate-tag-bg: #dff2d9;
+  --candidate-selection-border: #b8e1ad;
 }
 
 .candidate-card--neutral {
@@ -124,6 +126,7 @@
   --assessment-icon-bg: #b4b4b4;
   --assessment-icon-fg: #eaeaea;
   --candidate-tag-bg: #dedede;
+  --candidate-selection-border: #cfcfcf;
 }
 
 .candidate-card--danger {
@@ -140,12 +143,14 @@
   --candidate-card-border: #ffb7bd;
   --candidate-card-line: #ffcfd2;
   --candidate-tag-bg: #ffd4d8;
+  --candidate-selection-border: #ffb4ba;
 }
 
 .candidate-card--new {
   background: #f1f3f1;
   color: #69746f;
   --candidate-card-border: var(--nav-line);
+  --candidate-selection-border: #d6ddd8;
   box-shadow: none;
 }
 
@@ -154,13 +159,13 @@
   background: #f4f5f3;
   color: var(--text-main);
   --candidate-tag-bg: #e8ebe7;
+  --candidate-selection-border: #d6ddd8;
   box-shadow: none;
 }
 
 .prototype-candidate-card.is-selected {
-  box-shadow:
-    inset 0 0 0 2px color-mix(in srgb, currentColor 68%, transparent),
-    0 8px 18px color-mix(in srgb, currentColor 12%, transparent);
+  border: 1px solid var(--candidate-selection-border, var(--candidate-card-border));
+  box-shadow: 0 8px 18px color-mix(in srgb, currentColor 8%, transparent);
 }
 
 .prototype-candidate-card.is-selected::before {
@@ -187,6 +192,7 @@
   --assessment-icon-fg: #f05a24;
   --metric-feature-color: #f05a24;
   --candidate-tag-bg: #ffd8ad;
+  --candidate-selection-border: #ffb77a;
 }
 
 .prototype-candidate-card.is-viability-complete {
@@ -861,4 +867,611 @@
   opacity: 0.92;
   filter: drop-shadow(0 2px 4px rgba(255, 152, 0, 0.22));
   transform: none;
+}
+
+.prototype-candidate-card.prototype-candidate-card.is-fire-featured {
+  --candidate-card-bg: #ffe0ad;
+  --candidate-card-fg: #3b444c;
+  --candidate-card-border: #ff8d4a;
+  --candidate-card-line: rgba(255, 141, 74, 0.28);
+  --candidate-tag-bg: #ffd19b;
+  --candidate-thermometer-fill: #ffc25f;
+  --candidate-thermometer-track: #ffd8a4;
+  --candidate-bar-height: clamp(30px, 3.6vw, 42px);
+  --candidate-caption-size: clamp(11px, 1vw, 14px);
+  --candidate-badge-size: clamp(11px, 1vw, 14px);
+  --candidate-badge-height: clamp(30px, 3vw, 38px);
+  --candidate-badge-pad-inline: clamp(14px, 1.8vw, 22px);
+  min-height: clamp(128px, 18vw, 156px);
+  border: 0;
+  border-radius: clamp(26px, 4vw, 42px);
+  background: var(--candidate-card-bg);
+  color: var(--candidate-card-fg);
+  padding: clamp(24px, 3.8vw, 40px) clamp(22px, 4.4vw, 44px) clamp(22px, 3.3vw, 34px);
+  box-shadow: none;
+}
+
+.prototype-candidate-card.prototype-candidate-card.is-fire-featured.is-detailed {
+  --candidate-thermometer-fill: #ff9d5c;
+  --candidate-bar-height: clamp(32px, 4vw, 46px);
+  min-height: clamp(166px, 23vw, 204px);
+  border: 3px solid var(--candidate-card-border);
+  border-radius: clamp(24px, 3.6vw, 40px);
+  padding: clamp(28px, 4.4vw, 52px) clamp(24px, 4.6vw, 46px) clamp(24px, 3.8vw, 38px);
+}
+
+.prototype-candidate-card.prototype-candidate-card.is-fire-featured:hover,
+.prototype-candidate-card.prototype-candidate-card.is-fire-featured.is-selected,
+.prototype-candidate-card.prototype-candidate-card.is-fire-featured.is-selected:hover {
+  box-shadow: none;
+  transform: none;
+}
+
+.prototype-candidate-card.prototype-candidate-card.is-fire-featured.is-selected,
+.prototype-candidate-card.prototype-candidate-card.is-fire-featured.is-selected:hover {
+  border: 1px solid var(--candidate-selection-border, var(--candidate-card-border));
+}
+
+.prototype-candidate-card.prototype-candidate-card.is-fire-featured.is-detailed:hover,
+.prototype-candidate-card.prototype-candidate-card.is-fire-featured.is-detailed.is-selected,
+.prototype-candidate-card.prototype-candidate-card.is-fire-featured.is-detailed.is-selected:hover {
+  box-shadow: none;
+}
+
+.prototype-candidate-card.is-fire-featured .candidate-card__summary-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: clamp(16px, 3vw, 32px);
+}
+
+.prototype-candidate-card.is-fire-featured .candidate-card__identity-copy {
+  gap: 5px;
+}
+
+.prototype-candidate-card.is-fire-featured .candidate-card__text-line,
+.prototype-candidate-card.is-fire-featured .candidate-card__party-row {
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px clamp(10px, 1.2vw, 14px);
+}
+
+.prototype-candidate-card.is-fire-featured .candidate-card__name-row {
+  display: block;
+}
+
+.prototype-candidate-card.is-fire-featured .candidate-card__name-row strong {
+  color: var(--candidate-card-fg);
+  font-size: clamp(28px, 3.5vw, 42px);
+  font-weight: 800;
+  line-height: 0.98;
+  letter-spacing: 0;
+}
+
+.prototype-candidate-card.is-fire-featured .candidate-card__identity small {
+  color: var(--candidate-card-fg);
+  font-size: clamp(19px, 2.3vw, 29px);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.prototype-candidate-card.is-fire-featured .candidate-card__score-chip {
+  min-width: 0;
+  height: clamp(25px, 3vw, 36px);
+  border-radius: 999px;
+  background: var(--candidate-tag-bg);
+  color: var(--candidate-card-fg);
+  gap: 5px;
+  padding: 0 clamp(10px, 1.5vw, 18px);
+  font-size: clamp(12px, 1.35vw, 17px);
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.prototype-candidate-card.is-fire-featured .candidate-card__score-chip b {
+  color: currentColor;
+  font-size: inherit;
+  font-weight: 800;
+  line-height: inherit;
+}
+
+.prototype-candidate-card.is-fire-featured .candidate-card__status-badge {
+  --candidate-status-badge-size: clamp(58px, 8.6vw, 82px);
+  border: 2px solid #ffb47a;
+  background: transparent;
+  color: #ff7a35;
+  opacity: 1;
+}
+
+.prototype-candidate-card.is-fire-featured.is-detailed .candidate-card__status-badge {
+  --candidate-status-badge-size: clamp(62px, 8.8vw, 86px);
+}
+
+.prototype-candidate-card.is-fire-featured .candidate-card__status-badge .candidate-status-icon--fire {
+  width: calc(var(--candidate-status-badge-size) * 0.64);
+  height: calc(var(--candidate-status-badge-size) * 0.8);
+  opacity: 1;
+  filter: none;
+}
+
+.prototype-candidate-card.is-fire-featured .candidate-thermometer {
+  margin-top: clamp(24px, 4vw, 34px);
+}
+
+.prototype-candidate-card.is-fire-featured.is-detailed .candidate-thermometer {
+  margin-top: clamp(20px, 3.4vw, 30px);
+}
+
+.prototype-candidate-card.is-fire-featured .candidate-thermometer__track {
+  background: var(--candidate-thermometer-track);
+}
+
+.prototype-candidate-card.is-fire-featured .candidate-thermometer--featured .candidate-thermometer__fill,
+.prototype-candidate-card.is-fire-featured .candidate-thermometer--featured.is-filled .candidate-thermometer__fill,
+.prototype-candidate-card.is-fire-featured .candidate-thermometer__fill.animate-pulse {
+  background: var(--candidate-thermometer-fill);
+  opacity: 1;
+  animation: none;
+  box-shadow: none;
+}
+
+.prototype-candidate-card.is-fire-featured .candidate-thermometer__tick {
+  top: 0;
+  bottom: 0;
+  width: clamp(2px, 0.28vw, 4px);
+  background: rgba(255, 246, 229, 0.72);
+  box-shadow: none;
+}
+
+.prototype-candidate-card.is-fire-featured .candidate-thermometer__caption {
+  margin-top: clamp(12px, 1.8vw, 20px);
+  color: var(--candidate-card-fg);
+}
+
+.prototype-candidate-card.is-fire-featured .candidate-thermometer__caption-main,
+.prototype-candidate-card.is-fire-featured .candidate-thermometer__badge {
+  background: var(--candidate-tag-bg);
+  color: var(--candidate-card-fg);
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.prototype-candidate-card.is-fire-featured .candidate-thermometer__caption-main {
+  gap: 5px;
+  justify-content: flex-start;
+}
+
+.prototype-candidate-card.is-fire-featured .candidate-thermometer__caption strong,
+.prototype-candidate-card.is-fire-featured .candidate-thermometer__caption em {
+  font-weight: 800;
+}
+
+@media (max-width: 767px) {
+  .prototype-candidate-card.prototype-candidate-card.is-fire-featured {
+    --candidate-bar-height: 16px;
+    min-height: 104px;
+    border-radius: 20px;
+    padding: 14px;
+  }
+
+  .prototype-candidate-card.prototype-candidate-card.is-fire-featured.is-detailed {
+    --candidate-bar-height: 14px;
+    --candidate-badge-height: 21px;
+    min-height: 108px;
+    border-width: 2px;
+    border-radius: 18px;
+    padding: 12px;
+  }
+
+  .prototype-candidate-card.prototype-candidate-card.is-fire-featured.is-compact {
+    --candidate-bar-height: 16px;
+    min-height: 104px;
+    border-radius: 20px;
+    padding: 14px;
+  }
+
+  .prototype-candidate-card.is-fire-featured .candidate-card__summary-row {
+    gap: 12px;
+  }
+
+  .prototype-candidate-card.is-fire-featured .candidate-card__identity-copy {
+    gap: 2px;
+  }
+
+  .prototype-candidate-card.is-fire-featured.is-compact .candidate-card__name-row strong {
+    font-size: var(--candidate-score-size, var(--candidate-name-mobile-size, 16.5px));
+    line-height: 1.05;
+  }
+
+  .prototype-candidate-card.is-fire-featured.is-compact .candidate-card__identity small {
+    font-size: 11.5px;
+    font-weight: 600;
+    line-height: 1.08;
+  }
+
+  .prototype-candidate-card.is-fire-featured.is-detailed .candidate-card__name-row strong {
+    font-size: var(--candidate-score-size, var(--candidate-name-mobile-size, 16.5px));
+    line-height: 1.05;
+  }
+
+  .prototype-candidate-card.is-fire-featured.is-detailed .candidate-card__identity small {
+    font-size: 11.5px;
+    font-weight: 600;
+    line-height: 1.08;
+  }
+
+  .prototype-candidate-card.is-fire-featured .candidate-card__score-chip {
+    height: 20px;
+    gap: 4px;
+    padding-inline: 8px;
+    font-size: 9.5px;
+  }
+
+  .prototype-candidate-card.is-fire-featured .candidate-card__score-chip--party {
+    height: 18px;
+    font-size: 9px;
+  }
+
+  .prototype-candidate-card.is-fire-featured .candidate-card__status-badge {
+    --candidate-status-badge-size: 44px;
+    border-width: 2px;
+  }
+
+  .prototype-candidate-card.is-fire-featured.is-detailed .candidate-card__status-badge {
+    --candidate-status-badge-size: 42px;
+  }
+
+  .prototype-candidate-card.is-fire-featured .candidate-thermometer {
+    margin-top: 16px;
+  }
+
+  .prototype-candidate-card.is-fire-featured.is-detailed .candidate-thermometer {
+    margin-top: 9px;
+  }
+
+  .prototype-candidate-card.is-fire-featured .candidate-thermometer__caption {
+    margin-top: 6px;
+  }
+}
+
+.prototype-candidate-card.prototype-candidate-card.candidate-card--success:not(.is-fire-featured),
+.prototype-candidate-card.prototype-candidate-card.candidate-card--danger,
+.prototype-candidate-card.prototype-candidate-card.is-viability-complete {
+  --candidate-bar-height: clamp(30px, 3.6vw, 42px);
+  --candidate-caption-size: clamp(11px, 1vw, 14px);
+  --candidate-badge-size: clamp(11px, 1vw, 14px);
+  --candidate-badge-height: clamp(30px, 3vw, 38px);
+  --candidate-badge-pad-inline: clamp(14px, 1.8vw, 22px);
+  min-height: clamp(128px, 18.5vw, 254px);
+  border: 0;
+  border-radius: clamp(26px, 4vw, 42px);
+  padding: clamp(24px, 3.8vw, 40px) clamp(22px, 4.4vw, 44px) clamp(22px, 3.3vw, 34px);
+  box-shadow: none;
+}
+
+.prototype-candidate-card.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) {
+  --candidate-card-bg: #effbea;
+  --candidate-card-fg: #61d450;
+  --candidate-card-border: #6fd052;
+  --candidate-tag-bg: #dcf7d7;
+  --candidate-thermometer-fill: #90df72;
+  --candidate-thermometer-track: #d9f0d1;
+}
+
+.prototype-candidate-card.prototype-candidate-card.candidate-card--danger {
+  --candidate-card-bg: #ffecef;
+  --candidate-card-fg: #ff555d;
+  --candidate-card-border: #ff9ba3;
+  --candidate-tag-bg: #ffd5d9;
+  --candidate-thermometer-fill: #ff6c70;
+  --candidate-thermometer-track: #ffcfd2;
+}
+
+.prototype-candidate-card.prototype-candidate-card.is-viability-complete {
+  --candidate-card-bg: #f7f7f7;
+  --candidate-card-fg: #aeb2b6;
+  --candidate-card-border: #d1d1d1;
+  --candidate-tag-bg: #e8e8e8;
+  --candidate-thermometer-fill: #bebebe;
+  --candidate-thermometer-track: #eeeeee;
+}
+
+.prototype-candidate-card.prototype-candidate-card.candidate-card--success.is-detailed:not(.is-fire-featured),
+.prototype-candidate-card.prototype-candidate-card.candidate-card--danger.is-detailed,
+.prototype-candidate-card.prototype-candidate-card.is-viability-complete.is-detailed {
+  --candidate-bar-height: clamp(26px, 3.3vw, 38px);
+  --candidate-badge-height: clamp(26px, 2.6vw, 32px);
+  min-height: clamp(136px, 19vw, 236px);
+  border-radius: clamp(24px, 3.6vw, 40px);
+  padding: clamp(18px, 1.9vw, 24px) clamp(24px, 4.6vw, 46px) clamp(16px, 1.9vw, 20px);
+}
+
+.prototype-candidate-card.prototype-candidate-card.candidate-card--success.is-detailed:not(.is-fire-featured) {
+  border: 3px solid var(--candidate-card-border);
+}
+
+.prototype-candidate-card.prototype-candidate-card.candidate-card--success:not(.is-fire-featured):hover,
+.prototype-candidate-card.prototype-candidate-card.candidate-card--danger:hover,
+.prototype-candidate-card.prototype-candidate-card.is-viability-complete:hover,
+.prototype-candidate-card.prototype-candidate-card.candidate-card--success.is-selected:not(.is-fire-featured),
+.prototype-candidate-card.prototype-candidate-card.candidate-card--danger.is-selected,
+.prototype-candidate-card.prototype-candidate-card.is-viability-complete.is-selected {
+  box-shadow: none;
+  transform: none;
+}
+
+.prototype-candidate-card.prototype-candidate-card.candidate-card--success.is-selected:not(.is-fire-featured),
+.prototype-candidate-card.prototype-candidate-card.candidate-card--danger.is-selected,
+.prototype-candidate-card.prototype-candidate-card.is-viability-complete.is-selected {
+  border: 1px solid var(--candidate-selection-border, var(--candidate-card-border));
+}
+
+.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__summary-row,
+.prototype-candidate-card.candidate-card--danger .candidate-card__summary-row,
+.prototype-candidate-card.is-viability-complete .candidate-card__summary-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: clamp(16px, 3vw, 32px);
+}
+
+.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__identity-copy,
+.prototype-candidate-card.candidate-card--danger .candidate-card__identity-copy,
+.prototype-candidate-card.is-viability-complete .candidate-card__identity-copy {
+  gap: 5px;
+}
+
+.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__text-line,
+.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__party-row,
+.prototype-candidate-card.candidate-card--danger .candidate-card__text-line,
+.prototype-candidate-card.candidate-card--danger .candidate-card__party-row,
+.prototype-candidate-card.is-viability-complete .candidate-card__text-line,
+.prototype-candidate-card.is-viability-complete .candidate-card__party-row {
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px clamp(10px, 1.2vw, 14px);
+}
+
+.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__name-row,
+.prototype-candidate-card.candidate-card--danger .candidate-card__name-row,
+.prototype-candidate-card.is-viability-complete .candidate-card__name-row {
+  display: block;
+}
+
+.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__name-row strong,
+.prototype-candidate-card.candidate-card--danger .candidate-card__name-row strong,
+.prototype-candidate-card.is-viability-complete .candidate-card__name-row strong {
+  color: var(--candidate-card-fg);
+  font-size: clamp(28px, 3.5vw, 46px);
+  font-weight: 800;
+  line-height: 0.98;
+  letter-spacing: 0;
+}
+
+.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__identity small,
+.prototype-candidate-card.candidate-card--danger .candidate-card__identity small,
+.prototype-candidate-card.is-viability-complete .candidate-card__identity small {
+  color: var(--candidate-card-fg);
+  font-size: clamp(19px, 2.4vw, 32px);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.prototype-candidate-card .candidate-card__score-chip b {
+  color: currentColor;
+  font-size: inherit;
+  font-weight: 800;
+  line-height: inherit;
+}
+
+.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__score-chip,
+.prototype-candidate-card.candidate-card--danger .candidate-card__score-chip,
+.prototype-candidate-card.is-viability-complete .candidate-card__score-chip {
+  min-width: 0;
+  height: clamp(25px, 3vw, 36px);
+  border-radius: 999px;
+  background: var(--candidate-tag-bg);
+  color: var(--candidate-card-fg);
+  gap: 5px;
+  padding: 0 clamp(10px, 1.5vw, 18px);
+  font-size: clamp(12px, 1.35vw, 17px);
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__status-badge,
+.prototype-candidate-card.candidate-card--danger .candidate-card__status-badge,
+.prototype-candidate-card.is-viability-complete .candidate-card__status-badge {
+  --candidate-status-badge-size: clamp(58px, 8.7vw, 112px);
+  border: 3px solid color-mix(in srgb, currentColor 42%, transparent);
+  background: transparent;
+  color: currentColor;
+  opacity: 1;
+}
+
+.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__status-badge .candidate-status-icon,
+.prototype-candidate-card.candidate-card--danger .candidate-card__status-badge .candidate-status-icon,
+.prototype-candidate-card.is-viability-complete .candidate-card__status-badge .candidate-status-icon {
+  width: calc(var(--candidate-status-badge-size) * 0.64);
+  height: calc(var(--candidate-status-badge-size) * 0.64);
+  opacity: 0.72;
+}
+
+.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-thermometer,
+.prototype-candidate-card.candidate-card--danger .candidate-thermometer,
+.prototype-candidate-card.is-viability-complete .candidate-thermometer {
+  margin-top: clamp(24px, 4vw, 34px);
+}
+
+.prototype-candidate-card.candidate-card--success.is-detailed:not(.is-fire-featured) .candidate-thermometer,
+.prototype-candidate-card.candidate-card--danger.is-detailed .candidate-thermometer,
+.prototype-candidate-card.is-viability-complete.is-detailed .candidate-thermometer {
+  margin-top: clamp(10px, 1vw, 14px);
+}
+
+.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-thermometer__track,
+.prototype-candidate-card.candidate-card--danger .candidate-thermometer__track,
+.prototype-candidate-card.is-viability-complete .candidate-thermometer__track {
+  background: var(--candidate-thermometer-track);
+}
+
+.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-thermometer__fill,
+.prototype-candidate-card.candidate-card--danger .candidate-thermometer__fill,
+.prototype-candidate-card.is-viability-complete .candidate-thermometer__fill {
+  background: var(--candidate-thermometer-fill);
+  opacity: 1;
+  animation: none;
+  box-shadow: none;
+}
+
+.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-thermometer__tick,
+.prototype-candidate-card.candidate-card--danger .candidate-thermometer__tick,
+.prototype-candidate-card.is-viability-complete .candidate-thermometer__tick {
+  top: 0;
+  bottom: 0;
+  width: clamp(2px, 0.28vw, 4px);
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: none;
+}
+
+.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-thermometer__caption,
+.prototype-candidate-card.candidate-card--danger .candidate-thermometer__caption,
+.prototype-candidate-card.is-viability-complete .candidate-thermometer__caption {
+  margin-top: clamp(8px, 1vw, 14px);
+  color: var(--candidate-card-fg);
+}
+
+.prototype-candidate-card.candidate-card--success.is-detailed:not(.is-fire-featured) .candidate-card__status-badge,
+.prototype-candidate-card.candidate-card--danger.is-detailed .candidate-card__status-badge,
+.prototype-candidate-card.is-viability-complete.is-detailed .candidate-card__status-badge {
+  --candidate-status-badge-size: clamp(58px, 7.5vw, 100px);
+}
+
+.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-thermometer__caption-main,
+.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-thermometer__badge,
+.prototype-candidate-card.candidate-card--danger .candidate-thermometer__caption-main,
+.prototype-candidate-card.candidate-card--danger .candidate-thermometer__badge,
+.prototype-candidate-card.is-viability-complete .candidate-thermometer__caption-main,
+.prototype-candidate-card.is-viability-complete .candidate-thermometer__badge {
+  background: var(--candidate-tag-bg);
+  color: var(--candidate-card-fg);
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-thermometer__caption-main,
+.prototype-candidate-card.candidate-card--danger .candidate-thermometer__caption-main,
+.prototype-candidate-card.is-viability-complete .candidate-thermometer__caption-main {
+  gap: 5px;
+  justify-content: flex-start;
+}
+
+.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-thermometer__caption strong,
+.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-thermometer__caption em,
+.prototype-candidate-card.candidate-card--danger .candidate-thermometer__caption strong,
+.prototype-candidate-card.candidate-card--danger .candidate-thermometer__caption em,
+.prototype-candidate-card.is-viability-complete .candidate-thermometer__caption strong,
+.prototype-candidate-card.is-viability-complete .candidate-thermometer__caption em {
+  font-weight: 800;
+}
+
+@media (max-width: 767px) {
+  .prototype-candidate-card.prototype-candidate-card.candidate-card--success:not(.is-fire-featured),
+  .prototype-candidate-card.prototype-candidate-card.candidate-card--danger,
+  .prototype-candidate-card.prototype-candidate-card.is-viability-complete {
+    --candidate-bar-height: 16px;
+    min-height: 104px;
+    border-radius: 20px;
+    padding: 14px;
+  }
+
+  .prototype-candidate-card.prototype-candidate-card.candidate-card--success.is-detailed:not(.is-fire-featured),
+  .prototype-candidate-card.prototype-candidate-card.candidate-card--danger.is-detailed,
+  .prototype-candidate-card.prototype-candidate-card.is-viability-complete.is-detailed {
+    --candidate-bar-height: 14px;
+    --candidate-badge-height: 21px;
+    min-height: 108px;
+    border-radius: 18px;
+    padding: 12px;
+  }
+
+  .prototype-candidate-card.prototype-candidate-card.candidate-card--success.is-detailed:not(.is-fire-featured) {
+    border-width: 2px;
+  }
+
+  .prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__summary-row,
+  .prototype-candidate-card.candidate-card--danger .candidate-card__summary-row,
+  .prototype-candidate-card.is-viability-complete .candidate-card__summary-row {
+    gap: 12px;
+  }
+
+  .prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__identity-copy,
+  .prototype-candidate-card.candidate-card--danger .candidate-card__identity-copy,
+  .prototype-candidate-card.is-viability-complete .candidate-card__identity-copy {
+    gap: 2px;
+  }
+
+  .prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__name-row strong,
+  .prototype-candidate-card.candidate-card--danger .candidate-card__name-row strong,
+  .prototype-candidate-card.is-viability-complete .candidate-card__name-row strong {
+    font-size: var(--candidate-score-size, var(--candidate-name-mobile-size, 16.5px));
+    line-height: 1.05;
+  }
+
+  .prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__identity small,
+  .prototype-candidate-card.candidate-card--danger .candidate-card__identity small,
+  .prototype-candidate-card.is-viability-complete .candidate-card__identity small {
+    font-size: 11.5px;
+    font-weight: 600;
+    line-height: 1.08;
+  }
+
+  .prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__score-chip,
+  .prototype-candidate-card.candidate-card--danger .candidate-card__score-chip,
+  .prototype-candidate-card.is-viability-complete .candidate-card__score-chip {
+    height: 20px;
+    gap: 4px;
+    padding-inline: 8px;
+    font-size: 9.5px;
+  }
+
+  .prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__score-chip--party,
+  .prototype-candidate-card.candidate-card--danger .candidate-card__score-chip--party,
+  .prototype-candidate-card.is-viability-complete .candidate-card__score-chip--party {
+    height: 18px;
+    font-size: 9px;
+  }
+
+  .prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__status-badge,
+  .prototype-candidate-card.candidate-card--danger .candidate-card__status-badge,
+  .prototype-candidate-card.is-viability-complete .candidate-card__status-badge {
+    --candidate-status-badge-size: 44px;
+    border-width: 2px;
+  }
+
+  .prototype-candidate-card.candidate-card--success.is-detailed:not(.is-fire-featured) .candidate-card__status-badge,
+  .prototype-candidate-card.candidate-card--danger.is-detailed .candidate-card__status-badge,
+  .prototype-candidate-card.is-viability-complete.is-detailed .candidate-card__status-badge {
+    --candidate-status-badge-size: 42px;
+  }
+
+  .prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-thermometer,
+  .prototype-candidate-card.candidate-card--danger .candidate-thermometer,
+  .prototype-candidate-card.is-viability-complete .candidate-thermometer {
+    margin-top: 16px;
+  }
+
+  .prototype-candidate-card.candidate-card--success.is-detailed:not(.is-fire-featured) .candidate-thermometer,
+  .prototype-candidate-card.candidate-card--danger.is-detailed .candidate-thermometer,
+  .prototype-candidate-card.is-viability-complete.is-detailed .candidate-thermometer {
+    margin-top: 9px;
+  }
+
+  .prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-thermometer__caption,
+  .prototype-candidate-card.candidate-card--danger .candidate-thermometer__caption,
+  .prototype-candidate-card.is-viability-complete .candidate-thermometer__caption {
+    margin-top: 6px;
+  }
 }

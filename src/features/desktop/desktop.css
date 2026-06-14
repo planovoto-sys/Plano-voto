@@ -600,9 +600,9 @@
 }
 
 .desktop-state-card.is-selected {
-  border-color: rgba(255, 153, 0, 0.55);
-  background: rgba(255, 153, 0, 0.05);
-  box-shadow: 0 0 0 3px rgba(255, 153, 0, 0.08);
+  border-color: rgba(17, 17, 17, 0.18);
+  background: #fff;
+  box-shadow: 0 12px 28px rgba(17, 17, 17, 0.05);
 }
 
 .desktop-state-card strong {
@@ -823,10 +823,8 @@
 }
 
 .desktop-candidate-card.is-selected {
-  border-color: color-mix(in srgb, var(--desktop-candidate-accent) 78%, #111 10%);
-  box-shadow:
-    0 0 0 2px color-mix(in srgb, var(--desktop-candidate-accent) 20%, transparent),
-    0 18px 44px rgba(17, 17, 17, 0.06);
+  border-color: color-mix(in srgb, var(--desktop-candidate-accent) 56%, var(--surface) 44%);
+  box-shadow: 0 14px 34px rgba(17, 17, 17, 0.045);
 }
 
 .desktop-candidate-card__button {

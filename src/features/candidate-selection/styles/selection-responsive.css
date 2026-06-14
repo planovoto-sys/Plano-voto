@@ -206,9 +206,8 @@
   }
 
   .prototype-candidate-card.is-selected {
-    box-shadow:
-      inset 0 0 0 2px color-mix(in srgb, currentColor 68%, transparent),
-      0 10px 22px color-mix(in srgb, currentColor 12%, transparent);
+    border: 1px solid var(--candidate-selection-border, var(--candidate-card-border));
+    box-shadow: 0 8px 18px color-mix(in srgb, currentColor 8%, transparent);
   }
 
   .candidate-current-section .prototype-candidate-card.is-summary {
@@ -266,7 +265,7 @@
 
 @media (max-width: 1023px) {
   .select-base-container {
-    --bottom-nav-height: 58px;
+    --bottom-nav-height: 76px;
   }
 
   .select-base-container .app-footer--scroll-content {
@@ -471,11 +470,7 @@
   }
 
   .state-card .state-sigla {
-    font-size: 15.5px;
-  }
-
-  .state-card .state-name-separator {
-    font-size: 15.5px;
+    font-size: 12px;
   }
 
   .state-card__content {
@@ -656,15 +651,12 @@
 
   .state-card.is-selected:hover,
   .prototype-candidate-card.is-selected:hover {
-    box-shadow:
-      inset 0 0 0 2px color-mix(in srgb, currentColor 68%, transparent),
-      0 10px 22px color-mix(in srgb, currentColor 12%, transparent);
+    box-shadow: 0 8px 18px color-mix(in srgb, currentColor 8%, transparent);
   }
 
   .prototype-candidate-card.is-selected:hover {
-    box-shadow:
-      inset 0 0 0 2px color-mix(in srgb, currentColor 76%, transparent),
-      0 10px 22px color-mix(in srgb, currentColor 14%, transparent);
+    border: 1px solid var(--candidate-selection-border, var(--candidate-card-border));
+    box-shadow: 0 8px 18px color-mix(in srgb, currentColor 8%, transparent);
   }
 
   .prototype-section-heading {
@@ -902,18 +894,6 @@
   }
 }
 
-@media (min-width: 900px) and (max-width: 1023px) {
-  .state-selection-flow.has-current-state {
-    grid-template-columns: minmax(230px, 0.34fr) minmax(0, 0.66fr);
-    align-items: start;
-    gap: 24px;
-  }
-
-  .state-selection-flow.has-current-state .state-current-section {
-    position: static;
-  }
-}
-
 @media (min-width: 1024px) {
   .select-base__scroll {
     display: flex;
@@ -957,21 +937,6 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .state-selection-flow.has-current-state {
-    grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
-    column-gap: clamp(24px, 3vw, 34px);
-  }
-
-  .state-selection-flow.has-current-state > .state-current-section {
-    grid-column: 1;
-    position: static;
-  }
-
-  .state-selection-flow.has-current-state > .state-selection-panel {
-    grid-column: 2;
-    min-width: 0;
-  }
-
   .prototype-section-heading {
     margin-bottom: 14px;
   }
@@ -1005,6 +970,10 @@
     font-size: 20px;
   }
 
+  .state-card .state-sigla {
+    font-size: 14px;
+  }
+
   .state-card__pill {
     min-height: 42px;
     font-size: 12px;
@@ -1017,8 +986,7 @@
 
   .candidate-list-section,
   .state-selection-panel,
-  .candidate-current-section,
-  .state-current-section {
+  .candidate-current-section {
     min-width: 0;
   }
 
@@ -1283,10 +1251,6 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .state-selection-flow.has-current-state {
-    grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
-  }
-
   .state-card-list {
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 390px), 1fr));
   }
@@ -1342,22 +1306,8 @@
     padding-top: 8px;
   }
 
-  .state-current-section--mobile {
-    display: none;
-  }
-
   .candidate-current-state {
     display: grid;
-  }
-}
-
-@media (min-width: 900px) {
-  .state-selection-flow.has-current-state {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .state-selection-flow.has-current-state > .state-selection-panel {
-    grid-column: 1;
   }
 }
 
