@@ -6,13 +6,13 @@
   --candidate-score-size: 14px;
   --candidate-card-border: rgba(105, 116, 111, 0.18);
   --candidate-card-line: rgba(105, 116, 111, 0.14);
-  --candidate-bar-height: 14px;
+  --candidate-bar-height: 20px;
   --candidate-bar-border: rgba(105, 116, 111, 0.28);
-  --candidate-caption-size: 10px;
-  --candidate-badge-size: 10px;
-  --candidate-badge-height: 27px;
-  --candidate-badge-pad-inline: 12px;
-  --candidate-status-icon-box: 18px;
+  --candidate-caption-size: 8.5px;
+  --candidate-badge-size: 8.5px;
+  --candidate-badge-height: 16px;
+  --candidate-badge-pad-inline: 10px;
+  --candidate-status-icon-box: 20px;
   --candidate-status-icon-size: 19px;
   --candidate-fire-icon-width: 16px;
   --candidate-fire-icon-height: 21px;
@@ -240,17 +240,32 @@
 }
 
 .candidate-card__status-badge {
-  --candidate-status-badge-size: clamp(28px, calc(var(--candidate-metric-size, 56px) * 0.54), 34px);
-  width: var(--candidate-status-badge-size);
-  height: var(--candidate-status-badge-size);
-  border: 1px solid color-mix(in srgb, currentColor 42%, transparent);
-  border-radius: 50%;
-  background: color-mix(in srgb, currentColor 6%, transparent);
+  min-width: 0;
+  height: var(--candidate-badge-height, 16px);
+  border: 1px solid color-mix(in srgb, currentColor 34%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 8%, transparent);
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 5px;
+  padding: 0 12px;
   color: currentColor;
   opacity: 0.78;
+  white-space: nowrap;
+}
+
+.candidate-card__status-badge strong,
+.candidate-card__status-badge span {
+  color: currentColor;
+  font-family: var(--font-family);
+  font-size: 8px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.candidate-card__status-badge strong {
+  font-size: 8.5px;
 }
 
 .candidate-card__status-badge .candidate-status-icon {
@@ -634,6 +649,33 @@
   box-shadow: none;
 }
 
+.candidate-thermometer__status-icon {
+  --candidate-status-icon-box: 20px;
+  position: absolute;
+  left: clamp(calc(var(--candidate-status-icon-box) / 2), var(--thermometer-status-position, 0%), calc(100% - calc(var(--candidate-status-icon-box) / 2)));
+  top: 50%;
+  z-index: 3;
+  width: var(--candidate-status-icon-box);
+  height: var(--candidate-status-icon-box);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: currentColor;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.candidate-thermometer__status-icon .candidate-status-icon {
+  width: 100%;
+  height: 100%;
+  opacity: 0.92;
+}
+
+.prototype-candidate-card.candidate-card--success .candidate-thermometer__status-icon .candidate-status-icon--thumb-up,
+.prototype-candidate-card.candidate-card--danger .candidate-thermometer__status-icon .candidate-status-icon--thumb-down {
+  filter: saturate(1.28) brightness(0.82) contrast(1.08);
+}
+
 .candidate-thermometer__fill {
   position: absolute;
   inset: 0 auto 0 0;
@@ -699,7 +741,7 @@
   flex: 0 1 auto;
   min-width: 0;
   overflow: hidden;
-  height: var(--candidate-badge-height, 30px);
+  height: var(--candidate-badge-height, 16px);
   border: 0;
   border-radius: 999px;
   background: var(--candidate-tag-bg);
@@ -707,7 +749,9 @@
   backdrop-filter: none;
   display: inline-flex;
   align-items: center;
+  flex-direction: row;
   justify-content: center;
+  gap: 4px;
   padding: 0 var(--candidate-badge-pad-inline, 12px);
   color: currentColor;
   font-family: var(--font-family);
@@ -715,7 +759,7 @@
   font-weight: 800;
   line-height: 1;
   text-overflow: ellipsis;
-  text-transform: uppercase;
+  text-transform: none;
   white-space: nowrap;
   box-shadow: none;
 }
@@ -780,7 +824,8 @@
 }
 
 .candidate-thermometer__caption-main {
-  gap: 5px;
+  align-items: center;
+  gap: 4px;
 }
 
 .candidate-thermometer__caption strong,
@@ -800,16 +845,15 @@
 }
 
 .candidate-thermometer__badge {
-  justify-content: flex-end;
-  gap: 0;
+  align-items: center;
 }
 
 .candidate-thermometer__badge em {
   min-width: 0;
   overflow: hidden;
-  text-align: right;
+  text-align: left;
   text-overflow: ellipsis;
-  text-transform: uppercase;
+  text-transform: none;
   white-space: nowrap;
 }
 
@@ -895,7 +939,7 @@
   --candidate-thermometer-fill: #ff9d5c;
   --candidate-bar-height: clamp(32px, 4vw, 46px);
   min-height: clamp(166px, 23vw, 204px);
-  border: 3px solid var(--candidate-card-border);
+  border: 0;
   border-radius: clamp(24px, 3.6vw, 40px);
   padding: clamp(28px, 4.4vw, 52px) clamp(24px, 4.6vw, 46px) clamp(24px, 3.8vw, 38px);
 }
@@ -957,13 +1001,13 @@
 
 .prototype-candidate-card.is-fire-featured .candidate-card__score-chip {
   min-width: 0;
-  height: clamp(25px, 3vw, 36px);
+  height: clamp(16px, 2vw, 22px);
   border-radius: 999px;
   background: var(--candidate-tag-bg);
   color: var(--candidate-card-fg);
   gap: 5px;
-  padding: 0 clamp(10px, 1.5vw, 18px);
-  font-size: clamp(12px, 1.35vw, 17px);
+  padding: 0 clamp(8px, 1vw, 12px);
+  font-size: clamp(8px, 0.9vw, 10px);
   font-weight: 500;
   letter-spacing: 0;
   line-height: 1;
@@ -977,15 +1021,14 @@
 }
 
 .prototype-candidate-card.is-fire-featured .candidate-card__status-badge {
-  --candidate-status-badge-size: clamp(58px, 8.6vw, 82px);
-  border: 2px solid #ffb47a;
-  background: transparent;
+  border: 1px solid color-mix(in srgb, currentColor 34%, transparent);
+  background: color-mix(in srgb, currentColor 8%, transparent);
   color: #ff7a35;
   opacity: 1;
 }
 
 .prototype-candidate-card.is-fire-featured.is-detailed .candidate-card__status-badge {
-  --candidate-status-badge-size: clamp(62px, 8.8vw, 86px);
+  border-color: color-mix(in srgb, currentColor 40%, transparent);
 }
 
 .prototype-candidate-card.is-fire-featured .candidate-card__status-badge .candidate-status-icon--fire {
@@ -1038,8 +1081,8 @@
 }
 
 .prototype-candidate-card.is-fire-featured .candidate-thermometer__caption-main {
-  gap: 5px;
-  justify-content: flex-start;
+  gap: 4px;
+  justify-content: center;
 }
 
 .prototype-candidate-card.is-fire-featured .candidate-thermometer__caption strong,
@@ -1049,7 +1092,8 @@
 
 @media (max-width: 767px) {
   .prototype-candidate-card.prototype-candidate-card.is-fire-featured {
-    --candidate-bar-height: 16px;
+    --candidate-bar-height: 18px;
+    --candidate-badge-height: 14px;
     min-height: 104px;
     border-radius: 20px;
     padding: 14px;
@@ -1138,11 +1182,11 @@
 .prototype-candidate-card.prototype-candidate-card.candidate-card--success:not(.is-fire-featured),
 .prototype-candidate-card.prototype-candidate-card.candidate-card--danger,
 .prototype-candidate-card.prototype-candidate-card.is-viability-complete {
-  --candidate-bar-height: clamp(30px, 3.6vw, 42px);
-  --candidate-caption-size: clamp(11px, 1vw, 14px);
-  --candidate-badge-size: clamp(11px, 1vw, 14px);
-  --candidate-badge-height: clamp(30px, 3vw, 38px);
-  --candidate-badge-pad-inline: clamp(14px, 1.8vw, 22px);
+  --candidate-bar-height: clamp(28px, 3.4vw, 40px);
+  --candidate-caption-size: clamp(8.5px, 0.9vw, 11px);
+  --candidate-badge-size: clamp(8.5px, 0.9vw, 11px);
+  --candidate-badge-height: clamp(16px, 1.8vw, 20px);
+  --candidate-badge-pad-inline: clamp(8px, 1vw, 12px);
   min-height: clamp(128px, 18.5vw, 254px);
   border: 0;
   border-radius: clamp(26px, 4vw, 42px);
@@ -1180,15 +1224,15 @@
 .prototype-candidate-card.prototype-candidate-card.candidate-card--success.is-detailed:not(.is-fire-featured),
 .prototype-candidate-card.prototype-candidate-card.candidate-card--danger.is-detailed,
 .prototype-candidate-card.prototype-candidate-card.is-viability-complete.is-detailed {
-  --candidate-bar-height: clamp(26px, 3.3vw, 38px);
-  --candidate-badge-height: clamp(26px, 2.6vw, 32px);
+  --candidate-bar-height: clamp(24px, 3vw, 34px);
+  --candidate-badge-height: clamp(15px, 1.6vw, 18px);
   min-height: clamp(136px, 19vw, 236px);
   border-radius: clamp(24px, 3.6vw, 40px);
   padding: clamp(18px, 1.9vw, 24px) clamp(24px, 4.6vw, 46px) clamp(16px, 1.9vw, 20px);
 }
 
 .prototype-candidate-card.prototype-candidate-card.candidate-card--success.is-detailed:not(.is-fire-featured) {
-  border: 3px solid var(--candidate-card-border);
+  border: 0;
 }
 
 .prototype-candidate-card.prototype-candidate-card.candidate-card--success:not(.is-fire-featured):hover,
@@ -1284,9 +1328,8 @@
 .prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__status-badge,
 .prototype-candidate-card.candidate-card--danger .candidate-card__status-badge,
 .prototype-candidate-card.is-viability-complete .candidate-card__status-badge {
-  --candidate-status-badge-size: clamp(58px, 8.7vw, 112px);
-  border: 3px solid color-mix(in srgb, currentColor 42%, transparent);
-  background: transparent;
+  border: 1px solid color-mix(in srgb, currentColor 34%, transparent);
+  background: color-mix(in srgb, currentColor 8%, transparent);
   color: currentColor;
   opacity: 1;
 }
@@ -1294,8 +1337,6 @@
 .prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__status-badge .candidate-status-icon,
 .prototype-candidate-card.candidate-card--danger .candidate-card__status-badge .candidate-status-icon,
 .prototype-candidate-card.is-viability-complete .candidate-card__status-badge .candidate-status-icon {
-  width: calc(var(--candidate-status-badge-size) * 0.64);
-  height: calc(var(--candidate-status-badge-size) * 0.64);
   opacity: 0.72;
 }
 
@@ -1346,7 +1387,7 @@
 .prototype-candidate-card.candidate-card--success.is-detailed:not(.is-fire-featured) .candidate-card__status-badge,
 .prototype-candidate-card.candidate-card--danger.is-detailed .candidate-card__status-badge,
 .prototype-candidate-card.is-viability-complete.is-detailed .candidate-card__status-badge {
-  --candidate-status-badge-size: clamp(58px, 7.5vw, 100px);
+  border-color: color-mix(in srgb, currentColor 42%, transparent);
 }
 
 .prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-thermometer__caption-main,
@@ -1390,8 +1431,8 @@
   .prototype-candidate-card.prototype-candidate-card.candidate-card--success.is-detailed:not(.is-fire-featured),
   .prototype-candidate-card.prototype-candidate-card.candidate-card--danger.is-detailed,
   .prototype-candidate-card.prototype-candidate-card.is-viability-complete.is-detailed {
-    --candidate-bar-height: 14px;
-    --candidate-badge-height: 21px;
+    --candidate-bar-height: 18px;
+    --candidate-badge-height: 14px;
     min-height: 108px;
     border-radius: 18px;
     padding: 12px;
@@ -1431,30 +1472,30 @@
   .prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__score-chip,
   .prototype-candidate-card.candidate-card--danger .candidate-card__score-chip,
   .prototype-candidate-card.is-viability-complete .candidate-card__score-chip {
-    height: 20px;
+    height: 16px;
     gap: 4px;
     padding-inline: 8px;
-    font-size: 9.5px;
+    font-size: 8.5px;
   }
 
   .prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__score-chip--party,
   .prototype-candidate-card.candidate-card--danger .candidate-card__score-chip--party,
   .prototype-candidate-card.is-viability-complete .candidate-card__score-chip--party {
-    height: 18px;
-    font-size: 9px;
+    height: 15px;
+    font-size: 8px;
   }
 
   .prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__status-badge,
   .prototype-candidate-card.candidate-card--danger .candidate-card__status-badge,
   .prototype-candidate-card.is-viability-complete .candidate-card__status-badge {
-    --candidate-status-badge-size: 44px;
+    --candidate-status-badge-size: 40px;
     border-width: 2px;
   }
 
   .prototype-candidate-card.candidate-card--success.is-detailed:not(.is-fire-featured) .candidate-card__status-badge,
   .prototype-candidate-card.candidate-card--danger.is-detailed .candidate-card__status-badge,
   .prototype-candidate-card.is-viability-complete.is-detailed .candidate-card__status-badge {
-    --candidate-status-badge-size: 42px;
+    --candidate-status-badge-size: 38px;
   }
 
   .prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-thermometer,

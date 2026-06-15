@@ -34,12 +34,12 @@ export default function DesktopStateSelection({
           </DesktopPageIntro>
 
           <label className="desktop-search">
-            <span>Pesquisar estados</span>
+            <span>Pesquisar</span>
             <Search aria-hidden="true" />
             <input
               value={searchValue}
               onChange={(event) => onSearchChange(event.target.value)}
-              placeholder="Pesquisar estados"
+              placeholder="Pesquisar"
             />
           </label>
 

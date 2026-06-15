@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { ClearIcon, DownloadIcon, ShareIcon } from '@/shared/icons/AppIcons';
+import { ChevronLeft, ChevronRight, Share2 } from 'lucide-react';
+import { ClearIcon, DownloadIcon } from '@/shared/icons/AppIcons';
 import { useNotify } from '@/features/notifications/useNotify';
 import {
   createShareAnalysis,
@@ -359,7 +359,7 @@ function ShareMainGallery({ activeTemplateId, analysis, onSelect, actions }) {
   );
 }
 
-export default function ShareChoicePanel({ shareData, className = '' }) {
+export default function ShareChoicePanel({ shareData, className = '', appearance = 'panel' }) {
   const notify = useNotify();
   const [isOpen, setIsOpen] = useState(false);
   const [templateId, setTemplateId] = useState('resumo');
@@ -404,6 +404,7 @@ export default function ShareChoicePanel({ shareData, className = '' }) {
   };
 
   if (!shareData) return null;
+  const isFab = appearance === 'fab';
 
   const galleryActions = (
     <>
@@ -415,7 +416,7 @@ export default function ShareChoicePanel({ shareData, className = '' }) {
           (result) => (result === 'copied' ? 'Texto copiado para compartilhar.' : 'Imagem pronta para compartilhar.')
         )}
       >
-        <ShareIcon />
+        <Share2 aria-hidden="true" />
         <span>Compartilhar imagem</span>
       </button>
       <button className="share-gallery-actions__secondary nv-touch" type="button" onClick={() => runAction(() => downloadShareImage(templateId, shareData), 'Imagem salva.')}>
@@ -481,13 +482,13 @@ export default function ShareChoicePanel({ shareData, className = '' }) {
   ) : null;
 
   return (
-    <section className={`share-choice-panel nv-no-overflow ${className}`.trim()} aria-labelledby="share-choice-title">
+    <section className={`share-choice-panel ${isFab ? 'share-choice-panel--fab' : ''} nv-no-overflow ${className}`.trim()} aria-labelledby="share-choice-title">
       <div className="share-choice-panel__copy">
         <strong id="share-choice-title">Compartilhar meu plano</strong>
         <span>Escolha uma arte pronta e compartilhe em poucos toques.</span>
       </div>
       <button className="share-choice-panel__button nv-touch" type="button" onClick={() => setIsOpen(true)}>
-        <ShareIcon />
+        <Share2 aria-hidden="true" />
         <span>Compartilhar</span>
       </button>
 

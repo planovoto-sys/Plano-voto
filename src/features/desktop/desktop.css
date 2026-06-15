@@ -103,55 +103,268 @@
 }
 
 .desktop-step-nav {
+  --desktop-step-nav-orange: #ff6f00;
+  --desktop-step-nav-orange-soft: #ffb74d;
+  --desktop-step-nav-check: #4caf50;
+  --desktop-step-nav-text: #616161;
+  --desktop-step-nav-muted: #e0e0e0;
+  --desktop-step-nav-node-size: clamp(50px, 4.3vw, 62px);
+  --desktop-step-nav-node-border: clamp(2px, 0.22vw, 3px);
+  --desktop-step-nav-item-width: clamp(94px, 9vw, 122px);
+  --desktop-step-nav-connector-gap: clamp(10px, 1.25vw, 18px);
+  --desktop-step-nav-connector-height: 3px;
+  --desktop-step-nav-copy-gap: 5px;
+  --desktop-step-nav-label-size: clamp(12px, 1.05vw, 14px);
+  --desktop-step-nav-status-size: clamp(10px, 0.94vw, 12px);
+  --desktop-step-nav-brand-mask-size: 18px 18px;
   min-width: 0;
-  display: inline-flex;
+  display: flex;
+  align-items: flex-start;
   justify-content: center;
-  gap: 8px;
+  gap: 0;
+  white-space: nowrap;
 }
 
-.desktop-step-nav__item {
-  min-height: 42px;
-  border: 1px solid transparent;
+.desktop-step-nav__slot {
+  min-width: 0;
+  display: inline-flex;
+  align-items: flex-start;
+  flex: 0 0 auto;
+}
+
+.desktop-step-nav__connector {
+  align-self: flex-start;
+  width: var(--desktop-step-nav-connector-gap);
+  height: var(--desktop-step-nav-connector-height);
+  margin-top: calc(var(--desktop-step-nav-node-size) / 2 - var(--desktop-step-nav-connector-height) / 2);
   border-radius: 999px;
-  background: transparent;
-  color: rgba(17, 17, 17, 0.58);
+  flex: 1 1 auto;
+}
+
+.desktop-step-nav__connector.is-complete {
+  background: var(--desktop-step-nav-orange);
+}
+
+.desktop-step-nav__connector.is-pending {
+  background: var(--desktop-step-nav-muted);
+}
+
+.desktop-step-nav__back-indicator {
+  align-self: flex-start;
+  width: 18px;
+  height: 18px;
+  margin: calc((var(--desktop-step-nav-node-size) - 18px) / 2) 6px 0 0;
+  color: var(--desktop-step-nav-orange-soft);
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 0 13px;
+  justify-content: center;
+  flex: 0 0 auto;
+  transform: translateY(1px);
+}
+
+.desktop-step-nav__back-indicator svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.4;
+}
+
+.desktop-step-nav__step {
+  min-width: 0;
+  width: var(--desktop-step-nav-item-width);
+  border: 0;
+  background: transparent;
+  color: var(--desktop-step-nav-text);
+  display: grid;
+  justify-items: center;
+  gap: var(--desktop-step-nav-copy-gap);
+  padding: 0;
   font-family: var(--font-family);
-  font-size: 12px;
-  font-weight: 850;
+  text-align: center;
+  cursor: default;
+  transition: transform 180ms ease, color 180ms ease;
+}
+
+.desktop-step-nav__step.is-clickable {
   cursor: pointer;
 }
 
-.desktop-step-nav__item:hover,
-.desktop-step-nav__item:focus-visible {
-  border-color: rgba(17, 17, 17, 0.12);
-  color: var(--text-strong);
+.desktop-step-nav__step.is-clickable:hover,
+.desktop-step-nav__step.is-clickable:focus-visible {
+  transform: translateY(-1px);
 }
 
-.desktop-step-nav__item.is-active {
-  border-color: rgba(255, 153, 0, 0.32);
-  background: rgba(255, 153, 0, 0.1);
-  color: var(--text-strong);
+.desktop-step-nav__step:disabled {
+  opacity: 1;
 }
 
-.desktop-step-nav__item.is-complete {
-  color: var(--text-strong);
-}
-
-.desktop-step-nav__item.is-disabled {
-  cursor: not-allowed;
-  opacity: 0.46;
-}
-
-.desktop-step-nav__dot {
-  width: 8px;
-  height: 8px;
+.desktop-step-nav__node {
+  position: relative;
+  width: var(--desktop-step-nav-node-size);
+  height: var(--desktop-step-nav-node-size);
   border-radius: 50%;
-  background: currentColor;
-  opacity: 0.65;
+  display: grid;
+  place-items: center;
+  color: var(--desktop-step-nav-text);
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 220ms ease,
+    transform 220ms ease;
+}
+
+.desktop-step-nav__node.is-complete {
+  border: 1px solid rgba(255, 111, 0, 0.28);
+  background: rgba(255, 183, 77, 0.34);
+  box-shadow: 0 10px 22px rgba(255, 111, 0, 0.14);
+}
+
+.desktop-step-nav__node.is-active {
+  border: 3px solid #e36d00;
+  background: linear-gradient(180deg, #ff8e1a 0%, #ff6f00 100%);
+  color: var(--desktop-step-nav-text);
+  box-shadow:
+    0 0 0 6px rgba(255, 111, 0, 0.18),
+    0 0 0 12px rgba(255, 111, 0, 0.06),
+    0 0 34px rgba(255, 111, 0, 0.78),
+    0 18px 40px rgba(255, 111, 0, 0.28);
+  animation: desktopStepGlow 2.4s ease-in-out infinite;
+}
+
+.desktop-step-nav__node.is-pending {
+  border: 1px solid rgba(97, 97, 97, 0.26);
+  background: transparent;
+  box-shadow: none;
+}
+
+.desktop-step-nav__icon {
+  width: calc(var(--desktop-step-nav-node-size) * 0.48);
+  height: calc(var(--desktop-step-nav-node-size) * 0.48);
+  color: #111111;
+  display: block;
+  object-fit: contain;
+}
+
+.desktop-step-nav__node.is-brand .desktop-step-nav__icon {
+  width: calc(var(--desktop-step-nav-node-size) * 0.52);
+  height: calc(var(--desktop-step-nav-node-size) * 0.52);
+}
+
+.desktop-step-nav__check {
+  position: absolute;
+  top: -4px;
+  right: -3px;
+  width: 18px;
+  height: 18px;
+  border: 1px solid rgba(76, 175, 80, 0.16);
+  border-radius: 50%;
+  background: #f4fbf4;
+  color: var(--desktop-step-nav-check);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 14px rgba(76, 175, 80, 0.2);
+}
+
+.desktop-step-nav__check svg {
+  width: 12px;
+  height: 12px;
+  stroke-width: 3.25;
+}
+
+.desktop-step-nav__copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+  justify-items: center;
+}
+
+.desktop-step-nav__label {
+  min-width: 0;
+  color: var(--desktop-step-nav-text);
+  font-size: var(--desktop-step-nav-label-size);
+  font-weight: 700;
+  line-height: 1.05;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.desktop-step-nav__status {
+  min-width: 0;
+  color: var(--desktop-step-nav-text);
+  font-size: var(--desktop-step-nav-status-size);
+  font-weight: 600;
+  line-height: 1.15;
+  opacity: 0.8;
+}
+
+.desktop-step-nav__step.is-active .desktop-step-nav__label {
+  color: var(--desktop-step-nav-orange);
+  font-weight: 900;
+}
+
+.desktop-step-nav__step.is-active .desktop-step-nav__status {
+  color: #ffb56e;
+  font-weight: 700;
+  opacity: 1;
+}
+
+.desktop-step-nav__step.is-complete .desktop-step-nav__label,
+.desktop-step-nav__step.is-pending .desktop-step-nav__label {
+  color: var(--desktop-step-nav-text);
+  font-weight: 700;
+}
+
+.desktop-step-nav__step.is-complete .desktop-step-nav__status,
+.desktop-step-nav__step.is-pending .desktop-step-nav__status {
+  color: var(--desktop-step-nav-text);
+  opacity: 0.74;
+}
+
+.desktop-step-nav__step.is-clickable:hover .desktop-step-nav__node,
+.desktop-step-nav__step.is-clickable:focus-visible .desktop-step-nav__node {
+  transform: translateY(-1px);
+}
+
+.desktop-step-nav__step.is-clickable:hover .desktop-step-nav__label,
+.desktop-step-nav__step.is-clickable:focus-visible .desktop-step-nav__label {
+  color: var(--desktop-step-nav-orange);
+}
+
+.desktop-step-nav__step.is-clickable:hover .desktop-step-nav__status,
+.desktop-step-nav__step.is-clickable:focus-visible .desktop-step-nav__status {
+  opacity: 0.94;
+}
+
+.desktop-step-nav__step:focus-visible {
+  outline: none;
+}
+
+.desktop-step-nav__step:focus-visible .desktop-step-nav__node {
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.95),
+    0 0 0 7px rgba(255, 111, 0, 0.16),
+    0 0 0 12px rgba(255, 111, 0, 0.08);
+}
+
+@keyframes desktopStepGlow {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow:
+      0 0 0 6px rgba(255, 111, 0, 0.18),
+      0 0 0 12px rgba(255, 111, 0, 0.06),
+      0 0 34px rgba(255, 111, 0, 0.78),
+      0 18px 40px rgba(255, 111, 0, 0.28);
+  }
+
+  50% {
+    transform: scale(1.03);
+    box-shadow:
+      0 0 0 8px rgba(255, 111, 0, 0.2),
+      0 0 0 16px rgba(255, 111, 0, 0.08),
+      0 0 42px rgba(255, 111, 0, 0.9),
+      0 22px 48px rgba(255, 111, 0, 0.34);
+  }
 }
 
 .desktop-main {
@@ -1139,12 +1352,12 @@
     gap: 12px;
   }
 
-  .desktop-step-nav__item {
-    padding-inline: 10px;
-  }
-
-  .desktop-step-nav__item span:last-child {
-    display: none;
+  .desktop-step-nav {
+    --desktop-step-nav-node-size: clamp(46px, 4.8vw, 56px);
+    --desktop-step-nav-item-width: clamp(88px, 10vw, 108px);
+    --desktop-step-nav-connector-gap: clamp(22px, 2.8vw, 48px);
+    --desktop-step-nav-label-size: clamp(11px, 0.94vw, 13px);
+    --desktop-step-nav-status-size: clamp(9px, 0.84vw, 11px);
   }
 
   .desktop-mobile-handoff-panel {

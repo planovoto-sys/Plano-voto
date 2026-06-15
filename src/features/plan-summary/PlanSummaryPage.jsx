@@ -113,13 +113,6 @@ const getScoreStarFills = (score) => {
   ));
 };
 
-const getViabilityLabel = (chance) => {
-  if (chance >= 80) return 'Excelente';
-  if (chance >= 60) return 'Boa';
-  if (chance >= 35) return 'Regular';
-  return 'Baixa';
-};
-
 function ScoreStars({ score }) {
   return (
     <span className="my-plan-overview__stars" aria-hidden="true">
@@ -141,25 +134,20 @@ function ScoreStars({ score }) {
 
 function PlanViabilityGauge({ chance }) {
   const progress = Math.max(0, Math.min(100, Math.round(chance)));
-  const viabilityLabel = getViabilityLabel(progress);
 
   return (
     <div className="viability-thermometer-container">
-      {/* Cabeçalho com o Texto e a Badge */}
       <div className="viability-thermometer__header">
         <span className="viability-thermometer__title">
-          <strong>{progress}%</strong> VIÁVEL
+          <strong>{progress}%</strong>
         </span>
-   
       </div>
 
-      {/* Barra do Termômetro */}
       <div className="viability-thermometer__track">
-        <div 
-          className="viability-thermometer__fill" 
+        <div
+          className="viability-thermometer__fill"
           style={{ width: `${progress}%` }}
         ></div>
-        {/* Marcações de 25%, 50% e 75% */}
         <span className="viability-thermometer__tick viability-thermometer__tick--first"></span>
         <span className="viability-thermometer__tick viability-thermometer__tick--second"></span>
         <span className="viability-thermometer__tick viability-thermometer__tick--third"></span>
@@ -317,17 +305,6 @@ export default function MeuPlano() {
     navigate(route, { state: { bypassVoteRedirect: true } });
   };
 
-  const getNextMissingRoute = () => {
-    if (!estadoSigla) return BALLOT_ROUTES.estado;
-    if (deputadosFederais.length === 0) return BALLOT_ROUTES.deputadoFederal;
-    if (senadores.length < 2) return BALLOT_ROUTES.senadores;
-    return BALLOT_ROUTES.meuPlano;
-  };
-
-  const handleContinuePlan = () => {
-    handleEdit(getNextMissingRoute());
-  };
-
   const handleLogin = () => {
     navigate('/login', {
       state: {
@@ -450,6 +427,7 @@ export default function MeuPlano() {
               </article>
 
               <article className="my-plan-overview__metric my-plan-overview__metric--score">
+                <small className="my-plan-overview__metric-title">Nota</small>
                 <strong className="my-plan-overview__score">
                   {averageScore > 0 ? formatScore(averageScore) : '--'}
                 </strong>
@@ -457,6 +435,7 @@ export default function MeuPlano() {
               </article>
 
               <article className="my-plan-overview__metric my-plan-overview__metric--viability">
+                <small className="my-plan-overview__metric-title">Viabilidade</small>
                 <PlanViabilityGauge chance={averageChance} />
               </article>
             </div>
@@ -502,11 +481,7 @@ export default function MeuPlano() {
           </section>
 
           <section className="my-plan-actions" aria-label="Ações do plano">
-            {!hasCompletePlan ? (
-              <button className="my-plan-continue-button nv-touch" type="button" onClick={handleContinuePlan}>
-                <strong>Escolher</strong>
-              </button>
-            ) : isGuestMode ? (
+            {isGuestMode ? (
               <div className="my-plan-save-invite">
                 <strong>Entrar para compartilhar</strong>
                 <span>Seu plano está salvo neste dispositivo. Entre para compartilhar com segurança.</span>
@@ -516,7 +491,7 @@ export default function MeuPlano() {
               </div>
             ) : (
               shareData ? (
-                <ShareChoicePanel shareData={shareData} className="my-plan-share-panel" />
+                <ShareChoicePanel shareData={shareData} className="my-plan-share-panel my-plan-share-panel--fab" appearance="fab" />
               ) : (
                 <div className="my-plan-share-disabled">
                   <strong>Compartilhar plano</strong>

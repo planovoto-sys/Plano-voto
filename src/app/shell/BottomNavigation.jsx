@@ -1,4 +1,4 @@
-import { MapPin } from 'lucide-react';
+import { Check, ChevronRight, MapPin } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import fireIconUrl from '@/assets/icone-fogo.png';
 import { BALLOT_ROUTES } from '@/shared/constants/ballot';
@@ -45,50 +45,23 @@ function SenatorIcon({ className = '', strokeWidth = NAV_ICON_STROKE_WIDTH }) {
   );
 }
 
-function FireMaskIcon({
-  className = '',
-  style,
-  ...props
-}) {
+function FireMaskIcon({ className = '', style, ...props }) {
   const iconStyle = {
-    backgroundColor: 'currentColor',
-    WebkitMaskImage: `url(${fireIconUrl})`,
-    WebkitMaskPosition: 'center',
-    WebkitMaskRepeat: 'no-repeat',
-    WebkitMaskSize: 'var(--bottom-nav-brand-mask-size, 24px 24px)',
-    maskImage: `url(${fireIconUrl})`,
-    maskPosition: 'center',
-    maskRepeat: 'no-repeat',
-    maskSize: 'var(--bottom-nav-brand-mask-size, 24px 24px)',
+    objectFit: 'contain',
+    objectPosition: 'center',
+    padding: '0',
+    boxSizing: 'border-box',
     ...style
   };
 
-  return (
-    <span
-      className={className}
-      aria-hidden="true"
-      style={iconStyle}
-      {...props}
-    />
-  );
+  return <img className={className} src={fireIconUrl} alt="" aria-hidden="true" style={iconStyle} {...props} />;
 }
 
-const PROGRESS_ITEMS = [
+const STEPS = [
   { id: 'estado', label: 'Estado', path: BALLOT_ROUTES.estado, Icon: MapPin },
   { id: 'deputado', label: 'Deputados', path: BALLOT_ROUTES.deputadoFederal, Icon: DeputyIcon },
-  { id: 'senador', label: 'Senadores', path: BALLOT_ROUTES.senadores, Icon: SenatorIcon }
-];
-
-const NAV_ITEMS = [
-  ...PROGRESS_ITEMS,
-  {
-    id: 'nossovoto',
-    label: 'nossovoto',
-    path: BALLOT_ROUTES.meuPlano,
-    Icon: FireMaskIcon,
-    brand: true,
-    strokeWidth: null
-  }
+  { id: 'senador', label: 'Senadores', path: BALLOT_ROUTES.senadores, Icon: SenatorIcon },
+  { id: 'nossovoto', label: 'nossovoto', path: BALLOT_ROUTES.meuPlano, Icon: FireMaskIcon }
 ];
 
 const STEP_BY_PATH = {
@@ -109,6 +82,41 @@ const STEP_BY_PATH = {
   '/finalizacao': 'nossovoto'
 };
 
+const STEP_STATUS_LABELS = {
+  complete: 'Concluído',
+  active: 'Em Progresso',
+  pending: 'Próximo Passo',
+  final: 'Etapa Final'
+};
+
+const STEP_PROGRESS_BY_ID = {
+  estado: (progress, estadoSelecionado) => Boolean(estadoSelecionado || progress?.hasEstado),
+  deputado: (progress) => Boolean(progress?.hasDeputadoFederal),
+  senador: (progress) => Boolean(progress?.hasSenadores),
+  nossovoto: (progress) => Boolean(progress?.isComplete)
+};
+
+function getCompletedStepById(progress, estadoSelecionado) {
+  return {
+    estado: Boolean(estadoSelecionado || progress?.hasEstado),
+    deputado: Boolean(progress?.hasDeputadoFederal),
+    senador: Boolean(progress?.hasSenadores),
+    nossovoto: Boolean(progress?.isComplete)
+  };
+}
+
+function getStepState(stepId, activeStep, completedSteps) {
+  if (stepId === activeStep) return 'active';
+  if (completedSteps[stepId]) return 'complete';
+  return 'pending';
+}
+
+function getStepStatus(state, index, totalSteps) {
+  if (state === 'complete') return STEP_STATUS_LABELS.complete;
+  if (state === 'active') return STEP_STATUS_LABELS.active;
+  return index === totalSteps - 1 ? STEP_STATUS_LABELS.final : STEP_STATUS_LABELS.pending;
+}
+
 export default function BottomNavigation({ currentStep, placement = 'footer' }) {
   const { user, userData } = useUser();
   const notify = useNotify();
@@ -119,115 +127,82 @@ export default function BottomNavigation({ currentStep, placement = 'footer' }) 
   const estadoSelecionado = user?.uid ? getBallotEstado(user.uid, userData?.estado) : getVisitorBallotEstado();
   const progress = draft ? getBallotProgress(draft) : null;
   const activeStep = currentStep || STEP_BY_PATH[location.pathname] || 'estado';
+  const activeIndex = Math.max(0, STEPS.findIndex((step) => step.id === activeStep));
+  const currentStepIsValid = STEP_PROGRESS_BY_ID[activeStep]?.(progress, estadoSelecionado) ?? false;
+  const firstPendingIndex = Math.min(activeIndex + 1, STEPS.length - 1);
+  const completedSteps = getCompletedStepById(progress, estadoSelecionado);
 
-  const hasEstado = Boolean(estadoSelecionado || progress?.hasEstado);
-  const hasDeputadoFederal = Boolean(progress?.hasDeputadoFederal);
-
-  const enabledByStep = {
-    estado: true,
-    deputado: hasEstado,
-    senador: hasEstado,
-    nossovoto: true
-  };
-
-  const getBlockedMessage = (itemId) => {
-    if (itemId === 'deputado' && !hasEstado) {
-      return 'Escolha seu estado para continuar.';
-    }
-
-    if (itemId === 'senador') {
-      if (!hasEstado) return 'Escolha seu estado para continuar.';
-    }
-
-    return 'Complete a etapa atual para continuar.';
-  };
-
-  const getIncompletePlanMessage = () => {
-    if (!hasEstado) return 'Escolha seu estado para completar o plano.';
-    if (!hasDeputadoFederal) return 'Escolha 1 deputado federal para completar o plano.';
-    if (!progress?.hasSenadores) {
-      return progress?.hasSenador1
-        ? 'Escolha mais 1 senador para completar o plano.'
-        : 'Escolha 2 senadores para completar o plano.';
-    }
-
-    return '';
-  };
-
-  const handleNavigate = (item, isDisabled) => {
-    if (isDisabled) {
-      notify.warning(getBlockedMessage(item.id), {
-        dedupeKey: `bottom-nav-blocked-${item.id}`,
+  const handleNavigate = (step, isClickable) => {
+    if (!isClickable) {
+      notify.warning('Complete a etapa atual para continuar.', {
+        dedupeKey: `bottom-nav-blocked-${step.id}`,
         duration: 4200
       });
       return;
     }
-    if (!item.path) return;
-    if (item.id === 'senador' && hasEstado && !hasDeputadoFederal) {
-      notify.warning('Escolha 1 deputado federal para completar o plano.', {
-        dedupeKey: 'bottom-nav-senator-without-deputy',
-        duration: 4200
-      });
-    }
-    if (item.id === 'nossovoto' && !progress?.isComplete) {
-      const message = getIncompletePlanMessage();
-      if (message) {
-        notify.warning(message, {
-          dedupeKey: 'bottom-nav-incomplete-plan',
-          duration: 4200
-        });
-      }
-    }
-    navigate(item.path, { state: { bypassVoteRedirect: true } });
+
+    navigate(step.path, { state: { bypassVoteRedirect: true } });
   };
 
-  const NavigationShell = placement === 'header' ? 'div' : 'footer';
-  const visibleItems = NAV_ITEMS;
-  const activeIndex = activeStep === 'nossovoto'
-    ? PROGRESS_ITEMS.length
-    : PROGRESS_ITEMS.findIndex((item) => item.id === activeStep);
-
   return (
-    <NavigationShell className={`app-page-footer app-page-footer--${placement} nv-no-overflow`}>
-      <nav className="bottom-step-nav" aria-label="Etapas do voto">
-        {visibleItems.map((item) => {
-          const StepIcon = item.Icon;
-          const iconProps = item.strokeWidth === null ? {} : { strokeWidth: item.strokeWidth ?? NAV_ICON_STROKE_WIDTH };
-          const isActive = activeStep === item.id;
-          const isDisabled = !isActive && !enabledByStep[item.id];
-          const itemIndex = PROGRESS_ITEMS.findIndex((progressItem) => progressItem.id === item.id);
-          const isProgressItem = itemIndex > -1;
-          const isComplete = isProgressItem && activeIndex > itemIndex;
-          const isFuture = isProgressItem && itemIndex > activeIndex;
+    <div className={`app-page-footer app-page-footer--${placement} nv-no-overflow`}>
+      <nav className={`bottom-step-nav bottom-step-nav--stepper bottom-step-nav--${placement}`} aria-label="Etapas do voto">
+      {STEPS.map((step, index) => {
+        const StepIcon = step.Icon;
+        const state = getStepState(step.id, activeStep, completedSteps);
+        const isClickable = state === 'complete' || (index === firstPendingIndex && currentStepIsValid);
+        const isFirstPending = index === firstPendingIndex && state === 'pending';
+          const statusLabel = getStepStatus(state, index, STEPS.length);
+          const iconProps = step.id === 'nossovoto' ? {} : { strokeWidth: NAV_ICON_STROKE_WIDTH };
 
           return (
-            <button
-              key={item.id}
-              className={[
-                'bottom-step-nav__item',
-                'nv-touch',
-                `bottom-step-nav__item--${item.id}`,
-                item.brand ? 'bottom-step-nav__item--brand' : '',
-                isActive ? 'is-active' : '',
-                isComplete ? 'is-complete' : '',
-                isFuture ? 'is-future' : '',
-                isDisabled ? 'is-disabled' : ''
-              ].filter(Boolean).join(' ')}
-              type="button"
-              onClick={() => handleNavigate(item, isDisabled)}
-              aria-current={isActive ? 'page' : undefined}
-              aria-disabled={isDisabled}
-            >
-              <StepIcon
-                className="bottom-step-nav__icon"
-                {...iconProps}
-                aria-hidden="true"
-              />
-              <span className="bottom-step-nav__label">{item.label}</span>
-            </button>
+            <div className="bottom-step-nav__slot" key={step.id}>
+              {index > 0 && (
+                <span
+                  className={[
+                    'bottom-step-nav__connector',
+                    index <= activeIndex ? 'is-complete' : 'is-pending'
+                  ].join(' ')}
+                  aria-hidden="true"
+                />
+              )}
+
+              {isFirstPending && isClickable && (
+                <span className="bottom-step-nav__back-indicator" aria-hidden="true">
+                  <ChevronRight />
+                </span>
+              )}
+
+              <button
+                className={[
+                  'bottom-step-nav__step',
+                  `is-${state}`,
+                  isClickable ? 'is-clickable' : 'is-locked'
+                ].join(' ')}
+                type="button"
+                onClick={() => handleNavigate(step, isClickable)}
+                aria-current={state === 'active' ? 'step' : undefined}
+                disabled={!isClickable}
+                title={`${step.label} - ${statusLabel}`}
+              >
+                <span className={`bottom-step-nav__node is-${state} ${step.id === 'nossovoto' ? 'is-brand' : ''}`} aria-hidden="true">
+                  <StepIcon className="bottom-step-nav__icon" {...iconProps} />
+                  {state === 'complete' && (
+                    <span className="bottom-step-nav__check" aria-hidden="true">
+                      <Check />
+                    </span>
+                  )}
+                </span>
+
+                <span className="bottom-step-nav__copy">
+                  <span className="bottom-step-nav__label">{step.label}</span>
+                  <span className="bottom-step-nav__status">{statusLabel}</span>
+                </span>
+              </button>
+            </div>
           );
         })}
       </nav>
-    </NavigationShell>
+    </div>
   );
 }

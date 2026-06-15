@@ -21,7 +21,10 @@
   --app-safe-top: env(safe-area-inset-top, 0px);
   --app-safe-bottom: env(safe-area-inset-bottom, 0px);
   --app-header-height: 56px;
-  --app-bottom-nav-height: 76px;
+  
+  /* ALTURA DA BARRA REDUZIDA AQUI */
+  --app-bottom-nav-height: 52px; 
+  
   --app-gutter: clamp(14px, 4vw, 20px);
   --app-radius-card: 16px;
   --app-radius-modal: 22px;
@@ -170,7 +173,7 @@ body {
 .prototype-page > .app-page-header {
   flex: 0 0 auto;
   position: relative;
-  min-height: 64px;
+  min-height: 56px;
   margin: 0;
   border-bottom: 1px solid var(--nav-line);
   border-radius: 0;
@@ -179,7 +182,7 @@ body {
   display: grid;
   grid-template-columns: minmax(40px, 1fr) minmax(0, max-content) minmax(40px, 1fr);
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   padding: 0 var(--screen-gutter);
   text-align: center;
 }
@@ -756,9 +759,9 @@ body {
   }
 
   .prototype-page > .app-page-header {
-    min-height: 64px;
+    min-height: 56px;
     grid-template-columns: minmax(40px, 1fr) minmax(0, max-content) minmax(40px, 1fr);
-    gap: 8px;
+    gap: 6px;
     padding: 0 var(--screen-gutter);
   }
 
@@ -802,7 +805,7 @@ body {
   }
 
   .prototype-page > .app-page-header {
-    min-height: 64px;
+    min-height: 56px;
     grid-template-columns: minmax(40px, 1fr) minmax(0, max-content) minmax(40px, 1fr);
     gap: 6px;
     padding: 0 var(--screen-gutter);
@@ -932,6 +935,8 @@ body {
   :root {
     --app-gutter: clamp(12px, 2.8vw, 22px);
     --app-header-height: 52px;
+    
+    /* ALTURA DA BARRA REDUZIDA NO MODO PAISAGEM */
     --app-bottom-nav-height: 52px;
     --bottom-nav-height: 52px;
   }
@@ -954,7 +959,10 @@ body {
 @media (min-width: 768px) {
   :root {
     --app-width: 100%;
-    --app-bottom-nav-height: 76px;
+    
+    /* ALTURA DA BARRA REDUZIDA EM TABLETS */
+    --app-bottom-nav-height: 52px;
+    
     --app-gutter: clamp(28px, 4vw, 64px);
   }
 
@@ -992,8 +1000,8 @@ body {
     display: grid;
     grid-template-columns: 44px minmax(190px, 0.72fr) minmax(40px, max-content) minmax(0, 1.28fr);
     align-items: center;
-    gap: 12px;
-    padding: 12px var(--screen-gutter);
+    gap: 10px;
+    padding: 9px var(--screen-gutter);
     text-align: center;
   }
 
@@ -1101,10 +1109,10 @@ body {
 
   .prototype-page > .app-page-header {
     grid-template-columns: auto minmax(160px, 220px) minmax(170px, max-content) minmax(0, 1fr) auto;
-    min-height: 74px;
-    padding-top: 13px;
-    padding-bottom: 13px;
-    gap: 14px;
+    min-height: 62px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    gap: 12px;
     box-shadow: 0 1px 0 rgba(17, 17, 17, 0.02), 0 12px 28px rgba(17, 17, 17, 0.04);
   }
 
@@ -1210,8 +1218,8 @@ body {
 @media (min-width: 1024px) and (max-width: 1279px) {
   .prototype-page > .app-page-header {
     gap: 10px;
-    padding-left: clamp(28px, 3.2vw, 44px);
-    padding-right: clamp(28px, 3.2vw, 44px);
+    padding-left: clamp(24px, 3vw, 40px);
+    padding-right: clamp(24px, 3vw, 40px);
   }
 
   .app-page-header__brand {
@@ -1248,15 +1256,15 @@ body {
 
 @media (min-width: 1180px) {
   .prototype-page > .app-page-header {
-    padding-left: clamp(64px, 7vw, 112px);
-    padding-right: clamp(64px, 7vw, 112px);
+    padding-left: clamp(40px, 4.5vw, 64px);
+    padding-right: clamp(40px, 4.5vw, 64px);
   }
 }
 
 @media (min-width: 1280px) {
   .prototype-page > .app-page-header {
     grid-template-columns: auto minmax(178px, 240px) minmax(220px, max-content) minmax(0, 1fr) auto;
-    gap: 18px;
+    gap: 14px;
   }
 
   .app-page-header__brand {
@@ -1288,9 +1296,9 @@ body {
 
 @media (min-width: 1280px) and (max-width: 1439px) {
   .prototype-page > .app-page-header {
-    gap: 12px;
-    padding-left: clamp(48px, 5vw, 72px);
-    padding-right: clamp(48px, 5vw, 72px);
+    gap: 10px;
+    padding-left: clamp(36px, 4vw, 56px);
+    padding-right: clamp(36px, 4vw, 56px);
   }
 
   .app-page-header__copy {
@@ -1320,6 +1328,8 @@ body {
     --app-width: 100%;
     --app-gutter: clamp(12px, 2.8vw, 22px);
     --app-header-height: 52px;
+    
+    /* ALTURA DA BARRA REDUZIDA AQUI TAMBÉM */
     --app-bottom-nav-height: 52px;
     --bottom-nav-height: 52px;
   }

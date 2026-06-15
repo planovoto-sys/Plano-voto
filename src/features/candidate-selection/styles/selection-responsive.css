@@ -265,7 +265,7 @@
 
 @media (max-width: 1023px) {
   .select-base-container {
-    --bottom-nav-height: 76px;
+    --bottom-nav-height: 52px;
   }
 
   .select-base-container .app-footer--scroll-content {

@@ -118,6 +118,60 @@
   display: none;
 }
 
+.share-choice-panel--fab {
+  position: fixed;
+  right: max(16px, var(--screen-gutter));
+  bottom: calc(var(--bottom-nav-height) + var(--app-safe-bottom) + 16px);
+  z-index: 48;
+  width: auto;
+  min-height: 0;
+  margin-top: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.share-choice-panel--fab .share-choice-panel__copy {
+  display: none;
+}
+
+.share-choice-panel--fab .share-choice-panel__button {
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  min-height: 56px;
+  border-radius: 50%;
+  color: rgba(17, 17, 17, 0.62);
+  padding: 0;
+  gap: 0;
+  pointer-events: auto;
+  box-shadow: none;
+}
+
+.share-choice-panel--fab .share-choice-panel__button:not(:disabled):hover {
+  box-shadow: none;
+}
+
+.share-choice-panel--fab .share-choice-panel__button:not(:disabled):active {
+  transform: scale(0.97);
+  box-shadow: none;
+}
+
+.share-choice-panel--fab .share-choice-panel__button svg {
+  width: 24px;
+  height: 24px;
+}
+
+.share-choice-panel--fab .share-choice-panel__button span {
+  display: none;
+}
+
 .share-modal {
   position: fixed;
   inset: 0;

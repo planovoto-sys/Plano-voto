@@ -253,6 +253,7 @@
   --overview-green: #3f9d46;
   --overview-green-soft: #e5f4e7;
   --overview-line: rgba(17, 17, 17, 0.1);
+  --overview-stars-width: calc((14px * 5) + (3px * 4));
   min-width: 0;
   border: 1px solid rgba(17, 17, 17, 0.08);
   border-radius: 20px;
@@ -272,11 +273,11 @@
 
 .my-plan-overview__metric {
   min-width: 0;
-  min-height: 82px;
+  min-height: 78px;
   display: grid;
   align-content: center;
   justify-items: center;
-  gap: 3px;
+  gap: 2px;
   padding: 0 clamp(4px, 2.2vw, 12px);
   text-align: center;
 }
@@ -307,11 +308,16 @@
   max-width: 100%;
   overflow: hidden;
   color: var(--muted);
-  font-size: clamp(9px, 2.4vw, 12px);
+  font-size: clamp(9px, 2.2vw, 11px);
   font-weight: 650;
   line-height: 1.15;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.my-plan-overview__metric-title {
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
 .my-plan-overview__stars {
@@ -319,6 +325,7 @@
   align-items: center;
   justify-content: center;
   gap: 3px;
+  width: var(--overview-stars-width);
   max-width: 100%;
 }
 
@@ -366,51 +373,40 @@
 .viability-thermometer-container {
   display: flex;
   flex-direction: column;
-  gap: clamp(6px, 1.5vw, 12px);
-  width: 100%;
-  max-width: 240px; 
+  gap: 3px;
+  width: var(--overview-stars-width);
+  max-width: 100%;
+  align-items: center;
 }
 
 .viability-thermometer__header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   width: 100%;
 }
 
 .viability-thermometer__title {
   font-family: var(--font-family);
-  font-size: clamp(11px, 2.5vw, 13px);
-  font-weight: 700;
+  font-size: 0;
   color: var(--text-main);
   display: flex;
   align-items: baseline;
-  gap: 4px;
+  gap: 0;
 }
 
 .viability-thermometer__title strong {
   font-family: var(--font-display);
   font-size: clamp(18px, 5vw, 26px);
   font-weight: 900;
-  color: var(--text-strong);
+  color: var(--overview-green);
   letter-spacing: -0.5px;
-}
-
-.viability-thermometer__badge {
-  background-color: #dcf7d7; 
-  color: #4d9849; 
-  padding: clamp(2px, 0.5vw, 4px) clamp(6px, 1.5vw, 10px);
-  border-radius: 9999px;
-  font-family: var(--font-family);
-  font-size: clamp(8px, 2vw, 10px);
-  font-weight: 800;
-  text-transform: uppercase;
 }
 
 .viability-thermometer__track {
   position: relative;
-  width: 100%;
-  height: 7px; 
+  width: var(--overview-stars-width);
+  height: 14px;
   background-color: #f0f2ef;
   border-radius: 999px;
   overflow: hidden;
@@ -423,7 +419,7 @@
   height: 100%;
   background: #90df72;
   border-radius: 999px;
-  transition: width 0.8s cubic-bezier(0.2, 0.8, 0.18, 1); 
+  transition: width 0.8s cubic-bezier(0.2, 0.8, 0.18, 1);
   will-change: width;
 }
 
@@ -431,7 +427,7 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 2px;
+  width: 1px;
   background: rgba(255, 255, 255, 0.8);
   z-index: 2;
 }
@@ -493,22 +489,22 @@
 .my-plan-choice-list .prototype-candidate-card {
   --candidate-card-pad-left: 13px;
   --candidate-card-pad-right: 13px;
-  --candidate-metric-size: 48px;
-  --candidate-name-size: 14px;
-  --candidate-score-size: 11px;
-  --candidate-bar-height: 11px;
-  --candidate-caption-size: 8.5px;
-  --candidate-badge-size: 8.5px;
-  --candidate-badge-height: 22px;
-  --candidate-badge-pad-inline: 9px;
-  --candidate-status-icon-box: 17px;
-  --candidate-status-icon-size: 16px;
-  --candidate-fire-icon-width: 13px;
-  --candidate-fire-icon-height: 17px;
-  min-height: 92px;
+  --candidate-metric-size: 44px;
+  --candidate-name-size: 13px;
+  --candidate-score-size: 10px;
+  --candidate-bar-height: 9px;
+  --candidate-caption-size: 8px;
+  --candidate-badge-size: 8px;
+  --candidate-badge-height: 18px;
+  --candidate-badge-pad-inline: 8px;
+  --candidate-status-icon-box: 16px;
+  --candidate-status-icon-size: 15px;
+  --candidate-fire-icon-width: 12px;
+  --candidate-fire-icon-height: 16px;
+  min-height: 82px;
   border-radius: 12px;
-  gap: 3px;
-  padding-block: 8px 11px;
+  gap: 2px;
+  padding-block: 6px 8px;
 }
 
 .my-plan-choice-list .candidate-card__identity-copy {
@@ -539,12 +535,12 @@
 }
 
 .my-plan-choice-list .candidate-thermometer {
-  margin-top: 6px;
+  margin-top: 4px;
 }
 
 .my-plan-choice-list .candidate-thermometer__caption {
-  margin-top: 6px;
-  min-height: var(--candidate-badge-height, 22px);
+  margin-top: 4px;
+  min-height: var(--candidate-badge-height, 18px);
 }
 
 .my-plan-empty-choice {
@@ -680,7 +676,7 @@
   text-align: left;
 }
 
-.my-plan-share-panel {
+.my-plan-share-panel:not(.my-plan-share-panel--fab) {
   min-height: 0;
   margin-top: 0;
   border: 0;
@@ -691,11 +687,11 @@
   padding: 0;
 }
 
-.my-plan-share-panel .share-choice-panel__copy {
+.my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__copy {
   display: none;
 }
 
-.my-plan-share-panel .share-choice-panel__button {
+.my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__button {
   width: 100%;
   max-width: 512px;
   min-height: 58px;
@@ -714,13 +710,13 @@
   transition: none;
 }
 
-.my-plan-share-panel .share-choice-panel__button:not(:disabled):hover,
-.my-plan-share-panel .share-choice-panel__button:not(:disabled):active {
+.my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__button:not(:disabled):hover,
+.my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__button:not(:disabled):active {
   box-shadow: none;
   transform: none;
 }
 
-.my-plan-share-panel .share-choice-panel__button svg {
+.my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__button svg {
   display: none;
 }
 
@@ -797,7 +793,7 @@
     font-size: 18px;
   }
 
-  .my-plan-share-panel .share-choice-panel__button {
+  .my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__button {
     font-size: 16px;
   }
 
@@ -898,7 +894,7 @@
     padding-top: 2px;
   }
 
-  .my-plan-share-panel .share-choice-panel__button,
+  .my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__button,
   .my-plan-continue-button {
     min-height: 52px;
   }
@@ -1008,7 +1004,7 @@
     min-height: 70px;
   }
 
-  .my-plan-share-panel .share-choice-panel__button {
+  .my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__button {
     min-height: 58px;
   }
 
@@ -1016,7 +1012,7 @@
     font-size: 18px;
   }
 
-  .my-plan-share-panel .share-choice-panel__button {
+  .my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__button {
     font-size: 16px;
   }
 }
@@ -1073,21 +1069,21 @@
   .my-plan-choice-list .prototype-candidate-card {
     --candidate-card-pad-left: 20px;
     --candidate-card-pad-right: 20px;
-    --candidate-metric-size: 52px;
-    --candidate-name-size: clamp(15px, 1vw, 17px);
-    --candidate-score-size: clamp(13px, 0.82vw, 15px);
-    --candidate-bar-height: 12px;
-    --candidate-caption-size: 10px;
-    --candidate-badge-size: 10px;
-    --candidate-badge-height: 28px;
-    --candidate-badge-pad-inline: 12px;
+    --candidate-metric-size: 48px;
+    --candidate-name-size: clamp(14px, 0.95vw, 16px);
+    --candidate-score-size: clamp(12px, 0.8vw, 14px);
+    --candidate-bar-height: 10px;
+    --candidate-caption-size: 9px;
+    --candidate-badge-size: 9px;
+    --candidate-badge-height: 22px;
+    --candidate-badge-pad-inline: 10px;
     --candidate-status-icon-box: 18px;
-    --candidate-status-icon-size: 18px;
-    --candidate-fire-icon-width: 16px;
-    --candidate-fire-icon-height: 21px;
-    min-height: 104px;
+    --candidate-status-icon-size: 17px;
+    --candidate-fire-icon-width: 15px;
+    --candidate-fire-icon-height: 19px;
+    min-height: 92px;
     border-radius: 12px;
-    padding-block: 14px 12px;
+    padding-block: 10px 10px;
   }
 
   .my-plan-choice-list .candidate-card__identity small {
@@ -1095,7 +1091,7 @@
   }
 
   .my-plan-choice-list .candidate-thermometer {
-    margin-top: 8px;
+    margin-top: 5px;
   }
 
   .my-plan-actions {
@@ -1108,7 +1104,7 @@
     pointer-events: auto;
   }
 
-  .my-plan-actions > * {
+  .my-plan-actions > *:not(.my-plan-share-panel--fab) {
     width: min(100%, 520px);
     justify-self: start;
   }
@@ -1335,7 +1331,7 @@
     max-width: none;
   }
 
-  .my-plan-share-panel .share-choice-panel__button,
+  .my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__button,
   .my-plan-continue-button {
     min-height: 48px;
     max-width: 430px;

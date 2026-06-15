@@ -16,8 +16,6 @@ import {
 } from '@/shared/utils/candidateMetrics';
 import CandidateCard from './CandidateCard';
 import {
-  CARD_MODE_OPTIONS,
-  DESKTOP_LAYOUT_QUERY,
   INITIAL_CANDIDATE_RENDER_LIMIT,
   getScreenCopy,
   getSubNavLabel,
@@ -54,8 +52,6 @@ export default function SelectBase({
   shareData = null,
   featuredCandidateId = null,
   personalizedFieldsLocked = false,
-  draftStateLabel = '',
-  draftIsLocal = false,
   renderItem
 }) {
   const navigate = useNavigate();
@@ -65,13 +61,12 @@ export default function SelectBase({
   const isCandidateOffice = variant === 'office-deputado' || variant === 'office-senado';
   const isDeputyOffice = variant === 'office-deputado';
   const isSenateOffice = variant === 'office-senado';
+  const candidateCardMode = isCandidateOffice ? 'detailed' : 'compact';
   const [selecionados, setSelecionados] = useState(selecaoInicial);
   const [candidateRenderLimit, setCandidateRenderLimit] = useState(INITIAL_CANDIDATE_RENDER_LIMIT);
   const [candidateFilterOpen, setCandidateFilterOpen] = useState(false);
-  const [candidateCardModeOpen, setCandidateCardModeOpen] = useState(false);
   const candidateSearchInputRef = useRef(null);
   const candidateFilterRef = useRef(null);
-  const candidateCardModeRef = useRef(null);
   const lastScrollTopRef = useRef(0);
   const [continueVisible, setContinueVisible] = useState(false);
   const [senateChoicesSaved, setSenateChoicesSaved] = useState(false);
@@ -83,11 +78,6 @@ export default function SelectBase({
   const [modalErroSalvar, setModalErroSalvar] = useState({ aberto: false, mensagem: '' });
   const [modalCampoBloqueado, setModalCampoBloqueado] = useState(false);
   const [salvandoSelecao, setSalvandoSelecao] = useState(false);
-  const [isDesktopLayout, setIsDesktopLayout] = useState(() => (
-    typeof window !== 'undefined' && window.matchMedia(DESKTOP_LAYOUT_QUERY).matches
-  ));
-  const [showAllSelectedInCurrentSection, setShowAllSelectedInCurrentSection] = useState(false);
-  const [candidateCardMode, setCandidateCardMode] = useState('compact');
 
   useEffect(() => {
     let cancelled = false;
@@ -104,17 +94,6 @@ export default function SelectBase({
       cancelled = true;
     };
   }, [selecaoInicial]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined;
-
-    const mediaQuery = window.matchMedia(DESKTOP_LAYOUT_QUERY);
-    const handleChange = () => setIsDesktopLayout(mediaQuery.matches);
-
-    handleChange();
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, []);
 
   useEffect(() => {
     if (!candidateFilterOpen || typeof document === 'undefined') return undefined;
@@ -138,35 +117,12 @@ export default function SelectBase({
   }, [candidateFilterOpen]);
 
   useEffect(() => {
-    if (!candidateCardModeOpen || typeof document === 'undefined') return undefined;
-
-    const handlePointerDown = (event) => {
-      if (candidateCardModeRef.current?.contains(event.target)) return;
-      setCandidateCardModeOpen(false);
-    };
-
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') setCandidateCardModeOpen(false);
-    };
-
-    document.addEventListener('pointerdown', handlePointerDown);
-    document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [candidateCardModeOpen]);
-
-  useEffect(() => {
     let cancelled = false;
 
     lastScrollTopRef.current = 0;
     queueMicrotask(() => {
       if (!cancelled) {
         setContinueVisible(false);
-        setCandidateCardMode('compact');
-        setCandidateCardModeOpen(false);
       }
     });
 
@@ -186,7 +142,7 @@ export default function SelectBase({
     selecionados.map((candidate) => candidate.id).filter(Boolean).sort().join('|')
   ), [selecionados]);
   const showSavedSenateSharePanel = isSenateOffice && senateChoicesSaved && hasRequiredSelection && Boolean(shareData);
-  const shouldRenderContinue = hasAnySelection && !isHomeState;
+  const shouldRenderContinue = hasAnySelection && !isHomeState && !isCandidateOffice;
   const shouldShowContinue = shouldRenderContinue && continueVisible;
   const shouldShowDesktopContinue = shouldRenderContinue;
   const candidateListInstruction = 'Selecione todos os candidatos que aceita votar';
@@ -272,41 +228,6 @@ export default function SelectBase({
 
   const hasMoreCandidates = visibleSecondaryCandidates.length < dados.length;
 
-  const selectedPreviewCandidates = useMemo(() => {
-    if (!isCandidateOffice) return selecionados;
-
-    const displayLimit = isSenateOffice ? 2 : 1;
-    const groupWeight = (candidate) => {
-      const score = getCandidateSystemScore(candidate);
-      const chance = getCandidateChance(candidate);
-
-      if (score > 7 && chance > 0 && chance < 100) return 0;
-      if (score >= 7 && chance < 100) return 1;
-      if (score >= 7 && chance >= 100) return 2;
-      if (score > 0 && score < 7) return 3;
-      return 4;
-    };
-
-    return [...selecionados]
-      .sort((a, b) => {
-        const groupDiff = groupWeight(a) - groupWeight(b);
-        if (groupDiff !== 0) return groupDiff;
-
-        const chanceDiff = getCandidateChance(b) - getCandidateChance(a);
-        if (chanceDiff !== 0) return chanceDiff;
-
-        const scoreDiff = getCandidateSystemScore(b) - getCandidateSystemScore(a);
-        if (scoreDiff !== 0) return scoreDiff;
-
-        return getCandidateName(a).localeCompare(getCandidateName(b));
-      })
-      .slice(0, displayLimit);
-  }, [isCandidateOffice, isSenateOffice, selecionados]);
-
-  const selectedSubNavigationItem = useMemo(() => (
-    subNavigationItems.find((item) => item.mode === 'selecionados' || item.id?.includes('selecionados')) || null
-  ), [subNavigationItems]);
-
   const candidateFilterItems = useMemo(() => (
     subNavigationItems.map((item) => ({
       ...item,
@@ -319,74 +240,6 @@ export default function SelectBase({
   );
 
   const activeCandidateFilterItem = candidateFilterItems.find(isCandidateFilterActive) || candidateFilterItems[0] || null;
-
-  const showSelectedInCurrentSection = Boolean(
-    isDesktopLayout &&
-    isCandidateOffice &&
-    selectedSubNavigationItem &&
-    showAllSelectedInCurrentSection &&
-    selecionados.length > 0
-  );
-
-  const currentSectionCandidates = showSelectedInCurrentSection ? selecionados : selectedPreviewCandidates;
-
-  const currentSelectionSubtitle = useMemo(() => {
-    if (!isCandidateOffice || currentSectionCandidates.length === 0) return null;
-
-    const hasLowScore = currentSectionCandidates.some((candidate) => {
-      const score = getCandidateSystemScore(candidate);
-      return score > 0 && score < 7;
-    });
-    const allHighViability = currentSectionCandidates.every((candidate) => getCandidateChance(candidate) >= 100);
-    const hasFeaturedCandidate = currentSectionCandidates.some((candidate) => (
-      candidate.isChanceFeatured || featuredMetricsByCandidateId.get(candidate.id)?.chance
-    ));
-    const allCurrentlyViable = currentSectionCandidates.every((candidate) => (
-      getCandidateSystemScore(candidate) > 7 &&
-      getCandidateChance(candidate) > 0 &&
-      getCandidateChance(candidate) < 100
-    ));
-
-    if (hasLowScore) {
-      return {
-        prefix: 'Atenção: ',
-        highlight: isSenateOffice ? 'revise as notas' : 'revise a nota',
-        showFire: false
-      };
-    }
-
-    if (allHighViability) {
-      return {
-        prefix: 'Salvo: ',
-        highlight: 'alta viabilidade',
-        showFire: false
-      };
-    }
-
-    if (hasFeaturedCandidate) {
-      return {
-        prefix: 'Boa escolha: ',
-        highlight: isSenateOffice ? 'mais viáveis' : 'mais viável',
-        showFire: true
-      };
-    }
-
-    if (allCurrentlyViable) {
-      return {
-        prefix: 'Boa escolha: ',
-        highlight: 'boa viabilidade',
-        showFire: true
-      };
-    }
-
-    return {
-      prefix: 'Dica: ',
-      highlight: isSenateOffice ? 'compare destaques' : 'compare o destaque',
-      showFire: true
-    };
-  }, [currentSectionCandidates, featuredMetricsByCandidateId, isCandidateOffice, isSenateOffice]);
-
-  const revealContinue = () => setContinueVisible(true);
 
   const getRequiredSelectionMessage = () => {
     if (isSenateOffice) {
@@ -539,7 +392,7 @@ export default function SelectBase({
       return;
     }
 
-    revealContinue();
+    setContinueVisible(true);
     setSelecionados([item]);
   };
 
@@ -617,11 +470,6 @@ export default function SelectBase({
     setModalCampoBloqueado(true);
   };
 
-  const handleCandidateCardModeSelect = (nextMode) => {
-    setCandidateCardMode(nextMode);
-    setCandidateCardModeOpen(false);
-  };
-
   const handleLoginFromLockedMetric = () => {
     navigate('/login', {
       state: {
@@ -638,12 +486,12 @@ export default function SelectBase({
         <div className={`candidate-search-filter candidate-search-filter--state ${className}`} id="tour-busca">
           <label className="candidate-search-filter__search">
             <SearchIcon />
-            <span>Pesquisar estados</span>
+            <span>Pesquisar</span>
             <input
               type="search"
               value={valorBusca}
               onChange={handleSearchChange}
-              placeholder="Pesquisar estados"
+              placeholder="Pesquisar"
             />
           </label>
         </div>
@@ -653,12 +501,12 @@ export default function SelectBase({
     return (
       <label className={`select-search-field ${className}`} id="tour-busca">
         <SearchIcon />
-        <span>Buscar</span>
+        <span>Pesquisar</span>
         <input
           type="search"
           value={valorBusca}
           onChange={handleSearchChange}
-          placeholder={isHomeState ? '' : 'Pesquisar candidatos ou partidos'}
+          placeholder={isHomeState ? '' : 'Pesquisar'}
         />
       </label>
     );
@@ -676,13 +524,13 @@ export default function SelectBase({
         {mostrarBusca && (
           <label className="candidate-search-filter__search">
             <SearchIcon />
-            <span>Pesquisar candidatos ou partidos</span>
+            <span>Pesquisar</span>
             <input
               ref={candidateSearchInputRef}
               type="search"
               value={valorBusca}
               onChange={handleSearchChange}
-              placeholder="Pesquisar candidatos ou partidos"
+              placeholder="Pesquisar"
             />
           </label>
         )}
@@ -697,7 +545,6 @@ export default function SelectBase({
               className="candidate-search-filter__trigger nv-touch"
               type="button"
               onClick={() => {
-                setCandidateCardModeOpen(false);
                 setCandidateFilterOpen((currentValue) => !currentValue);
               }}
               aria-expanded={candidateFilterOpen}
@@ -778,89 +625,8 @@ export default function SelectBase({
   };
 
   const renderCandidateList = () => {
-    const currentTitle = 'Meu Candidato';
-    const hasCurrentCandidates = currentSectionCandidates.length > 0;
-    const showDraftSidebar = isCandidateOffice && (hasCurrentCandidates || isDesktopLayout);
     return (
-      <div className={`candidate-flow nv-container ${showDraftSidebar ? 'has-current-selection' : ''} ${isSenateOffice ? 'candidate-flow--senate' : 'candidate-flow--single'} ${showSelectedInCurrentSection ? 'is-showing-all-selected' : ''}`} id="tour-lista">
-        {showDraftSidebar && (
-          <section className="candidate-current-section">
-            <div className="prototype-section-heading prototype-section-heading--current">
-              <div className="prototype-section-heading__copy">
-                <h2>{currentTitle}</h2>
-                <p>
-                  {draftIsLocal ? (
-                    <>
-                      <span className="candidate-current-badge">Rascunho local</span>
-                      <span>Entre para salvar na conta.</span>
-                    </>
-                  ) : currentSelectionSubtitle ? (
-                    <>
-                      {currentSelectionSubtitle.prefix}
-                      <span className="candidate-current-highlight">{currentSelectionSubtitle.highlight}</span>
-                      {currentSelectionSubtitle.showFire && (
-                        <ChanceFlame className="candidate-current-highlight__flame" size={12} />
-                      )}
-                    </>
-                  ) : (
-                    <span>Escolha candidatos para montar seu plano.</span>
-                  )}
-                </p>
-              </div>
-              {selectedSubNavigationItem && (
-                <button
-                  className={`candidate-current-selected-toggle nv-touch ${showSelectedInCurrentSection ? 'is-active' : ''}`}
-                  type="button"
-                  onClick={() => {
-                    revealContinue();
-                    setShowAllSelectedInCurrentSection((currentValue) => !currentValue);
-                  }}
-                >
-                  {getSubNavLabel(selectedSubNavigationItem)}
-                </button>
-              )}
-            </div>
-
-            {draftStateLabel && (
-              <div className="candidate-current-state">
-                <span>Estado</span>
-                <strong>{draftStateLabel}</strong>
-              </div>
-            )}
-
-            {hasCurrentCandidates ? (
-              <div className={`candidate-current-list ${isSenateOffice ? 'candidate-current-list--double' : ''}`}>
-                {currentSectionCandidates.map((candidate) => (
-                  <CandidateCard
-                    key={candidate.id}
-                    candidate={candidate}
-                    summary
-                    actionLabel="Remover"
-                    selected
-                    featuredMetrics={featuredMetricsByCandidateId.get(candidate.id)}
-                    showAssessmentSubtitle={!personalizedFieldsLocked}
-                    lockPersonalizedFields={false}
-                    displayMode={candidateCardMode}
-                    interactionMode="select"
-                    selectionActionLabel="Remover escolha"
-                    onLockedMetricClick={handleLockedMetricClick}
-                    disabled={salvandoSelecao}
-                    onSelect={() => handleSelect(candidate)}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className={`candidate-current-list ${isSenateOffice ? 'candidate-current-list--double' : ''}`}>
-                <div className="candidate-current-empty">
-                  <strong>Nenhum candidato escolhido ainda</strong>
-                  <span>Use a lista ao lado para adicionar nomes ao rascunho.</span>
-                </div>
-              </div>
-            )}
-
-          </section>
-        )}
-
+      <div className={`candidate-flow nv-container ${isSenateOffice ? 'candidate-flow--senate' : 'candidate-flow--single'}`} id="tour-lista">
         <section className="candidate-list-section">
           <div className="prototype-section-heading">
             <h2>Candidatos</h2>
@@ -957,52 +723,7 @@ export default function SelectBase({
         </div>
 
         <div className="app-page-header__actions">
-          {isCandidateOffice ? (
-            <div
-              className={`app-header-mode-picker ${candidateCardModeOpen ? 'is-open' : ''}`}
-              ref={candidateCardModeRef}
-            >
-              <button
-                className={`app-header-icon-action app-help-action app-header-mode-action card-detail-mode-toggle nv-touch ${candidateCardMode === 'detailed' ? 'is-active' : ''}`}
-                type="button"
-                onClick={() => {
-                  setCandidateFilterOpen(false);
-                  setCandidateCardModeOpen((currentValue) => !currentValue);
-                }}
-                aria-expanded={candidateCardModeOpen}
-                aria-haspopup="menu"
-                aria-label="Selecionar modo de visualização dos candidatos"
-                title="Modo de visualização"
-              >
-                <InfoIcon />
-              </button>
-
-              {candidateCardModeOpen && (
-                <div className="app-header-mode-menu" role="menu" aria-label="Modo de visualização dos candidatos">
-                  <span className="app-header-mode-menu__title">Modo de exibição</span>
-                  {CARD_MODE_OPTIONS.map((option) => {
-                    const isActive = candidateCardMode === option.id;
-
-                    return (
-                      <button
-                        key={option.id}
-                        className={`app-header-mode-menu__option ${isActive ? 'is-active' : ''}`}
-                        type="button"
-                        role="menuitemradio"
-                        aria-checked={isActive}
-                        onClick={() => handleCandidateCardModeSelect(option.id)}
-                      >
-                        <span className="app-header-mode-menu__check" aria-hidden="true">
-                          {isActive && <CheckIcon />}
-                        </span>
-                        <span>{option.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          ) : !isHomeState && onHelpClick && (
+          {!isCandidateOffice && !isHomeState && onHelpClick && (
             <button
               className="app-header-icon-action app-help-action nv-touch"
               type="button"

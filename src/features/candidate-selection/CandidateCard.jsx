@@ -11,11 +11,20 @@ import {
   getCandidateTone
 } from '@/shared/utils/candidateMetrics';
 
-function ViabilityMeter({ value, tone, featured = false, locked = false, label = '', showCaption = true, onLockedClick }) {
+function ViabilityMeter({
+  value,
+  tone,
+  featured = false,
+  locked = false,
+  showCaption = true,
+  onLockedClick,
+  statusIconKind = 'lock',
+  candidateScoreLabel = '--',
+  partyScoreLabel = '--'
+}) {
   const numericValue = Number(value) || 0;
   const progress = Math.max(0, Math.min(100, numericValue));
   const progressScale = progress / 100;
-  const displayValue = Math.round(progress);
   const isComplete = progress >= 100;
   const shouldAnimateFill = false;
   const handleLockedClick = (event) => {
@@ -46,6 +55,9 @@ function ViabilityMeter({ value, tone, featured = false, locked = false, label =
           <span
             className={`candidate-thermometer__fill ${shouldAnimateFill ? 'animate-pulse' : ''}`.trim()}
           ></span>
+          <span className="candidate-thermometer__status-icon" style={{ '--thermometer-status-position': `${progress}%` }}>
+            <StatusIcon kind={statusIconKind} />
+          </span>
           <span className="candidate-thermometer__tick candidate-thermometer__tick--first"></span>
           <span className="candidate-thermometer__tick candidate-thermometer__tick--second"></span>
           <span className="candidate-thermometer__tick candidate-thermometer__tick--third"></span>
@@ -54,14 +66,13 @@ function ViabilityMeter({ value, tone, featured = false, locked = false, label =
       {showCaption && (
         <span className={`candidate-thermometer__caption ${featured ? 'candidate-thermometer__caption--featured' : ''}`.trim()}>
           <span className="candidate-thermometer__caption-main">
-            <strong>{displayValue}%</strong>
-            <span>VIÁVEL</span>
+            <strong>{candidateScoreLabel}</strong>
+            <span>nota candidato</span>
           </span>
-          {label && (
-            <span className="candidate-thermometer__badge">
-              <em>{label}</em>
-            </span>
-          )}
+          <span className="candidate-thermometer__badge">
+            <strong>{partyScoreLabel}</strong>
+            <em>nota partido</em>
+          </span>
         </span>
       )}
     </span>
@@ -102,14 +113,6 @@ const getAssessment = ({ isFireFeatured, isViabilityComplete, systemScore }) => 
   }
 
   return { label: 'Sem nota', tone: 'info', icon: 'info' };
-};
-
-const getViabilityLabel = ({ progress, isFireFeatured, isViabilityComplete, systemScore }) => {
-  if (isViabilityComplete || progress >= 100) return 'VIABILIDADE ATINGIDA';
-  if (isFireFeatured && systemScore > 7) return 'MAIS VIÁVEL';
-  if (systemScore > 0 && systemScore < 7) return 'MAL AVALIADO';
-  if (systemScore >= 7) return 'BEM AVALIADO';
-  return 'EM ANÁLISE';
 };
 
 const getStatusIconKind = ({ isFireFeatured, isViabilityComplete, systemScore, tone, locked }) => {
@@ -183,19 +186,11 @@ export default function CandidateCard({
   const candidateScore = getCandidateDisplayScore(candidate);
   const partyScore = getCandidatePartyScore(candidate);
   const chance = getCandidateChance(candidate);
-  const hasCandidateScore = candidateScore > 0;
-  const hasPartyScore = partyScore > 0;
   const isBlocked = candidate.isAlreadyChosen;
   const isFireFeatured = !lockPersonalizedFields && Boolean(featuredMetrics.chance || candidate.isChanceFeatured);
   const isViabilityComplete = chance >= 100;
   const systemScore = getCandidateSystemScore(candidate);
   const assessment = getAssessment({ isFireFeatured, isViabilityComplete, systemScore });
-  const viabilityLabel = getViabilityLabel({
-    progress: chance,
-    isFireFeatured,
-    isViabilityComplete,
-    systemScore
-  });
   const statusIconKind = getStatusIconKind({
     isFireFeatured,
     isViabilityComplete,
@@ -219,8 +214,9 @@ export default function CandidateCard({
     event.stopPropagation();
     onLockedMetricClick?.();
   };
-  const candidateScoreLabel = hasCandidateScore ? formatScore(candidateScore) : '--';
-  const partyScoreLabel = hasPartyScore ? formatScore(partyScore) : '--';
+  const candidateScoreLabel = candidateScore > 0 ? formatScore(candidateScore) : '--';
+  const partyScoreLabel = partyScore > 0 ? formatScore(partyScore) : '--';
+  const viabilityPercent = Math.round(Math.max(0, Math.min(100, chance)));
   const partyLabel = party || '';
   const isExpandable = interactionMode === 'expand';
   const isExpanded = Boolean(expanded);
@@ -240,9 +236,10 @@ export default function CandidateCard({
     onSelect?.(event);
   };
 
-  const renderStatusBadge = (className = '') => (
-    <span className={`candidate-card__status-badge ${className}`} aria-hidden="true">
-      <StatusIcon kind={statusIconKind} />
+  const renderViabilityBadge = (className = '') => (
+    <span className={`candidate-card__status-badge ${className}`} aria-label={`${viabilityPercent}% viável`}>
+      <strong>{viabilityPercent}%</strong>
+      <span>viável</span>
     </span>
   );
 
@@ -266,15 +263,6 @@ export default function CandidateCard({
     );
   };
 
-  const renderScoreChip = (label, type, ariaLabel, isEmpty = false) => (
-    <span
-      className={`candidate-card__score-chip candidate-card__score-chip--${type} ${isEmpty ? 'is-empty' : ''}`}
-      aria-label={ariaLabel}
-    >
-      <b>{label}</b>
-    </span>
-  );
-
   const renderCardBody = ({ detailed = false } = {}) => (
     <span className="candidate-card__identity">
       <span className="candidate-card__summary-row">
@@ -284,29 +272,17 @@ export default function CandidateCard({
           )}
           <span className="candidate-card__name-row">
             <span className="candidate-card__text-line candidate-card__text-line--name">
-              {detailed && renderScoreChip(
-                candidateScoreLabel,
-                'candidate',
-                hasCandidateScore ? `Nota do candidato ${candidateScoreLabel}` : 'Nota do candidato indisponível',
-                !hasCandidateScore
-              )}
               <strong>{name}</strong>
             </span>
           </span>
           {partyLabel && (
             <span className="candidate-card__party-row">
-              {detailed && renderScoreChip(
-                partyScoreLabel,
-                'party',
-                hasPartyScore ? `Nota do partido ${partyScoreLabel}` : 'Nota do partido indisponível',
-                !hasPartyScore
-              )}
               <small>{partyLabel}</small>
             </span>
           )}
         </span>
 
-        {renderStatusBadge()}
+        {renderViabilityBadge()}
         {isExpandable && renderExpandIndicator()}
       </span>
 
@@ -316,9 +292,11 @@ export default function CandidateCard({
           tone={metricTone}
           featured={!lockPersonalizedFields && isFireFeatured}
           locked={false}
-          label={viabilityLabel}
           showCaption={detailed && showAssessmentSubtitle && !lockPersonalizedFields}
           onLockedClick={!lockPersonalizedFields ? onLockedMetricClick : undefined}
+          statusIconKind={statusIconKind}
+          candidateScoreLabel={candidateScoreLabel}
+          partyScoreLabel={partyScoreLabel}
         />
       )}
     </span>
@@ -350,9 +328,11 @@ export default function CandidateCard({
             tone={metricTone}
             featured={!lockPersonalizedFields && isFireFeatured}
             locked={false}
-            label={viabilityLabel}
             showCaption={showAssessmentSubtitle && !lockPersonalizedFields}
             onLockedClick={!lockPersonalizedFields ? onLockedMetricClick : undefined}
+            statusIconKind={statusIconKind}
+            candidateScoreLabel={candidateScoreLabel}
+            partyScoreLabel={partyScoreLabel}
           />
 
           {lockPersonalizedFields && (
