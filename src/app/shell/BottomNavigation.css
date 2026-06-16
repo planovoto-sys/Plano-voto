@@ -24,15 +24,19 @@
   position: relative;
   width: 100%;
   max-width: 100%;
-  height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
-  min-height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
+  
+  /* CORREÇÃO 1: Altura automática para o texto e os ícones caberem sem cortes */
+  height: auto; 
+  min-height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 16px));
   flex: 0 0 auto;
   border-top: 1px solid rgba(17, 17, 17, 0.1);
   background: var(--page-bg);
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0;
-  padding: 6px 18px calc(6px + env(safe-area-inset-bottom, 0px));
+  
+  /* CORREÇÃO 2: Fallback seguro (16px) adicionado ao cálculo da margem inferior */
+  padding: 6px 18px calc(16px + env(safe-area-inset-bottom, 16px));
   overflow: hidden;
 }
 
@@ -55,7 +59,8 @@
   gap: 0;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 12px 10px calc(12px + env(safe-area-inset-bottom, 0px));
+  /* Margem inferior aumentada para dispositivos mobile */
+  padding: 12px 10px calc(16px + env(safe-area-inset-bottom, 16px));
   scrollbar-width: none;
   border-top: 0;
   background: transparent;
@@ -65,7 +70,6 @@
   display: none;
 }
 
-/* Slot flexível para garantir o alinhamento da linha contínua */
 .bottom-step-nav--stepper .bottom-step-nav__slot {
   min-width: var(--bottom-step-nav-item-width);
   display: inline-flex;
@@ -74,7 +78,6 @@
   flex: 1 0 auto;
   position: relative;
   z-index: 2;
-  /* Fica acima da linha */
 }
 
 /* A Linha Contínua usando ::after */
@@ -82,19 +85,15 @@
   content: '';
   position: absolute;
   top: calc(var(--bottom-step-nav-node-size) / 2);
-  /* Alinhamento exato ao meio do círculo */
   left: 50%;
   width: 100%;
   height: 3px;
   background-color: var(--bottom-step-nav-muted);
-  /* Cinza por padrão (Futuro) */
   z-index: -1;
-  /* Passa por trás */
   transform: translateY(-50%);
   transition: background-color 0.3s ease;
 }
 
-/* Pinta a linha de Laranja se o passo atual for Concluído ou Ativo */
 .bottom-step-nav--stepper .bottom-step-nav__slot.is-complete::after,
 .bottom-step-nav--stepper .bottom-step-nav__slot.is-active::after {
   background-color: var(--bottom-step-nav-orange);
@@ -129,7 +128,12 @@
   opacity: 1;
 }
 
-/* O Círculo Base */
+/* Wrapper do círculo para posicionar a badge verde perfeitamente */
+.bottom-step-nav--stepper .step-circle-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
 .bottom-step-nav--stepper .bottom-step-nav__node {
   position: relative;
   width: var(--bottom-step-nav-node-size);
@@ -155,12 +159,11 @@
 .bottom-step-nav--stepper .bottom-step-nav__node.is-complete {
   border-color: var(--bottom-step-nav-orange);
   background: #ffedd5;
-  /* Laranja suave */
   color: var(--bottom-step-nav-orange);
 }
 
-/* Badge do Check ajustado para não "morder" o círculo */
-.bottom-step-nav--stepper .bottom-step-nav__check {
+/* Estilização ajustada para corresponder às classes que estavam no seu JSX */
+.bottom-step-nav--stepper .check-badge {
   position: absolute;
   top: -4px;
   right: -4px;
@@ -173,27 +176,23 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  z-index: 5;
 }
 
-.bottom-step-nav--stepper .bottom-step-nav__check svg {
+.bottom-step-nav--stepper .check-badge svg {
   width: 12px;
   height: 12px;
   color: #10b981;
-  /* Verde Tailwind emerald-500 */
   stroke-width: 3.5;
 }
 
-/* --- ESTADO: ATIVO (REFINAMENTO NEON E CONTRASTE) --- */
+/* --- ESTADO: ATIVO --- */
 .bottom-step-nav--stepper .bottom-step-nav__node.is-active {
   border: 2px solid var(--bottom-step-nav-orange);
   background: var(--bottom-step-nav-orange);
-  /* Laranja Sólido */
   color: #ffffff;
-  /* Ícone Branco puro */
-  /* Brilho neon intenso e concentrado, sem nevoeiro longo */
   box-shadow: 0 0 12px 2px rgba(249, 115, 22, 0.8);
   transform: scale(1.05);
-  /* Destaque leve */
 }
 
 /* --- TEXTOS E LEGENDAS --- */
@@ -239,11 +238,13 @@
 }
 
 /* ==========================================================================
-   BREAKPOINTS RESPONSIVOS E DESKTOP HEADER (Preservação)
+   BREAKPOINTS RESPONSIVOS E DESKTOP HEADER
    ========================================================================== */
 @media (max-width: 1023px) {
   :root {
-    --bottom-nav-height: 62px;
+    /* CORREÇÃO 3: Aumentado de 62px para 85px para garantir que o contêiner 
+       tenha altura suficiente sem depender de esconder o que 'vazar' */
+    --bottom-nav-height: 85px; 
   }
 
   .app-page-footer--footer {
@@ -262,11 +263,9 @@
     --bottom-step-nav-status-size: clamp(8px, 1.8vw, 10px);
     padding-inline: 8px;
     padding-top: 8px;
-    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    /* Margem salva garantida de 16px no mínimo */
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 16px));
   }
-
-  /* Oculta os status no mobile para não amontoar muito texto se preferir, 
-     ou reduz a linha. Aqui mantemos responsivo */
 }
 
 @media (max-width: 420px) {
@@ -299,7 +298,6 @@
     display: none;
   }
 
-  /* Ajustes do stepper quando ele é inserido no cabeçalho do Desktop */
   .app-page-footer--header .bottom-step-nav--stepper {
     --bottom-step-nav-node-size: clamp(50px, 3.8vw, 64px);
     --bottom-step-nav-item-width: clamp(92px, 9vw, 126px);
@@ -318,6 +316,6 @@
     --bottom-step-nav-label-size: 9px;
     --bottom-step-nav-status-size: 8px;
     padding-top: 4px;
-    padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 12px));
   }
 }
