@@ -1,4 +1,4 @@
-import { Check, ChevronRight, MapPin } from 'lucide-react';
+import { Check, MapPin } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import fireIconUrl from '@/assets/icone-fogo.png';
 import { BALLOT_ROUTES } from '@/shared/constants/ballot';
@@ -18,14 +18,7 @@ const NAV_ICON_STROKE_WIDTH = 2.1;
 function DeputyIcon({ className = '', strokeWidth = NAV_ICON_STROKE_WIDTH }) {
   return (
     <svg className={className} viewBox="0 4 24 16" aria-hidden="true">
-      <path
-        d="M3.7 7.2h16.6M3.7 7.2c0 6.3 3.7 10.4 8.3 10.4s8.3-4.1 8.3-10.4"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={strokeWidth}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <path d="M3.7 7.2h16.6M3.7 7.2c0 6.3 3.7 10.4 8.3 10.4s8.3-4.1 8.3-10.4" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -33,27 +26,13 @@ function DeputyIcon({ className = '', strokeWidth = NAV_ICON_STROKE_WIDTH }) {
 function SenatorIcon({ className = '', strokeWidth = NAV_ICON_STROKE_WIDTH }) {
   return (
     <svg className={className} viewBox="0 4 24 16" aria-hidden="true">
-      <path
-        d="M3.7 17.2h16.6M3.7 17.2c0-6.3 3.7-10.4 8.3-10.4s8.3 4.1 8.3 10.4"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={strokeWidth}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <path d="M3.7 17.2h16.6M3.7 17.2c0-6.3 3.7-10.4 8.3-10.4s8.3 4.1 8.3 10.4" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 
 function FireMaskIcon({ className = '', style, ...props }) {
-  const iconStyle = {
-    objectFit: 'contain',
-    objectPosition: 'center',
-    padding: '0',
-    boxSizing: 'border-box',
-    ...style
-  };
-
+  const iconStyle = { objectFit: 'contain', objectPosition: 'center', padding: '0', boxSizing: 'border-box', ...style };
   return <img className={className} src={fireIconUrl} alt="" aria-hidden="true" style={iconStyle} {...props} />;
 }
 
@@ -105,7 +84,7 @@ function getCompletedStepById(progress, estadoSelecionado) {
   };
 }
 
-function getStepState(stepId, activeStep, completedSteps) {
+function getStepLogicState(stepId, activeStep, completedSteps) {
   if (stepId === activeStep) return 'active';
   if (completedSteps[stepId]) return 'complete';
   return 'pending';
@@ -134,65 +113,50 @@ export default function BottomNavigation({ currentStep, placement = 'footer' }) 
 
   const handleNavigate = (step, isClickable) => {
     if (!isClickable) {
-      notify.warning('Complete a etapa atual para continuar.', {
-        dedupeKey: `bottom-nav-blocked-${step.id}`,
-        duration: 4200
-      });
+      notify.warning('Complete a etapa atual para continuar.', { dedupeKey: `bottom-nav-blocked-${step.id}`, duration: 4200 });
       return;
     }
-
     navigate(step.path, { state: { bypassVoteRedirect: true } });
   };
 
   return (
     <div className={`app-page-footer app-page-footer--${placement} nv-no-overflow`}>
       <nav className={`bottom-step-nav bottom-step-nav--stepper bottom-step-nav--${placement}`} aria-label="Etapas do voto">
-      {STEPS.map((step, index) => {
-        const StepIcon = step.Icon;
-        const state = getStepState(step.id, activeStep, completedSteps);
-        const isClickable = state === 'complete' || (index === firstPendingIndex && currentStepIsValid);
-        const isFirstPending = index === firstPendingIndex && state === 'pending';
-          const statusLabel = getStepStatus(state, index, STEPS.length);
+        {STEPS.map((step, index) => {
+          const StepIcon = step.Icon;
+          
+          const isCompleted = index < activeIndex;
+          const isActive = index === activeIndex;
+          const isFuture = index > activeIndex;
+          const visualState = isActive ? 'active' : isCompleted ? 'complete' : 'pending';
+
+          const logicState = getStepLogicState(step.id, activeStep, completedSteps);
+          const isClickable = logicState === 'complete' || (index === firstPendingIndex && currentStepIsValid);
+          
+          const statusLabel = getStepStatus(visualState, index, STEPS.length);
           const iconProps = step.id === 'nossovoto' ? {} : { strokeWidth: NAV_ICON_STROKE_WIDTH };
 
           return (
-            <div className="bottom-step-nav__slot" key={step.id}>
-              {index > 0 && (
-                <span
-                  className={[
-                    'bottom-step-nav__connector',
-                    index <= activeIndex ? 'is-complete' : 'is-pending'
-                  ].join(' ')}
-                  aria-hidden="true"
-                />
-              )}
-
-              {isFirstPending && isClickable && (
-                <span className="bottom-step-nav__back-indicator" aria-hidden="true">
-                  <ChevronRight />
-                </span>
-              )}
-
+            <div className={`bottom-step-nav__slot is-${visualState}`} key={step.id}>
               <button
-                className={[
-                  'bottom-step-nav__step',
-                  `is-${state}`,
-                  isClickable ? 'is-clickable' : 'is-locked'
-                ].join(' ')}
+                className={`bottom-step-nav__step is-${visualState} ${isClickable ? 'is-clickable' : 'is-locked'}`}
                 type="button"
                 onClick={() => handleNavigate(step, isClickable)}
-                aria-current={state === 'active' ? 'step' : undefined}
+                aria-current={isActive ? 'step' : undefined}
                 disabled={!isClickable}
                 title={`${step.label} - ${statusLabel}`}
               >
-                <span className={`bottom-step-nav__node is-${state} ${step.id === 'nossovoto' ? 'is-brand' : ''}`} aria-hidden="true">
-                  <StepIcon className="bottom-step-nav__icon" {...iconProps} />
-                  {state === 'complete' && (
-                    <span className="bottom-step-nav__check" aria-hidden="true">
-                      <Check />
-                    </span>
+                <div className="step-circle-wrapper">
+                  <span className={`bottom-step-nav__node is-${visualState}`} aria-hidden="true">
+                    <StepIcon className="bottom-step-nav__icon" {...iconProps} />
+                  </span>
+                  
+                  {visualState === 'complete' && (
+                    <div className="check-badge">
+                      <Check className="check-icon" />
+                    </div>
                   )}
-                </span>
+                </div>
 
                 <span className="bottom-step-nav__copy">
                   <span className="bottom-step-nav__label">{step.label}</span>
