@@ -1,43 +1,39 @@
 .prototype-candidate-card {
-  --candidate-card-pad-left: 20px;
-  --candidate-card-pad-right: 20px;
-  --candidate-metric-size: 56px;
-  --candidate-name-size: 18px;
-  --candidate-score-size: 14px;
+  /* TAMANHOS PADRONIZADOS BASEADOS NO ANTIGO DESTAQUE */
+  --candidate-card-pad-left: clamp(22px, 4.4vw, 44px);
+  --candidate-card-pad-right: clamp(24px, 3.8vw, 40px);
+  --candidate-name-size: clamp(28px, 3.5vw, 42px);
+  --candidate-party-size: clamp(19px, 2.3vw, 29px);
+  --candidate-score-size: clamp(16px, 2.3vw, 24px);
+  --candidate-bar-height: clamp(30px, 3.6vw, 42px);
+  
+  /* CÍRCULO MENOR E FONTE MAIOR */
+  --candidate-badge-circle-size: clamp(46px, 5.5vw, 56px); 
+  --candidate-badge-size: clamp(16px, 2vw, 20px); 
+
+  --candidate-caption-size: clamp(11px, 1vw, 14px);
+  --candidate-badge-pad-inline: clamp(14px, 1.8vw, 22px);
+  --candidate-badge-height: clamp(30px, 3vw, 38px);
+  
+  --candidate-card-fg: #1a1a1a; 
+  --candidate-card-bg: #ffffff;
   --candidate-card-border: rgba(105, 116, 111, 0.18);
   --candidate-card-line: rgba(105, 116, 111, 0.14);
-  --candidate-bar-height: 20px;
   --candidate-bar-border: rgba(105, 116, 111, 0.28);
-  --candidate-caption-size: 8.5px;
-  --candidate-badge-size: 8.5px;
-  --candidate-badge-height: 16px;
-  --candidate-badge-pad-inline: 10px;
-  --candidate-status-icon-box: 20px;
-  --candidate-status-icon-size: 19px;
-  --candidate-fire-icon-width: 16px;
-  --candidate-fire-icon-height: 21px;
-  --metric-feature-color: #ff914d;
-  --candidate-card-bg: #ffffff;
-  --candidate-card-fg: #69746f;
-  --candidate-tag-bg: color-mix(in srgb, var(--candidate-card-bg) 78%, currentColor 12%);
-  --candidate-selection-border: color-mix(in srgb, var(--candidate-card-bg) 70%, currentColor 30%);
-  --candidate-assessment-bg: color-mix(in srgb, currentColor 16%, white);
-  --candidate-viability-fill: currentColor;
-  --candidate-viability-track: rgba(169, 169, 169, 0.28);
-  --candidate-thermometer-fill: currentColor;
-  --candidate-thermometer-track: #f0f2ef;
-  --assessment-icon-bg: #a9a9a9;
-  --assessment-icon-fg: #ffffff;
+  --candidate-tag-bg: rgba(0, 0, 0, 0.06);
+  --candidate-selection-border: #1a1a1a;
+  
   position: relative;
   width: 100%;
-  min-height: 98px;
-  border: 0;
-  border-radius: 14px;
+  min-height: clamp(128px, 18vw, 156px);
+  
+  border: 0; 
+  border-radius: clamp(26px, 4vw, 42px);
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-items: center;
   gap: 5px;
-  padding: 12px var(--candidate-card-pad-right) 11px var(--candidate-card-pad-left);
+  padding: clamp(24px, 3.8vw, 40px) clamp(22px, 4.4vw, 44px) clamp(22px, 3.3vw, 34px);
   background: var(--candidate-card-bg);
   color: var(--candidate-card-fg);
   text-align: left;
@@ -48,22 +44,78 @@
   transition: background-color var(--motion-fast) var(--ease-standard), box-shadow var(--motion-fast) var(--ease-standard), transform var(--motion-fast) var(--ease-standard);
 }
 
+.prototype-candidate-card.is-selected {
+  border: 1px solid var(--candidate-selection-border, var(--candidate-card-border));
+  box-shadow: 0 8px 18px color-mix(in srgb, currentColor 8%, transparent);
+}
+.prototype-candidate-card.is-selected::before {
+  content: none;
+}
+
+.prototype-candidate-card .candidate-card__name-row strong,
+.prototype-candidate-card .candidate-card__identity small,
+.prototype-candidate-card .candidate-thermometer__caption-main strong,
+.prototype-candidate-card .candidate-thermometer__caption-main span,
+.prototype-candidate-card .candidate-thermometer__badge strong,
+.prototype-candidate-card .candidate-thermometer__badge span,
+.prototype-candidate-card .candidate-card__status-badge strong,
+.prototype-candidate-card .candidate-card__status-badge span {
+  color: #111111 !important;
+  font-style: normal !important; 
+}
+
+/* ==========================================================================
+   PALETA DE CORES 
+   ========================================================================== */
+
+/* VERDE (BEM AVALIADOS >= 7) */
+.candidate-card--success {
+  --candidate-card-bg: #effbea;
+  --candidate-card-fg: #4d9849;
+  --candidate-card-border: #6fd052;
+  --candidate-card-line: #e3efdf;
+  --candidate-tag-bg: rgba(77, 152, 73, 0.15);
+  --candidate-thermometer-fill: #4d9849;
+  --candidate-thermometer-track: #d8edd1;
+  --candidate-bar-border: #b7dcae;
+  --candidate-selection-border: #4d9849;
+}
+
+/* VERMELHO (MAL AVALIADOS < 7) */
+.candidate-card--danger {
+  --candidate-card-bg: #ffe8ea;
+  --candidate-card-fg: #ff5757;
+  --candidate-card-border: #ffb7bd;
+  --candidate-card-line: #ffcfd2;
+  --candidate-tag-bg: rgba(255, 87, 87, 0.12);
+  --candidate-thermometer-fill: #ff6b6b;
+  --candidate-thermometer-track: #ffcfd2;
+  --candidate-bar-border: #ffa8ad;
+  --candidate-selection-border: #ff5757;
+}
+
+/* VISITANTE/BLOQUEADO */
+.candidate-card--visitor {
+  border: 0;
+  background: #f4f5f3;
+  color: var(--text-main);
+  --candidate-tag-bg: #e5e7eb;
+  --candidate-thermometer-fill: #b4b4b4;
+  --candidate-thermometer-track: #d1d5db;
+  --candidate-selection-border: #9ca3af;
+  box-shadow: none;
+}
+
+/* ==========================================================================
+   ESTRUTURA INTERNA 
+   ========================================================================== */
 .prototype-candidate-card.is-promoted {
   animation: promotedPulse 1200ms var(--ease-standard);
 }
-
-.prototype-candidate-card.is-selection-added {
-  animation: candidateSelectionAdded 720ms var(--ease-standard);
-}
-
-.prototype-candidate-card.is-selection-removed {
-  animation: candidateSelectionRemoved 720ms var(--ease-standard);
-}
-
 .prototype-candidate-card.is-blocked {
   cursor: not-allowed;
+  opacity: 0.6;
 }
-
 .prototype-candidate-card:disabled {
   cursor: wait;
   opacity: 1;
@@ -86,131 +138,13 @@
 .candidate-card__surface:disabled {
   cursor: wait;
 }
-
-.candidate-card__surface:focus-visible,
-.candidate-card__selection-action:focus-visible {
+.candidate-card__surface:focus-visible, .candidate-card__selection-action:focus-visible {
   outline: 2px solid currentColor;
   outline-offset: 4px;
 }
 
 .prototype-candidate-card.is-expandable.is-expanded > .candidate-card__surface .candidate-thermometer {
   display: none;
-}
-
-.candidate-card--success {
-  --candidate-card-bg: #effbea;
-  --candidate-card-fg: #4d9849;
-  --candidate-card-border: #d4e7cf;
-  --candidate-card-line: #e3efdf;
-  --candidate-assessment-bg: #d9f0d1;
-  --candidate-viability-fill: #4d9849;
-  --candidate-viability-track: #dcf0d6;
-  --candidate-thermometer-fill: #4d9849;
-  --candidate-thermometer-track: #d8edd1;
-  --candidate-bar-border: #b7dcae;
-  --assessment-icon-bg: #4d9849;
-  --assessment-icon-fg: #edf7e9;
-  --candidate-tag-bg: #dff2d9;
-  --candidate-selection-border: #b8e1ad;
-}
-
-.candidate-card--neutral {
-  --candidate-card-bg: #eeeeee;
-  --candidate-card-fg: #b4b4b4;
-  --candidate-assessment-bg: #dddddd;
-  --candidate-viability-fill: #b4b4b4;
-  --candidate-viability-track: #dddddd;
-  --candidate-thermometer-fill: #b4b4b4;
-  --candidate-thermometer-track: #dddddd;
-  --candidate-bar-border: #cfcfcf;
-  --assessment-icon-bg: #b4b4b4;
-  --assessment-icon-fg: #eaeaea;
-  --candidate-tag-bg: #dedede;
-  --candidate-selection-border: #cfcfcf;
-}
-
-.candidate-card--danger {
-  --candidate-card-bg: #ffe8ea;
-  --candidate-card-fg: #ff5757;
-  --candidate-assessment-bg: #ffcfd2;
-  --candidate-viability-fill: #ff5757;
-  --candidate-viability-track: #ffcfd2;
-  --candidate-thermometer-fill: #ff6b6b;
-  --candidate-thermometer-track: #ffcfd2;
-  --candidate-bar-border: #ffa8ad;
-  --assessment-icon-bg: #ff5757;
-  --assessment-icon-fg: #ffe3e5;
-  --candidate-card-border: #ffb7bd;
-  --candidate-card-line: #ffcfd2;
-  --candidate-tag-bg: #ffd4d8;
-  --candidate-selection-border: #ffb4ba;
-}
-
-.candidate-card--new {
-  background: #f1f3f1;
-  color: #69746f;
-  --candidate-card-border: var(--nav-line);
-  --candidate-selection-border: #d6ddd8;
-  box-shadow: none;
-}
-
-.candidate-card--visitor {
-  border: 0;
-  background: #f4f5f3;
-  color: var(--text-main);
-  --candidate-tag-bg: #e8ebe7;
-  --candidate-selection-border: #d6ddd8;
-  box-shadow: none;
-}
-
-.prototype-candidate-card.is-selected {
-  border: 1px solid var(--candidate-selection-border, var(--candidate-card-border));
-  box-shadow: 0 8px 18px color-mix(in srgb, currentColor 8%, transparent);
-}
-
-.prototype-candidate-card.is-selected::before {
-  content: none;
-}
-
-.prototype-candidate-card.is-summary {
-  grid-template-columns: minmax(0, 1fr);
-  padding-right: var(--candidate-card-pad-right);
-}
-
-.prototype-candidate-card.is-fire-featured {
-  --candidate-card-bg: #ffefdf;
-  --candidate-card-fg: #f05a24;
-  --candidate-card-border: #ff914d;
-  --candidate-card-line: #f2dcc9;
-  --candidate-assessment-bg: #ffd9b4;
-  --candidate-viability-fill: #f05a24;
-  --candidate-viability-track: #ffd9b4;
-  --candidate-thermometer-fill: linear-gradient(90deg, #ff8f13 0%, #ff8f13 100%);
-  --candidate-thermometer-track: #ffe0bf;
-  --candidate-bar-border: #ffb56f;
-  --assessment-icon-bg: transparent;
-  --assessment-icon-fg: #f05a24;
-  --metric-feature-color: #f05a24;
-  --candidate-tag-bg: #ffd8ad;
-  --candidate-selection-border: #ffb77a;
-}
-
-.prototype-candidate-card.is-viability-complete {
-  --candidate-card-bg: #eeeeee;
-  --candidate-card-fg: #b4b4b4;
-  --candidate-assessment-bg: #dddddd;
-  --candidate-viability-fill: #b4b4b4;
-  --candidate-viability-track: #dddddd;
-  --candidate-thermometer-fill: #b4b4b4;
-  --candidate-thermometer-track: #dddddd;
-  --candidate-bar-border: #cfcfcf;
-  --assessment-icon-bg: #b4b4b4;
-  --assessment-icon-fg: #eaeaea;
-  --candidate-tag-bg: #dedede;
-}
-
-.prototype-candidate-card.is-compact {
-  min-height: 108px;
 }
 
 .candidate-card__identity {
@@ -226,9 +160,9 @@
 .candidate-card__summary-row {
   min-width: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  align-items: center;
-  gap: 10px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center; 
+  gap: clamp(16px, 3vw, 32px);
 }
 
 .candidate-card__identity-copy {
@@ -236,53 +170,77 @@
   max-width: 100%;
   display: grid;
   align-content: center;
-  gap: 1px;
+  gap: 5px;
+}
+
+.candidate-card__text-line, .candidate-card__party-row {
+  min-width: 0;
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px clamp(10px, 1.2vw, 14px);
+}
+
+.candidate-card__name-row {
+  display: block;
+}
+
+.candidate-card__name-row strong {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  font-family: var(--font-display);
+  font-size: var(--candidate-name-size);
+  font-weight: 800;
+  line-height: 0.98;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.candidate-card__identity small {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  font-size: var(--candidate-party-size);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
 }
 
 .candidate-card__status-badge {
-  min-width: 0;
-  height: var(--candidate-badge-height, 16px);
+  flex-shrink: 0;
+  width: var(--candidate-badge-circle-size);
+  height: var(--candidate-badge-circle-size);
   border: 1px solid color-mix(in srgb, currentColor 34%, transparent);
-  border-radius: 999px;
+  border-radius: 50%;
   background: color-mix(in srgb, currentColor 8%, transparent);
-  display: inline-flex;
+  display: flex;
+  flex-direction: column; 
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  padding: 0 12px;
-  color: currentColor;
-  opacity: 0.78;
-  white-space: nowrap;
-}
-
-.candidate-card__status-badge strong,
-.candidate-card__status-badge span {
-  color: currentColor;
-  font-family: var(--font-family);
-  font-size: 8px;
-  font-weight: 800;
-  line-height: 1;
+  gap: 1px; /* Um leve respiro entre os textos */
+  padding: 0;
+  opacity: 0.88;
 }
 
 .candidate-card__status-badge strong {
-  font-size: 8.5px;
+  font-family: var(--font-family);
+  font-size: var(--candidate-badge-size);
+  font-weight: 900;
+  line-height: 0.9; /* Altura da linha reduzida para manter os textos próximos */
 }
 
-.candidate-card__status-badge .candidate-status-icon {
-  width: calc(var(--candidate-status-badge-size) * 0.68);
-  height: calc(var(--candidate-status-badge-size) * 0.68);
-  opacity: 0.82;
-}
-
-.candidate-card__status-badge .candidate-status-icon--fire {
-  width: calc(var(--candidate-status-badge-size) * 0.74);
-  height: calc(var(--candidate-status-badge-size) * 0.96);
-  opacity: 0.9;
-}
-
-.candidate-status-icon--thumb-up {
-  transform: scaleX(-1);
-  transform-origin: center;
+.candidate-card__status-badge span {
+  font-family: var(--font-family);
+  font-size: calc(var(--candidate-badge-size) * 0.55); 
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+  margin-top: 0; /* Removida a margem negativa que causava a sobreposição */
 }
 
 .candidate-card__expand-indicator {
@@ -301,238 +259,11 @@
   transition: background-color 160ms ease, box-shadow 160ms ease, opacity 160ms ease, transform 160ms ease;
 }
 
-.candidate-card__expand-indicator .app-icon {
-  width: 13px;
-  height: 13px;
-}
-
 .prototype-candidate-card.is-expanded .candidate-card__expand-indicator {
   transform: rotate(180deg);
   background: color-mix(in srgb, currentColor 14%, white);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 34%, transparent);
   opacity: 0.92;
-}
-
-.candidate-card__name-row {
-  min-width: 0;
-  max-width: 100%;
-  overflow: visible;
-  display: block;
-}
-
-.candidate-card__number {
-  display: block;
-  max-width: 100%;
-  overflow: hidden;
-  color: currentColor;
-  font-family: var(--font-display);
-  font-size: 13px;
-  font-weight: 800;
-  line-height: 1;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.candidate-card__text-line,
-.candidate-card__party-row {
-  min-width: 0;
-  max-width: 100%;
-  display: flex;
-  align-items: baseline;
-  gap: 7px;
-}
-
-.candidate-card__text-line--name {
-  align-items: center;
-}
-
-.candidate-card__score-chip {
-  flex: 0 0 auto;
-  min-width: 34px;
-  height: 20px;
-  border: 0;
-  border-radius: 999px;
-  background: var(--candidate-tag-bg);
-  color: currentColor;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 7px;
-  font-family: var(--font-family);
-  font-size: 10px;
-  font-weight: 800;
-  line-height: 1;
-  white-space: nowrap;
-}
-
-.candidate-card__score-chip--party {
-  min-width: 32px;
-  height: 18px;
-  font-size: 9px;
-  font-weight: 750;
-  opacity: 0.9;
-}
-
-.candidate-card__score-chip.is-empty {
-  opacity: 0.48;
-}
-
-.candidate-card__name-row strong {
-  display: block;
-  min-width: 0;
-  max-width: 100%;
-  overflow: visible;
-  color: currentColor;
-  font-family: var(--font-display);
-  font-size: var(--candidate-score-size, var(--candidate-name-size, 20px));
-  font-weight: 800;
-  line-height: 1.03;
-  text-overflow: clip;
-  text-transform: uppercase;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
-
-.candidate-card__score {
-  min-width: max-content;
-  color: currentColor;
-  display: inline-flex;
-  align-items: baseline;
-  justify-content: flex-end;
-  gap: 4px;
-  font-family: var(--font-family);
-  padding-top: 2px;
-  text-align: right;
-  opacity: 0.78;
-}
-
-.candidate-card__score small {
-  color: currentColor;
-  font-family: var(--font-family);
-  font-size: 9px;
-  font-weight: 550;
-  line-height: 1;
-  opacity: 0.72;
-  text-transform: none;
-}
-
-.candidate-card__score b {
-  color: currentColor;
-  font-family: var(--font-family);
-  font-size: 12px;
-  font-weight: 650;
-  line-height: 1;
-  white-space: nowrap;
-}
-
-.candidate-card__score-separator {
-  display: none;
-  color: currentColor;
-  font-family: var(--font-display);
-  font-size: var(--candidate-score-size, 16px);
-  font-weight: 700;
-  line-height: 1;
-  opacity: 0.72;
-}
-
-.prototype-candidate-card.has-number-above .candidate-card__identity {
-  gap: 2px;
-}
-
-.candidate-card__identity small {
-  display: block;
-  min-width: 0;
-  max-width: 100%;
-  overflow: visible;
-  margin-top: 0;
-  color: currentColor;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.08;
-  text-overflow: clip;
-  text-transform: uppercase;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
-
-.candidate-card__remove-action {
-  min-width: 82px;
-  min-height: 34px;
-  border: 1px solid rgba(17, 17, 17, 0.16);
-  border-radius: 999px;
-  background: var(--surface);
-  color: var(--text-main);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 12px;
-  font-size: 11px;
-  font-weight: 900;
-  line-height: 1;
-  text-transform: uppercase;
-}
-
-.candidate-card__assessment {
-  width: fit-content;
-  max-width: 100%;
-  min-height: 18px;
-  overflow: visible;
-  margin-top: 6px;
-  border-radius: 999px;
-  background: var(--candidate-assessment-bg);
-  color: currentColor;
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  padding: 2px 6px;
-  font-size: var(--candidate-assessment-size, 10px);
-  font-weight: 800;
-  line-height: 1;
-  white-space: normal;
-}
-
-.candidate-card__assessment-icon {
-  width: 12px;
-  height: 12px;
-  flex: 0 0 12px;
-  border-radius: 50%;
-  background: var(--assessment-icon-bg);
-  color: var(--assessment-icon-fg);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-style: normal;
-  font-size: 10px;
-  font-weight: 900;
-  line-height: 1;
-  box-shadow: none;
-}
-
-.prototype-candidate-card.is-fire-featured .candidate-card__assessment-icon,
-.candidate-card__assessment--fire .candidate-card__assessment-icon {
-  background: transparent;
-  color: #ff914d;
-}
-
-.candidate-card__assessment--fire {
-  align-self: flex-start;
-  margin-left: 0;
-}
-
-.candidate-card__assessment-icon svg,
-.candidate-card__assessment-icon img {
-  width: 9px;
-  height: 11px;
-  flex: 0 0 auto;
-  color: currentColor;
-  object-fit: contain;
-}
-
-.candidate-card__assessment span {
-  min-width: 0;
-  overflow: visible;
-  text-overflow: clip;
-  line-height: 1.12;
 }
 
 .candidate-card__locked-insight {
@@ -549,32 +280,26 @@
 }
 
 .candidate-card__locked-insight strong {
-  color: var(--text-strong);
   font-size: 11px;
   font-weight: 950;
-  line-height: 1.15;
-  text-transform: none;
 }
 
 .candidate-card__locked-insight span {
-  color: var(--muted-soft);
   font-size: 10px;
-  font-weight: 700;
-  line-height: 1.25;
 }
 
 .candidate-card__detail-panel {
   min-width: 0;
   display: grid;
-  gap: 12px;
-  margin-top: 12px;
+  gap: 16px;
+  margin-top: 16px;
   border-top: 1px solid color-mix(in srgb, currentColor 16%, transparent);
-  padding-top: 12px;
+  padding-top: 16px;
 }
 
 .candidate-card__selection-action {
   width: 100%;
-  min-height: 46px;
+  min-height: 52px;
   border: 0;
   border-radius: 999px;
   background: var(--orange);
@@ -584,7 +309,7 @@
   justify-content: center;
   padding: 0 18px;
   font-family: var(--font-family);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 900;
   line-height: 1;
   text-transform: uppercase;
@@ -593,45 +318,23 @@
   transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 }
 
-.candidate-card__selection-action:not(:disabled):hover {
-  background: var(--orange-dark, #f05a24);
-  box-shadow: 0 12px 24px -16px rgba(255, 139, 73, 0.82);
-}
-
-.candidate-card__selection-action:not(:disabled):active {
-  transform: scale(0.99);
-}
-
 .candidate-card__selection-action.is-selected {
   background: color-mix(in srgb, currentColor 8%, white);
   color: currentColor;
   box-shadow: inset 0 0 0 1px currentColor;
 }
 
-.candidate-card__selection-action.is-selected:not(:disabled):hover {
-  background: color-mix(in srgb, currentColor 14%, white);
-  box-shadow: inset 0 0 0 1px currentColor;
-}
-
-.candidate-card__selection-action:disabled {
-  cursor: wait;
-  opacity: 0.7;
-}
-
 .candidate-thermometer {
   position: relative;
   width: 100%;
-  min-width: 0;
   display: grid;
-  gap: 0;
-  margin-top: 10px;
+  margin-top: clamp(24px, 4vw, 34px);
   color: currentColor;
 }
 
 .candidate-thermometer__meter-row {
   width: 100%;
-  min-width: 0;
-  min-height: var(--candidate-bar-height, 26px);
+  min-height: var(--candidate-bar-height);
   display: block;
 }
 
@@ -639,41 +342,10 @@
   position: relative;
   display: block;
   width: 100%;
-  min-width: 0;
-  min-height: var(--candidate-bar-height, 26px);
-  height: var(--candidate-bar-height, 26px);
+  height: var(--candidate-bar-height);
   overflow: hidden;
   border-radius: 999px;
-  border: 0;
   background: var(--candidate-thermometer-track);
-  box-shadow: none;
-}
-
-.candidate-thermometer__status-icon {
-  --candidate-status-icon-box: 20px;
-  position: absolute;
-  left: clamp(calc(var(--candidate-status-icon-box) / 2), var(--thermometer-status-position, 0%), calc(100% - calc(var(--candidate-status-icon-box) / 2)));
-  top: 50%;
-  z-index: 3;
-  width: var(--candidate-status-icon-box);
-  height: var(--candidate-status-icon-box);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: currentColor;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-}
-
-.candidate-thermometer__status-icon .candidate-status-icon {
-  width: 100%;
-  height: 100%;
-  opacity: 0.92;
-}
-
-.prototype-candidate-card.candidate-card--success .candidate-thermometer__status-icon .candidate-status-icon--thumb-up,
-.prototype-candidate-card.candidate-card--danger .candidate-thermometer__status-icon .candidate-status-icon--thumb-down {
-  filter: saturate(1.28) brightness(0.82) contrast(1.08);
 }
 
 .candidate-thermometer__fill {
@@ -686,833 +358,75 @@
   background: var(--candidate-thermometer-fill);
   transform: scaleX(var(--thermometer-scale, 0));
   transform-origin: left center;
-  transition:
-    transform 420ms cubic-bezier(0.2, 0.8, 0.18, 1),
-    box-shadow 180ms ease,
-    opacity 180ms ease;
-  will-change: transform, opacity;
+  transition: transform 420ms cubic-bezier(0.2, 0.8, 0.18, 1);
 }
 
 .candidate-thermometer__tick {
   position: absolute;
-  top: 2px;
-  bottom: 2px;
+  top: 0;
+  bottom: 0;
   z-index: 2;
-  width: 1px;
-  background: color-mix(in srgb, currentColor 42%, white 58%);
-  box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.42);
-  opacity: 0.9;
+  width: clamp(2px, 0.28vw, 4px);
+  background: rgba(255, 255, 255, 0.6);
 }
-
-.candidate-thermometer__tick--first {
-  left: 25%;
-}
-
-.candidate-thermometer__tick--second {
-  left: 50%;
-}
-
-.candidate-thermometer__tick--third {
-  left: 75%;
-}
+.candidate-thermometer__tick--first { left: 25%; }
+.candidate-thermometer__tick--second { left: 50%; }
+.candidate-thermometer__tick--third { left: 75%; }
 
 .candidate-thermometer__caption {
   width: 100%;
-  min-width: 0;
-  max-width: 100%;
-  overflow: hidden;
-  margin-top: 9px;
-  border-top: 0;
-  padding-top: 0;
-  color: currentColor;
+  margin-top: clamp(12px, 1.8vw, 20px);
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center; 
   gap: 12px;
-  font-size: var(--candidate-caption-size, 10.5px);
-  font-weight: 600;
-  line-height: 1;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.candidate-thermometer__caption-main,
-.candidate-thermometer__badge {
-  flex: 0 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  height: var(--candidate-badge-height, 16px);
-  border: 0;
+.candidate-thermometer__caption-main, .candidate-thermometer__badge {
+  height: var(--candidate-badge-height);
   border-radius: 999px;
   background: var(--candidate-tag-bg);
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
   display: inline-flex;
   align-items: center;
-  flex-direction: row;
   justify-content: center;
   gap: 4px;
-  padding: 0 var(--candidate-badge-pad-inline, 12px);
-  color: currentColor;
-  font-family: var(--font-family);
-  font-size: var(--candidate-badge-size, 9.5px);
-  font-weight: 800;
-  line-height: 1;
-  text-overflow: ellipsis;
-  text-transform: none;
-  white-space: nowrap;
-  box-shadow: none;
-}
-
-@keyframes promotedPulse {
-  0% {
-    box-shadow:
-      inset 0 0 0 1px color-mix(in srgb, currentColor 42%, transparent),
-      0 0 0 0 color-mix(in srgb, currentColor 18%, transparent);
-  }
-
-  38% {
-    box-shadow:
-      inset 0 0 0 2px color-mix(in srgb, currentColor 55%, transparent),
-      0 12px 30px -18px color-mix(in srgb, currentColor 44%, transparent);
-  }
-
-  100% {
-    box-shadow: none;
-  }
-}
-
-@keyframes candidateSelectionAdded {
-  0% {
-    box-shadow: none;
-    transform: scale(1);
-  }
-
-  34% {
-    box-shadow:
-      inset 0 0 0 1px color-mix(in srgb, var(--orange) 52%, transparent),
-      0 10px 22px rgba(255, 152, 0, 0.14);
-    transform: scale(1.006);
-  }
-
-  100% {
-    box-shadow: none;
-    transform: scale(1);
-  }
-}
-
-@keyframes candidateSelectionRemoved {
-  0% {
-    box-shadow: none;
-    transform: scale(1);
-    opacity: 1;
-  }
-
-  34% {
-    box-shadow:
-      inset 0 0 0 1px rgba(17, 17, 17, 0.14),
-      0 8px 18px rgba(17, 17, 17, 0.06);
-    transform: scale(0.996);
-    opacity: 0.86;
-  }
-
-  100% {
-    box-shadow: none;
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-.candidate-thermometer__caption-main {
-  align-items: center;
-  gap: 4px;
-}
-
-.candidate-thermometer__caption strong,
-.candidate-thermometer__caption em {
-  display: inline;
-  color: currentColor;
-  font-family: var(--font-family);
-  font-size: inherit;
-  font-style: normal;
-  font-weight: 800;
-  line-height: inherit;
-  text-transform: inherit;
-}
-
-.candidate-thermometer__caption strong {
-  font-weight: 800;
-}
-
-.candidate-thermometer__badge {
-  align-items: center;
-}
-
-.candidate-thermometer__badge em {
-  min-width: 0;
-  overflow: hidden;
-  text-align: left;
-  text-overflow: ellipsis;
-  text-transform: none;
-  white-space: nowrap;
-}
-
-.candidate-thermometer__caption b {
-  font-weight: 700;
-}
-
-.candidate-thermometer--featured .candidate-thermometer__fill {
-  background: linear-gradient(90deg, var(--orange) 0%, var(--orange) 100%);
-  box-shadow: none;
-}
-
-.candidate-thermometer--featured.is-filled .candidate-thermometer__fill,
-.candidate-thermometer__fill.animate-pulse {
-  animation: candidateThermometerPulse 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes candidateThermometerPulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.5;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .candidate-thermometer--featured .candidate-thermometer__fill {
-    animation: none;
-  }
-
-  .candidate-thermometer__fill {
-    transition: none;
-    will-change: auto;
-  }
-}
-
-.candidate-status-icon {
-  position: static;
-  z-index: 1;
-  width: var(--candidate-status-icon-size, 24px);
-  height: var(--candidate-status-icon-size, 24px);
-  pointer-events: none;
-  color: currentColor;
-  opacity: 0.72;
-  filter: none;
-  object-fit: contain;
-}
-
-.candidate-status-icon--fire {
-  width: var(--candidate-fire-icon-width, 17px);
-  height: var(--candidate-fire-icon-height, 22px);
-  opacity: 0.92;
-  filter: drop-shadow(0 2px 4px rgba(255, 152, 0, 0.22));
-  transform: none;
-}
-
-.prototype-candidate-card.prototype-candidate-card.is-fire-featured {
-  --candidate-card-bg: #ffe0ad;
-  --candidate-card-fg: #3b444c;
-  --candidate-card-border: #ff8d4a;
-  --candidate-card-line: rgba(255, 141, 74, 0.28);
-  --candidate-tag-bg: #ffd19b;
-  --candidate-thermometer-fill: #ffc25f;
-  --candidate-thermometer-track: #ffd8a4;
-  --candidate-bar-height: clamp(30px, 3.6vw, 42px);
-  --candidate-caption-size: clamp(11px, 1vw, 14px);
-  --candidate-badge-size: clamp(11px, 1vw, 14px);
-  --candidate-badge-height: clamp(30px, 3vw, 38px);
-  --candidate-badge-pad-inline: clamp(14px, 1.8vw, 22px);
-  min-height: clamp(128px, 18vw, 156px);
-  border: 0;
-  border-radius: clamp(26px, 4vw, 42px);
-  background: var(--candidate-card-bg);
-  color: var(--candidate-card-fg);
-  padding: clamp(24px, 3.8vw, 40px) clamp(22px, 4.4vw, 44px) clamp(22px, 3.3vw, 34px);
-  box-shadow: none;
-}
-
-.prototype-candidate-card.prototype-candidate-card.is-fire-featured.is-detailed {
-  --candidate-thermometer-fill: #ff9d5c;
-  --candidate-bar-height: clamp(32px, 4vw, 46px);
-  min-height: clamp(166px, 23vw, 204px);
-  border: 0;
-  border-radius: clamp(24px, 3.6vw, 40px);
-  padding: clamp(28px, 4.4vw, 52px) clamp(24px, 4.6vw, 46px) clamp(24px, 3.8vw, 38px);
-}
-
-.prototype-candidate-card.prototype-candidate-card.is-fire-featured:hover,
-.prototype-candidate-card.prototype-candidate-card.is-fire-featured.is-selected,
-.prototype-candidate-card.prototype-candidate-card.is-fire-featured.is-selected:hover {
-  box-shadow: none;
-  transform: none;
-}
-
-.prototype-candidate-card.prototype-candidate-card.is-fire-featured.is-selected,
-.prototype-candidate-card.prototype-candidate-card.is-fire-featured.is-selected:hover {
-  border: 1px solid var(--candidate-selection-border, var(--candidate-card-border));
-}
-
-.prototype-candidate-card.prototype-candidate-card.is-fire-featured.is-detailed:hover,
-.prototype-candidate-card.prototype-candidate-card.is-fire-featured.is-detailed.is-selected,
-.prototype-candidate-card.prototype-candidate-card.is-fire-featured.is-detailed.is-selected:hover {
-  box-shadow: none;
-}
-
-.prototype-candidate-card.is-fire-featured .candidate-card__summary-row {
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: start;
-  gap: clamp(16px, 3vw, 32px);
-}
-
-.prototype-candidate-card.is-fire-featured .candidate-card__identity-copy {
-  gap: 5px;
-}
-
-.prototype-candidate-card.is-fire-featured .candidate-card__text-line,
-.prototype-candidate-card.is-fire-featured .candidate-card__party-row {
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 5px clamp(10px, 1.2vw, 14px);
-}
-
-.prototype-candidate-card.is-fire-featured .candidate-card__name-row {
-  display: block;
-}
-
-.prototype-candidate-card.is-fire-featured .candidate-card__name-row strong {
-  color: var(--candidate-card-fg);
-  font-size: clamp(28px, 3.5vw, 42px);
-  font-weight: 800;
-  line-height: 0.98;
-  letter-spacing: 0;
-}
-
-.prototype-candidate-card.is-fire-featured .candidate-card__identity small {
-  color: var(--candidate-card-fg);
-  font-size: clamp(19px, 2.3vw, 29px);
+  padding: 0 var(--candidate-badge-pad-inline);
+  font-size: var(--candidate-badge-size);
   font-weight: 500;
-  line-height: 1;
-  letter-spacing: 0;
 }
 
-.prototype-candidate-card.is-fire-featured .candidate-card__score-chip {
-  min-width: 0;
-  height: clamp(16px, 2vw, 22px);
-  border-radius: 999px;
-  background: var(--candidate-tag-bg);
-  color: var(--candidate-card-fg);
-  gap: 5px;
-  padding: 0 clamp(8px, 1vw, 12px);
-  font-size: clamp(8px, 0.9vw, 10px);
-  font-weight: 500;
-  letter-spacing: 0;
-  line-height: 1;
-}
-
-.prototype-candidate-card.is-fire-featured .candidate-card__score-chip b {
-  color: currentColor;
-  font-size: inherit;
-  font-weight: 800;
-  line-height: inherit;
-}
-
-.prototype-candidate-card.is-fire-featured .candidate-card__status-badge {
-  border: 1px solid color-mix(in srgb, currentColor 34%, transparent);
-  background: color-mix(in srgb, currentColor 8%, transparent);
-  color: #ff7a35;
-  opacity: 1;
-}
-
-.prototype-candidate-card.is-fire-featured.is-detailed .candidate-card__status-badge {
-  border-color: color-mix(in srgb, currentColor 40%, transparent);
-}
-
-.prototype-candidate-card.is-fire-featured .candidate-card__status-badge .candidate-status-icon--fire {
-  width: calc(var(--candidate-status-badge-size) * 0.64);
-  height: calc(var(--candidate-status-badge-size) * 0.8);
-  opacity: 1;
-  filter: none;
-}
-
-.prototype-candidate-card.is-fire-featured .candidate-thermometer {
-  margin-top: clamp(24px, 4vw, 34px);
-}
-
-.prototype-candidate-card.is-fire-featured.is-detailed .candidate-thermometer {
-  margin-top: clamp(20px, 3.4vw, 30px);
-}
-
-.prototype-candidate-card.is-fire-featured .candidate-thermometer__track {
-  background: var(--candidate-thermometer-track);
-}
-
-.prototype-candidate-card.is-fire-featured .candidate-thermometer--featured .candidate-thermometer__fill,
-.prototype-candidate-card.is-fire-featured .candidate-thermometer--featured.is-filled .candidate-thermometer__fill,
-.prototype-candidate-card.is-fire-featured .candidate-thermometer__fill.animate-pulse {
-  background: var(--candidate-thermometer-fill);
-  opacity: 1;
-  animation: none;
-  box-shadow: none;
-}
-
-.prototype-candidate-card.is-fire-featured .candidate-thermometer__tick {
-  top: 0;
-  bottom: 0;
-  width: clamp(2px, 0.28vw, 4px);
-  background: rgba(255, 246, 229, 0.72);
-  box-shadow: none;
-}
-
-.prototype-candidate-card.is-fire-featured .candidate-thermometer__caption {
-  margin-top: clamp(12px, 1.8vw, 20px);
-  color: var(--candidate-card-fg);
-}
-
-.prototype-candidate-card.is-fire-featured .candidate-thermometer__caption-main,
-.prototype-candidate-card.is-fire-featured .candidate-thermometer__badge {
-  background: var(--candidate-tag-bg);
-  color: var(--candidate-card-fg);
-  font-weight: 500;
-  letter-spacing: 0;
-}
-
-.prototype-candidate-card.is-fire-featured .candidate-thermometer__caption-main {
-  gap: 4px;
-  justify-content: center;
-}
-
-.prototype-candidate-card.is-fire-featured .candidate-thermometer__caption strong,
-.prototype-candidate-card.is-fire-featured .candidate-thermometer__caption em {
-  font-weight: 800;
-}
-
+/* ==========================================================================
+   BREAKPOINTS RESPONSIVOS
+   ========================================================================== */
 @media (max-width: 767px) {
-  .prototype-candidate-card.prototype-candidate-card.is-fire-featured {
+  .prototype-candidate-card {
     --candidate-bar-height: 18px;
-    --candidate-badge-height: 14px;
+    --candidate-badge-height: 25px;
+--candidate-badge-circle-size: clamp(40px, 4.5vw, 48px); 
+  --candidate-badge-size: clamp(14px, 1.8vw, 17px);
     min-height: 104px;
     border-radius: 20px;
-    padding: 14px;
+    padding: 18px 16px;
   }
-
-  .prototype-candidate-card.prototype-candidate-card.is-fire-featured.is-detailed {
-    --candidate-bar-height: 14px;
-    --candidate-badge-height: 21px;
-    min-height: 108px;
-    border-width: 2px;
-    border-radius: 18px;
-    padding: 12px;
-  }
-
-  .prototype-candidate-card.prototype-candidate-card.is-fire-featured.is-compact {
-    --candidate-bar-height: 16px;
-    min-height: 104px;
-    border-radius: 20px;
-    padding: 14px;
-  }
-
-  .prototype-candidate-card.is-fire-featured .candidate-card__summary-row {
+  .candidate-card__summary-row {
     gap: 12px;
   }
-
-  .prototype-candidate-card.is-fire-featured .candidate-card__identity-copy {
+  .candidate-card__identity-copy {
     gap: 2px;
   }
-
-  .prototype-candidate-card.is-fire-featured.is-compact .candidate-card__name-row strong {
-    font-size: var(--candidate-score-size, var(--candidate-name-mobile-size, 16.5px));
+  .candidate-card__name-row strong {
+    font-size: clamp(20px, 4vw, 24px);
     line-height: 1.05;
   }
-
-  .prototype-candidate-card.is-fire-featured.is-compact .candidate-card__identity small {
-    font-size: 11.5px;
+  .candidate-card__identity small {
+    font-size: 13px;
     font-weight: 600;
     line-height: 1.08;
   }
-
-  .prototype-candidate-card.is-fire-featured.is-detailed .candidate-card__name-row strong {
-    font-size: var(--candidate-score-size, var(--candidate-name-mobile-size, 16.5px));
-    line-height: 1.05;
-  }
-
-  .prototype-candidate-card.is-fire-featured.is-detailed .candidate-card__identity small {
-    font-size: 11.5px;
-    font-weight: 600;
-    line-height: 1.08;
-  }
-
-  .prototype-candidate-card.is-fire-featured .candidate-card__score-chip {
-    height: 20px;
-    gap: 4px;
-    padding-inline: 8px;
-    font-size: 9.5px;
-  }
-
-  .prototype-candidate-card.is-fire-featured .candidate-card__score-chip--party {
-    height: 18px;
-    font-size: 9px;
-  }
-
-  .prototype-candidate-card.is-fire-featured .candidate-card__status-badge {
-    --candidate-status-badge-size: 44px;
-    border-width: 2px;
-  }
-
-  .prototype-candidate-card.is-fire-featured.is-detailed .candidate-card__status-badge {
-    --candidate-status-badge-size: 42px;
-  }
-
-  .prototype-candidate-card.is-fire-featured .candidate-thermometer {
+  .candidate-thermometer {
     margin-top: 16px;
   }
-
-  .prototype-candidate-card.is-fire-featured.is-detailed .candidate-thermometer {
-    margin-top: 9px;
-  }
-
-  .prototype-candidate-card.is-fire-featured .candidate-thermometer__caption {
-    margin-top: 6px;
-  }
-}
-
-.prototype-candidate-card.prototype-candidate-card.candidate-card--success:not(.is-fire-featured),
-.prototype-candidate-card.prototype-candidate-card.candidate-card--danger,
-.prototype-candidate-card.prototype-candidate-card.is-viability-complete {
-  --candidate-bar-height: clamp(28px, 3.4vw, 40px);
-  --candidate-caption-size: clamp(8.5px, 0.9vw, 11px);
-  --candidate-badge-size: clamp(8.5px, 0.9vw, 11px);
-  --candidate-badge-height: clamp(16px, 1.8vw, 20px);
-  --candidate-badge-pad-inline: clamp(8px, 1vw, 12px);
-  min-height: clamp(128px, 18.5vw, 254px);
-  border: 0;
-  border-radius: clamp(26px, 4vw, 42px);
-  padding: clamp(24px, 3.8vw, 40px) clamp(22px, 4.4vw, 44px) clamp(22px, 3.3vw, 34px);
-  box-shadow: none;
-}
-
-.prototype-candidate-card.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) {
-  --candidate-card-bg: #effbea;
-  --candidate-card-fg: #61d450;
-  --candidate-card-border: #6fd052;
-  --candidate-tag-bg: #dcf7d7;
-  --candidate-thermometer-fill: #90df72;
-  --candidate-thermometer-track: #d9f0d1;
-}
-
-.prototype-candidate-card.prototype-candidate-card.candidate-card--danger {
-  --candidate-card-bg: #ffecef;
-  --candidate-card-fg: #ff555d;
-  --candidate-card-border: #ff9ba3;
-  --candidate-tag-bg: #ffd5d9;
-  --candidate-thermometer-fill: #ff6c70;
-  --candidate-thermometer-track: #ffcfd2;
-}
-
-.prototype-candidate-card.prototype-candidate-card.is-viability-complete {
-  --candidate-card-bg: #f7f7f7;
-  --candidate-card-fg: #aeb2b6;
-  --candidate-card-border: #d1d1d1;
-  --candidate-tag-bg: #e8e8e8;
-  --candidate-thermometer-fill: #bebebe;
-  --candidate-thermometer-track: #eeeeee;
-}
-
-.prototype-candidate-card.prototype-candidate-card.candidate-card--success.is-detailed:not(.is-fire-featured),
-.prototype-candidate-card.prototype-candidate-card.candidate-card--danger.is-detailed,
-.prototype-candidate-card.prototype-candidate-card.is-viability-complete.is-detailed {
-  --candidate-bar-height: clamp(24px, 3vw, 34px);
-  --candidate-badge-height: clamp(15px, 1.6vw, 18px);
-  min-height: clamp(136px, 19vw, 236px);
-  border-radius: clamp(24px, 3.6vw, 40px);
-  padding: clamp(18px, 1.9vw, 24px) clamp(24px, 4.6vw, 46px) clamp(16px, 1.9vw, 20px);
-}
-
-.prototype-candidate-card.prototype-candidate-card.candidate-card--success.is-detailed:not(.is-fire-featured) {
-  border: 0;
-}
-
-.prototype-candidate-card.prototype-candidate-card.candidate-card--success:not(.is-fire-featured):hover,
-.prototype-candidate-card.prototype-candidate-card.candidate-card--danger:hover,
-.prototype-candidate-card.prototype-candidate-card.is-viability-complete:hover,
-.prototype-candidate-card.prototype-candidate-card.candidate-card--success.is-selected:not(.is-fire-featured),
-.prototype-candidate-card.prototype-candidate-card.candidate-card--danger.is-selected,
-.prototype-candidate-card.prototype-candidate-card.is-viability-complete.is-selected {
-  box-shadow: none;
-  transform: none;
-}
-
-.prototype-candidate-card.prototype-candidate-card.candidate-card--success.is-selected:not(.is-fire-featured),
-.prototype-candidate-card.prototype-candidate-card.candidate-card--danger.is-selected,
-.prototype-candidate-card.prototype-candidate-card.is-viability-complete.is-selected {
-  border: 1px solid var(--candidate-selection-border, var(--candidate-card-border));
-}
-
-.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__summary-row,
-.prototype-candidate-card.candidate-card--danger .candidate-card__summary-row,
-.prototype-candidate-card.is-viability-complete .candidate-card__summary-row {
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: start;
-  gap: clamp(16px, 3vw, 32px);
-}
-
-.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__identity-copy,
-.prototype-candidate-card.candidate-card--danger .candidate-card__identity-copy,
-.prototype-candidate-card.is-viability-complete .candidate-card__identity-copy {
-  gap: 5px;
-}
-
-.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__text-line,
-.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__party-row,
-.prototype-candidate-card.candidate-card--danger .candidate-card__text-line,
-.prototype-candidate-card.candidate-card--danger .candidate-card__party-row,
-.prototype-candidate-card.is-viability-complete .candidate-card__text-line,
-.prototype-candidate-card.is-viability-complete .candidate-card__party-row {
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 5px clamp(10px, 1.2vw, 14px);
-}
-
-.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__name-row,
-.prototype-candidate-card.candidate-card--danger .candidate-card__name-row,
-.prototype-candidate-card.is-viability-complete .candidate-card__name-row {
-  display: block;
-}
-
-.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__name-row strong,
-.prototype-candidate-card.candidate-card--danger .candidate-card__name-row strong,
-.prototype-candidate-card.is-viability-complete .candidate-card__name-row strong {
-  color: var(--candidate-card-fg);
-  font-size: clamp(28px, 3.5vw, 46px);
-  font-weight: 800;
-  line-height: 0.98;
-  letter-spacing: 0;
-}
-
-.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__identity small,
-.prototype-candidate-card.candidate-card--danger .candidate-card__identity small,
-.prototype-candidate-card.is-viability-complete .candidate-card__identity small {
-  color: var(--candidate-card-fg);
-  font-size: clamp(19px, 2.4vw, 32px);
-  font-weight: 500;
-  line-height: 1;
-  letter-spacing: 0;
-}
-
-.prototype-candidate-card .candidate-card__score-chip b {
-  color: currentColor;
-  font-size: inherit;
-  font-weight: 800;
-  line-height: inherit;
-}
-
-.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__score-chip,
-.prototype-candidate-card.candidate-card--danger .candidate-card__score-chip,
-.prototype-candidate-card.is-viability-complete .candidate-card__score-chip {
-  min-width: 0;
-  height: clamp(25px, 3vw, 36px);
-  border-radius: 999px;
-  background: var(--candidate-tag-bg);
-  color: var(--candidate-card-fg);
-  gap: 5px;
-  padding: 0 clamp(10px, 1.5vw, 18px);
-  font-size: clamp(12px, 1.35vw, 17px);
-  font-weight: 500;
-  letter-spacing: 0;
-  line-height: 1;
-}
-
-.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__status-badge,
-.prototype-candidate-card.candidate-card--danger .candidate-card__status-badge,
-.prototype-candidate-card.is-viability-complete .candidate-card__status-badge {
-  border: 1px solid color-mix(in srgb, currentColor 34%, transparent);
-  background: color-mix(in srgb, currentColor 8%, transparent);
-  color: currentColor;
-  opacity: 1;
-}
-
-.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__status-badge .candidate-status-icon,
-.prototype-candidate-card.candidate-card--danger .candidate-card__status-badge .candidate-status-icon,
-.prototype-candidate-card.is-viability-complete .candidate-card__status-badge .candidate-status-icon {
-  opacity: 0.72;
-}
-
-.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-thermometer,
-.prototype-candidate-card.candidate-card--danger .candidate-thermometer,
-.prototype-candidate-card.is-viability-complete .candidate-thermometer {
-  margin-top: clamp(24px, 4vw, 34px);
-}
-
-.prototype-candidate-card.candidate-card--success.is-detailed:not(.is-fire-featured) .candidate-thermometer,
-.prototype-candidate-card.candidate-card--danger.is-detailed .candidate-thermometer,
-.prototype-candidate-card.is-viability-complete.is-detailed .candidate-thermometer {
-  margin-top: clamp(10px, 1vw, 14px);
-}
-
-.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-thermometer__track,
-.prototype-candidate-card.candidate-card--danger .candidate-thermometer__track,
-.prototype-candidate-card.is-viability-complete .candidate-thermometer__track {
-  background: var(--candidate-thermometer-track);
-}
-
-.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-thermometer__fill,
-.prototype-candidate-card.candidate-card--danger .candidate-thermometer__fill,
-.prototype-candidate-card.is-viability-complete .candidate-thermometer__fill {
-  background: var(--candidate-thermometer-fill);
-  opacity: 1;
-  animation: none;
-  box-shadow: none;
-}
-
-.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-thermometer__tick,
-.prototype-candidate-card.candidate-card--danger .candidate-thermometer__tick,
-.prototype-candidate-card.is-viability-complete .candidate-thermometer__tick {
-  top: 0;
-  bottom: 0;
-  width: clamp(2px, 0.28vw, 4px);
-  background: rgba(255, 255, 255, 0.6);
-  box-shadow: none;
-}
-
-.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-thermometer__caption,
-.prototype-candidate-card.candidate-card--danger .candidate-thermometer__caption,
-.prototype-candidate-card.is-viability-complete .candidate-thermometer__caption {
-  margin-top: clamp(8px, 1vw, 14px);
-  color: var(--candidate-card-fg);
-}
-
-.prototype-candidate-card.candidate-card--success.is-detailed:not(.is-fire-featured) .candidate-card__status-badge,
-.prototype-candidate-card.candidate-card--danger.is-detailed .candidate-card__status-badge,
-.prototype-candidate-card.is-viability-complete.is-detailed .candidate-card__status-badge {
-  border-color: color-mix(in srgb, currentColor 42%, transparent);
-}
-
-.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-thermometer__caption-main,
-.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-thermometer__badge,
-.prototype-candidate-card.candidate-card--danger .candidate-thermometer__caption-main,
-.prototype-candidate-card.candidate-card--danger .candidate-thermometer__badge,
-.prototype-candidate-card.is-viability-complete .candidate-thermometer__caption-main,
-.prototype-candidate-card.is-viability-complete .candidate-thermometer__badge {
-  background: var(--candidate-tag-bg);
-  color: var(--candidate-card-fg);
-  font-weight: 500;
-  letter-spacing: 0;
-}
-
-.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-thermometer__caption-main,
-.prototype-candidate-card.candidate-card--danger .candidate-thermometer__caption-main,
-.prototype-candidate-card.is-viability-complete .candidate-thermometer__caption-main {
-  gap: 5px;
-  justify-content: flex-start;
-}
-
-.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-thermometer__caption strong,
-.prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-thermometer__caption em,
-.prototype-candidate-card.candidate-card--danger .candidate-thermometer__caption strong,
-.prototype-candidate-card.candidate-card--danger .candidate-thermometer__caption em,
-.prototype-candidate-card.is-viability-complete .candidate-thermometer__caption strong,
-.prototype-candidate-card.is-viability-complete .candidate-thermometer__caption em {
-  font-weight: 800;
-}
-
-@media (max-width: 767px) {
-  .prototype-candidate-card.prototype-candidate-card.candidate-card--success:not(.is-fire-featured),
-  .prototype-candidate-card.prototype-candidate-card.candidate-card--danger,
-  .prototype-candidate-card.prototype-candidate-card.is-viability-complete {
-    --candidate-bar-height: 16px;
-    min-height: 104px;
-    border-radius: 20px;
-    padding: 14px;
-  }
-
-  .prototype-candidate-card.prototype-candidate-card.candidate-card--success.is-detailed:not(.is-fire-featured),
-  .prototype-candidate-card.prototype-candidate-card.candidate-card--danger.is-detailed,
-  .prototype-candidate-card.prototype-candidate-card.is-viability-complete.is-detailed {
-    --candidate-bar-height: 18px;
-    --candidate-badge-height: 14px;
-    min-height: 108px;
-    border-radius: 18px;
-    padding: 12px;
-  }
-
-  .prototype-candidate-card.prototype-candidate-card.candidate-card--success.is-detailed:not(.is-fire-featured) {
-    border-width: 2px;
-  }
-
-  .prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__summary-row,
-  .prototype-candidate-card.candidate-card--danger .candidate-card__summary-row,
-  .prototype-candidate-card.is-viability-complete .candidate-card__summary-row {
-    gap: 12px;
-  }
-
-  .prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__identity-copy,
-  .prototype-candidate-card.candidate-card--danger .candidate-card__identity-copy,
-  .prototype-candidate-card.is-viability-complete .candidate-card__identity-copy {
-    gap: 2px;
-  }
-
-  .prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__name-row strong,
-  .prototype-candidate-card.candidate-card--danger .candidate-card__name-row strong,
-  .prototype-candidate-card.is-viability-complete .candidate-card__name-row strong {
-    font-size: var(--candidate-score-size, var(--candidate-name-mobile-size, 16.5px));
-    line-height: 1.05;
-  }
-
-  .prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__identity small,
-  .prototype-candidate-card.candidate-card--danger .candidate-card__identity small,
-  .prototype-candidate-card.is-viability-complete .candidate-card__identity small {
-    font-size: 11.5px;
-    font-weight: 600;
-    line-height: 1.08;
-  }
-
-  .prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__score-chip,
-  .prototype-candidate-card.candidate-card--danger .candidate-card__score-chip,
-  .prototype-candidate-card.is-viability-complete .candidate-card__score-chip {
-    height: 16px;
-    gap: 4px;
-    padding-inline: 8px;
-    font-size: 8.5px;
-  }
-
-  .prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__score-chip--party,
-  .prototype-candidate-card.candidate-card--danger .candidate-card__score-chip--party,
-  .prototype-candidate-card.is-viability-complete .candidate-card__score-chip--party {
-    height: 15px;
-    font-size: 8px;
-  }
-
-  .prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-card__status-badge,
-  .prototype-candidate-card.candidate-card--danger .candidate-card__status-badge,
-  .prototype-candidate-card.is-viability-complete .candidate-card__status-badge {
-    --candidate-status-badge-size: 40px;
-    border-width: 2px;
-  }
-
-  .prototype-candidate-card.candidate-card--success.is-detailed:not(.is-fire-featured) .candidate-card__status-badge,
-  .prototype-candidate-card.candidate-card--danger.is-detailed .candidate-card__status-badge,
-  .prototype-candidate-card.is-viability-complete.is-detailed .candidate-card__status-badge {
-    --candidate-status-badge-size: 38px;
-  }
-
-  .prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-thermometer,
-  .prototype-candidate-card.candidate-card--danger .candidate-thermometer,
-  .prototype-candidate-card.is-viability-complete .candidate-thermometer {
-    margin-top: 16px;
-  }
-
-  .prototype-candidate-card.candidate-card--success.is-detailed:not(.is-fire-featured) .candidate-thermometer,
-  .prototype-candidate-card.candidate-card--danger.is-detailed .candidate-thermometer,
-  .prototype-candidate-card.is-viability-complete.is-detailed .candidate-thermometer {
-    margin-top: 9px;
-  }
-
-  .prototype-candidate-card.candidate-card--success:not(.is-fire-featured) .candidate-thermometer__caption,
-  .prototype-candidate-card.candidate-card--danger .candidate-thermometer__caption,
-  .prototype-candidate-card.is-viability-complete .candidate-thermometer__caption {
-    margin-top: 6px;
+  .candidate-thermometer__caption {
+    margin-top: 10px;
   }
 }

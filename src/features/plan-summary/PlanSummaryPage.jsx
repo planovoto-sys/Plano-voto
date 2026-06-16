@@ -214,6 +214,7 @@ export default function MeuPlano() {
   const selectedCandidateSignature = selectedCandidateIds.join('|');
   const storedCandidatesSnapshot = JSON.stringify([...rawDeputadosFederais, ...rawSenadores]);
   const selectedDraftEstado = currentDraft?.estado || userData?.estado || null;
+  
   useEffect(() => {
     if (!selectedCandidateSignature) {
       let cancelled = false;
@@ -301,6 +302,7 @@ export default function MeuPlano() {
     senadores: featuredSenadores,
     url: planUrl
   } : null;
+
   const handleEdit = (route = BALLOT_ROUTES.deputadoFederal) => {
     navigate(route, { state: { bypassVoteRedirect: true } });
   };
@@ -421,9 +423,12 @@ export default function MeuPlano() {
         <div className="my-plan-shell">
           <section className="my-plan-overview" aria-label="Resumo do plano">
             <div className="my-plan-overview__metrics">
+              
               <article className="my-plan-overview__metric my-plan-overview__metric--state">
+                {/* 1. ADICIONADO TÍTULO "ESTADO" AQUI PARA PADRONIZAR COM OS OUTROS */}
+                <small className="my-plan-overview__metric-title">Estado</small>
                 <strong className="my-plan-overview__state-code">{estadoSigla || '--'}</strong>
-                <small>{estadoSigla ? estadoNome : 'Escolha seu estado'}</small>
+                <span className="my-plan-overview__state-name">{estadoSigla ? estadoNome : 'Escolha seu estado'}</span>
               </article>
 
               <article className="my-plan-overview__metric my-plan-overview__metric--score">
@@ -438,8 +443,8 @@ export default function MeuPlano() {
                 <small className="my-plan-overview__metric-title">Viabilidade</small>
                 <PlanViabilityGauge chance={averageChance} />
               </article>
+              
             </div>
-
           </section>
 
           <section className="my-plan-choices" aria-label="Candidatos escolhidos">

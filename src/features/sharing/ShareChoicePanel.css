@@ -119,9 +119,15 @@
 }
 
 .share-choice-panel--fab {
+
+  --fab-spacing: clamp(16px, 4vw, 24px);
+
   position: fixed;
-  right: max(16px, var(--screen-gutter));
-  bottom: calc(var(--bottom-nav-height) + var(--app-safe-bottom) + 16px);
+  right: var(--fab-spacing);
+
+
+  bottom: calc(var(--bottom-nav-height, 72px) + env(safe-area-inset-bottom, 0px) + 32px);
+
   z-index: 48;
   width: auto;
   min-height: 0;
@@ -129,7 +135,6 @@
   border: 0;
   border-radius: 0;
   background: transparent;
-  box-shadow: none;
   padding: 0;
   display: flex;
   align-items: center;
@@ -142,36 +147,44 @@
 }
 
 .share-choice-panel--fab .share-choice-panel__button {
-  width: 56px;
-  height: 56px;
-  min-width: 56px;
-  min-height: 56px;
+  pointer-events: auto;
+  width: clamp(52px, 12vw, 58px);
+  height: clamp(52px, 12vw, 58px);
+  min-width: 0;
+  min-height: 0;
   border-radius: 50%;
-  color: rgba(17, 17, 17, 0.62);
+  background: var(--orange, #f97316);
+  color: #ffffff;
+
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   padding: 0;
   gap: 0;
-  pointer-events: auto;
-  box-shadow: none;
 }
 
 .share-choice-panel--fab .share-choice-panel__button:not(:disabled):hover {
-  box-shadow: none;
+  box-shadow: 0 8px 20px rgba(249, 115, 22, 0.4);
 }
 
 .share-choice-panel--fab .share-choice-panel__button:not(:disabled):active {
-  transform: scale(0.97);
-  box-shadow: none;
+  transform: scale(0.92);
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
 }
 
 .share-choice-panel--fab .share-choice-panel__button svg {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
+  stroke-width: 2.2px;
+  margin-bottom: 2px;
+  margin-right: 1px;
 }
 
 .share-choice-panel--fab .share-choice-panel__button span {
   display: none;
 }
 
+/* =========================================================
+   RESTO DOS ESTILOS DO MODAL DE COMPARTILHAMENTO
+   ========================================================= */
 .share-modal {
   position: fixed;
   inset: 0;
@@ -482,7 +495,7 @@
   overflow-wrap: anywhere;
 }
 
-.share-art-card__brand > small {
+.share-art-card__brand>small {
   min-width: 42px;
   border: 1px solid rgba(202, 132, 36, 0.18);
   border-radius: 999px;
@@ -989,6 +1002,7 @@
 }
 
 @media (min-width: 1024px) {
+
   .share-choice-panel__button,
   .share-choice-panel--continue .share-choice-panel__button {
     max-width: 512px;

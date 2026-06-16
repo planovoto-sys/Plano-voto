@@ -160,7 +160,7 @@ export default function BottomNavigation({ currentStep, placement = 'footer' }) 
 
                 <span className="bottom-step-nav__copy">
                   <span className="bottom-step-nav__label">{step.label}</span>
-                  <span className="bottom-step-nav__status">{statusLabel}</span>
+                  {/* O span do statusLabel foi removido daqui para limpar o subtítulo */}
                 </span>
               </button>
             </div>

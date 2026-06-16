@@ -145,7 +145,7 @@ export default function SelectBase({
   const shouldRenderContinue = hasAnySelection && !isHomeState && !isCandidateOffice;
   const shouldShowContinue = shouldRenderContinue && continueVisible;
   const shouldShowDesktopContinue = shouldRenderContinue;
-  const candidateListInstruction = 'Selecione todos os candidatos que aceita votar';
+  const candidateListInstruction = 'Todos que voce aceita votar';
   useEffect(() => {
     let cancelled = false;
 
@@ -594,7 +594,7 @@ export default function SelectBase({
       <div className="state-selection-flow nv-container">
         <section className="state-selection-panel" aria-label="Estados">
           <div className="prototype-section-heading prototype-section-heading--state">
-            <p>Selecione o estado onde você vota</p>
+           <h2>Selecione seu estado</h2>
           </div>
 
           {renderSearchField('select-search-field--state')}
@@ -629,7 +629,7 @@ export default function SelectBase({
       <div className={`candidate-flow nv-container ${isSenateOffice ? 'candidate-flow--senate' : 'candidate-flow--single'}`} id="tour-lista">
         <section className="candidate-list-section">
           <div className="prototype-section-heading">
-            <h2>Candidatos</h2>
+            <h2>Selecione seus candidatos </h2>
             <p>{candidateListInstruction}</p>
           </div>
 
