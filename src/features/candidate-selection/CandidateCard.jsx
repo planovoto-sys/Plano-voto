@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { ChevronDownIcon } from '@/shared/icons/AppIcons';
 import {
   formatScore,
@@ -9,7 +10,7 @@ import {
   getCandidateSystemScore
 } from '@/shared/utils/candidateMetrics';
 
-import { ThumbsUp } from 'lucide-react';
+import { ThumbsUp, Eye } from 'lucide-react'; // Ícone do Olho substituído
 
 function ViabilityMeter({
   value,
@@ -20,6 +21,9 @@ function ViabilityMeter({
   candidateScoreLabel = '--',
   partyScoreLabel = '--'
 }) {
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [isFading, setIsFading] = useState(false);
+
   const numericValue = Number(value) || 0;
   const progress = Math.max(0, Math.min(100, numericValue));
   const progressScale = progress / 100;
@@ -35,6 +39,41 @@ function ViabilityMeter({
   const handleLockedKeyDown = (event) => {
     if (!locked || !['Enter', ' '].includes(event.key)) return;
     handleLockedClick(event);
+  };
+
+  const hasValidCandidateScore = candidateScoreLabel && candidateScoreLabel !== '0' && candidateScoreLabel !== '--';
+
+  const displayLabel = hasValidCandidateScore ? 'candidato' : 'partido';
+  const displayScore = hasValidCandidateScore ? candidateScoreLabel : partyScoreLabel;
+
+  // Cronômetro atualizado para 5 segundos no total (4.5s + 0.5s de animação)
+  useEffect(() => {
+    let timer;
+    
+    if (showTooltip && !isFading) {
+      timer = setTimeout(() => {
+        setIsFading(true);
+      }, 4500); // <-- Alterado para 4.5 segundos
+    } else if (isFading) {
+      timer = setTimeout(() => {
+        setShowTooltip(false);
+        setIsFading(false);
+      }, 500);
+    }
+
+    return () => clearTimeout(timer);
+  }, [showTooltip, isFading]);
+
+  const handleScoreClick = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    if (showTooltip) {
+      setIsFading(true);
+    } else {
+      setShowTooltip(true);
+      setIsFading(false);
+    }
   };
 
   return (
@@ -55,21 +94,39 @@ function ViabilityMeter({
           <span className="candidate-thermometer__tick candidate-thermometer__tick--third"></span>
         </span>
       </span>
+      
       {showCaption && (
         <span className="candidate-thermometer__caption">
+          {/* TAG 1: Viabilidade */}
           <span className="candidate-thermometer__caption-viability">
             <span>viabilidade</span>
             <strong>{value}%</strong>
           </span>
-          <span className="candidate-thermometer__caption-main">
-            <span>candidato</span>
-            <strong>{candidateScoreLabel}</strong>
-          </span>
+          
+          {/* TAG 2: Nota com Balão de Notificação */}
+          <span 
+            className="candidate-thermometer__caption-main"
+            onClick={handleScoreClick}
+          >
+            <span>{displayLabel}</span>
+            <strong className="candidate-thermometer__score-wrapper">
+              {displayScore}
+              <Eye size={14} /> {/* Ícone do Olho atualizado */}
+            </strong>
 
-          <span className="candidate-thermometer__badge">
-            <span> partido</span>
-            <strong>{partyScoreLabel}</strong>
-
+            {/* Balão (alterado para <div> para fugir da regra do span preto) */}
+            {showTooltip && (
+              <div className={`candidate-tooltip ${isFading ? 'is-fading' : ''}`}>
+                {hasValidCandidateScore ? (
+                  <>
+                    Nota do candidato: <strong>{candidateScoreLabel}</strong><br/>
+                    Nota do partido: <strong>{partyScoreLabel}</strong>
+                  </>
+                ) : (
+                  <>Esse candidato ainda não tem uma nota</>
+                )}
+              </div>
+            )}
           </span>
         </span>
       )}
@@ -181,17 +238,16 @@ export default function CandidateCard({
           )}
         </span>
 
-
         <span className="candidate-card__badges-wrapper">
-         <span className="candidate-card__status-badge">
-  <ThumbsUp
-    className={`candidate-card__like-icon ${
-      selected
-        ? 'candidate-card__like-icon--selected'
-        : ''
-    }`}
-  />
-</span>
+          <span className="candidate-card__status-badge">
+            <ThumbsUp
+              className={`candidate-card__like-icon ${
+                selected
+                  ? 'candidate-card__like-icon--selected'
+                  : ''
+              }`}
+            />
+          </span>
           {isExpandable && renderExpandIndicator()}
         </span>
       </span>
@@ -212,7 +268,7 @@ export default function CandidateCard({
 
   return (
     <article
-      className={`prototype-candidate-card nv-touch nv-no-overflow candidate-card--${tone} ${highlight ? 'is-highlight' : ''} ${selected ? 'is-selected' : ''} ${summary ? 'is-summary' : ''} ${showNumberAbove ? 'has-number-above' : ''} ${isBlocked ? 'is-blocked' : ''} ${isExpandable ? 'is-expandable' : 'is-selectable'} ${isExpanded ? 'is-expanded' : ''} ${cardIsDetailed ? 'is-detailed' : 'is-compact'} ${promoted ? 'is-promoted' : ''} ${selectionFeedbackClass}`}
+      className={`prototype-candidate-card nv-touch candidate-card--${tone} ${highlight ? 'is-highlight' : ''} ${selected ? 'is-selected' : ''} ${summary ? 'is-summary' : ''} ${showNumberAbove ? 'has-number-above' : ''} ${isBlocked ? 'is-blocked' : ''} ${isExpandable ? 'is-expandable' : 'is-selectable'} ${isExpanded ? 'is-expanded' : ''} ${cardIsDetailed ? 'is-detailed' : 'is-compact'} ${promoted ? 'is-promoted' : ''} ${selectionFeedbackClass}`}
       title={summary ? `${actionLabel || 'Candidato selecionado'}: ${name}` : name}
     >
       <button

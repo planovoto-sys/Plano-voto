@@ -1,33 +1,28 @@
 .prototype-candidate-card {
-  /* TAMANHOS PADRONIZADOS BASEADOS NO ANTIGO DESTAQUE */
   --candidate-card-pad-left: clamp(22px, 4.4vw, 44px);
   --candidate-card-pad-right: clamp(24px, 3.8vw, 40px);
   --candidate-name-size: clamp(28px, 3.5vw, 42px);
   --candidate-party-size: clamp(19px, 2.3vw, 29px);
   --candidate-score-size: clamp(16px, 2.3vw, 24px);
   --candidate-bar-height: clamp(30px, 3.6vw, 42px);
-  
-  /* CÍRCULO MENOR E FONTE MAIOR */
-  --candidate-badge-circle-size: clamp(46px, 5.5vw, 56px); 
-  --candidate-badge-size: clamp(16px, 2vw, 20px); 
-
+  --candidate-badge-circle-size: clamp(46px, 5.5vw, 56px);
+  --candidate-badge-size: clamp(16px, 2vw, 20px);
   --candidate-caption-size: clamp(11px, 1vw, 14px);
   --candidate-badge-pad-inline: clamp(14px, 1.8vw, 22px);
   --candidate-badge-height: clamp(30px, 3vw, 38px);
-  
-  --candidate-card-fg: #1a1a1a; 
+  --candidate-card-fg: #1a1a1a;
   --candidate-card-bg: #ffffff;
   --candidate-card-border: rgba(105, 116, 111, 0.18);
   --candidate-card-line: rgba(105, 116, 111, 0.14);
   --candidate-bar-border: rgba(105, 116, 111, 0.28);
   --candidate-tag-bg: rgba(0, 0, 0, 0.06);
   --candidate-selection-border: #1a1a1a;
-  
+
   position: relative;
   width: 100%;
   min-height: clamp(128px, 18vw, 156px);
-  
-  border: 0; 
+
+  border: 0;
   border-radius: clamp(26px, 4vw, 42px);
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -39,7 +34,7 @@
   text-align: left;
   font-family: var(--font-family);
   cursor: default;
-  overflow: hidden;
+  overflow: visible;
   box-shadow: none;
   transition: background-color var(--motion-fast) var(--ease-standard), box-shadow var(--motion-fast) var(--ease-standard), transform var(--motion-fast) var(--ease-standard);
 }
@@ -48,6 +43,7 @@
   border: 1px solid var(--candidate-selection-border, var(--candidate-card-border));
   box-shadow: 0 8px 18px color-mix(in srgb, currentColor 8%, transparent);
 }
+
 .prototype-candidate-card.is-selected::before {
   content: none;
 }
@@ -61,14 +57,12 @@
 .prototype-candidate-card .candidate-thermometer__caption-viability strong,
 .prototype-candidate-card .candidate-thermometer__caption-viability span {
   color: #111111 !important;
-  font-style: normal !important; 
+  font-style: normal !important;
 }
 
 /* ==========================================================================
    PALETA DE CORES 
    ========================================================================== */
-
-/* VERDE (BEM AVALIADOS >= 7) */
 .candidate-card--success {
   --candidate-card-bg: #effbea;
   --candidate-card-fg: #4d9849;
@@ -81,7 +75,6 @@
   --candidate-selection-border: #4d9849;
 }
 
-/* VERMELHO (MAL AVALIADOS < 7) */
 .candidate-card--danger {
   --candidate-card-bg: #ffe8ea;
   --candidate-card-fg: #ff5757;
@@ -94,7 +87,6 @@
   --candidate-selection-border: #ff5757;
 }
 
-/* VISITANTE/BLOQUEADO */
 .candidate-card--visitor {
   border: 0;
   background: #f4f5f3;
@@ -112,10 +104,12 @@
 .prototype-candidate-card.is-promoted {
   animation: promotedPulse 1200ms var(--ease-standard);
 }
+
 .prototype-candidate-card.is-blocked {
   cursor: not-allowed;
   opacity: 0.6;
 }
+
 .prototype-candidate-card:disabled {
   cursor: wait;
   opacity: 1;
@@ -138,12 +132,14 @@
 .candidate-card__surface:disabled {
   cursor: wait;
 }
-.candidate-card__surface:focus-visible, .candidate-card__selection-action:focus-visible {
+
+.candidate-card__surface:focus-visible,
+.candidate-card__selection-action:focus-visible {
   outline: 2px solid currentColor;
   outline-offset: 4px;
 }
 
-.prototype-candidate-card.is-expandable.is-expanded > .candidate-card__surface .candidate-thermometer {
+.prototype-candidate-card.is-expandable.is-expanded>.candidate-card__surface .candidate-thermometer {
   display: none;
 }
 
@@ -161,7 +157,7 @@
   min-width: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center; 
+  align-items: center;
   gap: clamp(16px, 3vw, 32px);
 }
 
@@ -173,7 +169,8 @@
   gap: 5px;
 }
 
-.candidate-card__text-line, .candidate-card__party-row {
+.candidate-card__text-line,
+.candidate-card__party-row {
   min-width: 0;
   max-width: 100%;
   display: flex;
@@ -215,62 +212,36 @@
   flex-shrink: 0;
   width: var(--candidate-badge-circle-size);
   height: var(--candidate-badge-circle-size);
-
   border-radius: 999px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   background: rgba(17, 17, 17, 0.05);
-
-  transition:
-    background-color .25s ease,
-    transform .25s ease,
-    box-shadow .25s ease;
+  transition: background-color .25s ease, transform .25s ease, box-shadow .25s ease;
 }
 
 .candidate-card__like-icon {
   width: 22px;
   height: 22px;
-
   stroke-width: 2.2;
-
-  color: rgba(17,17,17,.45);
-
-  transition:
-    color .25s ease,
-    transform .3s cubic-bezier(.34,1.56,.64,1);
+  color: rgba(17, 17, 17, .45);
+  transition: color .25s ease, transform .3s cubic-bezier(.34, 1.56, .64, 1);
 }
 
-.prototype-candidate-card:hover
-.candidate-card__like-icon {
+.prototype-candidate-card:hover .candidate-card__like-icon {
   transform: scale(1.08);
 }
 
-.prototype-candidate-card.is-selected
-.candidate-card__status-badge {
-  background:
-    color-mix(
-      in srgb,
-      currentColor 14%,
-      transparent
-    );
-
-  box-shadow:
-    inset 0 0 0 1px
-    color-mix(
-      in srgb,
-      currentColor 18%,
-      transparent
-    );
+.prototype-candidate-card.is-selected .candidate-card__status-badge {
+  background: color-mix(in srgb, currentColor 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 18%, transparent);
 }
 
-.prototype-candidate-card.is-selected
-.candidate-card__like-icon {
+.prototype-candidate-card.is-selected .candidate-card__like-icon {
   color: currentColor;
   transform: scale(1.15);
 }
+
 .candidate-card__expand-indicator {
   width: 24px;
   height: 24px;
@@ -397,12 +368,21 @@
   width: clamp(2px, 0.28vw, 4px);
   background: rgba(255, 255, 255, 0.6);
 }
-.candidate-thermometer__tick--first { left: 25%; }
-.candidate-thermometer__tick--second { left: 50%; }
-.candidate-thermometer__tick--third { left: 75%; }
+
+.candidate-thermometer__tick--first {
+  left: 25%;
+}
+
+.candidate-thermometer__tick--second {
+  left: 50%;
+}
+
+.candidate-thermometer__tick--third {
+  left: 75%;
+}
 
 /* ==========================================================================
-   AS 3 TAGS ALINHADAS MILIMETRICAMENTE COM FLEX: 1
+   AS TAGS
    ========================================================================== */
 .candidate-thermometer__caption {
   width: 100%;
@@ -416,7 +396,7 @@
 .candidate-thermometer__caption-main,
 .candidate-thermometer__caption-viability,
 .candidate-thermometer__badge {
-  flex: 1 1 0; /* Mágica acontece aqui: Obriga as 3 a terem EXATAMENTE a mesma largura */
+  flex: 1 1 0;
   min-width: 0;
   height: var(--candidate-badge-height);
   border-radius: 999px;
@@ -428,7 +408,7 @@
   padding: 0 clamp(4px, 1vw, 8px);
   font-size: var(--candidate-badge-size);
   white-space: nowrap;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .candidate-thermometer__caption strong {
@@ -442,41 +422,136 @@
 }
 
 /* ==========================================================================
+   TOOLTIP DE NOTIFICAÇÃO DA NOTA (BALÃO)
+   ========================================================================== */
+.candidate-thermometer__caption-main {
+  position: relative;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.candidate-thermometer__score-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* O Balão */
+.candidate-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #2b2b2b;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+
+  width: max-content;
+  max-width: 220px;
+  white-space: normal;
+  line-height: 1.4;
+  text-align: center;
+
+  z-index: 99999;
+  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.2);
+  font-weight: normal;
+  cursor: default;
+
+  /* Animação de entrada rápida */
+  animation: tooltipFadeIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* FORÇANDO A COR BRANCA CONTRA A REGRA !IMPORTANT DO PAI */
+.prototype-candidate-card .candidate-tooltip,
+.prototype-candidate-card .candidate-tooltip strong,
+.prototype-candidate-card .candidate-tooltip span {
+  color: #ffffff !important;
+}
+
+/* Triângulo embaixo do balão */
+.candidate-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -6px;
+  border-width: 6px;
+  border-style: solid;
+  border-color: #2b2b2b transparent transparent transparent;
+}
+
+/* Classe acionada pelo React antes de sumir */
+.candidate-tooltip.is-fading {
+  animation: tooltipFadeOut 0.5s ease-in forwards;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes tooltipFadeOut {
+  from {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+}
+
+/* ==========================================================================
    BREAKPOINTS RESPONSIVOS
    ========================================================================== */
 @media (max-width: 767px) {
   .prototype-candidate-card {
     --candidate-bar-height: 18px;
     --candidate-badge-height: 25px;
-    --candidate-badge-circle-size: clamp(40px, 4.5vw, 48px); 
+    --candidate-badge-circle-size: clamp(40px, 4.5vw, 48px);
     --candidate-badge-size: clamp(14px, 1.8vw, 17px);
     min-height: 104px;
     border-radius: 20px;
     padding: 18px 16px;
   }
+
   .candidate-card__summary-row {
     gap: 12px;
   }
+
   .candidate-card__identity-copy {
     gap: 2px;
   }
+
   .candidate-card__name-row strong {
     font-size: clamp(20px, 4vw, 24px);
     line-height: 1.05;
   }
+
   .candidate-card__identity small {
     font-size: 13px;
     font-weight: 600;
     line-height: 1.08;
   }
+
   .candidate-thermometer {
     margin-top: 16px;
   }
+
   .candidate-thermometer__caption {
     margin-top: 10px;
-    gap: 4px; /* Mais coladinhas no celular */
+    gap: 4px;
   }
-  /* Garante que os paddings caibam bem em telas minúsculas */
+
   .candidate-thermometer__caption-main,
   .candidate-thermometer__caption-viability,
   .candidate-thermometer__badge {
