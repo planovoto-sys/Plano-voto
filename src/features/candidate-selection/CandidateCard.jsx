@@ -9,6 +9,8 @@ import {
   getCandidateSystemScore
 } from '@/shared/utils/candidateMetrics';
 
+import { ThumbsUp } from 'lucide-react';
+
 function ViabilityMeter({
   value,
   tone,
@@ -48,7 +50,6 @@ function ViabilityMeter({
       <span className="candidate-thermometer__meter-row">
         <span className="candidate-thermometer__track" aria-hidden="true">
           <span className="candidate-thermometer__fill"></span>
-          {/* OS ÍCONES FORAM TOTALMENTE REMOVIDOS DAQUI */}
           <span className="candidate-thermometer__tick candidate-thermometer__tick--first"></span>
           <span className="candidate-thermometer__tick candidate-thermometer__tick--second"></span>
           <span className="candidate-thermometer__tick candidate-thermometer__tick--third"></span>
@@ -56,14 +57,19 @@ function ViabilityMeter({
       </span>
       {showCaption && (
         <span className="candidate-thermometer__caption">
-          <span className="candidate-thermometer__caption-main">
-            <strong>{candidateScoreLabel}</strong>
-            <span>nota candidato</span>
+               <span className="candidate-thermometer__caption-viability">
+                    <span>viabilidade</span>
+            <strong>{value}%</strong>
           </span>
+          <span className="candidate-thermometer__caption-main">
+             <span>candidato</span>
+            <strong>{candidateScoreLabel}</strong>
+          </span>
+     
           <span className="candidate-thermometer__badge">
+            <span> partido</span>
             <strong>{partyScoreLabel}</strong>
-            {/* TAG <em> SUBSTITUÍDA POR <span> PARA REMOVER O ITÁLICO */}
-            <span>nota partido</span>
+
           </span>
         </span>
       )}
@@ -74,16 +80,6 @@ function ViabilityMeter({
 const getCandidateNumber = (candidate = {}) => {
   const value = candidate.Numero ?? candidate.numero ?? candidate.number ?? '';
   return String(value ?? '').trim();
-};
-
-const getSingleLineSize = (value, sizes) => {
-  const length = String(value || '').trim().length;
-  if (length > 54) return sizes.xxs ?? sizes.xs;
-  if (length > 46) return sizes.xs;
-  if (length > 38) return sizes.sm;
-  if (length > 30) return sizes.md;
-  if (length > 22) return sizes.lg;
-  return sizes.base;
 };
 
 export default function CandidateCard({
@@ -129,7 +125,6 @@ export default function CandidateCard({
 
   const candidateScoreLabel = candidateScore > 0 ? formatScore(candidateScore) : '--';
   const partyScoreLabel = partyScore > 0 ? formatScore(partyScore) : '--';
-  const viabilityPercent = Math.round(Math.max(0, Math.min(100, chance)));
   const partyLabel = party || '';
   const isExpandable = interactionMode === 'expand';
   const isExpanded = Boolean(expanded);
@@ -147,13 +142,6 @@ export default function CandidateCard({
     }
     onSelect?.(event);
   };
-
-  const renderViabilityBadge = (className = '') => (
-    <span className={`candidate-card__status-badge ${className}`} aria-label={`${viabilityPercent}% viável`}>
-      <strong>{viabilityPercent}%</strong>
-      <span>viável</span>
-    </span>
-  );
 
   const renderExpandIndicator = () => (
     <span className="candidate-card__expand-indicator" aria-hidden="true">
@@ -192,9 +180,17 @@ export default function CandidateCard({
             </span>
           )}
         </span>
-        {renderViabilityBadge()}
-        {isExpandable && renderExpandIndicator()}
+
+      
+        <span className="candidate-card__badges-wrapper">
+         
+<span className="candidate-card__status-badge" aria-hidden="true">
+  <ThumbsUp className="candidate-card__like-icon" />
+</span>
+          {isExpandable && renderExpandIndicator()}
+        </span>
       </span>
+
       {detailed && lockPersonalizedFields ? renderLockedInsight() : (
         <ViabilityMeter
           value={lockPersonalizedFields ? 0 : chance}

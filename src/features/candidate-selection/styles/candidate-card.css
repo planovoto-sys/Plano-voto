@@ -58,8 +58,8 @@
 .prototype-candidate-card .candidate-thermometer__caption-main span,
 .prototype-candidate-card .candidate-thermometer__badge strong,
 .prototype-candidate-card .candidate-thermometer__badge span,
-.prototype-candidate-card .candidate-card__status-badge strong,
-.prototype-candidate-card .candidate-card__status-badge span {
+.prototype-candidate-card .candidate-thermometer__caption-viability strong,
+.prototype-candidate-card .candidate-thermometer__caption-viability span {
   color: #111111 !important;
   font-style: normal !important; 
 }
@@ -211,37 +211,69 @@
   overflow-wrap: anywhere;
 }
 
+/* ==========================================================================
+   ÍCONE DE LIKE (O NOVO PADRÃO ELEGANTE)
+   ========================================================================== */
+.candidate-card__badges-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+ 
 .candidate-card__status-badge {
   flex-shrink: 0;
   width: var(--candidate-badge-circle-size);
   height: var(--candidate-badge-circle-size);
-  border: 1px solid color-mix(in srgb, currentColor 34%, transparent);
   border-radius: 50%;
-  background: color-mix(in srgb, currentColor 8%, transparent);
-  display: flex;
-  flex-direction: column; 
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 1px; /* Um leve respiro entre os textos */
-  padding: 0;
-  opacity: 0.88;
+
+  background: color-mix(in srgb, currentColor 8%, white);
+  color: color-mix(in srgb, currentColor 55%, #111);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, currentColor 12%, transparent),
+    0 6px 14px color-mix(in srgb, currentColor 6%, transparent);
+
+  transition:
+    transform 180ms ease,
+    background-color 180ms ease,
+    box-shadow 180ms ease,
+    color 180ms ease;
+}
+.candidate-card__like-icon {
+  width: 22px;
+  height: 22px;
+  stroke-width: 2.1;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
 }
 
-.candidate-card__status-badge strong {
-  font-family: var(--font-family);
-  font-size: var(--candidate-badge-size);
-  font-weight: 900;
-  line-height: 0.9; /* Altura da linha reduzida para manter os textos próximos */
+
+.prototype-candidate-card.is-selected .candidate-card__status-badge {
+  background: color-mix(in srgb, currentColor 14%, white);
+  color: currentColor;
+  transform: translateY(-1px) scale(1.03);
 }
 
-.candidate-card__status-badge span {
-  font-family: var(--font-family);
-  font-size: calc(var(--candidate-badge-size) * 0.55); 
-  font-weight: 800;
-  line-height: 1;
-  text-transform: uppercase;
-  margin-top: 0; /* Removida a margem negativa que causava a sobreposição */
+.candidate-card__status-badge svg {
+  width: 24px;
+  height: 24px;
+  fill: transparent; /* Transparente por padrão (Outline) */
+  stroke: currentColor;
+  stroke-width: 1.75;
+  transition: fill 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
+
+.prototype-candidate-card.is-selected .candidate-card__like-icon {
+  fill: currentColor; /* Preenchido quando selecionado */
+ 
+}
+
+/* ========================================================================== */
 
 .candidate-card__expand-indicator {
   width: 24px;
@@ -373,16 +405,23 @@
 .candidate-thermometer__tick--second { left: 50%; }
 .candidate-thermometer__tick--third { left: 75%; }
 
+/* ==========================================================================
+   AS 3 TAGS ALINHADAS MILIMETRICAMENTE COM FLEX: 1
+   ========================================================================== */
 .candidate-thermometer__caption {
   width: 100%;
   margin-top: clamp(12px, 1.8vw, 20px);
   display: flex;
   align-items: center;
-  justify-content: center; 
-  gap: 12px;
+  justify-content: space-between;
+  gap: clamp(4px, 1.5vw, 10px);
 }
 
-.candidate-thermometer__caption-main, .candidate-thermometer__badge {
+.candidate-thermometer__caption-main,
+.candidate-thermometer__caption-viability,
+.candidate-thermometer__badge {
+  flex: 1 1 0; /* Mágica acontece aqui: Obriga as 3 a terem EXATAMENTE a mesma largura */
+  min-width: 0;
   height: var(--candidate-badge-height);
   border-radius: 999px;
   background: var(--candidate-tag-bg);
@@ -390,9 +429,20 @@
   align-items: center;
   justify-content: center;
   gap: 4px;
-  padding: 0 var(--candidate-badge-pad-inline);
+  padding: 0 clamp(4px, 1vw, 8px);
   font-size: var(--candidate-badge-size);
-  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.candidate-thermometer__caption strong {
+  font-weight: 900;
+  color: var(--text-strong);
+}
+
+.candidate-thermometer__caption span {
+  font-weight: 600;
+  color: var(--text-strong);
 }
 
 /* ==========================================================================
@@ -402,8 +452,8 @@
   .prototype-candidate-card {
     --candidate-bar-height: 18px;
     --candidate-badge-height: 25px;
---candidate-badge-circle-size: clamp(40px, 4.5vw, 48px); 
-  --candidate-badge-size: clamp(14px, 1.8vw, 17px);
+    --candidate-badge-circle-size: clamp(40px, 4.5vw, 48px); 
+    --candidate-badge-size: clamp(14px, 1.8vw, 17px);
     min-height: 104px;
     border-radius: 20px;
     padding: 18px 16px;
@@ -428,5 +478,12 @@
   }
   .candidate-thermometer__caption {
     margin-top: 10px;
+    gap: 4px; /* Mais coladinhas no celular */
+  }
+  /* Garante que os paddings caibam bem em telas minúsculas */
+  .candidate-thermometer__caption-main,
+  .candidate-thermometer__caption-viability,
+  .candidate-thermometer__badge {
+    padding: 0 clamp(6px, 1.2vw, 12px);
   }
 }
