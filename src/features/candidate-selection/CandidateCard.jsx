@@ -57,15 +57,15 @@ function ViabilityMeter({
       </span>
       {showCaption && (
         <span className="candidate-thermometer__caption">
-               <span className="candidate-thermometer__caption-viability">
-                    <span>viabilidade</span>
+          <span className="candidate-thermometer__caption-viability">
+            <span>viabilidade</span>
             <strong>{value}%</strong>
           </span>
           <span className="candidate-thermometer__caption-main">
-             <span>candidato</span>
+            <span>candidato</span>
             <strong>{candidateScoreLabel}</strong>
           </span>
-     
+
           <span className="candidate-thermometer__badge">
             <span> partido</span>
             <strong>{partyScoreLabel}</strong>
@@ -181,11 +181,16 @@ export default function CandidateCard({
           )}
         </span>
 
-      
+
         <span className="candidate-card__badges-wrapper">
-         
-<span className="candidate-card__status-badge" aria-hidden="true">
-  <ThumbsUp className="candidate-card__like-icon" />
+         <span className="candidate-card__status-badge">
+  <ThumbsUp
+    className={`candidate-card__like-icon ${
+      selected
+        ? 'candidate-card__like-icon--selected'
+        : ''
+    }`}
+  />
 </span>
           {isExpandable && renderExpandIndicator()}
         </span>

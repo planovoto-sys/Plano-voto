@@ -211,70 +211,66 @@
   overflow-wrap: anywhere;
 }
 
-/* ==========================================================================
-   ÍCONE DE LIKE (O NOVO PADRÃO ELEGANTE)
-   ========================================================================== */
-.candidate-card__badges-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
- 
 .candidate-card__status-badge {
   flex-shrink: 0;
   width: var(--candidate-badge-circle-size);
   height: var(--candidate-badge-circle-size);
-  border-radius: 50%;
-  display: inline-flex;
+
+  border-radius: 999px;
+
+  display: flex;
   align-items: center;
   justify-content: center;
 
-  background: color-mix(in srgb, currentColor 8%, white);
-  color: color-mix(in srgb, currentColor 55%, #111);
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, currentColor 12%, transparent),
-    0 6px 14px color-mix(in srgb, currentColor 6%, transparent);
+  background: rgba(17, 17, 17, 0.05);
 
   transition:
-    transform 180ms ease,
-    background-color 180ms ease,
-    box-shadow 180ms ease,
-    color 180ms ease;
+    background-color .25s ease,
+    transform .25s ease,
+    box-shadow .25s ease;
 }
+
 .candidate-card__like-icon {
   width: 22px;
   height: 22px;
-  stroke-width: 2.1;
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
+
+  stroke-width: 2.2;
+
+  color: rgba(17,17,17,.45);
+
+  transition:
+    color .25s ease,
+    transform .3s cubic-bezier(.34,1.56,.64,1);
 }
 
+.prototype-candidate-card:hover
+.candidate-card__like-icon {
+  transform: scale(1.08);
+}
 
-.prototype-candidate-card.is-selected .candidate-card__status-badge {
-  background: color-mix(in srgb, currentColor 14%, white);
+.prototype-candidate-card.is-selected
+.candidate-card__status-badge {
+  background:
+    color-mix(
+      in srgb,
+      currentColor 14%,
+      transparent
+    );
+
+  box-shadow:
+    inset 0 0 0 1px
+    color-mix(
+      in srgb,
+      currentColor 18%,
+      transparent
+    );
+}
+
+.prototype-candidate-card.is-selected
+.candidate-card__like-icon {
   color: currentColor;
-  transform: translateY(-1px) scale(1.03);
+  transform: scale(1.15);
 }
-
-.candidate-card__status-badge svg {
-  width: 24px;
-  height: 24px;
-  fill: transparent; /* Transparente por padrão (Outline) */
-  stroke: currentColor;
-  stroke-width: 1.75;
-  transition: fill 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.prototype-candidate-card.is-selected .candidate-card__like-icon {
-  fill: currentColor; /* Preenchido quando selecionado */
- 
-}
-
-/* ========================================================================== */
-
 .candidate-card__expand-indicator {
   width: 24px;
   height: 24px;
