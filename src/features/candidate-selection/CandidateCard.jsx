@@ -103,15 +103,32 @@ function ViabilityMeter({
             <strong>{value}%</strong>
           </span>
           
-   
-          <span 
+   <span 
             className="candidate-thermometer__caption-main"
             onClick={handleScoreClick}
-          ><span>Nota do {displayLabel}:</span>
-            <strong className="candidate-thermometer__score-wrapper">
-            {displayScore}
+            style={{ cursor: 'pointer' }}
+          >
+            <span>Nota do {displayLabel}</span>
+            <strong className="candidate-thermometer__score-wrapper" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+              {displayScore} 
+              
+              {/* Ícone de + com correção óptica de alinhamento (translateY) */}
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width="14" 
+                height="14" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="3.5" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+                style={{ transform: 'translateY(-1.5px)' }} 
+              >
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
             </strong>
-
            
             {showTooltip && (
               <div className={`candidate-tooltip ${isFading ? 'is-fading' : ''}`}>
@@ -121,7 +138,10 @@ function ViabilityMeter({
                     Nota do partido: <strong>{partyScoreLabel}</strong>
                   </>
                 ) : (
-                  <>Este candidato ainda não tem uma nota própria.</>
+                  <>
+                    Nota do candidato: <strong>{candidateScoreLabel}</strong><br/>
+                    Nota do partido: <strong>{partyScoreLabel}</strong>
+                  </>
                 )}
               </div>
             )}

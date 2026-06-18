@@ -595,3 +595,425 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* ==========================================================================
+   CONTAINER PRINCIPAL E SCROLL
+   ========================================================================== */
+.select-base-container {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  background: var(--page-bg);
+}
+
+.select-base__scroll {
+  width: 100%;
+  max-width: 100%;
+  padding: 31px var(--screen-gutter) calc(var(--bottom-nav-height) + var(--app-safe-bottom) + 28px);
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+}
+
+.variant-home-state .select-base__scroll {
+  --screen-gutter: 18px;
+}
+
+/* ==========================================================================
+   NOVO HEADER (PASSOS, FILTROS E BUSCA)
+   ========================================================================== */
+.step-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  width: 100%;
+  
+  /* Altura mantida igual ao do cabeçalho anterior */
+  min-height: 82px; 
+  padding: calc(var(--app-safe-top, 0px) + 12px) var(--screen-gutter) 12px;
+  
+  background: var(--page-bg);
+  display: flex;
+  align-items: center;
+  
+  /* visible permite que o menu dropdown de filtros vaze para fora do header */
+  overflow: visible; 
+  box-shadow: 0 1px 0 rgba(17,17,17,0.06);
+}
+
+.step-header__default,
+.step-header__search-mode {
+  position: absolute;
+  left: var(--screen-gutter);
+  right: var(--screen-gutter);
+  
+  /* Garante o alinhamento no centro livre da margem de segurança do iOS */
+  top: var(--app-safe-top, 0px);
+  bottom: 0;
+  
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.step-header__default {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+/* Quando ativo, empurra o texto pra esquerda e some */
+.step-header.is-searching .step-header__default {
+  opacity: 0;
+  transform: translateX(-20px);
+  pointer-events: none;
+}
+
+.step-header__search-mode {
+  opacity: 0;
+  transform: translateX(20px);
+  pointer-events: none;
+  gap: 12px;
+}
+
+/* Quando ativo, traz a barra de busca da direita para o centro */
+.step-header.is-searching .step-header__search-mode {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.step-header__title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.step-header__title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-strong);
+  margin: 0;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.step-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.step-header__icon-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: var(--text-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.step-header__icon-btn:active {
+  transform: scale(0.9);
+}
+
+.step-header__icon-btn.is-active {
+  color: var(--orange);
+}
+
+.step-header__icon-btn svg {
+  width: 24px;
+  height: 24px;
+  stroke-width: 2;
+}
+
+/* ==========================================================================
+   ESTILOS DO FILTRO
+   ========================================================================== */
+.step-header__filter-wrapper {
+  position: relative;
+}
+
+.step-header__filter-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--orange);
+  border: 2px solid var(--page-bg);
+}
+
+.step-header__filter-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 16px;
+  background: var(--surface);
+  border: 1px solid rgba(17,17,17,0.08);
+  border-radius: 16px;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.12);
+  min-width: 220px;
+  padding: 8px 0;
+  z-index: 60;
+}
+
+.step-header__filter-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 18px;
+  background: transparent;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-main);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.step-header__filter-option:hover {
+  background: var(--page-bg);
+}
+
+.step-header__filter-option.is-active {
+  color: var(--orange-dark);
+  background: var(--orange-soft);
+}
+
+.step-header__filter-check {
+  width: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.step-header__filter-check svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 3;
+}
+
+/* ==========================================================================
+   ESTILOS DA BARRA DE BUSCA EM CÁPSULA
+   ========================================================================== */
+.step-header__search-input-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: rgba(17,17,17,0.05); 
+  border-radius: 999px;
+  padding: 0 14px;
+  height: 44px;
+}
+
+.step-header__search-indicator {
+  width: 18px;
+  height: 18px;
+  color: var(--muted);
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+.step-header__search-input {
+  flex: 1;
+  height: 100%;
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-strong);
+  outline: none;
+  padding: 0;
+}
+
+.step-header__search-input::placeholder {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+/* Tira o "X" feio nativo do Chrome/Safari */
+.step-header__search-input::-webkit-search-cancel-button {
+  display: none;
+}
+
+/* X interno para limpar texto */
+.step-header__clear-text-btn {
+  background: rgba(17,17,17,0.18);
+  border: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-left: 8px;
+  padding: 0;
+}
+
+.step-header__clear-text-btn svg {
+  width: 12px;
+  height: 12px;
+  stroke-width: 3;
+}
+
+/* ==========================================================================
+   LISTAS (ESTADOS E CANDIDATOS)
+   ========================================================================== */
+.state-selection-flow,
+.candidate-flow {
+  display: grid;
+  gap: 29px;
+}
+
+.state-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.state-card {
+  width: 100%;
+  min-height: 98px;
+  border: 2px solid transparent;
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text-main);
+  display: block;
+  font-family: var(--font-family);
+  padding: 16px 20px;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 12px 28px rgba(17, 17, 17, 0.06);
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.state-card:active,
+.prototype-candidate-card:active,
+.candidate-filter-tabs__item:active,
+.select-base__continue:active {
+  transform: scale(0.99);
+}
+
+.state-card.is-selected {
+  border: 1px solid color-mix(in srgb, var(--surface) 68%, var(--text-main) 18%);
+  box-shadow: 0 10px 24px -20px rgba(17, 17, 17, 0.18);
+}
+
+.state-card--current {
+  cursor: default;
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, currentColor 34%, transparent),
+    0 10px 24px -18px color-mix(in srgb, currentColor 24%, transparent);
+}
+
+.state-card--current:active {
+  transform: none;
+}
+
+.state-card__content {
+  display: grid;
+  align-content: center;
+  gap: 8px;
+  min-width: 0;
+  height: 100%;
+}
+
+.state-card__name-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.state-card .state-full-name {
+  display: block;
+  max-width: 100%;
+  overflow: visible;
+  color: currentColor;
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.06;
+  text-overflow: clip;
+  text-transform: none;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.state-card .state-sigla {
+  color: currentColor;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+/* ==========================================================================
+   BOTÃO FLUTUANTE DE AVANÇAR (FAB) PARA AS TELAS DE CANDIDATOS
+   ========================================================================== */
+
+/* Substitui a barra cheia de baixo por um container colado à direita */
+.select-base__continue-shell {
+  position: fixed !important;
+  inset: auto var(--screen-gutter, 20px) calc(var(--bottom-nav-height, 60px) + var(--app-safe-bottom, 0px) + 20px) auto !important;
+  width: auto !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  display: flex;
+  justify-content: flex-end;
+  z-index: 90;
+  pointer-events: none; /* Deixa o clique passar pela caixa transparente */
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
+}
+
+.select-base__continue-shell.is-hidden {
+  transform: translateY(120px) !important;
+  opacity: 0 !important;
+}
+
+.select-base__continue-shell > * {
+  pointer-events: auto; /* Reativa o clique apenas no botão de fato */
+}
+
+/* O Botão Flutuante Circular (FAB) */
+.floating-advance-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px; /* Largura fixa */
+  height: 56px; /* Altura fixa igual a largura */
+  background: var(--orange, #ff6b00);
+  color: #ffffff;
+  border: none;
+  border-radius: 50%; /* Faz o botão ficar um círculo perfeito */
+  padding: 0; 
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease;
+}
+
+.floating-advance-button:hover {
+  background: var(--orange-dark, #e66000);
+}
+
+.floating-advance-button:active {
+  transform: scale(0.92);
+}
+
+.floating-advance-button svg {
+  width: 26px; /* Tamanho proporcional do ícone de seta */
+  height: 26px;
+  stroke-width: 2.5;
+  transition: transform 0.2s ease;
+}
+
+.floating-advance-button:hover svg {
+  transform: translateX(3px); 
+}

@@ -150,7 +150,9 @@ export default function SelectBase({
   ), [selecionados]);
   
   const showSavedSenateSharePanel = isSenateOffice && senateChoicesSaved && hasRequiredSelection && Boolean(shareData);
-  const shouldRenderContinue = hasAnySelection && !isHomeState && !isCandidateOffice;
+  
+  // HABILITA O BOTÃO DE CONTINUAR/AVANÇAR PARA AS TELAS DE CANDIDATOS
+  const shouldRenderContinue = hasAnySelection && !isHomeState;
   const shouldShowContinue = shouldRenderContinue && continueVisible;
   const shouldShowDesktopContinue = shouldRenderContinue;
 
@@ -472,7 +474,7 @@ export default function SelectBase({
           {/* TÍTULO DEPUTADOS/SENADORES */}
           <div className="prototype-section-heading">
             <h2>{headingTitle}</h2>
-            <p>Selecione os candidatos em que você votaria.</p>
+            <p>Selecione os candidatos que aceite votar</p>
           </div>
 
           {dados.length > 0 ? (
@@ -519,12 +521,17 @@ export default function SelectBase({
       <ShareChoicePanel shareData={shareData} className="share-choice-panel--continue" />
     ) : (
       <button
-        className="primary-continue-button select-base__continue nv-touch"
+        className="floating-advance-button nv-touch"
         type="button"
         onClick={handleContinue}
         disabled={salvandoSelecao}
+        aria-label="Avançar para a próxima etapa"
       >
-        Continuar
+        
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
       </button>
     )
   );
@@ -607,7 +614,7 @@ export default function SelectBase({
             onChange={handleSearchChange}
             placeholder="Pesquisar"
           />
-           <button 
+          <button 
             className="step-header__icon-btn nv-touch" 
             onClick={() => { 
               setIsSearchActive(false); 
