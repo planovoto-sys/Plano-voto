@@ -712,33 +712,48 @@
   display: none;
 }
 
+/* O Botão de Compartilhar com visual de botão Continuar */
 .my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__button {
   width: 100%;
-  max-width: 512px;
+  max-width: 448px;
   min-height: 58px;
   justify-self: center;
   border-radius: 999px;
   background: var(--action, var(--orange));
   color: var(--action-foreground, var(--text));
   padding: 14px 24px;
-  box-shadow: none;
+  box-shadow: var(--action-shadow); /* Sombra restaurada */
   font-family: var(--font-family);
   font-size: 16px;
   font-weight: 600;
   line-height: 1.25;
   letter-spacing: 0;
   text-transform: none;
-  transition: none;
+  
+  /* Flexbox para alinhar texto e ícone perfeitamente */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease;
 }
 
-.my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__button:not(:disabled):hover,
+/* Efeito Hover e Clique (como no Continuar) */
+.my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__button:not(:disabled):hover {
+  background: var(--orange-dark, #e66000);
+}
+
 .my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__button:not(:disabled):active {
-  box-shadow: none;
-  transform: none;
+  transform: scale(0.96); 
 }
 
+/* Permite que o ícone do compartilhamento (SVG) fique visível! */
 .my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__button svg {
-  display: none;
+  display: block;
+  width: 22px;
+  height: 22px;
+  stroke-width: 2.2;
 }
 
 /* ========================================================

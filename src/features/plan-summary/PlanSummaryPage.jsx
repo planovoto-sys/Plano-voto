@@ -425,7 +425,6 @@ export default function MeuPlano() {
             <div className="my-plan-overview__metrics">
               
               <article className="my-plan-overview__metric my-plan-overview__metric--state">
-                {/* 1. ADICIONADO TÍTULO "ESTADO" AQUI PARA PADRONIZAR COM OS OUTROS */}
                 <small className="my-plan-overview__metric-title">Estado</small>
                 <strong className="my-plan-overview__state-code">{estadoSigla || '--'}</strong>
                 <span className="my-plan-overview__state-name">{estadoSigla ? estadoNome : 'Escolha seu estado'}</span>
