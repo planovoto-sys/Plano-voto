@@ -103,18 +103,16 @@ function ViabilityMeter({
             <strong>{value}%</strong>
           </span>
           
-          {/* TAG 2: Nota com Balão de Notificação */}
+   
           <span 
             className="candidate-thermometer__caption-main"
             onClick={handleScoreClick}
-          >
-            <span>{displayLabel}</span>
+          ><span>Nota do {displayLabel}:</span>
             <strong className="candidate-thermometer__score-wrapper">
-              {displayScore}
-              <Eye size={14} /> {/* Ícone do Olho atualizado */}
+            {displayScore}
             </strong>
 
-            {/* Balão (alterado para <div> para fugir da regra do span preto) */}
+           
             {showTooltip && (
               <div className={`candidate-tooltip ${isFading ? 'is-fading' : ''}`}>
                 {hasValidCandidateScore ? (
@@ -123,7 +121,7 @@ function ViabilityMeter({
                     Nota do partido: <strong>{partyScoreLabel}</strong>
                   </>
                 ) : (
-                  <>Esse candidato ainda não tem uma nota</>
+                  <>Este candidato ainda não tem uma nota própria.</>
                 )}
               </div>
             )}

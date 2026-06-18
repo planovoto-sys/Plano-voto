@@ -3,8 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import ConfirmModal from '@/shared/ui/feedback/ConfirmModal';
 import AppFooter from '@/shared/ui/layout/AppFooter';
 import BottomNavigation from '@/app/shell/BottomNavigation';
-import { ChanceFlame } from '@/shared/icons/ChanceFlame';
-import { BackIcon, CheckIcon, ChevronDownIcon, FilterIcon, InfoIcon, SearchIcon } from '@/shared/icons/AppIcons';
+import { BackIcon, CheckIcon, FilterIcon, SearchIcon } from '@/shared/icons/AppIcons';
 import ShareChoicePanel from '@/features/sharing/ShareChoicePanel';
 import { useNotify } from '@/features/notifications/useNotify';
 import LoadingScreen from '@/shared/ui/feedback/LoadingScreen';
@@ -17,7 +16,6 @@ import {
 import CandidateCard from './CandidateCard';
 import {
   INITIAL_CANDIDATE_RENDER_LIMIT,
-  getScreenCopy,
   getSubNavLabel,
   haveSameSelectionIds
 } from './selectBaseViewModel';
@@ -45,8 +43,6 @@ export default function SelectBase({
   subNavigationItems = [],
   activeSubNavigationId = '',
   onSubNavigationSelect,
-  topRightExtra = null,
-  onHelpClick,
   variant = '',
   emptyMessage = 'Nenhum resultado encontrado.',
   shareData = null,
@@ -62,12 +58,19 @@ export default function SelectBase({
   const isDeputyOffice = variant === 'office-deputado';
   const isSenateOffice = variant === 'office-senado';
   const candidateCardMode = isCandidateOffice ? 'detailed' : 'compact';
+  
+  // Determina o Passo Atual
+  const stepNumber = isSenateOffice ? 3 : isDeputyOffice ? 2 : 1;
+
   const [selecionados, setSelecionados] = useState(selecaoInicial);
   const [candidateRenderLimit, setCandidateRenderLimit] = useState(INITIAL_CANDIDATE_RENDER_LIMIT);
   const [candidateFilterOpen, setCandidateFilterOpen] = useState(false);
+  const [isSearchActive, setIsSearchActive] = useState(false);
+
   const candidateSearchInputRef = useRef(null);
   const candidateFilterRef = useRef(null);
   const lastScrollTopRef = useRef(0);
+  
   const [continueVisible, setContinueVisible] = useState(false);
   const [senateChoicesSaved, setSenateChoicesSaved] = useState(false);
   const [modalMalAvaliado, setModalMalAvaliado] = useState({ aberto: false, item: null });
@@ -79,9 +82,27 @@ export default function SelectBase({
   const [modalCampoBloqueado, setModalCampoBloqueado] = useState(false);
   const [salvandoSelecao, setSalvandoSelecao] = useState(false);
 
+  // Focus na busca ao ativar
+  useEffect(() => {
+    if (isSearchActive && candidateSearchInputRef.current) {
+      candidateSearchInputRef.current.focus();
+    }
+  }, [isSearchActive]);
+
+  // Fechar busca com tecla ESC
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') {
+        setIsSearchActive(false);
+        if (onChangeBusca) onChangeBusca('');
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [onChangeBusca]);
+
   useEffect(() => {
     let cancelled = false;
-
     queueMicrotask(() => {
       if (!cancelled) {
         setSelecionados((currentItems) => (
@@ -89,27 +110,20 @@ export default function SelectBase({
         ));
       }
     });
-
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [selecaoInicial]);
 
   useEffect(() => {
     if (!candidateFilterOpen || typeof document === 'undefined') return undefined;
-
     const handlePointerDown = (event) => {
       if (candidateFilterRef.current?.contains(event.target)) return;
       setCandidateFilterOpen(false);
     };
-
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') setCandidateFilterOpen(false);
     };
-
     document.addEventListener('pointerdown', handlePointerDown);
     document.addEventListener('keydown', handleKeyDown);
-
     return () => {
       document.removeEventListener('pointerdown', handlePointerDown);
       document.removeEventListener('keydown', handleKeyDown);
@@ -118,71 +132,52 @@ export default function SelectBase({
 
   useEffect(() => {
     let cancelled = false;
-
     lastScrollTopRef.current = 0;
     queueMicrotask(() => {
-      if (!cancelled) {
-        setContinueVisible(false);
-      }
+      if (!cancelled) setContinueVisible(false);
     });
-
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [variant]);
 
   const effectiveLimit = Number.isFinite(limiteSelecao) ? limiteSelecao : null;
   const requiredSelectionCount = isCandidateOffice ? minimoSelecao : (effectiveLimit || 1);
   const hasSelectionLimit = Number.isFinite(effectiveLimit) && effectiveLimit > 0;
   const visibleRows = Number.isFinite(linhasVisiveis) ? linhasVisiveis : 5;
-  const screenCopy = getScreenCopy({ variant, titulo, subtitulo });
   const hasRequiredSelection = selecionados.length >= requiredSelectionCount;
   const hasAnySelection = selecionados.length > 0;
   const selectedSignature = useMemo(() => (
     selecionados.map((candidate) => candidate.id).filter(Boolean).sort().join('|')
   ), [selecionados]);
+  
   const showSavedSenateSharePanel = isSenateOffice && senateChoicesSaved && hasRequiredSelection && Boolean(shareData);
   const shouldRenderContinue = hasAnySelection && !isHomeState && !isCandidateOffice;
   const shouldShowContinue = shouldRenderContinue && continueVisible;
   const shouldShowDesktopContinue = shouldRenderContinue;
-  const candidateListInstruction = 'Todos que voce aceita votar';
+
   useEffect(() => {
     let cancelled = false;
-
     queueMicrotask(() => {
       if (!cancelled) {
         lastScrollTopRef.current = 0;
         setContinueVisible(hasAnySelection);
       }
     });
-
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [hasAnySelection, selectedSignature]);
 
   useEffect(() => {
     if (!isSenateOffice) return undefined;
-
     let cancelled = false;
     queueMicrotask(() => {
       if (!cancelled) setSenateChoicesSaved(false);
     });
-
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [isSenateOffice, selectedSignature]);
 
   const featuredCandidate = useMemo(() => {
     if (!isCandidateOffice) return null;
-
-    if (featuredCandidateId) {
-      return { id: featuredCandidateId };
-    }
-
+    if (featuredCandidateId) return { id: featuredCandidateId };
     if (dados.length === 0) return null;
-
     const eligibleCandidates = dados.filter((candidate) => (
       getCandidateName(candidate) &&
       !candidate.isAlreadyChosen &&
@@ -190,35 +185,29 @@ export default function SelectBase({
       getCandidateChance(candidate) > 0 &&
       getCandidateChance(candidate) < 100
     ));
-
     const markedFeaturedCandidate = dados.find((candidate) => (
       candidate.isChanceFeatured &&
       getCandidateSystemScore(candidate) > 7 &&
       getCandidateChance(candidate) > 0 &&
       getCandidateChance(candidate) < 100
     ));
-
     return markedFeaturedCandidate || [...eligibleCandidates].sort((a, b) => {
       const chanceDiff = getCandidateChance(b) - getCandidateChance(a);
       if (chanceDiff !== 0) return chanceDiff;
-
       const scoreDiff = getCandidateSystemScore(b) - getCandidateSystemScore(a);
       if (scoreDiff !== 0) return scoreDiff;
-
       return getCandidateName(a).localeCompare(getCandidateName(b));
     })[0];
   }, [dados, featuredCandidateId, isCandidateOffice]);
 
   const featuredMetricsByCandidateId = useMemo(() => {
     if (!isCandidateOffice) return new Map();
-
     const metricsById = new Map();
     [...dados, ...selecionados].forEach((candidate) => {
       metricsById.set(candidate.id, {
         chance: Boolean(featuredCandidate && candidate.id === featuredCandidate.id)
       });
     });
-
     return metricsById;
   }, [dados, featuredCandidate, isCandidateOffice, selecionados]);
 
@@ -247,11 +236,9 @@ export default function SelectBase({
         ? 'Escolha mais 1 senador para continuar.'
         : 'Escolha 2 senadores para continuar.';
     }
-
     if (isDeputyOffice) {
       return 'Escolha 1 deputado federal para continuar.';
     }
-
     return 'Escolha uma opção para continuar.';
   };
 
@@ -265,40 +252,33 @@ export default function SelectBase({
   const handleScroll = (event) => {
     const currentTop = event.currentTarget.scrollTop;
     const diff = currentTop - lastScrollTopRef.current;
-
     if (!hasAnySelection) {
       if (continueVisible) setContinueVisible(false);
       lastScrollTopRef.current = currentTop;
       return;
     }
-
     if (Math.abs(diff) < 8) {
       lastScrollTopRef.current = currentTop;
       return;
     }
-
     if (diff < 0 || currentTop < 20) {
       setContinueVisible(true);
     } else if (diff > 0) {
       setContinueVisible(false);
     }
-
     lastScrollTopRef.current = currentTop;
   };
 
   const commitSelection = async (nextSelecionados, { autoConfirm = false, completed = false } = {}) => {
     const previousSelecionados = selecionados;
     setSelecionados(nextSelecionados);
-
     try {
       setSalvandoSelecao(true);
       if (onSelectionChange) await onSelectionChange(nextSelecionados, { completed });
-
       if (completed && onSelecaoCompleta) {
         await onSelecaoCompleta(nextSelecionados);
         return true;
       }
-
       if (autoConfirm && onConfirmar) {
         flowLog('select.confirm.auto', {
           titulo,
@@ -308,7 +288,6 @@ export default function SelectBase({
         });
         await onConfirmar(nextSelecionados, { alreadySaved: Boolean(onSelectionChange) });
       }
-
       return true;
     } catch (error) {
       setSelecionados(previousSelecionados);
@@ -328,11 +307,9 @@ export default function SelectBase({
 
   const efetivarSelecao = async (item) => {
     if (!item) return false;
-
     if (!isCandidateOffice && effectiveLimit === 1) {
       return commitSelection([item], { autoConfirm: autoAvancarAoSelecionar, completed: true });
     }
-
     if (hasSelectionLimit && selecionados.length >= effectiveLimit) {
       flowWarn('select.limit-reached', { titulo, limiteSelecao: effectiveLimit, itemId: item.id });
       if (onLimiteAtingido) onLimiteAtingido(item, selecionados);
@@ -340,7 +317,6 @@ export default function SelectBase({
       else setModalLimiteSelecao({ aberto: true });
       return false;
     }
-
     const nextSelecionados = [...selecionados, item];
     const completed = hasSelectionLimit && nextSelecionados.length === effectiveLimit;
     const didCommit = await commitSelection(nextSelecionados, { autoConfirm: autoAvancarAoSelecionar && completed, completed });
@@ -349,19 +325,16 @@ export default function SelectBase({
 
   const handleSelect = async (item) => {
     if (salvandoSelecao) return;
-
     const jaSelecionado = selecionados.find((v) => v.id === item.id);
     if (jaSelecionado) {
       flowLog('select.item.remove', { titulo, itemId: item.id, itemLabel: getCandidateName(item) || item.nome || item.sigla || item.id });
       await commitSelection(selecionados.filter((v) => v.id !== item.id));
       return;
     }
-
     if (isCandidateOffice && item.isAlreadyChosen) {
       setModalCandidatoRepetido({ aberto: true, item });
       return;
     }
-
     if (hasSelectionLimit && effectiveLimit > 1 && selecionados.length >= effectiveLimit) {
       flowWarn('select.limit-reached', { titulo, limiteSelecao: effectiveLimit, itemId: item.id });
       if (onLimiteAtingido) onLimiteAtingido(item, selecionados);
@@ -369,41 +342,34 @@ export default function SelectBase({
       else setModalLimiteSelecao({ aberto: true });
       return;
     }
-
     if (isCandidateOffice && getCandidateSystemScore(item) > 0 && getCandidateSystemScore(item) < 7) {
       setModalMalAvaliado({ aberto: true, item });
       return;
     }
-
     if (isCandidateOffice && getCandidateChance(item) >= 100) {
       setModalAltaChance({ aberto: true, item });
       return;
     }
-
     flowLog('select.item.add', { titulo, itemId: item.id, itemLabel: getCandidateName(item) || item.nome || item.sigla || item.id });
     await efetivarSelecao(item);
   };
 
   const handleStateSelect = async (item) => {
     if (salvandoSelecao) return;
-
     if (autoAvancarAoSelecionar) {
       await commitSelection([item], { autoConfirm: true, completed: true });
       return;
     }
-
     setContinueVisible(true);
     setSelecionados([item]);
   };
 
   const handleContinue = async () => {
     if (salvandoSelecao || !onConfirmar) return;
-
     if (!hasRequiredSelection) {
       notifyMissingSelection();
       return;
     }
-
     try {
       setSalvandoSelecao(true);
       const confirmed = await onConfirmar(selecionados);
@@ -424,7 +390,6 @@ export default function SelectBase({
 
   const handleSubNavigation = async (item) => {
     if (!onSubNavigationSelect) return;
-
     try {
       await onSubNavigationSelect(item, selecionados);
     } catch (error) {
@@ -435,26 +400,9 @@ export default function SelectBase({
     }
   };
 
-  const handleHeaderBack = async () => {
-    if (!onVoltar) {
-      navigate(-1);
-      return;
-    }
-
-    try {
-      await onVoltar(selecionados);
-    } catch (error) {
-      setModalErroSalvar({
-        aberto: true,
-        mensagem: error?.message || 'Não foi possível salvar sua escolha antes de voltar.'
-      });
-    }
-  };
-
   const handleReplaceSenator = async (indexToReplace) => {
     const itemToSelect = modalSubstituirSenador.item;
     if (!itemToSelect) return;
-
     const nextSelecionados = selecionados.map((selectedItem, index) => (
       index === indexToReplace ? itemToSelect : selectedItem
     ));
@@ -478,126 +426,16 @@ export default function SelectBase({
     });
   };
 
-  const renderSearchField = (className = '') => {
-    if (!mostrarBusca) return null;
-
-    if (isHomeState) {
-      return (
-        <div className={`candidate-search-filter candidate-search-filter--state ${className}`} id="tour-busca">
-          <label className="candidate-search-filter__search">
-            <SearchIcon />
-            <span>Pesquisar</span>
-            <input
-              type="search"
-              value={valorBusca}
-              onChange={handleSearchChange}
-              placeholder="Pesquisar"
-            />
-          </label>
-        </div>
-      );
-    }
-
-    return (
-      <label className={`select-search-field ${className}`} id="tour-busca">
-        <SearchIcon />
-        <span>Pesquisar</span>
-        <input
-          type="search"
-          value={valorBusca}
-          onChange={handleSearchChange}
-          placeholder={isHomeState ? '' : 'Pesquisar'}
-        />
-      </label>
-    );
-  };
-
-  const renderCandidateSearchFilter = () => {
-    if (!mostrarBusca && candidateFilterItems.length === 0) return null;
-
-    return (
-      <div
-        className={`candidate-search-filter ${candidateFilterOpen ? 'is-open' : ''}`}
-        id="tour-busca"
-        ref={candidateFilterRef}
-      >
-        {mostrarBusca && (
-          <label className="candidate-search-filter__search">
-            <SearchIcon />
-            <span>Pesquisar</span>
-            <input
-              ref={candidateSearchInputRef}
-              type="search"
-              value={valorBusca}
-              onChange={handleSearchChange}
-              placeholder="Pesquisar"
-            />
-          </label>
-        )}
-
-        {mostrarBusca && candidateFilterItems.length > 0 && (
-          <span className="candidate-search-filter__divider" aria-hidden="true" />
-        )}
-
-        {candidateFilterItems.length > 0 && (
-          <div className="candidate-search-filter__menu">
-            <button
-              className="candidate-search-filter__trigger nv-touch"
-              type="button"
-              onClick={() => {
-                setCandidateFilterOpen((currentValue) => !currentValue);
-              }}
-              aria-expanded={candidateFilterOpen}
-              aria-haspopup="menu"
-              aria-label="Filtrar candidatos"
-              title="Filtrar candidatos"
-            >
-              <FilterIcon />
-              <span>{activeCandidateFilterItem?.shortLabel || 'Atuais'}</span>
-              <ChevronDownIcon />
-            </button>
-
-            {candidateFilterOpen && (
-              <div className="candidate-search-filter__dropdown" role="menu" aria-label="Filtro de candidatos">
-                {candidateFilterItems.map((item) => {
-                  const isActive = isCandidateFilterActive(item);
-
-                  return (
-                    <button
-                      key={item.id}
-                      className={`candidate-search-filter__option ${isActive ? 'is-active' : ''}`}
-                      type="button"
-                      role="menuitemradio"
-                      aria-checked={isActive}
-                      onClick={async () => {
-                        await handleSubNavigation(item);
-                        setCandidateFilterOpen(false);
-                      }}
-                    >
-                      <span className="candidate-search-filter__check" aria-hidden="true">
-                        {isActive && <CheckIcon />}
-                      </span>
-                      <span>{item.shortLabel}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    );
-  };
-
   const renderStateList = () => {
     return (
       <div className="state-selection-flow nv-container">
         <section className="state-selection-panel" aria-label="Estados">
-          <div className="prototype-section-heading prototype-section-heading--state">
-           <h2>Selecione seu estado</h2>
+          
+          {/* TÍTULO ESTADO */}
+          <div className="prototype-section-heading">
+            <h2>Estado</h2>
+            <p>Selecione seu estado</p>
           </div>
-
-          {renderSearchField('select-search-field--state')}
 
           <div className="state-card-list nv-card-grid" id="tour-lista" style={{ '--visible-rows': visibleRows }}>
             {dados.length > 0 ? (
@@ -625,18 +463,16 @@ export default function SelectBase({
   };
 
   const renderCandidateList = () => {
+    const headingTitle = isSenateOffice ? 'Senadores' : 'Deputados Federais';
+
     return (
       <div className={`candidate-flow nv-container ${isSenateOffice ? 'candidate-flow--senate' : 'candidate-flow--single'}`} id="tour-lista">
         <section className="candidate-list-section">
+          
+          {/* TÍTULO DEPUTADOS/SENADORES */}
           <div className="prototype-section-heading">
-            <h2>Selecione seus candidatos </h2>
-            <p>{candidateListInstruction}</p>
-          </div>
-
-          <div className={`candidate-list-tools ${candidateFilterOpen ? 'is-filter-open' : ''}`}>
-            <div className="candidate-list-tools__row">
-              {renderCandidateSearchFilter()}
-            </div>
+            <h2>{headingTitle}</h2>
+            <p>Selecione os candidatos em que você votaria.</p>
           </div>
 
           {dados.length > 0 ? (
@@ -699,46 +535,92 @@ export default function SelectBase({
 
   return (
     <div className={`select-base-container prototype-page nv-screen variant-${variant}`}>
-      <header className="prototype-header app-page-header">
-        {!isHomeState && (
-          <button
-            className="app-header-back-button nv-touch"
-            type="button"
-            onClick={handleHeaderBack}
-            aria-label="Voltar"
+      
+      {/* NOVO HEADER (COM PASSOS, BUSCA E FILTRO INTEGRADOS) */}
+      <header className={`step-header ${isSearchActive ? 'is-searching' : ''}`}>
+        
+        {/* MODO NORMAL: Título e Ícones */}
+        <div className="step-header__default">
+          <div className="step-header__title-group">
+            <h1 className="step-header__title">Passo {stepNumber} de 3</h1>
+          </div>
+
+          <div className="step-header__actions">
+            {candidateFilterItems.length > 0 && (
+              <div className="step-header__filter-wrapper" ref={candidateFilterRef}>
+                <button 
+                  className={`step-header__icon-btn nv-touch ${candidateFilterOpen ? 'is-active' : ''}`} 
+                  onClick={() => setCandidateFilterOpen(!candidateFilterOpen)}
+                  aria-expanded={candidateFilterOpen}
+                  aria-label="Filtrar"
+                >
+                  <FilterIcon />
+                  {activeCandidateFilterItem && activeCandidateFilterItem.id !== 'todos' && (
+                    <span className="step-header__filter-badge" />
+                  )}
+                </button>
+
+                {candidateFilterOpen && (
+                  <div className="step-header__filter-dropdown" role="menu" aria-label="Filtro de candidatos">
+                    {candidateFilterItems.map((item) => {
+                      const isActive = isCandidateFilterActive(item);
+                      return (
+                        <button
+                          key={item.id}
+                          className={`step-header__filter-option ${isActive ? 'is-active' : ''}`}
+                          type="button"
+                          role="menuitemradio"
+                          aria-checked={isActive}
+                          onClick={async () => {
+                            await handleSubNavigation(item);
+                            setCandidateFilterOpen(false);
+                          }}
+                        >
+                          <span className="step-header__filter-check" aria-hidden="true">
+                            {isActive && <CheckIcon />}
+                          </span>
+                          <span>{item.shortLabel}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {mostrarBusca && (
+              <button className="step-header__icon-btn nv-touch" onClick={() => setIsSearchActive(true)} aria-label="Buscar">
+                <SearchIcon />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* MODO BUSCA: Campo de texto e Voltar */}
+        <div className="step-header__search-mode">
+         
+          <input
+            ref={candidateSearchInputRef}
+            type="search"
+            className="step-header__search-input"
+            value={valorBusca}
+            onChange={handleSearchChange}
+            placeholder="Pesquisar"
+          />
+           <button 
+            className="step-header__icon-btn nv-touch" 
+            onClick={() => { 
+              setIsSearchActive(false); 
+              if (onChangeBusca) onChangeBusca(''); 
+            }}
+            aria-label="Fechar busca"
           >
-            <BackIcon />
-            <span>Voltar</span>
+            {/* Ícone de Fechar embutido em SVG puro para evitar erros de importação */}
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
           </button>
-        )}
-
-        <div className="app-page-header__brand" aria-hidden="true">
-          <ChanceFlame className="app-page-header__brand-flame" size={30} />
-          <strong>nossovoto<span>.org</span></strong>
-        </div>
-
-        <div className="app-page-header__copy">
-          <h1>{screenCopy.title}</h1>
-          {screenCopy.subtitle && <p>{screenCopy.subtitle}</p>}
-        </div>
-
-        <div className="app-page-header__actions">
-          {!isCandidateOffice && !isHomeState && onHelpClick && (
-            <button
-              className="app-header-icon-action app-help-action nv-touch"
-              type="button"
-              onClick={onHelpClick}
-              aria-label="Ajuda"
-              title="Ajuda"
-            >
-              <InfoIcon />
-            </button>
-          )}
-          {topRightExtra}
-        </div>
-
-        <div className="app-page-header__side">
-          <BottomNavigation currentStep={currentStep} placement="header" />
         </div>
       </header>
 
@@ -760,6 +642,7 @@ export default function SelectBase({
 
       <BottomNavigation currentStep={currentStep} placement="footer" />
 
+      {/* MODAIS */}
       <ConfirmModal
         isOpen={modalMalAvaliado.aberto}
         titulo="ATENÇÃO!"
