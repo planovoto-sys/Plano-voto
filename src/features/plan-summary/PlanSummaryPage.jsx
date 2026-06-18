@@ -484,8 +484,9 @@ export default function MeuPlano() {
             </section>
           </section>
 
+          {/* O BLOCO DE AÇÕES INLINE SE MANTÉM AQUI (GUEST OU DISABLED) */}
           <section className="my-plan-actions" aria-label="Ações do plano">
-            {isGuestMode ? (
+            {isGuestMode && (
               <div className="my-plan-save-invite">
                 <strong>Entrar para compartilhar</strong>
                 <span>Seu plano está salvo neste dispositivo. Entre para compartilhar com segurança.</span>
@@ -493,20 +494,23 @@ export default function MeuPlano() {
                   Fazer login
                 </button>
               </div>
-            ) : (
-              shareData ? (
-                <ShareChoicePanel shareData={shareData} className="my-plan-share-panel my-plan-share-panel--fab" appearance="fab" />
-              ) : (
-                <div className="my-plan-share-disabled">
-                  <strong>Compartilhar plano</strong>
-                  <span>Complete deputado federal e dois senadores para liberar o compartilhamento.</span>
-                </div>
-              )
+            )}
+
+            {!isGuestMode && !shareData && (
+              <div className="my-plan-share-disabled">
+                <strong>Compartilhar plano</strong>
+                <span>Complete deputado federal e dois senadores para liberar o compartilhamento.</span>
+              </div>
             )}
           </section>
 
         </div>
       </main>
+
+      {/* A MÁGICA ACONTECE AQUI: FAB COLOCADO FORA DO MAIN */}
+      {!isGuestMode && shareData && (
+        <ShareChoicePanel shareData={shareData} className="my-plan-share-panel my-plan-share-panel--fab" appearance="fab" />
+      )}
 
       <BottomNavigation currentStep="nossovoto" placement="footer" />
 
