@@ -21,10 +21,8 @@
   z-index: 50;
   width: 100%;
   
-  /* Altura mantida igual ao do cabeçalho anterior */
-  min-height: 52px; 
+  min-height: 42px; 
   padding: calc(var(--app-safe-top, 0px) + 12px) var(--screen-gutter) 12px;
-  
   background: var(--page-bg);
   display: flex;
   align-items: center;
@@ -624,11 +622,11 @@
 .step-header {
   position: sticky;
   top: 0;
-  z-index: 50;
+  z-index: 30;
   width: 100%;
   
   /* Altura mantida igual ao do cabeçalho anterior */
-  min-height: 82px; 
+  min-height: 45px; 
   padding: calc(var(--app-safe-top, 0px) + 12px) var(--screen-gutter) 12px;
   
   background: var(--page-bg);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDownIcon } from '@/shared/icons/AppIcons';
+import { Star, ThumbsUp, ThumbsDown } from 'lucide-react';
 import {
   formatScore,
   getCandidateChance,
@@ -10,148 +10,6 @@ import {
   getCandidateSystemScore
 } from '@/shared/utils/candidateMetrics';
 
-import { ThumbsUp, Eye } from 'lucide-react'; // Ícone do Olho substituído
-
-function ViabilityMeter({
-  value,
-  tone,
-  locked = false,
-  showCaption = true,
-  onLockedClick,
-  candidateScoreLabel = '--',
-  partyScoreLabel = '--'
-}) {
-  const [showTooltip, setShowTooltip] = useState(false);
-  const [isFading, setIsFading] = useState(false);
-
-  const numericValue = Number(value) || 0;
-  const progress = Math.max(0, Math.min(100, numericValue));
-  const progressScale = progress / 100;
-  const isComplete = progress >= 100;
-
-  const handleLockedClick = (event) => {
-    if (!locked) return;
-    event.preventDefault();
-    event.stopPropagation();
-    onLockedClick?.();
-  };
-
-  const handleLockedKeyDown = (event) => {
-    if (!locked || !['Enter', ' '].includes(event.key)) return;
-    handleLockedClick(event);
-  };
-
-  const hasValidCandidateScore = candidateScoreLabel && candidateScoreLabel !== '0' && candidateScoreLabel !== '--';
-
-  const displayLabel = hasValidCandidateScore ? 'candidato' : 'partido';
-  const displayScore = hasValidCandidateScore ? candidateScoreLabel : partyScoreLabel;
-
-  // Cronômetro atualizado para 5 segundos no total (4.5s + 0.5s de animação)
-  useEffect(() => {
-    let timer;
-    
-    if (showTooltip && !isFading) {
-      timer = setTimeout(() => {
-        setIsFading(true);
-      }, 4500); // <-- Alterado para 4.5 segundos
-    } else if (isFading) {
-      timer = setTimeout(() => {
-        setShowTooltip(false);
-        setIsFading(false);
-      }, 500);
-    }
-
-    return () => clearTimeout(timer);
-  }, [showTooltip, isFading]);
-
-  const handleScoreClick = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    
-    if (showTooltip) {
-      setIsFading(true);
-    } else {
-      setShowTooltip(true);
-      setIsFading(false);
-    }
-  };
-
-  return (
-    <span
-      className={`candidate-thermometer candidate-thermometer--${tone} ${progress > 0 ? 'is-filled' : ''} ${isComplete ? 'is-complete' : ''} ${locked ? 'is-locked' : ''}`}
-      style={{ '--metric-progress': progress, '--thermometer-progress': `${progress}%`, '--thermometer-scale': progressScale }}
-      role={locked ? 'button' : undefined}
-      tabIndex={locked ? 0 : undefined}
-      aria-label={locked ? 'Campo de viabilidade bloqueado' : undefined}
-      onClick={handleLockedClick}
-      onKeyDown={handleLockedKeyDown}
-    >
-      <span className="candidate-thermometer__meter-row">
-        <span className="candidate-thermometer__track" aria-hidden="true">
-          <span className="candidate-thermometer__fill"></span>
-          <span className="candidate-thermometer__tick candidate-thermometer__tick--first"></span>
-          <span className="candidate-thermometer__tick candidate-thermometer__tick--second"></span>
-          <span className="candidate-thermometer__tick candidate-thermometer__tick--third"></span>
-        </span>
-      </span>
-      
-      {showCaption && (
-        <span className="candidate-thermometer__caption">
-          {/* TAG 1: Viabilidade */}
-          <span className="candidate-thermometer__caption-viability">
-            <span>viabilidade</span>
-            <strong>{value}%</strong>
-          </span>
-          
-   <span 
-            className="candidate-thermometer__caption-main"
-            onClick={handleScoreClick}
-            style={{ cursor: 'pointer' }}
-          >
-            <span>Nota do {displayLabel}</span>
-            <strong className="candidate-thermometer__score-wrapper" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-              {displayScore} 
-              
-              {/* Ícone de + com correção óptica de alinhamento (translateY) */}
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                width="14" 
-                height="14" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="3.5" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-                style={{ transform: 'translateY(-1.5px)' }} 
-              >
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-              </svg>
-            </strong>
-           
-            {showTooltip && (
-              <div className={`candidate-tooltip ${isFading ? 'is-fading' : ''}`}>
-                {hasValidCandidateScore ? (
-                  <>
-                    Nota do candidato: <strong>{candidateScoreLabel}</strong><br/>
-                    Nota do partido: <strong>{partyScoreLabel}</strong>
-                  </>
-                ) : (
-                  <>
-                    Nota do candidato: <strong>{candidateScoreLabel}</strong><br/>
-                    Nota do partido: <strong>{partyScoreLabel}</strong>
-                  </>
-                )}
-              </div>
-            )}
-          </span>
-        </span>
-      )}
-    </span>
-  );
-}
-
 const getCandidateNumber = (candidate = {}) => {
   const value = candidate.Numero ?? candidate.numero ?? candidate.number ?? '';
   return String(value ?? '').trim();
@@ -159,174 +17,159 @@ const getCandidateNumber = (candidate = {}) => {
 
 export default function CandidateCard({
   candidate,
-  highlight = false,
   selected = false,
   onSelect,
-  showAssessmentSubtitle = true,
-  summary = false,
-  actionLabel = '',
   disabled = false,
   lockPersonalizedFields = false,
   onLockedMetricClick,
   showNumberAbove = false,
-  numberFallback = '',
-  displayMode = 'detailed',
-  interactionMode = 'select',
-  expanded = false,
-  onToggleDetails,
-  detailsId = '',
-  selectionActionLabel = '',
-  promoted = false,
-  selectionFeedback = ''
+  numberFallback = ''
 }) {
   const name = getCandidateName(candidate);
   const party = getCandidateParty(candidate);
   const number = getCandidateNumber(candidate);
   const displayNumber = number || String(numberFallback || '').trim();
+  
   const candidateScore = getCandidateDisplayScore(candidate);
   const partyScore = getCandidatePartyScore(candidate);
-  const chance = getCandidateChance(candidate);
-  const isBlocked = candidate.isAlreadyChosen;
+  const chance = lockPersonalizedFields ? 0 : getCandidateChance(candidate);
   const systemScore = getCandidateSystemScore(candidate);
+  const isBlocked = candidate.isAlreadyChosen;
 
-  const tone = lockPersonalizedFields ? 'visitor' : (systemScore >= 7 ? 'success' : 'danger');
+  // Lógica de Fallback de Nota
+  const hasValidCandidateScore = candidateScore > 0;
+  const displayScoreValue = hasValidCandidateScore ? candidateScore : partyScore;
+  const displayScoreLabel = hasValidCandidateScore ? 'Nota do candidato' : 'Nota do partido';
+  const formattedScore = displayScoreValue > 0 ? formatScore(displayScoreValue) : '--';
+  
+  // Lógica Universal de Avaliação
+  const isWellEvaluated = systemScore >= 7;
+  const toneClass = isWellEvaluated ? 'tone-good' : 'tone-bad';
+
+  // Controle do Balão de Tooltip
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [isFading, setIsFading] = useState(false);
+  
+  useEffect(() => {
+    let timer;
+    if (showTooltip && !isFading) {
+      timer = setTimeout(() => setIsFading(true), 4000);
+    } else if (isFading) {
+      timer = setTimeout(() => { setShowTooltip(false); setIsFading(false); }, 500);
+    }
+    return () => clearTimeout(timer);
+  }, [showTooltip, isFading]);
+
+  const handleScoreClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation(); // Impede que o clique na nota selecione o candidato
+    if (showTooltip) setIsFading(true);
+    else { setShowTooltip(true); setIsFading(false); }
+  };
 
   const handleLockedFieldClick = (event) => {
     if (!lockPersonalizedFields) return;
     event.preventDefault();
-    event.stopPropagation();
+    event.stopPropagation(); // Impede que o clique no alerta selecione o candidato
     onLockedMetricClick?.();
   };
 
-  const candidateScoreLabel = candidateScore > 0 ? formatScore(candidateScore) : '--';
-  const partyScoreLabel = partyScore > 0 ? formatScore(partyScore) : '--';
-  const partyLabel = party || '';
-  const isExpandable = interactionMode === 'expand';
-  const isExpanded = Boolean(expanded);
-  const isCompactMode = displayMode === 'compact';
-  const surfaceIsDetailed = !isExpandable && !isCompactMode;
-  const cardIsDetailed = surfaceIsDetailed || isExpanded;
-  const selectionFeedbackClass = selectionFeedback ? `is-selection-${selectionFeedback}` : '';
-  const panelId = detailsId || `candidate-card-details-${String(candidate.id || name).replace(/[^a-zA-Z0-9_-]/g, '-')}`;
-  const selectionLabel = selectionActionLabel || (selected ? 'Remover escolha' : 'Escolher candidato');
-
-  const handleSurfaceClick = (event) => {
-    if (isExpandable) {
-      onToggleDetails?.(candidate, event);
-      return;
-    }
-    onSelect?.(event);
+  // NOVO: Função para lidar com o clique no card inteiro
+  const handleCardClick = (e) => {
+    if (disabled || isBlocked) return;
+    onSelect?.(e);
   };
 
-  const renderExpandIndicator = () => (
-    <span className="candidate-card__expand-indicator" aria-hidden="true">
-      <ChevronDownIcon />
-    </span>
-  );
-
-  const renderLockedInsight = () => {
-    if (!showAssessmentSubtitle || !lockPersonalizedFields) return null;
-    return (
-      <span
-        className="candidate-card__locked-insight"
-        onClick={handleLockedFieldClick}
-      >
-        <strong>Indicadores disponíveis após login</strong>
-        <span>Entre para ver nota, viabilidade e análise personalizada.</span>
-      </span>
-    );
-  };
-
-  const renderCardBody = ({ detailed = false } = {}) => (
-    <span className="candidate-card__identity">
-      <span className="candidate-card__summary-row">
-        <span className="candidate-card__identity-copy">
-          {showNumberAbove && displayNumber && (
-            <span className="candidate-card__number">{displayNumber}</span>
-          )}
-          <span className="candidate-card__name-row">
-            <span className="candidate-card__text-line candidate-card__text-line--name">
-              <strong>{name}</strong>
-            </span>
-          </span>
-          {partyLabel && (
-            <span className="candidate-card__party-row">
-              <small>{partyLabel}</small>
-            </span>
-          )}
-        </span>
-
-        <span className="candidate-card__badges-wrapper">
-          <span className="candidate-card__status-badge">
-            <ThumbsUp
-              className={`candidate-card__like-icon ${
-                selected
-                  ? 'candidate-card__like-icon--selected'
-                  : ''
-              }`}
-            />
-          </span>
-          {isExpandable && renderExpandIndicator()}
-        </span>
-      </span>
-
-      {detailed && lockPersonalizedFields ? renderLockedInsight() : (
-        <ViabilityMeter
-          value={lockPersonalizedFields ? 0 : chance}
-          tone={tone}
-          locked={false}
-          showCaption={detailed && showAssessmentSubtitle && !lockPersonalizedFields}
-          onLockedClick={!lockPersonalizedFields ? onLockedMetricClick : undefined}
-          candidateScoreLabel={candidateScoreLabel}
-          partyScoreLabel={partyScoreLabel}
-        />
-      )}
-    </span>
+  const renderLockedInsight = () => (
+    <div className="candidate-card__locked-insight nv-touch" onClick={handleLockedFieldClick}>
+      <strong>Indicadores disponíveis após login</strong>
+      <span>Entre para ver nota, viabilidade e análise.</span>
+    </div>
   );
 
   return (
-    <article
-      className={`prototype-candidate-card nv-touch candidate-card--${tone} ${highlight ? 'is-highlight' : ''} ${selected ? 'is-selected' : ''} ${summary ? 'is-summary' : ''} ${showNumberAbove ? 'has-number-above' : ''} ${isBlocked ? 'is-blocked' : ''} ${isExpandable ? 'is-expandable' : 'is-selectable'} ${isExpanded ? 'is-expanded' : ''} ${cardIsDetailed ? 'is-detailed' : 'is-compact'} ${promoted ? 'is-promoted' : ''} ${selectionFeedbackClass}`}
-      title={summary ? `${actionLabel || 'Candidato selecionado'}: ${name}` : name}
+    <article 
+      className={`prototype-candidate-card ${selected ? 'is-selected' : ''} ${isBlocked ? 'is-blocked' : ''} ${toneClass} nv-touch`}
+      onClick={handleCardClick}
+      role="button"
+      tabIndex={0}
+      aria-pressed={selected}
     >
-      <button
-        className="candidate-card__surface nv-touch"
-        type="button"
-        onClick={handleSurfaceClick}
-        disabled={disabled}
-        aria-pressed={!isExpandable ? selected : undefined}
-        aria-expanded={isExpandable ? isExpanded : undefined}
-        aria-controls={isExpandable ? panelId : undefined}
-        aria-disabled={!isExpandable && candidate.isAlreadyChosen ? 'true' : undefined}
-      >
-        {renderCardBody({ detailed: surfaceIsDetailed })}
-      </button>
-
-      {isExpandable && isExpanded && (
-        <div className="candidate-card__detail-panel" id={panelId}>
-          <ViabilityMeter
-            value={lockPersonalizedFields ? 0 : chance}
-            tone={tone}
-            locked={false}
-            showCaption={showAssessmentSubtitle && !lockPersonalizedFields}
-            onLockedClick={!lockPersonalizedFields ? onLockedMetricClick : undefined}
-            candidateScoreLabel={candidateScoreLabel}
-            partyScoreLabel={partyScoreLabel}
-          />
-          {lockPersonalizedFields && (
-            renderLockedInsight()
+      
+      {/* 1. CABEÇALHO */}
+      <header className="candidate-card__header">
+        <div className="candidate-card__identity">
+          {showNumberAbove && displayNumber && (
+            <span className="candidate-card__number">{displayNumber}</span>
           )}
-          <button
-            className={`candidate-card__selection-action nv-touch ${selected ? 'is-selected' : ''}`}
-            type="button"
-            onClick={onSelect}
-            disabled={disabled}
-            aria-pressed={selected}
-            aria-disabled={candidate.isAlreadyChosen ? 'true' : undefined}
-          >
-            {selectionLabel}
-          </button>
+          <h3 className="candidate-card__name">{name}</h3>
+          <span className="candidate-card__party">{party}</span>
         </div>
+        
+        {/* BOTÃO DE SELEÇÃO: Microinteração */}
+        <button 
+          className={`candidate-card__action-btn-icon ${selected ? 'selected' : 'unselected'} ${toneClass}`}
+          disabled={disabled || isBlocked}
+          aria-hidden="true" /* Omitido do leitor de tela pois o card inteiro já é um botão */
+        >
+          <svg className="icon-morph-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            {/* Linha Horizontal do + */}
+            <line className="morph-h" x1="5" y1="12" x2="19" y2="12" />
+            {/* Linha Vertical do + (vai virar a perna curta do ✓) */}
+            <line className="morph-v" x1="12" y1="5" x2="12" y2="19" />
+            {/* Perna Longa do ✓ */}
+            <path className="morph-check" d="M 18 8 L 11 16.5" />
+          </svg>
+        </button>
+      </header>
+
+      {/* 2. MEIO (Barra de Viabilidade) */}
+      <div className="candidate-card__viability-row" onClick={lockPersonalizedFields ? handleLockedFieldClick : undefined}>
+        <div className="candidate-card__bar-container">
+          <div className="candidate-card__bar-fill" style={{ width: `${chance}%` }}></div>
+          <div className="candidate-card__bar-tick tick-1"></div>
+          <div className="candidate-card__bar-tick tick-2"></div>
+          <div className="candidate-card__bar-tick tick-3"></div>
+        </div>
+        <span className={`candidate-card__viability-percent ${selected ? (isWellEvaluated ? 'is-green' : 'is-red') : ''}`}>
+          {lockPersonalizedFields ? '--' : Math.round(chance)}%
+        </span>
+      </div>
+
+      {/* 3. RODAPÉ (Tags) */}
+      {lockPersonalizedFields ? (
+        renderLockedInsight()
+      ) : (
+        <footer className="candidate-card__tags-row">
+          
+          <div className={`candidate-card__tag candidate-card__tag--score ${toneClass} nv-touch`} onClick={handleScoreClick}>
+            <Star className="tag-icon" size={20} strokeWidth={2.2} />
+            <div className="tag-score-text-group">
+              <span className="tag-score-value">{formattedScore}</span>
+              <span className="tag-score-label">{displayScoreLabel}</span>
+            </div>
+
+            {showTooltip && (
+              <div className={`candidate-tooltip ${isFading ? 'is-fading' : ''}`}>
+                {hasValidCandidateScore ? (
+                  <>Nota do candidato: <strong>{formatScore(candidateScore)}</strong><br/>Nota do partido: <strong>{formatScore(partyScore)}</strong></>
+                ) : (
+                  <>Este candidato ainda não tem nota própria.<br/>Nota do partido: <strong>{formatScore(partyScore)}</strong></>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className={`candidate-card__tag candidate-card__tag--eval ${toneClass}`}>
+            {isWellEvaluated ? (
+              <ThumbsUp className="tag-icon" size={18} strokeWidth={2.2} />
+            ) : (
+              <ThumbsDown className="tag-icon" size={18} strokeWidth={2.2} />
+            )}
+            <span className="tag-eval-text">{isWellEvaluated ? 'Bem avaliado' : 'Mal avaliado'}</span>
+          </div>
+
+        </footer>
       )}
     </article>
   );
