@@ -29,7 +29,7 @@ export default function CandidateCard({
   const party = getCandidateParty(candidate);
   const number = getCandidateNumber(candidate);
   const displayNumber = number || String(numberFallback || '').trim();
-  
+
   const candidateScore = getCandidateDisplayScore(candidate);
   const partyScore = getCandidatePartyScore(candidate);
   const chance = lockPersonalizedFields ? 0 : getCandidateChance(candidate);
@@ -41,7 +41,7 @@ export default function CandidateCard({
   const displayScoreValue = hasValidCandidateScore ? candidateScore : partyScore;
   const displayScoreLabel = hasValidCandidateScore ? 'Nota do candidato' : 'Nota do partido';
   const formattedScore = displayScoreValue > 0 ? formatScore(displayScoreValue) : '--';
-  
+
   // Lógica Universal de Avaliação
   const isWellEvaluated = systemScore >= 7;
   const toneClass = isWellEvaluated ? 'tone-good' : 'tone-bad';
@@ -49,7 +49,7 @@ export default function CandidateCard({
   // Controle do Balão de Tooltip
   const [showTooltip, setShowTooltip] = useState(false);
   const [isFading, setIsFading] = useState(false);
-  
+
   useEffect(() => {
     let timer;
     if (showTooltip && !isFading) {
@@ -62,7 +62,7 @@ export default function CandidateCard({
 
   const handleScoreClick = (e) => {
     e.preventDefault();
-    e.stopPropagation(); 
+    e.stopPropagation();
     if (showTooltip) setIsFading(true);
     else { setShowTooltip(true); setIsFading(false); }
   };
@@ -70,7 +70,7 @@ export default function CandidateCard({
   const handleLockedFieldClick = (event) => {
     if (!lockPersonalizedFields) return;
     event.preventDefault();
-    event.stopPropagation(); 
+    event.stopPropagation();
     onLockedMetricClick?.();
   };
 
@@ -88,14 +88,14 @@ export default function CandidateCard({
   );
 
   return (
-    <article 
+    <article
       className={`prototype-candidate-card ${selected ? 'is-selected' : ''} ${isBlocked ? 'is-blocked' : ''} ${toneClass} nv-touch`}
       onClick={handleCardClick}
       role="button"
       tabIndex={0}
       aria-pressed={selected}
     >
-      
+
       {/* 1. CABEÇALHO */}
       <header className="candidate-card__header">
         <div className="candidate-card__identity">
@@ -105,12 +105,12 @@ export default function CandidateCard({
           <h3 className="candidate-card__name">{name}</h3>
           <span className="candidate-card__party">{party}</span>
         </div>
-        
+
         {/* BOTÃO DE SELEÇÃO: Microinteração */}
-        <button 
+        <button
           className={`candidate-card__action-btn-icon ${selected ? 'selected' : 'unselected'} ${toneClass}`}
           disabled={disabled || isBlocked}
-          aria-hidden="true" 
+          aria-hidden="true"
         >
           <svg className="icon-morph-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line className="morph-h" x1="5" y1="12" x2="19" y2="12" />
@@ -138,20 +138,27 @@ export default function CandidateCard({
         renderLockedInsight()
       ) : (
         <footer className="candidate-card__tags-row">
-          
+
           <div className={`candidate-card__tag candidate-card__tag--score ${toneClass} nv-touch`} onClick={handleScoreClick}>
-            <Star className="tag-icon" size={20} strokeWidth={2.2} />
+            <Star className="tag-icon" size={14} strokeWidth={2.2} />
             <div className="tag-score-text-group">
-              <span className="tag-score-value">{formattedScore}</span>
-              <span className="tag-score-label">{displayScoreLabel}</span>
+
+              <span className="tag-score-title">
+                {hasValidCandidateScore ? 'Candidato Nota' : 'Partido Nota'}
+              </span>
+
+              <span className="tag-score-value">
+                {formattedScore}
+              </span>
+
             </div>
 
             {showTooltip && (
               <div className={`candidate-tooltip ${isFading ? 'is-fading' : ''}`}>
                 {hasValidCandidateScore ? (
-                  <>Nota do candidato: <strong>{formatScore(candidateScore)}</strong><br/>Nota do partido: <strong>{formatScore(partyScore)}</strong></>
+                  <>Nota do candidato: <strong>{formatScore(candidateScore)}</strong><br />Nota do partido: <strong>{formatScore(partyScore)}</strong></>
                 ) : (
-                  <>Este candidato ainda não tem nota própria.<br/>Nota do partido: <strong>{formatScore(partyScore)}</strong></>
+                  <>Este candidato ainda não tem nota própria.<br />Nota do partido: <strong>{formatScore(partyScore)}</strong></>
                 )}
               </div>
             )}
@@ -159,9 +166,9 @@ export default function CandidateCard({
 
           <div className={`candidate-card__tag candidate-card__tag--eval ${toneClass}`}>
             {isWellEvaluated ? (
-              <ThumbsUp className="tag-icon" size={18} strokeWidth={2.2} />
+              <ThumbsUp className="tag-icon" size={14} strokeWidth={2.2} />
             ) : (
-              <ThumbsDown className="tag-icon" size={18} strokeWidth={2.2} />
+              <ThumbsDown className="tag-icon" size={14} strokeWidth={2.2} />
             )}
             <span className="tag-eval-text">{isWellEvaluated ? 'Bem avaliado' : 'Mal avaliado'}</span>
           </div>
