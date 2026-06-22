@@ -144,7 +144,7 @@ export default function CandidateCard({
             <div className="tag-score-text-group">
 
               <span className="tag-score-title">
-                {hasValidCandidateScore ? 'Candidato Nota' : 'Partido Nota'}
+                {hasValidCandidateScore ? 'Candidato nota' : 'Partido nota'}
               </span>
 
               <span className="tag-score-value">
