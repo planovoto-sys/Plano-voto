@@ -491,13 +491,14 @@
 }
 
 .my-plan-choice-list {
+  display: grid; /* ESSA É A MÁGICA: Sem isso, o gap abaixo era ignorado pelo CSS! */
+  grid-template-columns: minmax(0, 1fr);
   min-width: 0;
   min-height: 0;
   overflow: hidden;
-  gap: 6px;
+  gap: 12px; /* Agora sim esse espaço entre os Senadores vai funcionar */
   padding-top: 0;
 }
-
 /* ========================================================
    REFATORAÇÃO: CARDS NA LISTAGEM MEU PLANO (COMPACTOS)
    ======================================================== */
@@ -510,8 +511,8 @@
 /* 2. Forçar layout compacto e prevenir barra de rolagem */
 .my-plan-choice-list .prototype-candidate-card {
   min-height: auto !important;
-  padding: 12px 14px !important;
-  gap: 10px !important;
+  padding: 10px 12px !important; /* Reduzido (antes era 12px 14px) para diminuir as bordas internas */
+  gap: 8px !important; /* Reduzido (antes era 10px) para aproximar o cabeçalho, a barra V e as tags */
   border-radius: 12px !important;
   overflow: hidden; 
 }
@@ -533,7 +534,7 @@
   gap: 8px !important;
 }
 .my-plan-choice-list .candidate-card__bar-container {
-  height: 6px !important;
+  height: 8px !important; /* Altura aumentada para a barra de viabilidade "V" */
 }
 .my-plan-choice-list .candidate-card__viability-percent {
   font-size: 14px !important;
@@ -545,7 +546,7 @@
   gap: 6px !important;
 }
 .my-plan-choice-list .candidate-card__tag {
-  padding: 8px 6px !important;
+  padding: 5px 6px !important; /* Altura reduzida para as tags ficarem mais enxutas */
   border-radius: 8px !important;
   gap: 4px !important;
 }
@@ -861,7 +862,7 @@
   }
 
   .my-plan-choice-list {
-    gap: 5px;
+    gap: 8px; /* Ajuste para o gap manter uma distância agradável em telas menores */
   }
 
   .my-plan-actions {
@@ -1027,7 +1028,7 @@
   }
 
   .my-plan-choice-list {
-    gap: 10px;
+    gap: 14px; /* Gap generoso para o Desktop */
     overflow: visible;
   }
 
@@ -1247,7 +1248,7 @@
   }
 
   .my-plan-choice-list {
-    gap: 6px;
+    gap: 8px;
   }
 
   .my-plan-actions {
