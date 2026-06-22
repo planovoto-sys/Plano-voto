@@ -105,6 +105,8 @@
    ========================================================================== */
 .candidate-card__action-btn-icon {
   position: relative;
+  top: -6px;
+  right: -5px;
   width: 22px; /* Reduzido (antes era 32px) para diminuir o campo */
   height: 22px; /* Reduzido (antes era 32px) */
   border-radius: 18px; /* Levemente reduzido para acompanhar a nova proporção */
