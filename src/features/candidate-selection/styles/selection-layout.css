@@ -601,7 +601,7 @@
   width: 100%;
   max-width: 100%;
   overflow: hidden;
-  background: var(--page-bg);
+  background:#f3f3f3;
 }
 
 .select-base__scroll {
@@ -624,18 +624,13 @@
   top: 0;
   z-index: 30;
   width: 100%;
-  
-  /* Altura mantida igual ao do cabeçalho anterior */
   min-height: 45px; 
   padding: calc(var(--app-safe-top, 0px) + 12px) var(--screen-gutter) 12px;
-  
-  background: var(--page-bg);
+  background: #f3f3f3;
   display: flex;
   align-items: center;
-  
-  /* visible permite que o menu dropdown de filtros vaze para fora do header */
   overflow: visible; 
-  box-shadow: 0 1px 0 rgba(17,17,17,0.06);
+
 }
 
 .step-header__default,
@@ -643,11 +638,8 @@
   position: absolute;
   left: var(--screen-gutter);
   right: var(--screen-gutter);
-  
-  /* Garante o alinhamento no centro livre da margem de segurança do iOS */
   top: var(--app-safe-top, 0px);
   bottom: 0;
-  
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -660,7 +652,6 @@
   pointer-events: auto;
 }
 
-/* Quando ativo, empurra o texto pra esquerda e some */
 .step-header.is-searching .step-header__default {
   opacity: 0;
   transform: translateX(-20px);
@@ -958,20 +949,18 @@
    BOTÃO FLUTUANTE DE AVANÇAR (FAB) PARA AS TELAS DE CANDIDATOS
    ========================================================================== */
 
-/* Substitui a barra cheia de baixo por um container colado à direita */
 .select-base__continue-shell {
   position: fixed !important;
-  inset: auto var(--screen-gutter, 20px) calc(var(--bottom-nav-height, 60px) + var(--app-safe-bottom, 0px) + 20px) auto !important;
+ 
+  inset: auto calc(var(--screen-gutter, 200px) - 10px) calc(var(--bottom-nav-height, 60px) + var(--app-safe-bottom, 0px) + 20px) auto !important;
   width: auto !important;
-  background: transparent !important;
-  box-shadow: none !important;
+  height: auto !important;
   display: flex;
   justify-content: flex-end;
   z-index: 90;
-  pointer-events: none; /* Deixa o clique passar pela caixa transparente */
+  pointer-events: none; 
   transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
 }
-
 .select-base__continue-shell.is-hidden {
   transform: translateY(120px) !important;
   opacity: 0 !important;
@@ -986,15 +975,16 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 56px; /* Largura fixa */
-  height: 56px; /* Altura fixa igual a largura */
+  width: 45px; 
+  height: 45px; 
   background: var(--orange, #ff6b00);
   color: #ffffff;
   border: none;
-  border-radius: 50%; /* Faz o botão ficar um círculo perfeito */
+  border-radius: 50%; 
   padding: 0; 
   cursor: pointer;
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease;
+
 }
 
 .floating-advance-button:hover {
@@ -1008,7 +998,7 @@
 .floating-advance-button svg {
   width: 26px; /* Tamanho proporcional do ícone de seta */
   height: 26px;
-  stroke-width: 2.5;
+
   transition: transform 0.2s ease;
 }
 

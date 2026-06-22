@@ -13,21 +13,23 @@
   position: relative;
   width: 100%;
   background: #ffffff;
-  border: 1.5px solid var(--card-gray-border);
+  
+  /* Força o card padrão a não ter borda visível */
+  border: 2px solid transparent !important; 
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); 
+  
   border-radius: 16px; 
   padding: 16px 18px; 
   display: flex;
   flex-direction: column;
   gap: 16px; 
-  transition: border-color 0.35s ease, box-shadow 0.35s ease, transform 0.2s ease;
+  transition: all 0.35s ease;
   text-align: left;
-  
-  /* NOVO: Torna o card inteiro clicável */
   cursor: pointer;
   outline: none;
 }
 
-/* NOVO: Efeito Tátil ao apertar o card */
+/* Efeito Tátil ao apertar o card */
 .prototype-candidate-card:active {
   transform: scale(0.98);
 }
@@ -38,15 +40,15 @@
   cursor: not-allowed;
 }
 
-/* 4. BORDA DE SELEÇÃO DINÂMICA (Baseada na Nota) */
+/* 4. BORDA DE SELEÇÃO DINÂMICA */
 .prototype-candidate-card.is-selected.tone-good {
-  border: 2px solid var(--card-green);
-  box-shadow: 0 4px 16px rgba(0, 184, 74, 0.12);
+  border: 2px solid var(--card-green) !important;
+  box-shadow: 0 4px 16px rgba(0, 184, 74, 0.12) !important;
 }
 
 .prototype-candidate-card.is-selected.tone-bad {
-  border: 2px solid var(--card-red);
-  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.12);
+  border: 2px solid var(--card-red) !important;
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.12) !important;
 }
 
 /* ==========================================================================
@@ -103,9 +105,9 @@
    ========================================================================== */
 .candidate-card__action-btn-icon {
   position: relative;
-  width: 44px; 
-  height: 44px;
-  border-radius: 12px;
+  width: 32px; 
+  height: 32px;
+  border-radius: 10px;
   border: 1.5px solid var(--card-gray-border);
   background: transparent;
   color: #9CA3AF;
@@ -116,10 +118,9 @@
   flex-shrink: 0; 
   padding: 0;
   outline: none;
-  pointer-events: none; /* Deixa os cliques passarem para o card raiz */
+  pointer-events: none;
 }
 
-/* Cores ativas baseadas na nota */
 .candidate-card__action-btn-icon.selected.tone-good {
   background: var(--card-green);
   border-color: var(--card-green);
@@ -132,10 +133,9 @@
   color: #ffffff;
 }
 
-/* Container do SVG e setup base */
 .icon-morph-svg {
-  width: 24px;
-  height: 24px;
+  width: 18px;
+  height: 18px;
   overflow: visible;
 }
 
@@ -143,7 +143,6 @@
   transform-origin: 12px 12px; 
 }
 
-/* --- ESTADO 1: NÃO SELECIONADO (+) --- */
 .candidate-card__action-btn-icon.unselected .morph-h {
   transform: scaleX(1);
   opacity: 1;
@@ -162,7 +161,6 @@
   transition: stroke-dashoffset 0.2s ease-out, opacity 0.1s ease-out;
 }
 
-/* --- ESTADO 2: SELECIONADO (✓) --- */
 .candidate-card__action-btn-icon.selected {
   animation: applePulse 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
@@ -266,7 +264,7 @@
   min-width: 0; 
   white-space: nowrap; 
   transition: background-color 0.3s ease, color 0.3s ease;
-  cursor: pointer; /* Garante cursor de interação nos elementos */
+  cursor: pointer; 
 }
 
 .candidate-card__tag.tone-good { background: var(--card-green-soft); color: var(--card-green); }
@@ -277,16 +275,20 @@
   display: block; 
 }
 
+/* ==========================================================================
+   REFINAMENTO DA TAG DE NOTA (MESMA LINHA)
+   ========================================================================== */
 .tag-score-text-group {
   display: flex;
-  align-items: baseline; 
+  flex-direction: row; /* Volta para a mesma linha */
+  align-items: center; /* Alinhamento pelo centro Y remove a estranheza visual */
   gap: 6px;
   white-space: nowrap;
 }
 
 .tag-score-value {
   font-family: var(--font-display);
-  font-size: 22px; 
+  font-size: 20px; 
   font-weight: 800;
   line-height: 1;
 }
@@ -294,10 +296,9 @@
 .tag-score-label {
   font-family: var(--font-family);
   font-size: 12px; 
-  font-weight: 500;
-  color: #4B5563; 
-  line-height: 1.1;
-  text-align: left;
+  font-weight: 600; /* Mais grossinho para segurar a leitura */
+  opacity: 0.85; /* Recua um pouco visualmente para não competir com o número */
+  line-height: 1;
 }
 
 .tag-eval-text {
@@ -382,7 +383,7 @@
 }
 
 /* ==========================================================================
-   RESPONSIVIDADE MOBILE (EXTREMA PROTEÇÃO CONTRA QUEBRAS)
+   RESPONSIVIDADE MOBILE
    ========================================================================== */
 @media (max-width: 420px) {
   .prototype-candidate-card {
@@ -399,8 +400,13 @@
   }
 
   .candidate-card__action-btn-icon {
-    width: 36px;
-    height: 36px;
+    width: 28px;
+    height: 28px;
+  }
+  
+  .icon-morph-svg {
+    width: 16px;
+    height: 16px;
   }
 
   .candidate-card__tags-row {
@@ -413,7 +419,7 @@
   }
 
   .tag-score-text-group {
-    gap: 3px; 
+    gap: 4px; 
   }
 
   .tag-score-value {
@@ -421,7 +427,7 @@
   }
 
   .tag-score-label {
-    font-size: 9px;
+    font-size: 10px;
   }
 
   .tag-eval-text {

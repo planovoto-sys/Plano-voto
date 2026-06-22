@@ -62,7 +62,7 @@ export default function CandidateCard({
 
   const handleScoreClick = (e) => {
     e.preventDefault();
-    e.stopPropagation(); // Impede que o clique na nota selecione o candidato
+    e.stopPropagation(); 
     if (showTooltip) setIsFading(true);
     else { setShowTooltip(true); setIsFading(false); }
   };
@@ -70,11 +70,11 @@ export default function CandidateCard({
   const handleLockedFieldClick = (event) => {
     if (!lockPersonalizedFields) return;
     event.preventDefault();
-    event.stopPropagation(); // Impede que o clique no alerta selecione o candidato
+    event.stopPropagation(); 
     onLockedMetricClick?.();
   };
 
-  // NOVO: Função para lidar com o clique no card inteiro
+  // Função para lidar com o clique no card inteiro
   const handleCardClick = (e) => {
     if (disabled || isBlocked) return;
     onSelect?.(e);
@@ -110,14 +110,11 @@ export default function CandidateCard({
         <button 
           className={`candidate-card__action-btn-icon ${selected ? 'selected' : 'unselected'} ${toneClass}`}
           disabled={disabled || isBlocked}
-          aria-hidden="true" /* Omitido do leitor de tela pois o card inteiro já é um botão */
+          aria-hidden="true" 
         >
           <svg className="icon-morph-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            {/* Linha Horizontal do + */}
             <line className="morph-h" x1="5" y1="12" x2="19" y2="12" />
-            {/* Linha Vertical do + (vai virar a perna curta do ✓) */}
             <line className="morph-v" x1="12" y1="5" x2="12" y2="19" />
-            {/* Perna Longa do ✓ */}
             <path className="morph-check" d="M 18 8 L 11 16.5" />
           </svg>
         </button>

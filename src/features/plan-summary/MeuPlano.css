@@ -1,6 +1,8 @@
 .my-plan-page {
   background: var(--page-bg);
   overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .my-plan-header {
@@ -166,11 +168,16 @@
   justify-self: end;
 }
 
+/* 
+  MUDANÇA CRUCIAL AQUI: overflow-y agora é auto! 
+  A tela agora permite scroll vertical natural em telas pequenas
+*/
 .my-plan-scroll {
+  flex: 1;
   background: var(--page-bg);
-  padding: 0 clamp(12px, 3.5vw, 18px) 8px; /* Espaço superior zerado */
+  padding: 0 clamp(12px, 3.5vw, 18px) 32px;
   overflow-x: hidden;
-  overflow-y: hidden;
+  overflow-y: auto;
   scrollbar-width: none;
 }
 
@@ -178,92 +185,34 @@
   display: none;
 }
 
+/*
+  MUDANÇA CRUCIAL AQUI: Transformado de grid rígido para Flexbox
+  Isso permite que os cards usem seu tamanho natural de design
+*/
 .my-plan-shell {
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
-  align-content: stretch;
-  gap: 7px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   min-width: 0;
-  min-height: 0;
-  height: 100%;
+  min-height: 100%;
   width: 100%;
   max-width: 720px;
   margin: 0 auto;
 }
 
-.my-plan-profile {
-  min-width: 0;
-  min-height: 42px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--page-bg);
-  display: grid;
-  grid-template-columns: 34px minmax(0, 1fr);
-  align-items: center;
-  gap: 9px;
-  padding: 5px 9px;
-}
-
-.my-plan-profile__photo {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: var(--soft);
-  color: var(--text-strong);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  object-fit: cover;
-  font-family: var(--font-display);
-  font-size: 14px;
-  font-weight: 800;
-  line-height: 1;
-}
-
-.my-plan-profile__copy {
-  min-width: 0;
-  display: grid;
-  gap: 2px;
-}
-
-.my-plan-profile__copy strong,
-.my-plan-profile__copy span {
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.my-plan-profile__copy strong {
-  color: var(--text-strong);
-  font-family: var(--font-display);
-  font-size: 13px;
-  font-weight: 800;
-  line-height: 1;
-}
-
-.my-plan-profile__copy span {
-  color: var(--muted-soft);
-  font-size: 11px;
-  font-weight: 500;
-  line-height: 1.1;
-}
-
 /* ========================================================
-   PADRONIZAÇÃO DO RESUMO (ESTADO, NOTA E VIABILIDADE)
+   RESUMO (ESTADO, NOTA E VIABILIDADE)
    ======================================================== */
 .my-plan-overview {
   --overview-green: #3f9d46;
   --overview-green-soft: #e5f4e7;
   --overview-line: rgba(17, 17, 17, 0.1);
-  
-  /* VARIÁVEIS DE PADRONIZAÇÃO DE TAMANHO */
   --tamanho-destaque: clamp(36px, 10vw, 52px);
   --tamanho-base: clamp(13px, 2.5vw, 15px);
-  
-  /* MATEMÁTICA EXATA PARA A LARGURA: (5 estrelas * altura) + (4 gaps de 3px) */
   --overview-stars-width: calc((var(--tamanho-base) * 5) + 12px);
 
+  flex-shrink: 0;
+  /* Garante que o overview não seja amassado */
   min-width: 0;
   border: 1px solid rgba(17, 17, 17, 0.08);
   border-radius: 20px;
@@ -287,16 +236,15 @@
   display: grid;
   align-content: center;
   justify-items: center;
-  gap: 0; 
+  gap: 0;
   padding: 0 clamp(4px, 2.2vw, 12px);
   text-align: center;
 }
 
-.my-plan-overview__metric + .my-plan-overview__metric {
+.my-plan-overview__metric+.my-plan-overview__metric {
   border-left: 1px solid var(--overview-line);
 }
 
-/* 1. TÍTULOS DAS COLUNAS (Estado, Nota, Viabilidade) */
 .my-plan-overview__metric-title {
   max-width: 100%;
   overflow: hidden;
@@ -308,10 +256,9 @@
   white-space: nowrap;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-  margin-bottom: -2px; 
+  margin-bottom: -2px;
 }
 
-/* 2. TEXTOS EM DESTAQUE (SP, 7,95, 78%) */
 .my-plan-overview__state-code,
 .my-plan-overview__score,
 .viability-thermometer__title strong {
@@ -332,7 +279,6 @@
   color: var(--overview-green);
 }
 
-/* 3. RODAPÉS ALINHADOS E PADRONIZADOS (São Paulo, Estrelas, Barra) */
 .my-plan-overview__state-name {
   font-size: var(--tamanho-base);
   font-weight: 650;
@@ -341,8 +287,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: var(--tamanho-base); 
-  margin-top: 2px; 
+  height: var(--tamanho-base);
+  margin-top: 2px;
 }
 
 .my-plan-overview__stars {
@@ -353,14 +299,14 @@
   width: var(--overview-stars-width);
   max-width: 100%;
   height: var(--tamanho-base);
-  margin-top: 2px; 
+  margin-top: 2px;
 }
 
 .my-plan-overview__star {
   position: relative;
-  height: 100%; 
+  height: 100%;
   width: auto;
-  aspect-ratio: 1; 
+  aspect-ratio: 1;
   color: var(--overview-green);
 }
 
@@ -386,7 +332,6 @@
   color: var(--overview-green);
 }
 
-/* 4. TERMÔMETRO DE VIABILIDADE */
 .my-plan-overview__metric--viability {
   display: flex;
   flex-direction: column;
@@ -398,7 +343,7 @@
 .viability-thermometer-container {
   display: flex;
   flex-direction: column;
-  gap: 0; 
+  gap: 0;
   width: var(--overview-stars-width);
   max-width: 100%;
   align-items: center;
@@ -423,14 +368,11 @@
 .viability-thermometer__track {
   position: relative;
   width: var(--overview-stars-width);
-  
-  /* REDUZIDA: 80% da altura base para igualar o peso visual da estrela */
-  height: calc(var(--tamanho-base) * 0.8); 
-  
+  height: calc(var(--tamanho-base) * 0.8);
   background-color: #f0f2ef;
   border-radius: 999px;
   overflow: hidden;
-  margin-top: 2px; 
+  margin-top: 2px;
 }
 
 .viability-thermometer__fill {
@@ -453,37 +395,37 @@
   z-index: 2;
 }
 
-.viability-thermometer__tick--first { left: 25%; }
-.viability-thermometer__tick--second { left: 50%; }
-.viability-thermometer__tick--third { left: 75%; }
+.viability-thermometer__tick--first {
+  left: 25%;
+}
 
-/* ======================================================== */
+.viability-thermometer__tick--second {
+  left: 50%;
+}
 
+.viability-thermometer__tick--third {
+  left: 75%;
+}
+
+
+/* ========================================================
+   LISTA DE CANDIDATOS (REWORK PARA FLEX)
+   ======================================================== */
 .my-plan-mobile-handoff {
   display: none;
 }
 
 .my-plan-choices {
-  display: grid;
-  grid-template-rows: auto auto;
-  align-content: start;
-  gap: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   min-width: 0;
-  min-height: 0;
-  overflow: hidden;
 }
 
 .my-plan-choice-section {
-  align-content: start;
-  gap: 2px;
-  min-width: 0;
-  min-height: 0;
-  overflow: hidden;
-  padding-top: 0;
-}
-
-.my-plan-choice-section + .my-plan-choice-section {
-  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .my-plan-choice-section .prototype-section-heading {
@@ -492,82 +434,21 @@
 }
 
 .my-plan-choice-section .prototype-section-heading__copy {
-  margin-bottom: 8px;
-}
-
-.my-plan-choice-section .prototype-section-heading p {
-  margin-top: 2px;
+  margin-bottom: 0;
 }
 
 .my-plan-choice-list {
-  min-width: 0;
-  min-height: 0;
-  overflow: hidden;
-  gap: 6px;
-  padding-top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.my-plan-choice-list .prototype-candidate-card {
-  --candidate-card-pad-left: 13px;
-  --candidate-card-pad-right: 13px;
-  --candidate-metric-size: 44px;
-  --candidate-name-size: 13px;
-  --candidate-score-size: 10px;
-  --candidate-bar-height: 9px;
-  --candidate-caption-size: 8px;
-  --candidate-badge-size: 8px;
-  --candidate-badge-height: 18px;
-  --candidate-badge-pad-inline: 8px;
-  --candidate-status-icon-box: 16px;
-  --candidate-status-icon-size: 15px;
-  --candidate-fire-icon-width: 12px;
-  --candidate-fire-icon-height: 16px;
-  min-height: 82px;
-  border-radius: 12px;
-  gap: 2px;
-  padding-block: 6px 8px;
-}
-
-.my-plan-choice-list .candidate-card__identity-copy {
-  gap: 2px;
-}
-
-.my-plan-choice-list .candidate-card__text-line,
-.my-plan-choice-list .candidate-card__party-row {
-  gap: 6px;
-}
-
-.my-plan-choice-list .candidate-card__score-chip {
-  min-width: 30px;
-  height: 17px;
-  padding-inline: 6px;
-  font-size: 9px;
-}
-
-.my-plan-choice-list .candidate-card__score-chip--party {
-  min-width: 29px;
-  height: 16px;
-  font-size: 8.5px;
-}
-
-.my-plan-choice-list .candidate-card__identity small {
-  font-size: 10px;
-  line-height: 1;
-}
-
-.my-plan-choice-list .candidate-thermometer {
-  margin-top: 4px;
-}
-
-.my-plan-choice-list .candidate-thermometer__caption {
-  margin-top: 4px;
-  min-height: var(--candidate-badge-height, 18px);
-}
+/* AQUI FORAM REMOVIDAS TODAS AS GAMBIARRAS QUE DIMINUÍAM O CANDIDATE CARD */
 
 .my-plan-empty-choice {
   min-height: 94px;
   border: 1px dashed rgba(17, 17, 17, 0.18);
-  border-radius: 8px;
+  border-radius: 12px;
   background: var(--surface);
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -596,9 +477,31 @@
   line-height: 1.25;
 }
 
+
+/* ========================================================
+   AÇÕES DO PLANO (BOTÕES E COMPARTILHAR)
+   ======================================================== */
+.my-plan-actions {
+  position: static;
+  z-index: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-height: 0;
+  margin-top: auto;
+  /* Empurra os botões pro fim da tela se ela for bem alta */
+  padding-top: 12px;
+  background: transparent;
+  pointer-events: none;
+}
+
+.my-plan-actions>* {
+  pointer-events: auto;
+}
+
 .my-plan-save-invite button,
 .my-plan-continue-button {
-  min-height: 40px;
+  min-height: 48px;
   border: 0;
   border-radius: 999px;
   background: var(--ink);
@@ -610,33 +513,12 @@
   cursor: pointer;
 }
 
-.my-plan-save-invite button,
-.my-plan-continue-button {
-  min-height: 48px;
-}
-
-.my-plan-actions {
-  position: static;
-  z-index: auto;
-  display: grid;
-  gap: 0;
-  min-height: 0;
-  margin-top: 0;
-  padding: 0;
-  background: transparent;
-  pointer-events: none;
-}
-
-.my-plan-actions > * {
-  pointer-events: auto;
-}
-
 .my-plan-save-invite,
 .my-plan-share-disabled,
 .my-plan-continue-button {
   width: 100%;
   max-width: 448px;
-  justify-self: center;
+  align-self: center;
   border: 0;
   border-radius: 999px;
   background: var(--action, var(--orange));
@@ -712,7 +594,6 @@
   display: none;
 }
 
-/* O Botão de Compartilhar com visual de botão Continuar */
 .my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__button {
   width: 100%;
   max-width: 448px;
@@ -722,15 +603,13 @@
   background: var(--action, var(--orange));
   color: var(--action-foreground, var(--text));
   padding: 14px 24px;
-  box-shadow: var(--action-shadow); /* Sombra restaurada */
+  box-shadow: var(--action-shadow);
   font-family: var(--font-family);
   font-size: 16px;
   font-weight: 600;
   line-height: 1.25;
   letter-spacing: 0;
   text-transform: none;
-  
-  /* Flexbox para alinhar texto e ícone perfeitamente */
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -739,16 +618,14 @@
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease;
 }
 
-/* Efeito Hover e Clique (como no Continuar) */
 .my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__button:not(:disabled):hover {
   background: var(--orange-dark, #e66000);
 }
 
 .my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__button:not(:disabled):active {
-  transform: scale(0.96); 
+  transform: scale(0.96);
 }
 
-/* Permite que o ícone do compartilhamento (SVG) fique visível! */
 .my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__button svg {
   display: block;
   width: 22px;
@@ -757,7 +634,7 @@
 }
 
 /* ========================================================
-   MEDIA QUERIES 
+   MEDIA QUERIES - LIMPOS DE GAMBIARRAS
    ======================================================== */
 @media (max-width: 399px) {
   .my-plan-overview {
@@ -785,11 +662,11 @@
   }
 
   .my-plan-scroll {
-    padding: 0 10px 7px; /* Espaço superior zerado */
+    padding: 0 10px 24px;
   }
 
   .my-plan-shell {
-    gap: 5px;
+    gap: 12px;
   }
 
   .my-plan-overview {
@@ -800,25 +677,13 @@
 
   .my-plan-overview__metric {
     min-height: 70px;
-    gap: 0; 
+    gap: 0;
     padding-inline: 4px;
   }
 
   .my-plan-overview__metric-title {
     font-size: 10.5px;
     line-height: 1.05;
-  }
-
-  .my-plan-choices {
-    gap: 4px;
-  }
-
-  .my-plan-choice-section + .my-plan-choice-section {
-    padding-top: 5px;
-  }
-
-  .my-plan-choice-section .prototype-section-heading__copy {
-    margin-bottom: 5px;
   }
 
   .my-plan-share-disabled strong {
@@ -828,19 +693,12 @@
   .my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__button {
     font-size: 16px;
   }
-
-  .my-plan-empty-choice {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }
 
+/* Antigamente essa query quebrava tudo, agora só diminui levemente o overview */
 @media (max-width: 743px) and (max-height: 780px) {
   .my-plan-overview {
     --tamanho-destaque: 35px;
-  }
-
-  .my-plan-shell {
-    gap: 4px;
   }
 
   .my-plan-overview {
@@ -851,80 +709,6 @@
     min-height: 66px;
   }
 
-  .my-plan-choices {
-    gap: 4px;
-  }
-
-  .my-plan-choice-section + .my-plan-choice-section {
-    padding-top: 4px;
-  }
-
-  .my-plan-choice-section .prototype-section-heading__copy {
-    margin-bottom: 4px;
-  }
-
-  .my-plan-choice-list {
-    gap: 5px;
-  }
-
-  .my-plan-choice-list .prototype-candidate-card {
-    --candidate-card-pad-left: 12px;
-    --candidate-card-pad-right: 12px;
-    --candidate-metric-size: 38px;
-    --candidate-score-size: 10.2px;
-    --candidate-bar-height: 8px;
-    --candidate-caption-size: 7px;
-    --candidate-badge-size: 7px;
-    --candidate-badge-height: 16px;
-    --candidate-badge-pad-inline: 7px;
-    --candidate-status-icon-box: 15px;
-    --candidate-status-icon-size: 14px;
-    min-height: 78px;
-    border-radius: 11px;
-    gap: 1px;
-    padding-block: 5px 7px;
-  }
-
-  .my-plan-choice-list .candidate-card__number {
-    font-size: 10.5px;
-  }
-
-  .my-plan-choice-list .candidate-card__identity-copy {
-    gap: 0;
-  }
-
-  .my-plan-choice-list .candidate-card__identity small {
-    font-size: 8.5px;
-    line-height: 1;
-  }
-
-  .my-plan-choice-list .candidate-card__score-chip {
-    min-width: 27px;
-    height: 15px;
-    padding-inline: 5px;
-    font-size: 8px;
-  }
-
-  .my-plan-choice-list .candidate-card__score-chip--party {
-    min-width: 26px;
-    height: 14px;
-    font-size: 7.6px;
-  }
-
-  .my-plan-choice-list .candidate-thermometer {
-    margin-top: 4px;
-  }
-
-  .my-plan-choice-list .candidate-thermometer__caption {
-    min-height: 16px;
-    margin-top: 3px;
-  }
-
-  .my-plan-actions {
-    align-self: end;
-    padding-top: 2px;
-  }
-
   .my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__button,
   .my-plan-continue-button {
     min-height: 52px;
@@ -933,15 +717,14 @@
 
 @media (min-width: 744px) and (max-width: 1023px) {
   .my-plan-scroll {
-    padding: 0 var(--screen-gutter) 24px; /* Espaço superior zerado */
-    overflow-y: auto;
+    padding: 0 var(--screen-gutter) 24px;
   }
 
   .my-plan-shell {
     width: min(100%, 860px);
     max-width: none;
     height: auto;
-    gap: 14px;
+    gap: 20px;
   }
 
   .my-plan-overview {
@@ -951,10 +734,6 @@
 
   .my-plan-overview__metric {
     min-height: 132px;
-  }
-
-  .my-plan-choice-list .prototype-candidate-card {
-    min-height: 96px;
   }
 }
 
@@ -973,36 +752,10 @@
     padding: 0 var(--screen-gutter);
   }
 
-  .my-plan-scroll {
-    padding: 0 var(--screen-gutter) 24px; /* Espaço superior zerado */
-    overflow-y: auto;
-  }
-
   .my-plan-shell {
     max-width: 960px;
     height: auto;
-    gap: 14px;
-  }
-
-  .my-plan-profile {
-    min-height: 54px;
-    grid-template-columns: 42px minmax(0, 1fr);
-    gap: 12px;
-    padding: 6px 12px;
-  }
-
-  .my-plan-profile__photo {
-    width: 42px;
-    height: 42px;
-    font-size: 16px;
-  }
-
-  .my-plan-profile__copy strong {
-    font-size: 16px;
-  }
-
-  .my-plan-profile__copy span {
-    font-size: 13px;
+    gap: 20px;
   }
 
   .my-plan-overview {
@@ -1012,17 +765,13 @@
 
   .my-plan-overview__metric {
     min-height: 148px;
-    gap: 2px; 
-  }
-
-  .my-plan-choices {
-    gap: 14px;
+    gap: 2px;
   }
 
   .my-plan-actions {
     max-width: 720px;
     width: 100%;
-    justify-self: center;
+    align-self: center;
   }
 
   .my-plan-share-disabled {
@@ -1044,7 +793,7 @@
 
 @media (min-width: 1024px) {
   .my-plan-scroll {
-    padding: 0 clamp(44px, 6vw, 86px) 28px; /* Espaço superior zerado */
+    padding: 0 clamp(44px, 6vw, 86px) 28px;
   }
 
   .my-plan-shell {
@@ -1052,6 +801,7 @@
     max-width: none;
     height: auto;
     min-height: calc(var(--app-height) - 74px - 86px);
+    display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
     grid-template-rows: auto minmax(0, 1fr) auto;
     grid-template-areas:
@@ -1069,54 +819,18 @@
 
   .my-plan-choices {
     grid-area: choices;
-    gap: 10px;
+    gap: 16px;
     overflow: visible;
   }
 
   .my-plan-choice-section {
-    gap: 4px;
-    overflow: visible;
-  }
-
-  .my-plan-choice-section + .my-plan-choice-section {
-    padding-top: 4px;
-  }
-
-  .my-plan-choice-section .prototype-section-heading__copy {
-    margin-bottom: 6px;
-  }
-
-  .my-plan-choice-list {
     gap: 10px;
     overflow: visible;
   }
 
-  .my-plan-choice-list .prototype-candidate-card {
-    --candidate-card-pad-left: 20px;
-    --candidate-card-pad-right: 20px;
-    --candidate-metric-size: 48px;
-    --candidate-name-size: clamp(14px, 0.95vw, 16px);
-    --candidate-score-size: clamp(12px, 0.8vw, 14px);
-    --candidate-bar-height: 10px;
-    --candidate-caption-size: 9px;
-    --candidate-badge-size: 9px;
-    --candidate-badge-height: 22px;
-    --candidate-badge-pad-inline: 10px;
-    --candidate-status-icon-box: 18px;
-    --candidate-status-icon-size: 17px;
-    --candidate-fire-icon-width: 15px;
-    --candidate-fire-icon-height: 19px;
-    min-height: 92px;
-    border-radius: 12px;
-    padding-block: 10px 10px;
-  }
-
-  .my-plan-choice-list .candidate-card__identity small {
-    font-size: 12px;
-  }
-
-  .my-plan-choice-list .candidate-thermometer {
-    margin-top: 5px;
+  .my-plan-choice-list {
+    gap: 12px;
+    overflow: visible;
   }
 
   .my-plan-actions {
@@ -1124,14 +838,14 @@
     grid-area: actions;
     width: 100%;
     max-width: none;
-    justify-self: stretch;
+    align-self: stretch;
     margin-top: 6px;
     pointer-events: auto;
   }
 
-  .my-plan-actions > *:not(.my-plan-share-panel--fab) {
+  .my-plan-actions>*:not(.my-plan-share-panel--fab) {
     width: min(100%, 520px);
-    justify-self: start;
+    align-self: flex-start;
   }
 
   .my-plan-mobile-handoff {
@@ -1148,13 +862,14 @@
     box-shadow: 0 16px 42px rgba(17, 17, 17, 0.06);
   }
 
+  /* (Estilos do handoff mantidos inalterados internamente) */
   .my-plan-mobile-handoff__copy {
     display: grid;
     gap: 9px;
     min-width: 0;
   }
 
-  .my-plan-mobile-handoff__copy > span {
+  .my-plan-mobile-handoff__copy>span {
     width: fit-content;
     border: 1px solid rgba(255, 139, 73, 0.25);
     border-radius: 999px;
@@ -1199,8 +914,7 @@
     justify-self: center;
     border: 1px solid rgba(17, 17, 17, 0.08);
     border-radius: 8px;
-    background:
-      linear-gradient(180deg, #ffffff 0%, #fffaf5 100%);
+    background: linear-gradient(180deg, #ffffff 0%, #fffaf5 100%);
     display: grid;
     place-items: center;
     padding: 16px;
@@ -1213,7 +927,7 @@
     object-fit: contain;
   }
 
-  .my-plan-mobile-handoff__qr > svg {
+  .my-plan-mobile-handoff__qr>svg {
     width: 96px;
     height: 96px;
     color: rgba(17, 17, 17, 0.24);
@@ -1282,26 +996,10 @@
 
   .my-plan-header {
     min-height: 52px;
-    padding-inline: var(--screen-gutter);
-  }
-
-  .my-plan-header__profile,
-  .my-plan-header__logout,
-  .my-plan-header__profile-wrap {
-    width: 36px;
-    height: 36px;
-    min-width: 36px;
-    min-height: 36px;
-  }
-
-  .my-plan-header__profile-avatar {
-    width: 32px;
-    height: 32px;
   }
 
   .my-plan-scroll {
-    padding: 0 var(--screen-gutter) 10px; /* Espaço superior zerado */
-    overflow-y: auto;
+    padding: 0 var(--screen-gutter) 24px;
   }
 
   .my-plan-shell {
@@ -1309,14 +1007,12 @@
     max-width: none;
     height: auto;
     min-height: 100%;
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto auto auto;
-    grid-template-areas: none;
-    gap: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
   }
 
   .my-plan-overview {
-    grid-area: auto;
     border-radius: 14px;
     padding: 10px 12px;
   }
@@ -1328,42 +1024,5 @@
   .my-plan-overview__state-code,
   .my-plan-overview__score {
     font-size: 30px;
-  }
-
-  .my-plan-choices {
-    grid-area: auto;
-    gap: 6px;
-  }
-
-  .my-plan-choice-list {
-    gap: 6px;
-  }
-
-  .my-plan-choice-list .prototype-candidate-card {
-    --candidate-card-pad-left: 12px;
-    --candidate-card-pad-right: 12px;
-    --candidate-metric-size: 46px;
-    --candidate-name-size: 14px;
-    --candidate-score-size: 10.5px;
-    --candidate-bar-height: 10px;
-    --candidate-caption-size: 8px;
-    --candidate-badge-size: 8px;
-    --candidate-badge-height: 20px;
-    --candidate-badge-pad-inline: 8px;
-    min-height: 80px;
-    padding-block: 7px;
-  }
-
-  .my-plan-actions {
-    grid-area: auto;
-    position: static;
-    width: 100%;
-    max-width: none;
-  }
-
-  .my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__button,
-  .my-plan-continue-button {
-    min-height: 48px;
-    max-width: 430px;
   }
 }

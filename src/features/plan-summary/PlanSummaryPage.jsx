@@ -338,13 +338,12 @@ export default function MeuPlano() {
     navigate(getDesktopBackRoute(), { state: { bypassVoteRedirect: true } });
   };
 
+  // Alterado: O card é chamado de forma limpa, sem propriedades que limitem seu design
   const renderChoiceCard = (candidate, route) => (
     <CandidateCard
       key={candidate.id}
       candidate={candidate}
-      summary
       selected
-      actionLabel="Candidato escolhido"
       lockPersonalizedFields={false}
       showNumberAbove
       numberFallback="000000"
@@ -447,13 +446,13 @@ export default function MeuPlano() {
           </section>
 
           <section className="my-plan-choices" aria-label="Candidatos escolhidos">
-            <section className="candidate-current-section my-plan-choice-section">
+            <section className="my-plan-choice-section">
               <div className="prototype-section-heading prototype-section-heading--current">
                 <div className="prototype-section-heading__copy">
                   <h2>Deputado Federal</h2>
                 </div>
               </div>
-              <div className="candidate-current-list my-plan-choice-list">
+              <div className="my-plan-choice-list">
                 {featuredDeputadosFederais.length > 0 ? (
                   featuredDeputadosFederais.map((candidate) => renderChoiceCard(candidate, BALLOT_ROUTES.deputadoFederal))
                 ) : (
@@ -465,13 +464,13 @@ export default function MeuPlano() {
               </div>
             </section>
 
-            <section className="candidate-current-section my-plan-choice-section">
+            <section className="my-plan-choice-section">
               <div className="prototype-section-heading prototype-section-heading--current">
                 <div className="prototype-section-heading__copy">
                   <h2>Senadores</h2>
                 </div>
               </div>
-              <div className="candidate-current-list candidate-current-list--double my-plan-choice-list">
+              <div className="my-plan-choice-list">
                 {featuredSenadores.length > 0 ? (
                   featuredSenadores.map((candidate) => renderChoiceCard(candidate, BALLOT_ROUTES.senadores))
                 ) : (
@@ -484,7 +483,6 @@ export default function MeuPlano() {
             </section>
           </section>
 
-          {/* O BLOCO DE AÇÕES INLINE SE MANTÉM AQUI (GUEST OU DISABLED) */}
           <section className="my-plan-actions" aria-label="Ações do plano">
             {isGuestMode && (
               <div className="my-plan-save-invite">
@@ -507,7 +505,6 @@ export default function MeuPlano() {
         </div>
       </main>
 
-      {/* A MÁGICA ACONTECE AQUI: FAB COLOCADO FORA DO MAIN */}
       {!isGuestMode && shareData && (
         <ShareChoicePanel shareData={shareData} className="my-plan-share-panel my-plan-share-panel--fab" appearance="fab" />
       )}
