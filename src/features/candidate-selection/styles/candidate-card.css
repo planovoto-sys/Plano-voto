@@ -229,7 +229,7 @@
 
 .candidate-card__viability-percent {
   font-family: var(--font-family);
-  font-size: 18px; 
+  font-size: 14px; 
   font-weight: 800;
   color: #111111;
   min-width: 44px;
@@ -287,7 +287,7 @@
 
 .tag-score-value {
   font-family: var(--font-display);
-  font-size: 12px; /* Reduzido de 20px a pedido do cliente para harmonizar */
+  font-size: 14px; /* Reduzido de 20px a pedido do cliente para harmonizar */
   font-weight: 800;
   line-height: 1;
 }
@@ -435,7 +435,7 @@
   }
 
   .candidate-card__viability-percent {
-    font-size: 16px;
+    font-size: 14px;
     min-width: 40px;
   }
 }
