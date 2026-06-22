@@ -249,6 +249,7 @@
   flex-direction: row; 
   gap: 10px; 
   flex-wrap: nowrap; 
+  margin-top: 6px; /* AQUI: Adicionado espaço extra entre a barra de viabilidade e as tags */
 }
 
 .candidate-card__tag {
@@ -258,7 +259,7 @@
   justify-content: center;
   gap: 8px; 
   border-radius: 12px; 
-  padding:14px 10px; 
+  padding: 8px 10px; /* AQUI: Altura (padding vertical) reduzida de 14px para 8px para achatar a tag */
   position: relative;
   min-width: 0; 
   white-space: nowrap; 
@@ -280,35 +281,27 @@
 .tag-score-text-group {
   display: flex;
   flex-direction: row; 
-  align-items: baseline; /* Alinhar pela base da fonte (baseline) cria uma leitura mais natural */
-  gap: 4px; /* Reduzido de 6px para compactar o grupo e gerar mais margem na tag */
+  align-items: center; 
+  gap: 4px; /* Espaço pequeno e simétrico entre as palavras */
   white-space: nowrap;
 }
 
-.tag-score-value {
-  font-family: var(--font-display);
-  font-size: 14px; /* Reduzido de 20px a pedido do cliente para harmonizar */
-  font-weight: 800;
-  line-height: 1;
-}
-
-/* Corrigido: De .tag-score-label para .tag-score-title */
-.tag-score-title {
-  font-family: var(--font-family);
-  font-size: 12px; 
-  font-weight: 600; 
-  opacity: 0.85; 
-  line-height: 1;
-}
-
+.tag-score-value,
+.tag-score-title,
 .tag-eval-text {
-  font-family: var(--font-family);
-  font-size: 13px; /* Levemente reduzido para equilibrar o peso com a tag de nota */
-  font-weight: 600;
+  font-family: var(--font-family); /* Mesma fonte para todos */
+  font-size: 13px; /* Mesmo tamanho para todos */
+  font-weight: 600; 
   line-height: 1;
-  margin-top: 1px; 
+  opacity: 1; /* Removendo qualquer opacidade antiga */
+  margin: 0;
 }
-
+.tag-score-value {
+  font-weight: 700; 
+}
+.tag-eval-text {
+  margin-top: 1px; /* Alinhamento óptico minucioso com o ícone */
+}
 /* ==========================================================================
    ALERTA DE LOGIN & TOOLTIP
    ========================================================================== */
