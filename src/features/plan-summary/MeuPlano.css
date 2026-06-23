@@ -759,7 +759,7 @@
 }
 
 .my-plan-footer {
-  margin-top: clamp(72px, 12vw, 148px);
+  margin-top: clamp(90px, 12vw, 148px);
 }
 
 /* ========================================================
