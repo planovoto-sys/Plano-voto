@@ -1,9 +1,8 @@
 .select-base__continue-shell {
   --continue-shell-offset-y: 0;
   position: fixed;
-  left: 0;
-  right: 0;
-  bottom: calc(var(--bottom-nav-height) + var(--app-safe-bottom) + 10px);
+
+bottom: calc(var(--bottom-nav-height) + var(--app-safe-bottom) + 100px);
   z-index: 36;
   display: flex;
   justify-content: center;

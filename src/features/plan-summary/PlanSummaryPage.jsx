@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { LogIn, LogOut, Star } from 'lucide-react';
@@ -20,6 +20,7 @@ import {
 } from '@/features/candidate-selection/candidateService';
 import ShareChoicePanel from '@/features/sharing/ShareChoicePanel';
 import BottomNavigation from '@/app/shell/BottomNavigation';
+import AppFooter from '@/shared/ui/layout/AppFooter';
 import ConfirmModal from '@/shared/ui/feedback/ConfirmModal';
 import LoadingScreen from '@/shared/ui/feedback/LoadingScreen';
 import { ChanceFlame } from '@/shared/icons/ChanceFlame';
@@ -178,6 +179,9 @@ export default function MeuPlano() {
   const [candidateDetailsState, setCandidateDetailsState] = useState({ signature: '', candidatesById: new Map(), loading: false });
   const [modalCampoBloqueado, setModalCampoBloqueado] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [isShareFabVisible, setIsShareFabVisible] = useState(true);
+  const scrollRootRef = useRef(null);
+  const lastScrollTopRef = useRef(0);
   const [planUrl] = useState(() => getPlanUrl());
 
   useEffect(() => {
@@ -338,6 +342,42 @@ export default function MeuPlano() {
     navigate(getDesktopBackRoute(), { state: { bypassVoteRedirect: true } });
   };
 
+  useEffect(() => {
+    const scrollRoot = scrollRootRef.current;
+    if (!scrollRoot || typeof window === 'undefined') return undefined;
+
+    let animationFrame = 0;
+    lastScrollTopRef.current = scrollRoot.scrollTop;
+    setIsShareFabVisible(true);
+
+    const updateFabVisibility = () => {
+      const currentTop = scrollRoot.scrollTop;
+      const previousTop = lastScrollTopRef.current;
+      const delta = currentTop - previousTop;
+
+      if (currentTop < 16 || delta < -6) {
+        setIsShareFabVisible(true);
+      } else if (delta > 6) {
+        setIsShareFabVisible(false);
+      }
+
+      lastScrollTopRef.current = currentTop;
+      animationFrame = 0;
+    };
+
+    const handleScroll = () => {
+      if (animationFrame) return;
+      animationFrame = window.requestAnimationFrame(updateFabVisibility);
+    };
+
+    scrollRoot.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => {
+      if (animationFrame) window.cancelAnimationFrame(animationFrame);
+      scrollRoot.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
   // Alterado: O card é chamado de forma limpa, sem propriedades que limitem seu design
   const renderChoiceCard = (candidate, route) => (
     <CandidateCard
@@ -418,7 +458,7 @@ export default function MeuPlano() {
         </button>
       </header>
 
-      <main className="my-plan-scroll prototype-scroll nv-scroll">
+      <main ref={scrollRootRef} className="my-plan-scroll prototype-scroll nv-scroll">
         <div className="my-plan-shell">
           <section className="my-plan-overview" aria-label="Resumo do plano">
             <div className="my-plan-overview__metrics">
@@ -503,10 +543,15 @@ export default function MeuPlano() {
           </section>
 
         </div>
+        <AppFooter className="app-footer--scroll-content my-plan-footer" />
       </main>
 
       {!isGuestMode && shareData && (
-        <ShareChoicePanel shareData={shareData} className="my-plan-share-panel my-plan-share-panel--fab" appearance="fab" />
+        <ShareChoicePanel
+          shareData={shareData}
+          className={`my-plan-share-panel my-plan-share-panel--fab ${isShareFabVisible ? '' : 'is-hidden'}`.trim()}
+          appearance="fab"
+        />
       )}
 
       <BottomNavigation currentStep="nossovoto" placement="footer" />

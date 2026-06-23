@@ -272,7 +272,7 @@
     display: block;
     width: 100%;
     max-width: 100%;
-    margin: 42px 0 0;
+    margin: clamp(64px, 10vw, 124px) 0 0;
   }
 
   .select-base-container > .app-page-footer--footer {
@@ -296,7 +296,7 @@
     position: fixed;
     left: 0;
     right: 0;
-    bottom: calc(var(--bottom-nav-height) + var(--app-safe-bottom) + 10px);
+    bottom: calc(var(--bottom-nav-height) + var(--app-safe-bottom) + 24px);
     z-index: 90;
     width: min(100vw, var(--app-width, 430px));
     max-width: 100vw;
@@ -316,7 +316,7 @@
 @media (max-width: 360px) {
   .select-base__scroll {
     padding-top: 24px;
-    padding-bottom: 24px;
+    padding-bottom: calc(var(--bottom-nav-height) + var(--app-safe-bottom) + 72px);
   }
 
   .app-header-mode-action {
@@ -571,7 +571,7 @@
 
 @media (min-width: 744px) and (max-width: 1023px) {
   .select-base__scroll {
-    padding: clamp(30px, 4.5vw, 46px) var(--screen-gutter) 32px;
+    padding: clamp(30px, 4.5vw, 46px) var(--screen-gutter) 56px;
   }
 
   .candidate-flow,

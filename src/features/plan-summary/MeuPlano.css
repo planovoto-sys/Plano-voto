@@ -168,9 +168,12 @@
 
 .my-plan-scroll {
   background: var(--page-bg);
-  padding: 0 clamp(12px, 3.5vw, 18px) 8px;
+  padding: 0 clamp(12px, 3.5vw, 18px) calc(var(--bottom-nav-height) + var(--app-safe-bottom) + 96px);
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-x: hidden;
-  overflow-y: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   scrollbar-width: none;
 }
 
@@ -185,7 +188,8 @@
   gap: 7px;
   min-width: 0;
   min-height: 0;
-  height: 100%;
+  height: auto;
+  min-height: 100%;
   width: 100%;
   max-width: 720px;
   margin: 0 auto;
@@ -511,8 +515,8 @@
 /* 2. Forçar layout compacto e prevenir barra de rolagem */
 .my-plan-choice-list .prototype-candidate-card {
   min-height: auto !important;
-  padding: 10px 12px !important; /* Reduzido (antes era 12px 14px) para diminuir as bordas internas */
-  gap: 8px !important; /* Reduzido (antes era 10px) para aproximar o cabeçalho, a barra V e as tags */
+  padding: 10px 12px !important;
+  gap: 8px !important;
   border-radius: 12px !important;
   overflow: hidden; 
 }
@@ -534,7 +538,7 @@
   gap: 8px !important;
 }
 .my-plan-choice-list .candidate-card__bar-container {
-  height: 8px !important; /* Altura aumentada para a barra de viabilidade "V" */
+  height: 8px !important;
 }
 .my-plan-choice-list .candidate-card__viability-percent {
   font-size: 14px !important;
@@ -546,7 +550,7 @@
   gap: 6px !important;
 }
 .my-plan-choice-list .candidate-card__tag {
-  padding: 5px 6px !important; /* Altura reduzida para as tags ficarem mais enxutas */
+  padding: 5px 6px !important;
   border-radius: 8px !important;
   gap: 4px !important;
 }
@@ -744,7 +748,7 @@
 }
 
 .my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__button:not(:disabled):active {
-  transform: scale(0.96); 
+  transform: scale(0.92); 
 }
 
 .my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__button svg {
@@ -752,6 +756,10 @@
   width: 22px;
   height: 22px;
   stroke-width: 2.2;
+}
+
+.my-plan-footer {
+  margin-top: clamp(72px, 12vw, 148px);
 }
 
 /* ========================================================
@@ -783,7 +791,7 @@
   }
 
   .my-plan-scroll {
-    padding: 0 10px 7px;
+    padding: 0 10px calc(var(--bottom-nav-height) + var(--app-safe-bottom) + 144px);
   }
 
   .my-plan-shell {
@@ -797,7 +805,7 @@
   }
 
   .my-plan-overview__metric {
-    min-height: 70px;
+    min-height: 58px;
     gap: 0; 
     padding-inline: 4px;
   }
@@ -817,6 +825,55 @@
 
   .my-plan-choice-section .prototype-section-heading__copy {
     margin-bottom: 5px;
+  }
+
+  .my-plan-choice-list .prototype-candidate-card {
+    padding: 7px 9px !important;
+    gap: 5px !important;
+  }
+
+  .my-plan-choice-list .candidate-card__name {
+    font-size: 13.5px !important;
+  }
+
+  .my-plan-choice-list .candidate-card__party,
+  .my-plan-choice-list .candidate-card__number {
+    font-size: 9.5px !important;
+  }
+
+  .my-plan-choice-list .candidate-card__viability-row {
+    gap: 5px !important;
+  }
+
+  .my-plan-choice-list .candidate-card__bar-container {
+    height: 7px !important;
+  }
+
+  .my-plan-choice-list .candidate-card__viability-percent {
+    font-size: 12px !important;
+    min-width: 30px !important;
+  }
+
+  .my-plan-choice-list .candidate-card__tags-row {
+    gap: 4px !important;
+  }
+
+  .my-plan-choice-list .candidate-card__tag {
+    padding: 4px 4px !important;
+    gap: 3px !important;
+  }
+
+  .my-plan-choice-list .tag-score-value {
+    font-size: 11px !important;
+  }
+
+  .my-plan-choice-list .tag-score-title,
+  .my-plan-choice-list .tag-eval-text {
+    font-size: 9px !important;
+  }
+
+  .my-plan-actions {
+    padding-bottom: 6px;
   }
 
   .my-plan-share-disabled strong {
@@ -846,7 +903,7 @@
   }
 
   .my-plan-overview__metric {
-    min-height: 66px;
+    min-height: 56px;
   }
 
   .my-plan-choices {
@@ -862,7 +919,11 @@
   }
 
   .my-plan-choice-list {
-    gap: 8px; /* Ajuste para o gap manter uma distância agradável em telas menores */
+    gap: 8px;
+  }
+
+  .my-plan-scroll {
+    padding-bottom: calc(var(--bottom-nav-height) + var(--app-safe-bottom) + 152px);
   }
 
   .my-plan-actions {

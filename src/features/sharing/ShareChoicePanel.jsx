@@ -376,14 +376,15 @@ export default function ShareChoicePanel({ shareData, className = '', appearance
     };
 
     document.body.style.overflow = 'hidden';
+    document.body.classList.add('hide-bottom-nav');
     document.addEventListener('keydown', handleKeyDown);
 
     return () => {
       document.body.style.overflow = previousOverflow;
+      document.body.classList.remove('hide-bottom-nav');
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen]);
-
   const handleTemplateSelect = (nextTemplateId) => {
     setTemplateId(nextTemplateId);
     setStatus('');
@@ -438,11 +439,11 @@ export default function ShareChoicePanel({ shareData, className = '', appearance
     >
       <div className="share-modal__content nv-no-overflow">
         <span className="share-modal__handle" aria-hidden="true" />
+        <button className="share-modal__close nv-touch" type="button" onClick={() => setIsOpen(false)} aria-label="Fechar">
+          <ClearIcon />
+        </button>
         <header className="share-modal__header">
           <h2 id="share-modal-title">Escolha o que compartilhar</h2>
-          <button className="share-modal__close nv-touch" type="button" onClick={() => setIsOpen(false)} aria-label="Fechar">
-            <ClearIcon />
-          </button>
         </header>
 
         <div className="share-modal__body">
@@ -474,9 +475,6 @@ export default function ShareChoicePanel({ shareData, className = '', appearance
         </div>
 
         {status && <p className="share-modal__status" role="status">{status}</p>}
-        <button className="share-modal__cancel nv-touch" type="button" onClick={() => setIsOpen(false)}>
-          Cancelar
-        </button>
       </div>
     </div>
   ) : null;
