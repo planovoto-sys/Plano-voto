@@ -5,31 +5,32 @@ import {
   getCandidateSystemScore
 } from '@/shared/utils/candidateMetrics';
 
-const APP_SHARE_URL = import.meta.env.VITE_PUBLIC_APP_URL || 'https://nossovoto.org';
+const APP_SHARE_URL = import.meta.env.VITE_PUBLIC_APP_URL || 'https://bomdevoto.com.br';
 const SHARE_YEAR = '2026';
+
 const SHARE_COLORS = {
-  bg: '#fbfcfd',
+  bg: '#F5F5F5',
   surface: '#ffffff',
-  text: '#171717',
-  body: '#3f3f46',
-  muted: '#71717a',
+  text: '#111111', 
+  body: '#333333',
+  muted: '#737373',
   line: 'rgba(17, 17, 17, 0.1)',
   rowLine: 'rgba(17, 17, 17, 0.08)',
-  card: '#fffefb',
-  cardDepth: '#fff6eb',
-  cardText: '#171717',
+  card: '#ffffff',
+  cardDepth: '#F5F5F5',
+  cardText: '#111111',
   cardMuted: 'rgba(17, 17, 17, 0.74)',
-  cardLine: 'rgba(202, 132, 36, 0.24)',
-  cardPanel: 'rgba(255, 255, 255, 0.78)',
-  cardPanelStrong: 'rgba(255, 255, 255, 0.9)',
-  cardTrack: 'rgba(70, 58, 42, 0.18)',
-  orange: '#ff9800',
-  orangeDark: '#bd6400',
-  orangeSoft: '#fff4e0',
-  success: '#72d552',
-  successSoft: '#f1ffef',
-  successLine: '#dcefd7',
-  metricLine: '#f1dfd3'
+  cardLine: 'rgba(22, 163, 74, 0.24)',
+  cardPanel: 'rgba(255, 255, 255, 0.85)',
+  cardPanelStrong: 'rgba(255, 255, 255, 0.95)',
+  cardTrack: 'rgba(22, 163, 74, 0.1)',
+  primary: '#16A34A',
+  primaryDark: '#0B6B3A',
+  primarySoft: '#eaf6ed',
+  success: '#16A34A',
+  successSoft: '#eaf6ed',
+  successLine: '#8DC63F',
+  metricLine: 'rgba(17, 17, 17, 0.1)'
 };
 
 export const SHARE_CARD_TEMPLATES = [
@@ -222,7 +223,7 @@ const getTemplateLines = (templateId, analysis) => {
       `${analysis.averageScoreLabel} média de nota`,
       `${analysis.averageChanceLabel} viabilidade`,
       'Monte o seu também',
-      'nossovoto.org'
+      'Bom de Voto'
     ];
   }
 
@@ -236,7 +237,7 @@ const getTemplateLines = (templateId, analysis) => {
       senatorOne,
       senatorTwo,
       'Monte o seu também',
-      'nossovoto.org'
+      'Bom de Voto'
     ];
   }
 
@@ -247,7 +248,7 @@ const getTemplateLines = (templateId, analysis) => {
       `${analysis.averageScoreLabel} Média das notas`,
       'Indicadores de apoio para revisar o plano.',
       'Monte o seu também',
-      'nossovoto.org'
+      'Bom de Voto'
     ];
   }
 
@@ -259,7 +260,7 @@ const getTemplateLines = (templateId, analysis) => {
     'Rascunho revisado ✓',
     'Agora é revisar antes da decisão final.',
     'Monte o seu também',
-    'nossovoto.org'
+    'Bom de Voto'
   ];
 };
 
@@ -368,7 +369,7 @@ const drawCanvasPill = (context, text, x, y, options = {}) => {
   context.font = options.font || '800 22px "Plus Jakarta Sans", Arial, sans-serif';
   const width = options.width || Math.ceil(context.measureText(text).width + paddingX * 2);
 
-  context.fillStyle = options.background || SHARE_COLORS.orangeSoft;
+  context.fillStyle = options.background || SHARE_COLORS.primarySoft;
   context.beginPath();
   drawRoundedRect(context, x, y, width, height, height / 2);
   context.fill();
@@ -383,7 +384,7 @@ const drawCanvasPill = (context, text, x, y, options = {}) => {
   const previousBaseline = context.textBaseline;
   context.textAlign = 'center';
   context.textBaseline = 'middle';
-  context.fillStyle = options.color || SHARE_COLORS.orangeDark;
+  context.fillStyle = options.color || SHARE_COLORS.primaryDark;
   context.fillText(text, x + width / 2, y + height / 2);
   context.textAlign = previousAlign;
   context.textBaseline = previousBaseline;
@@ -396,11 +397,11 @@ const drawCanvasVisualItem = (context, x, y, width, height, label, value, progre
   context.beginPath();
   drawRoundedRect(context, x, y, width, height, 24);
   context.fill();
-  context.strokeStyle = 'rgba(202, 132, 36, 0.14)';
+  context.strokeStyle = 'rgba(22, 163, 74, 0.14)';
   context.lineWidth = 2;
   context.stroke();
 
-  context.fillStyle = SHARE_COLORS.orangeDark;
+  context.fillStyle = SHARE_COLORS.primaryDark;
   context.font = '800 21px "Plus Jakarta Sans", Arial, sans-serif';
   context.fillText(label.toUpperCase(), x + 28, y + 42);
   context.fillStyle = SHARE_COLORS.cardText;
@@ -417,11 +418,11 @@ const drawCanvasVisualPanel = (context, templateId, analysis, x, y, width, heigh
   context.beginPath();
   drawRoundedRect(context, x, y, width, height, 34);
   context.fill();
-  context.strokeStyle = 'rgba(202, 132, 36, 0.18)';
+  context.strokeStyle = 'rgba(22, 163, 74, 0.18)';
   context.lineWidth = 2;
   context.stroke();
 
-  context.fillStyle = SHARE_COLORS.orange;
+  context.fillStyle = SHARE_COLORS.primary;
   context.beginPath();
   drawRoundedRect(context, x, y + 34, 8, height - 68, 4);
   context.fill();
@@ -450,10 +451,10 @@ const drawCanvasVisualPanel = (context, templateId, analysis, x, y, width, heigh
       context.beginPath();
       context.arc(circleX + circleSize / 2, y + height / 2, circleSize / 2, 0, Math.PI * 2);
       context.fill();
-      context.strokeStyle = 'rgba(202, 132, 36, 0.18)';
+      context.strokeStyle = 'rgba(22, 163, 74, 0.18)';
       context.lineWidth = 2;
       context.stroke();
-      context.fillStyle = SHARE_COLORS.orange;
+      context.fillStyle = SHARE_COLORS.primary;
       context.font = '800 40px "Plus Jakarta Sans", Arial, sans-serif';
       context.textAlign = 'center';
       context.textBaseline = 'middle';
@@ -465,7 +466,7 @@ const drawCanvasVisualPanel = (context, templateId, analysis, x, y, width, heigh
   }
 
   const profileTitle = analysis.profile?.title || 'Plano pronto';
-  context.fillStyle = SHARE_COLORS.orangeDark;
+  context.fillStyle = SHARE_COLORS.primaryDark;
   context.font = '800 22px "Plus Jakarta Sans", Arial, sans-serif';
   context.fillText('PERFIL DO PLANO', x + 42, y + 58);
   context.fillStyle = SHARE_COLORS.cardText;
@@ -482,7 +483,7 @@ const drawCanvasVisualPanel = (context, templateId, analysis, x, y, width, heigh
     width: 198,
     height: 44,
     font: '800 22px "Plus Jakarta Sans", Arial, sans-serif',
-    border: 'rgba(202, 132, 36, 0.16)'
+    border: 'rgba(22, 163, 74, 0.16)'
   });
 };
 
@@ -493,18 +494,18 @@ const drawCanvasCardBase = (context, width, height, analysis) => {
   context.fillStyle = background;
   context.fillRect(0, 0, width, height);
 
-  context.fillStyle = SHARE_COLORS.orange;
+  context.fillStyle = SHARE_COLORS.primary;
   context.fillRect(0, 0, width, 10);
 
   const shade = context.createLinearGradient(0, height * 0.52, 0, height);
-  shade.addColorStop(0, 'rgba(255, 248, 239, 0)');
-  shade.addColorStop(1, 'rgba(255, 241, 216, 0.66)');
+  shade.addColorStop(0, 'rgba(245, 245, 245, 0)');
+  shade.addColorStop(1, 'rgba(22, 163, 74, 0.05)'); 
   context.fillStyle = shade;
   context.fillRect(0, height * 0.52, width, height * 0.48);
 
-  context.fillStyle = SHARE_COLORS.orange;
+  context.fillStyle = SHARE_COLORS.primary;
   context.font = '800 32px "Plus Jakarta Sans", Arial, sans-serif';
-  context.fillText('NOSSOVOTO.ORG', 112, 128);
+  context.fillText('BOM DE VOTO', 112, 128);
   context.fillStyle = SHARE_COLORS.cardMuted;
   context.font = '700 34px Inter, Arial, sans-serif';
   context.fillText(getCanvasLocationLine(analysis), 112, 180);
@@ -512,7 +513,7 @@ const drawCanvasCardBase = (context, width, height, analysis) => {
     width: 126,
     height: 48,
     font: '800 22px "Plus Jakarta Sans", Arial, sans-serif',
-    border: 'rgba(202, 132, 36, 0.18)'
+    border: 'rgba(22, 163, 74, 0.18)'
   });
 };
 
@@ -523,7 +524,7 @@ const drawProgressBar = (context, x, y, width, percent, height = 18) => {
   context.beginPath();
   drawRoundedRect(context, x, y, width, height, radius);
   context.fill();
-  context.fillStyle = SHARE_COLORS.orange;
+  context.fillStyle = SHARE_COLORS.primary;
   context.beginPath();
   drawRoundedRect(context, x, y, Math.max(height, width * (progress / 100)), height, radius);
   context.fill();
@@ -538,7 +539,7 @@ const drawCanvasStat = (context, x, y, width, label, value, percent) => {
   context.lineWidth = 2;
   context.stroke();
 
-  context.fillStyle = SHARE_COLORS.orange;
+  context.fillStyle = SHARE_COLORS.primary;
   context.font = '800 76px "Plus Jakarta Sans", Arial, sans-serif';
   context.fillText(value, x + 28, y + 82);
   context.fillStyle = SHARE_COLORS.cardMuted;
@@ -623,7 +624,7 @@ export const downloadShareImage = async (templateId, shareData) => {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `nossovoto-${templateId}.png`;
+  link.download = `bomdevoto-${templateId}.png`;
   document.body.appendChild(link);
   link.click();
   link.remove();
@@ -651,12 +652,12 @@ export const copyShareText = async (templateId, shareData) => {
 
 export const shareTemplate = async (templateId, shareData) => {
   const text = buildShareText(templateId, shareData);
-  const title = 'Compartilhar meu plano no nossovoto';
+  const title = 'Compartilhar meu plano no Bom de Voto';
 
   if (navigator.share) {
     try {
       const blob = await createShareImageBlob(templateId, shareData);
-      const file = new File([blob], `nossovoto-${templateId}.png`, { type: 'image/png' });
+      const file = new File([blob], `bomdevoto-${templateId}.png`, { type: 'image/png' });
       if (navigator.canShare?.({ files: [file] })) {
         await navigator.share({ title, text, files: [file] });
         return 'shared';

@@ -23,15 +23,16 @@ import BottomNavigation from '@/app/shell/BottomNavigation';
 import AppFooter from '@/shared/ui/layout/AppFooter';
 import ConfirmModal from '@/shared/ui/feedback/ConfirmModal';
 import LoadingScreen from '@/shared/ui/feedback/LoadingScreen';
-import { ChanceFlame } from '@/shared/icons/ChanceFlame';
 import CandidateCard from '@/features/candidate-selection/CandidateCard';
 import DesktopPlanSummary from '@/features/desktop/DesktopPlanSummary';
+import LogoCompleta from '@/shared/ui/brand/LogoCompleta';
 import {
   calculateCandidateChance,
   formatScore,
   getCandidateChance,
   getCandidateSystemScore
 } from '@/shared/utils/candidateMetrics';
+
 import '@/features/candidate-selection/SelectBase.css';
 import './MeuPlano.css';
 
@@ -42,7 +43,6 @@ const average = (values) => {
 };
 
 const getAverageChance = (candidates) => average(candidates.map((candidate) => getCandidateChance(candidate)));
-
 const getAverageScore = (candidates) => (
   average(candidates.map((candidate) => getCandidateSystemScore(candidate)).filter((score) => score > 0))
 );
@@ -53,7 +53,7 @@ const getCandidateOfficeKey = (candidate = {}) => {
 };
 
 const getPlanUrl = () => {
-  if (typeof window === 'undefined') return 'https://nossovoto.org/meu-plano';
+  if (typeof window === 'undefined') return 'https://bomdevoto.com.br/meu-plano';
   return `${window.location.origin}${BALLOT_ROUTES.meuPlano}`;
 };
 
@@ -64,37 +64,26 @@ const getDraftOfficeCandidates = (draft, officeKey) => {
       ? draft.candidate_groups.deputado_federal
       : draft.selections?.deputado_federal || [];
   }
-
   return draft.candidate_groups?.senadores_1?.length
     ? draft.candidate_groups.senadores_1
     : draft.selections?.senadores || [];
 };
 
 const mergeCandidateDetails = (storedCandidate, fetchedCandidate, tally) => {
-  const mergedCandidate = {
-    ...storedCandidate,
-    ...fetchedCandidate
-  };
+  const mergedCandidate = { ...storedCandidate, ...fetchedCandidate };
   const selectedByUsers = Number(
-    tally?.active_selections ??
-    fetchedCandidate?.active_selections ??
-    fetchedCandidate?.selected_by_users ??
-    storedCandidate?.selected_by_users ??
-    storedCandidate?.selectedByUsers ??
-    0
+    tally?.active_selections ?? fetchedCandidate?.active_selections ?? fetchedCandidate?.selected_by_users ??
+    storedCandidate?.selected_by_users ?? storedCandidate?.selectedByUsers ?? 0
   );
   const averageElectedVotes = Number(
-    fetchedCandidate?.average_elected_votes ??
-    fetchedCandidate?.averageElectedVotes ??
-    storedCandidate?.average_elected_votes ??
-    storedCandidate?.averageElectedVotes ??
-    0
+    fetchedCandidate?.average_elected_votes ?? fetchedCandidate?.averageElectedVotes ??
+    storedCandidate?.average_elected_votes ?? storedCandidate?.averageElectedVotes ?? 0
   );
+  
   const safeSelectedByUsers = Number.isFinite(selectedByUsers) ? selectedByUsers : 0;
   const fallbackAverageElectedVotes = AVERAGE_ELECTED_VOTES_BY_OFFICE[getCandidateOfficeKey(mergedCandidate)] || 3;
   const safeAverageElectedVotes = Number.isFinite(averageElectedVotes) && averageElectedVotes > 0
-    ? averageElectedVotes
-    : fallbackAverageElectedVotes;
+    ? averageElectedVotes : fallbackAverageElectedVotes;
 
   return {
     ...mergedCandidate,
@@ -116,55 +105,16 @@ const getScoreStarFills = (score) => {
 
 function ScoreStars({ score }) {
   return (
-    <span className="my-plan-overview__stars" aria-hidden="true">
+    <div className="my-plan-stars-container" aria-hidden="true">
       {getScoreStarFills(score).map((fill, index) => (
-        <span
-          key={index}
-          className="my-plan-overview__star"
-          style={{ '--star-fill': `${Math.round(fill * 100)}%` }}
-        >
-          <Star className="my-plan-overview__star-base" />
-          <span className="my-plan-overview__star-fill">
-            <Star />
-          </span>
-        </span>
+        <div key={index} className="star-wrapper">
+          <Star className="star-bg" />
+          <div className="star-fill-wrapper" style={{ width: `${Math.round(fill * 100)}%` }}>
+            <Star className="star-fg" />
+          </div>
+        </div>
       ))}
-    </span>
-  );
-}
-
-function PlanViabilityGauge({ chance }) {
-  const progress = Math.max(0, Math.min(100, Math.round(chance)));
-
-  return (
-    <div className="viability-thermometer-container">
-      <div className="viability-thermometer__header">
-        <span className="viability-thermometer__title">
-          <strong>{progress}%</strong>
-        </span>
-      </div>
-
-      <div className="viability-thermometer__track">
-        <div
-          className="viability-thermometer__fill"
-          style={{ width: `${progress}%` }}
-        ></div>
-        <span className="viability-thermometer__tick viability-thermometer__tick--first"></span>
-        <span className="viability-thermometer__tick viability-thermometer__tick--second"></span>
-        <span className="viability-thermometer__tick viability-thermometer__tick--third"></span>
-      </div>
     </div>
-  );
-}
-
-function EmptyChoiceCard({ title, caption }) {
-  return (
-    <article className="my-plan-empty-choice">
-      <div>
-        <strong>{title}</strong>
-        <span>{caption}</span>
-      </div>
-    </article>
   );
 }
 
@@ -174,47 +124,38 @@ export default function MeuPlano() {
   const location = useLocation();
   const isGuestMode = !user?.uid;
   const isDesktopLayout = useDesktopLayout();
+  
   const localDraft = user?.uid ? readBallotDraft(user.uid, userData?.estado) : readVisitorBallotDraft();
   const [remoteDraftState, setRemoteDraftState] = useState({ userId: null, draft: null, loading: false });
   const [candidateDetailsState, setCandidateDetailsState] = useState({ signature: '', candidatesById: new Map(), loading: false });
   const [modalCampoBloqueado, setModalCampoBloqueado] = useState(false);
-  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [isShareFabVisible, setIsShareFabVisible] = useState(true);
+  
   const scrollRootRef = useRef(null);
   const lastScrollTopRef = useRef(0);
   const [planUrl] = useState(() => getPlanUrl());
 
   useEffect(() => {
     if (!user?.uid) return undefined;
-
     let cancelled = false;
     const fallbackDraft = readBallotDraft(user.uid, userData?.estado);
 
     queueMicrotask(() => {
-      if (!cancelled) {
-        setRemoteDraftState({ userId: user.uid, draft: null, loading: true });
-      }
+      if (!cancelled) setRemoteDraftState({ userId: user.uid, draft: null, loading: true });
     });
 
     fetchRemoteBallotDraft(user.uid, fallbackDraft.estado || userData?.estado)
-      .then((remoteDraft) => {
-        if (!cancelled) setRemoteDraftState({ userId: user.uid, draft: remoteDraft, loading: false });
-      })
-      .catch(() => {
-        if (!cancelled) setRemoteDraftState({ userId: user.uid, draft: fallbackDraft, loading: false });
-      });
+      .then((remoteDraft) => { if (!cancelled) setRemoteDraftState({ userId: user.uid, draft: remoteDraft, loading: false }); })
+      .catch(() => { if (!cancelled) setRemoteDraftState({ userId: user.uid, draft: fallbackDraft, loading: false }); });
 
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [user?.uid, userData?.estado]);
 
-  const currentDraft = remoteDraftState.userId === user?.uid && remoteDraftState.draft
-    ? remoteDraftState.draft
-    : localDraft;
+  const currentDraft = remoteDraftState.userId === user?.uid && remoteDraftState.draft ? remoteDraftState.draft : localDraft;
   const rawDeputadosFederais = getDraftOfficeCandidates(currentDraft, 'deputado_federal');
   const rawSenadores = getDraftOfficeCandidates(currentDraft, 'senadores');
-  const selectedCandidateIds = [...rawDeputadosFederais, ...rawSenadores].map((candidate) => candidate.id).filter(Boolean);
+  
+  const selectedCandidateIds = [...rawDeputadosFederais, ...rawSenadores].map((c) => c.id).filter(Boolean);
   const selectedCandidateSignature = selectedCandidateIds.join('|');
   const storedCandidatesSnapshot = JSON.stringify([...rawDeputadosFederais, ...rawSenadores]);
   const selectedDraftEstado = currentDraft?.estado || userData?.estado || null;
@@ -223,15 +164,9 @@ export default function MeuPlano() {
     if (!selectedCandidateSignature) {
       let cancelled = false;
       queueMicrotask(() => {
-        if (!cancelled) {
-          setCandidateDetailsState((currentState) => (
-            currentState.signature === '' ? currentState : { signature: '', candidatesById: new Map(), loading: false }
-          ));
-        }
+        if (!cancelled) setCandidateDetailsState((s) => (s.signature === '' ? s : { signature: '', candidatesById: new Map(), loading: false }));
       });
-      return () => {
-        cancelled = true;
-      };
+      return () => { cancelled = true; };
     }
 
     let cancelled = false;
@@ -240,9 +175,9 @@ export default function MeuPlano() {
 
     queueMicrotask(() => {
       if (!cancelled) {
-        setCandidateDetailsState((currentState) => ({
+        setCandidateDetailsState((s) => ({
           signature: selectedCandidateSignature,
-          candidatesById: currentState.signature === selectedCandidateSignature ? currentState.candidatesById : new Map(),
+          candidatesById: s.signature === selectedCandidateSignature ? s.candidatesById : new Map(),
           loading: true
         }));
       }
@@ -255,146 +190,70 @@ export default function MeuPlano() {
       fetchCandidateTallies(candidateIds, { forceRefresh: true, estado: selectedDraftEstado }).catch(() => cachedTallies)
     ]).then(([fetchedCandidates, tallies]) => {
       if (cancelled) return;
-
-      const fetchedById = new Map(fetchedCandidates.map((candidate) => [candidate.id, candidate]));
-      const storedById = new Map(storedCandidates.map((candidate) => [candidate.id, candidate]));
-      const candidatesById = new Map(candidateIds.map((candidateId) => [
-        candidateId,
-        mergeCandidateDetails(storedById.get(candidateId), fetchedById.get(candidateId), tallies.get(candidateId))
+      const fetchedById = new Map(fetchedCandidates.map((c) => [c.id, c]));
+      const storedById = new Map(storedCandidates.map((c) => [c.id, c]));
+      const candidatesById = new Map(candidateIds.map((id) => [
+        id, mergeCandidateDetails(storedById.get(id), fetchedById.get(id), tallies.get(id))
       ]));
 
-      setCandidateDetailsState({
-        signature: selectedCandidateSignature,
-        candidatesById,
-        loading: false
-      });
+      setCandidateDetailsState({ signature: selectedCandidateSignature, candidatesById, loading: false });
     }).catch(() => {
-      if (!cancelled) {
-        setCandidateDetailsState({ signature: selectedCandidateSignature, candidatesById: new Map(), loading: false });
-      }
+      if (!cancelled) setCandidateDetailsState({ signature: selectedCandidateSignature, candidatesById: new Map(), loading: false });
     });
 
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [selectedCandidateSignature, selectedDraftEstado, storedCandidatesSnapshot]);
 
-  const candidatesById = candidateDetailsState.signature === selectedCandidateSignature
-    ? candidateDetailsState.candidatesById
-    : new Map();
-  const deputadosFederais = rawDeputadosFederais.map((candidate) => candidatesById.get(candidate.id) || candidate);
-  const senadores = rawSenadores.map((candidate) => candidatesById.get(candidate.id) || candidate);
+  const candidatesById = candidateDetailsState.signature === selectedCandidateSignature ? candidateDetailsState.candidatesById : new Map();
+  const deputadosFederais = rawDeputadosFederais.map((c) => candidatesById.get(c.id) || c);
+  const senadores = rawSenadores.map((c) => candidatesById.get(c.id) || c);
+  
   const featuredDeputadosFederais = deputadosFederais.slice(0, 1);
   const featuredSenadores = senadores.slice(0, 2);
   const estadoSigla = currentDraft?.estado || userData?.estado || '';
-  const estadoNome = estadoSigla ? STATE_NAMES[estadoSigla] || estadoSigla : 'Estado não selecionado';
+  const estadoNome = estadoSigla ? STATE_NAMES[estadoSigla] || estadoSigla : 'Nenhum';
   const deputadoFederal = featuredDeputadosFederais[0] || null;
   const selectedCandidates = [...featuredDeputadosFederais, ...featuredSenadores].filter(Boolean);
+  
   const averageChance = getAverageChance(selectedCandidates);
   const averageScore = getAverageScore(selectedCandidates);
-  const profileName = isGuestMode ? 'Visitante' : userData?.name || user?.displayName || 'Usuário';
-  const profileEmail = isGuestMode ? 'Plano local' : userData?.email || user?.email || 'Email não informado';
+  
   const profileImage = userData?.profile_image || user?.photoURL || '';
-  const profileInitial = (profileName || 'N').trim().charAt(0).toUpperCase();
+  const profileInitial = ((userData?.name || user?.displayName || 'U').trim().charAt(0).toUpperCase());
+  
   const hasCompletePlan = Boolean(deputadosFederais.length > 0 && senadores.length >= 2 && estadoSigla);
   const canSharePlan = !isGuestMode && hasCompletePlan;
+  
   const shareData = canSharePlan ? {
     estadoSigla,
     estadoNome,
-    userName: profileName,
+    userName: userData?.name || user?.displayName || 'Visitante',
     deputado: deputadoFederal,
     senadores: featuredSenadores,
     url: planUrl
   } : null;
 
-  const handleEdit = (route = BALLOT_ROUTES.deputadoFederal) => {
-    navigate(route, { state: { bypassVoteRedirect: true } });
-  };
-
-  const handleLogin = () => {
-    navigate('/login', {
-      state: {
-        from: `${location.pathname}${location.search}`
-      }
-    });
-  };
-
-  const handleLockedFieldClick = () => {
-    setModalCampoBloqueado(true);
-  };
-
-  const handleLogout = async () => {
-    await signOut(auth);
-    navigate('/', { replace: true });
-  };
-
-  const handleDesktopNavigate = (route) => {
-    navigate(route, { state: { bypassVoteRedirect: true } });
-  };
-
-  const getDesktopBackRoute = () => {
-    if (!estadoSigla) return BALLOT_ROUTES.estado;
-    if (senadores.length > 0 || deputadosFederais.length > 0) return BALLOT_ROUTES.senadores;
-    return BALLOT_ROUTES.deputadoFederal;
-  };
-
-  const handleDesktopBack = () => {
-    navigate(getDesktopBackRoute(), { state: { bypassVoteRedirect: true } });
-  };
+  const handleEdit = (route) => navigate(route, { state: { bypassVoteRedirect: true } });
+  const handleLogin = () => navigate('/login', { state: { from: `${location.pathname}${location.search}` } });
+  const handleLogout = async () => { await signOut(auth); navigate('/', { replace: true }); };
 
   useEffect(() => {
     const scrollRoot = scrollRootRef.current;
     if (!scrollRoot || typeof window === 'undefined') return undefined;
 
-    let animationFrame = 0;
-    lastScrollTopRef.current = scrollRoot.scrollTop;
-    setIsShareFabVisible(true);
-
-    const updateFabVisibility = () => {
-      const currentTop = scrollRoot.scrollTop;
-      const previousTop = lastScrollTopRef.current;
-      const delta = currentTop - previousTop;
-
-      if (currentTop < 16 || delta < -6) {
-        setIsShareFabVisible(true);
-      } else if (delta > 6) {
-        setIsShareFabVisible(false);
-      }
-
-      lastScrollTopRef.current = currentTop;
-      animationFrame = 0;
-    };
-
     const handleScroll = () => {
-      if (animationFrame) return;
-      animationFrame = window.requestAnimationFrame(updateFabVisibility);
+      const currentTop = scrollRoot.scrollTop;
+      const delta = currentTop - lastScrollTopRef.current;
+      if (currentTop < 16 || delta < -6) setIsShareFabVisible(true);
+      else if (delta > 6) setIsShareFabVisible(false);
+      lastScrollTopRef.current = currentTop;
     };
 
     scrollRoot.addEventListener('scroll', handleScroll, { passive: true });
-
-    return () => {
-      if (animationFrame) window.cancelAnimationFrame(animationFrame);
-      scrollRoot.removeEventListener('scroll', handleScroll);
-    };
+    return () => scrollRoot.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Alterado: O card é chamado de forma limpa, sem propriedades que limitem seu design
-  const renderChoiceCard = (candidate, route) => (
-    <CandidateCard
-      key={candidate.id}
-      candidate={candidate}
-      selected
-      lockPersonalizedFields={false}
-      showNumberAbove
-      numberFallback="000000"
-      onSelect={() => handleEdit(route)}
-      onLockedMetricClick={handleLockedFieldClick}
-    />
-  );
-
-  if (!isGuestMode && userLoading && !currentDraft) {
-    return <LoadingScreen className="nv-screen" />;
-  }
+  if (!isGuestMode && userLoading && !currentDraft) return <LoadingScreen className="nv-screen" />;
 
   if (isDesktopLayout) {
     return (
@@ -407,149 +266,138 @@ export default function MeuPlano() {
         deputadosFederais={deputadosFederais}
         senadores={senadores}
         hasCompletePlan={hasCompletePlan}
-        onNavigate={handleDesktopNavigate}
-        onBack={handleDesktopBack}
+        onNavigate={(route) => navigate(route, { state: { bypassVoteRedirect: true } })}
+        onBack={() => navigate(BALLOT_ROUTES.estado, { state: { bypassVoteRedirect: true } })}
       />
     );
   }
 
   return (
-    <div className={`my-plan-page prototype-page nv-screen ${isGuestMode ? 'my-plan-page--guest' : 'my-plan-page--saved'}`}>
+    <div className="my-plan-page">
+      
       <header className="my-plan-header">
-        <div className="my-plan-header__profile-wrap">
-          <button
-            className="my-plan-header__profile nv-touch"
-            type="button"
-            onClick={() => setProfileMenuOpen((currentValue) => !currentValue)}
-            aria-label="Mostrar perfil"
-            aria-expanded={profileMenuOpen}
-          >
-            <span className="my-plan-header__profile-avatar" aria-hidden="true">
-              {profileImage ? (
-                <img
-                  className="my-plan-header__profile-image"
-                  src={profileImage}
-                  alt=""
-                  referrerPolicy="no-referrer"
-                />
-              ) : (
-                <span className="my-plan-header__profile-initial">{profileInitial}</span>
-              )}
-            </span>
-          </button>
-          {profileMenuOpen && (
-            <div className="my-plan-header__profile-popover" role="dialog" aria-label="Dados do perfil">
-              <strong>{profileName}</strong>
-              <span>{profileEmail}</span>
-            </div>
+        <button className="my-plan-header__btn" aria-label="Perfil">
+          {profileImage ? (
+            <img className="my-plan-header__avatar" src={profileImage} alt="" referrerPolicy="no-referrer" />
+          ) : (
+            <div className="my-plan-header__avatar">{profileInitial}</div>
           )}
-        </div>
-        <h1 className="my-plan-header__title">
-          <ChanceFlame className="my-plan-header__flame" size={20} />
-          <span>nossovoto<em>.org</em></span>
-        </h1>
-        <button
-          className="my-plan-header__logout nv-touch"
-          type="button"
-          onClick={isGuestMode ? handleLogin : handleLogout}
-          aria-label={isGuestMode ? 'Entrar' : 'Sair'}
-        >
-          {isGuestMode ? <LogIn aria-hidden="true" /> : <LogOut aria-hidden="true" />}
+        </button>
+        
+        <LogoCompleta as="h1" />
+
+        <button className="my-plan-header__btn" onClick={isGuestMode ? handleLogin : handleLogout} aria-label={isGuestMode ? 'Entrar' : 'Sair'}>
+          {isGuestMode ? <LogIn size={20} /> : <LogOut size={20} />}
         </button>
       </header>
 
-      <main ref={scrollRootRef} className="my-plan-scroll prototype-scroll nv-scroll">
+      <main ref={scrollRootRef} className="my-plan-scroll">
         <div className="my-plan-shell">
-          <section className="my-plan-overview" aria-label="Resumo do plano">
+          
+          <section className="my-plan-overview">
             <div className="my-plan-overview__metrics">
               
-              <article className="my-plan-overview__metric my-plan-overview__metric--state">
-                <small className="my-plan-overview__metric-title">Estado</small>
-                <strong className="my-plan-overview__state-code">{estadoSigla || '--'}</strong>
-                <span className="my-plan-overview__state-name">{estadoSigla ? estadoNome : 'Escolha seu estado'}</span>
-              </article>
+              <div className="my-plan-overview__metric">
+                <span className="my-plan-overview__label">Estado</span>
+                <span className="my-plan-overview__value">{estadoSigla || '--'}</span>
+                <span className="my-plan-overview__sub">{estadoSigla ? estadoNome : 'Definir'}</span>
+              </div>
 
-              <article className="my-plan-overview__metric my-plan-overview__metric--score">
-                <small className="my-plan-overview__metric-title">Nota</small>
-                <strong className="my-plan-overview__score">
+              <div className="my-plan-overview__metric">
+                <span className="my-plan-overview__label">Nota</span>
+                <span className="my-plan-overview__value my-plan-overview__value--green">
                   {averageScore > 0 ? formatScore(averageScore) : '--'}
-                </strong>
+                </span>
                 <ScoreStars score={averageScore} />
-              </article>
+              </div>
 
-              <article className="my-plan-overview__metric my-plan-overview__metric--viability">
-                <small className="my-plan-overview__metric-title">Viabilidade</small>
-                <PlanViabilityGauge chance={averageChance} />
-              </article>
-              
+              <div className="my-plan-overview__metric">
+                <span className="my-plan-overview__label">Viabilidade</span>
+                <span className="my-plan-overview__value my-plan-overview__value--green">
+                  {Math.round(averageChance)}%
+                </span>
+                <div className="my-plan-gauge">
+                  <div className="my-plan-gauge__fill" style={{ width: `${Math.round(averageChance)}%` }}></div>
+                </div>
+              </div>
+
             </div>
           </section>
 
-          <section className="my-plan-choices" aria-label="Candidatos escolhidos">
-            <section className="my-plan-choice-section">
-              <div className="prototype-section-heading prototype-section-heading--current">
-                <div className="prototype-section-heading__copy">
-                  <h2>Deputado Federal</h2>
-                </div>
-              </div>
+          <section className="my-plan-choices">
+            
+            <div className="my-plan-choice-section">
+              <h2>Deputado Federal</h2>
               <div className="my-plan-choice-list">
                 {featuredDeputadosFederais.length > 0 ? (
-                  featuredDeputadosFederais.map((candidate) => renderChoiceCard(candidate, BALLOT_ROUTES.deputadoFederal))
+                  featuredDeputadosFederais.map((candidate) => (
+                    <CandidateCard
+                      key={candidate.id}
+                      candidate={candidate}
+                      showNumberAbove={true} 
+                      onSelect={() => handleEdit(BALLOT_ROUTES.deputadoFederal)}
+                      onLockedMetricClick={() => setModalCampoBloqueado(true)}
+                    />
+                  ))
                 ) : (
-                  <EmptyChoiceCard
-                    title="Nenhum Candidato Escolhido"
-                    caption="Escolha seus candidatos para continuar"
-                  />
+                  <div className="my-plan-empty">
+                    <strong>Nenhum Candidato</strong>
+                    <span>Escolha um deputado para apoiar</span>
+                  </div>
                 )}
               </div>
-            </section>
+            </div>
 
-            <section className="my-plan-choice-section">
-              <div className="prototype-section-heading prototype-section-heading--current">
-                <div className="prototype-section-heading__copy">
-                  <h2>Senadores</h2>
-                </div>
-              </div>
+            <div className="my-plan-choice-section">
+              <h2>Senadores</h2>
               <div className="my-plan-choice-list">
                 {featuredSenadores.length > 0 ? (
-                  featuredSenadores.map((candidate) => renderChoiceCard(candidate, BALLOT_ROUTES.senadores))
+                  featuredSenadores.map((candidate) => (
+                    <CandidateCard
+                      key={candidate.id}
+                      candidate={candidate}
+                      showNumberAbove={true}
+                      onSelect={() => handleEdit(BALLOT_ROUTES.senadores)}
+                      onLockedMetricClick={() => setModalCampoBloqueado(true)}
+                    />
+                  ))
                 ) : (
-                  <EmptyChoiceCard
-                    title="Nenhum Candidato Escolhido"
-                    caption="Escolha seus candidatos para continuar"
-                  />
+                  <div className="my-plan-empty">
+                    <strong>Nenhum Candidato</strong>
+                    <span>Escolha senadores para apoiar</span>
+                  </div>
                 )}
               </div>
-            </section>
+            </div>
+
           </section>
 
-          <section className="my-plan-actions" aria-label="Ações do plano">
-            {isGuestMode && (
-              <div className="my-plan-save-invite">
-                <strong>Entrar para compartilhar</strong>
-                <span>Seu plano está salvo neste dispositivo. Entre para compartilhar com segurança.</span>
-                <button className="nv-touch" type="button" onClick={handleLogin}>
-                  Fazer login
-                </button>
+          <section className="my-plan-actions">
+            {isGuestMode ? (
+              <div className="my-plan-action-box">
+                <strong>Salve seu plano</strong>
+                <span>Entre para salvar suas escolhas com segurança e liberar o compartilhamento.</span>
+                <button className="my-plan-btn-primary" onClick={handleLogin}>Fazer Login</button>
               </div>
-            )}
-
-            {!isGuestMode && !shareData && (
-              <div className="my-plan-share-disabled">
-                <strong>Compartilhar plano</strong>
-                <span>Complete deputado federal e dois senadores para liberar o compartilhamento.</span>
-              </div>
+            ) : (
+              !shareData && (
+                <div className="my-plan-action-box">
+                  <strong>Compartilhar plano</strong>
+                  <span>Complete suas escolhas de deputado e senadores para liberar o compartilhamento com amigos.</span>
+                </div>
+              )
             )}
           </section>
 
         </div>
-        <AppFooter className="app-footer--scroll-content my-plan-footer" />
+        
+        <AppFooter />
       </main>
 
       {!isGuestMode && shareData && (
         <ShareChoicePanel
           shareData={shareData}
-          className={`my-plan-share-panel my-plan-share-panel--fab ${isShareFabVisible ? '' : 'is-hidden'}`.trim()}
+          className={`my-plan-share-panel--fab ${!isShareFabVisible ? 'is-hidden' : ''}`}
           appearance="fab"
         />
       )}

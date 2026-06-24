@@ -20,7 +20,7 @@
   top: 0;
   z-index: 50;
   width: 100%;
-  
+  min-height: 45px;
   min-height: 42px; 
   padding: calc(var(--app-safe-top, 0px) + 12px) var(--screen-gutter) 12px;
   background: var(--page-bg);
@@ -71,6 +71,7 @@
 }
 
 .step-header__title-group {
+
   display: flex;
   align-items: center;
   gap: 12px;
@@ -96,7 +97,7 @@
 .step-header__title {
   font-size: 18px; /* Reduzido de 22px */
   font-weight: 600; /* Reduzido de 800 para tirar o peso extra */
-  color: var(--text-strong);
+  color: #00B84A; /* Mesmo tom de var(--card-green) */
   margin: 0;
   line-height: 1;
   letter-spacing: -0.02em;
@@ -681,7 +682,7 @@
 .step-header__title {
   font-size: 22px;
   font-weight: 800;
-  color: var(--text-strong);
+  color: #00B84A;
   margin: 0;
   line-height: 1;
   letter-spacing: -0.02em;
@@ -961,6 +962,7 @@
   pointer-events: none; 
   transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
 }
+
 .select-base__continue-shell.is-hidden {
   transform: translateY(120px) !important;
   opacity: 0 !important;
@@ -977,28 +979,35 @@
   justify-content: center;
   width: 50px; 
   height: 50px; 
-  background: var(--orange, #ff6b00);
+  
+  /* APLICAÇÃO DA NOVA PALETA: Verde Primário */
+  background: #16A34A;
   color: #ffffff;
   border: none;
   border-radius: 50%; 
   padding: 0; 
   cursor: pointer;
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease;
-
+  
+  /* Adicionada uma sombra sutil com a cor primária para dar profundidade (efeito glow) */
+  box-shadow: 0 4px 16px rgba(22, 163, 74, 0.25);
+  
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .floating-advance-button:hover {
-  background: var(--orange-dark, #e66000);
+  /* APLICAÇÃO DA NOVA PALETA: Verde Escuro no Hover */
+  background: #0B6B3A;
+  box-shadow: 0 6px 20px rgba(11, 107, 58, 0.35); /* Sombra acompanha o escurecimento do botão */
 }
 
 .floating-advance-button:active {
   transform: scale(0.92);
+  box-shadow: 0 2px 8px rgba(11, 107, 58, 0.3); /* Sombra achata ao clicar */
 }
 
 .floating-advance-button svg {
   width: 26px; /* Tamanho proporcional do ícone de seta */
   height: 26px;
-
   transition: transform 0.2s ease;
 }
 

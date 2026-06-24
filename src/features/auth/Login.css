@@ -1,9 +1,18 @@
 .login-wrapper {
+  /* NOVA PALETA DE CORES */
+  --brand-primary: #16A34A;
+  --brand-light: #8DC63F;
+  --brand-dark: #0B6B3A;
+  --brand-accent: #F7C600;
+  --brand-bg: #F5F5F5;
+  --brand-text: #111111;
+
   width: 100%;
   height: var(--app-height);
   min-height: 100dvh;
   overflow: hidden;
-  background: #fff;
+  background: var(--brand-bg);
+  color: var(--brand-text);
 }
 
 .login-main {
@@ -29,7 +38,7 @@
   justify-self: stretch;
   border-radius: 10px;
   border: 0;
-  background: #f3f3f3;
+  background-color: #bbbbbb71;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -41,16 +50,23 @@
   height: clamp(150px, 40vw, 198px);
   border: 0;
   border-radius: 50%;
-  background: #b8b8b8;
-  color: var(--text-strong);
+  background: var(--brand-primary);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+@media (hover: hover) {
+  .play-button:hover {
+    background: var(--brand-light);
+  }
 }
 
 .play-button:active {
   transform: scale(0.98);
+  background: var(--brand-dark);
 }
 
 .play-icon {
@@ -58,7 +74,7 @@
   height: 0;
   border-top: clamp(35px, 9.2vw, 46px) solid transparent;
   border-bottom: clamp(35px, 9.2vw, 46px) solid transparent;
-  border-left: clamp(60px, 16vw, 80px) solid #eef1f3;
+  border-left: clamp(60px, 16vw, 80px) solid var(--brand-bg);
   margin-left: clamp(10px, 2.8vw, 14px);
 }
 
@@ -67,14 +83,14 @@
   min-height: clamp(78px, 9vh, 88px);
   border: 0;
   border-radius: 20px;
-  background: linear-gradient(90deg, #ffe162 0%, #ff8a4d 100%);
-  color: var(--text);
+  background: linear-gradient(90deg, var(--brand-primary) 0%, var(--brand-dark) 100%);
   font-family: var(--font-family);
   display: grid;
   place-items: center;
   align-content: center;
   gap: 3px;
   cursor: pointer;
+  transition: transform 160ms ease, opacity 0.2s ease;
 }
 
 .btn-comecar strong,
@@ -89,6 +105,7 @@
 }
 
 .btn-comecar strong {
+  color: var(--brand-bg);
   font-size: clamp(22px, 5.4vw, 28px);
   font-weight: 900;
   line-height: 1;
@@ -96,6 +113,7 @@
 }
 
 .btn-comecar span {
+  color: var(--brand-accent); /* Uso pontual do amarelo para destacar a instrução */
   font-size: clamp(10px, 2.45vw, 12px);
   font-weight: 800;
   line-height: 1.1;
@@ -110,7 +128,16 @@
   cursor: wait;
   opacity: 0.72;
   transform: none;
+  background: var(--brand-text); /* Botão cinza/preto quando desativado */
 }
+
+.btn-comecar:disabled span {
+  color: var(--brand-bg);
+}
+
+/* =========================================
+   MEDIA QUERIES 
+   ========================================= */
 
 @media (max-width: 360px) {
   .login-main {
@@ -144,18 +171,18 @@
     display: grid;
     place-items: center;
     padding: clamp(24px, 5vw, 48px);
-    background: var(--desktop-bg);
+    background: var(--brand-bg);
   }
 
   .login-main {
     width: min(100%, 760px);
     max-width: 760px;
     height: min(calc(100dvh - 48px), 920px);
-    background: var(--surface);
-    border: 1px solid var(--desktop-border);
+    background: var(--brand-bg);
+    border: 1px solid rgba(11, 107, 58, 0.1); /* Borda sutil verde escura */
     border-radius: 8px;
     padding: 42px clamp(28px, 4vw, 44px) 28px;
-    box-shadow: var(--shadow);
+    box-shadow: 0 10px 30px rgba(17, 17, 17, 0.08); /* Sombra elegante */
   }
 
   .video-card {
@@ -190,7 +217,7 @@
     font-size: clamp(32px, 3.4vw, 44px);
   }
 
-  .login-main > .logo-completa .logo-completa__flame {
+  .login-main > .logo-completa {
     width: clamp(35px, 3.6vw, 48px);
   }
 
@@ -210,7 +237,7 @@
 
   .btn-comecar:hover {
     transform: translateY(-1px);
-    box-shadow: 0 18px 34px rgba(255, 152, 0, 0.22);
+    box-shadow: 0 18px 34px rgba(22, 163, 74, 0.25); /* Sombra usando o verde principal */
   }
 }
 

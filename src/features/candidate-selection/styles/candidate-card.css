@@ -14,7 +14,6 @@
   width: 100%;
   background: #ffffff;
   
-  /* Força o card padrão a não ter borda visível */
   border: 2px solid transparent !important; 
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); 
   
@@ -29,7 +28,6 @@
   outline: none;
 }
 
-/* Efeito Tátil ao apertar o card */
 .prototype-candidate-card:active {
   transform: scale(0.98);
 }
@@ -40,7 +38,7 @@
   cursor: not-allowed;
 }
 
-/* 4. BORDA DE SELEÇÃO DINÂMICA */
+/* BORDA DE SELEÇÃO DINÂMICA */
 .prototype-candidate-card.is-selected.tone-good {
   border: 2px solid var(--card-green) !important;
   box-shadow: 0 4px 16px rgba(0, 184, 74, 0.12) !important;
@@ -57,8 +55,8 @@
 .candidate-card__header {
   display: flex;
   justify-content: space-between;
-  align-items: center; 
-  gap: 10px;
+  align-items: center; /* Alinha os itens pelo centro vertical */
+  gap: 12px;
   flex-wrap: nowrap; 
 }
 
@@ -104,12 +102,14 @@
    5 e 6. MICROINTERAÇÃO DO BOTÃO (APPLE-LIKE)
    ========================================================================== */
 .candidate-card__action-btn-icon {
-  position: relative;
-  top: -6px;
-  right: -4px;
-  width: 22px; /* Reduzido (antes era 32px) para diminuir o campo */
-  height: 22px; /* Reduzido (antes era 32px) */
-  border-radius: 18px; /* Levemente reduzido para acompanhar a nova proporção */
+  /* REPOSICIONAMENTO: Removidos position relative e tops. Agora ele obedece ao flexbox e fica alinhado com o nome */
+  position: static; 
+  align-self: center; /* Trava no centro vertical da div __header */
+  margin: 0; /* Remove margens indesejadas */
+  
+  width: 24px; /* Ajuste milimétrico para harmonizar com a tipografia */
+  height: 24px; 
+  border-radius: 50%; 
   border: 1.5px solid var(--card-gray-border);
   background: transparent;
   color: #9CA3AF;
@@ -124,20 +124,20 @@
 }
 
 .candidate-card__action-btn-icon.selected.tone-good {
-  background: var(--card-green-soft); /* Fundo verde claro */
-  border-color: var(--card-green);    /* Borda verde forte */
-  color: var(--card-green);           /* Ícone verde forte */
+  background: var(--card-green-soft);
+  border-color: var(--card-green);    
+  color: var(--card-green);           
 }
 
 .candidate-card__action-btn-icon.selected.tone-bad {
-  background: var(--card-red-soft);   /* Fundo vermelho claro */
-  border-color: var(--card-red);      /* Borda vermelha forte */
-  color: var(--card-red);             /* Ícone vermelho forte */
+  background: var(--card-red-soft);   
+  border-color: var(--card-red);      
+  color: var(--card-red);             
 }
 
 .icon-morph-svg {
-  width: 25px; /* Aumentado (antes era 18px) para o ícone preencher mais o botão */
-  height: 25px; /* Aumentado (antes era 18px) */
+  width: 14px; 
+  height: 14px; 
   overflow: visible;
 }
 .morph-h, .morph-v, .morph-check {
@@ -191,17 +191,18 @@
 }
 
 /* ==========================================================================
-   2. BARRA DE VIABILIDADE
+   2. BARRA DE VIABILIDADE (TERMÔMETRO)
    ========================================================================== */
 .candidate-card__viability-row {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  align-items: center; 
+  gap: 14px; 
 }
 
 .candidate-card__bar-container {
   flex: 1;
-  height: 10px; 
+  /* AJUSTE DO TERMÔMETRO: Reduzido de 16px para 12px (um visual muito mais equilibrado) */
+  height: 12px; 
   background: var(--card-gray-track);
   border-radius: 99px;
   position: relative;
@@ -217,26 +218,18 @@
 .tone-good .candidate-card__bar-fill { background: var(--card-green); }
 .tone-bad .candidate-card__bar-fill { background: var(--card-red); }
 
-.candidate-card__bar-tick {
-  position: absolute;
-  top: -1px;
-  bottom: -1px;
-  width: 3px; 
-  background: #ffffff;
-  z-index: 2;
-}
-.tick-1 { left: 25%; }
-.tick-2 { left: 50%; }
-.tick-3 { left: 75%; }
-
 .candidate-card__viability-percent {
   font-family: var(--font-family);
-  font-size: 14px; 
+  font-size: 16px; 
   font-weight: 800;
   color: #111111;
   min-width: 44px;
   text-align: right;
   line-height: 1;
+  display: flex;
+  align-items: center; 
+  justify-content: flex-end;
+  transform: none; 
   transition: color 0.3s ease;
 }
 
@@ -244,14 +237,14 @@
 .candidate-card__viability-percent.is-red { color: var(--card-red); }
 
 /* ==========================================================================
-   1 e 2 e 3. TAGS INFERIORES RESPONSIVAS E ALINHADAS
+   1 e 2 e 3. TAGS INFERIORES RESPONSIVAS E ACHATADAS
    ========================================================================== */
 .candidate-card__tags-row {
   display: flex;
   flex-direction: row; 
   gap: 10px; 
   flex-wrap: nowrap; 
-  margin-top: 6px; /* AQUI: Adicionado espaço extra entre a barra de viabilidade e as tags */
+  margin-top: 4px; 
 }
 
 .candidate-card__tag {
@@ -259,9 +252,16 @@
   display: flex;
   align-items: center; 
   justify-content: center;
-  gap: 8px; 
-  border-radius: 12px; 
-  padding: 8px 10px; /* AQUI: Altura (padding vertical) reduzida de 14px para 8px para achatar a tag */
+  gap: 6px; 
+  
+  /* FORÇA BRUTA NO ACHATAMENTO: Neutraliza o nv-touch e outros min-heights */
+  height: 26px !important; 
+  min-height: 26px !important; 
+  max-height: 26px !important;
+  padding: 0 10px !important; 
+  box-sizing: border-box !important;
+  
+  border-radius: 6px; 
   position: relative;
   min-width: 0; 
   white-space: nowrap; 
@@ -284,26 +284,27 @@
   display: flex;
   flex-direction: row; 
   align-items: center; 
-  gap: 4px; /* Espaço pequeno e simétrico entre as palavras */
+  justify-content: center;
+  gap: 4px; 
   white-space: nowrap;
 }
 
+/* ZERAR MARGINS E LINE-HEIGHT PARA NÃO ALONGAR A TAG */
 .tag-score-value,
 .tag-score-title,
 .tag-eval-text {
-  font-family: var(--font-family); /* Mesma fonte para todos */
-  font-size: 13px; /* Mesmo tamanho para todos */
+  font-family: var(--font-family); 
+  font-size: 13px; 
   font-weight: 600; 
-  line-height: 1;
-  opacity: 1; /* Removendo qualquer opacidade antiga */
-  margin: 0;
+  line-height: 1 !important; 
+  margin: 0 !important; 
+  padding: 0 !important;
+  display: block; /* Tira o texto do fluxo inline e estabiliza a altura */
 }
 .tag-score-value {
   font-weight: 700; 
 }
-.tag-eval-text {
-  margin-top: 1px; /* Alinhamento óptico minucioso com o ícone */
-}
+
 /* ==========================================================================
    ALERTA DE LOGIN & TOOLTIP
    ========================================================================== */
@@ -382,52 +383,31 @@
    ========================================================================== */
 @media (max-width: 420px) {
   .prototype-candidate-card {
-  padding: 12px 8px; /* Aumentado dos antigos 8px 6px */
-    gap: 6px;
+    padding: 12px 10px; 
+    gap: 10px;
   }
   
-  .candidate-card__name {
-    font-size: 12px;
-  }
-  
-  .candidate-card__party {
-    font-size: 12px;
-  }
+  .candidate-card__name { font-size: 14px; } /* Ajuste fino */
+  .candidate-card__party { font-size: 12px; }
 
   .candidate-card__action-btn-icon {
-    width: 28px;
-    height: 28px;
+    width: 20px; 
+    height: 20px;
   }
-  
-  .icon-morph-svg {
-    width: 16px;
-    height: 16px;
-  }
+  .icon-morph-svg { width: 12px; height: 12px; }
 
-  .candidate-card__tags-row {
-    gap: 8px;
-  }
+  .candidate-card__tags-row { gap: 8px; }
   
   .candidate-card__tag {
-    padding: 8px 6px;
+    height: 24px; /* Ainda mais achatado no mobile */
+    padding: 0 8px;
     gap: 4px;
   }
 
-  .tag-score-text-group {
-    gap: 3px; 
-  }
-
-  .tag-score-value {
-    font-size: 12px;
-  }
-
-  .tag-score-title {
-    font-size: 10px;
-  }
-
-  .tag-eval-text {
-    font-size: 11px;
-  }
+  .tag-score-text-group { gap: 3px; }
+  .tag-score-value { font-size: 12px; }
+  .tag-score-title { font-size: 11px; }
+  .tag-eval-text { font-size: 11px; }
 
   .candidate-card__viability-percent {
     font-size: 14px;

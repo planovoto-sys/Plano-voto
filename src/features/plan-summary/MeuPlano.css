@@ -1,1327 +1,332 @@
+/* ========================================================
+   NOVA PALETA E VARIÁVEIS DO MEU PLANO
+   ======================================================== */
 .my-plan-page {
-  background: var(--page-bg);
-  overflow-x: hidden;
-}
+  --brand-primary: #16A34A;
+  --brand-light: #8DC63F;
+  --brand-dark: #0B6B3A;
+  --brand-accent: #F7C600;
+  --brand-bg: #F5F5F5;
+  --brand-surface: #FFFFFF;
+  --brand-text: #111111;
+  --brand-muted: #737373;
+  --brand-border: #E5E5E5;
 
-.my-plan-header {
-  flex: 0 0 auto;
-  min-height: 64px;
-  border-bottom: 0;
-  background: var(--page-bg);
-  display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) 40px;
-  align-items: center;
-  gap: 0;
-  padding: 0 22px;
-}
-
-.my-plan-header__profile,
-.my-plan-header__logout {
-  border: 0;
-  background: transparent;
-  color: var(--text-strong);
-  font-family: var(--font-family);
-  cursor: pointer;
-}
-
-.my-plan-header__profile,
-.my-plan-header__logout {
-  width: 40px;
-  height: 40px;
-  min-width: 40px;
-  min-height: 40px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-}
-
-.my-plan-header__logout svg {
-  width: 20px;
-  height: 20px;
-}
-
-.my-plan-header__profile-wrap {
-  position: relative;
-  width: 40px;
-  height: 40px;
-  min-width: 40px;
-  justify-self: start;
-}
-
-.my-plan-header__profile {
-  overflow: visible;
-}
-
-.my-plan-header__profile-avatar {
-  width: 36px;
-  height: 36px;
-  border: 1px solid var(--line);
-  border-radius: 50%;
-  background: var(--soft);
-  color: var(--text-strong);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(17, 17, 17, 0.08);
-}
-
-.my-plan-header__profile-image {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-}
-
-.my-plan-header__profile-initial {
-  color: var(--text-strong);
-  font-family: var(--font-display);
-  font-size: 13px;
-  font-weight: 800;
-  line-height: 1;
-}
-
-.my-plan-header__profile-popover {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  z-index: 30;
-  width: min(246px, calc(100vw - 44px));
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--surface);
-  box-shadow: 0 16px 34px rgba(17, 17, 17, 0.14);
-  display: grid;
-  gap: 4px;
-  padding: 12px 14px;
-}
-
-.my-plan-header__profile-popover strong,
-.my-plan-header__profile-popover span {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.my-plan-header__profile-popover strong {
-  color: var(--text-strong);
-  font-family: var(--font-display);
-  font-size: 14px;
-  font-weight: 850;
-  line-height: 1.1;
-}
-
-.my-plan-header__profile-popover span {
-  color: var(--muted-soft);
-  font-size: 12px;
-  font-weight: 650;
-  line-height: 1.2;
-}
-
-.my-plan-header__logout svg {
-  stroke-width: 2.45;
-}
-
-.my-plan-header__title {
-  min-width: 0;
-  max-width: 100%;
-  overflow: visible;
-  color: var(--text-strong);
-  font-family: var(--font-family);
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 1.25;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  text-align: center;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.my-plan-header__flame {
-  width: 20px;
-  height: 20px;
-  flex: 0 0 20px;
-  object-fit: contain;
-}
-
-.my-plan-header__title span {
-  min-width: 0;
-  overflow: hidden;
-  line-height: 1.25;
-  text-overflow: ellipsis;
-}
-
-.my-plan-header__title em {
-  color: var(--muted-soft);
-  font-style: normal;
-}
-
-.my-plan-header__logout {
-  justify-self: end;
-}
-
-.my-plan-scroll {
-  background: var(--page-bg);
-  padding: 0 clamp(12px, 3.5vw, 18px) calc(var(--bottom-nav-height) + var(--app-safe-bottom) + 96px);
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scrollbar-width: none;
-}
-
-.my-plan-scroll::-webkit-scrollbar {
-  display: none;
-}
-
-.my-plan-shell {
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
-  align-content: stretch;
-  gap: 7px;
-  min-width: 0;
-  min-height: 0;
-  height: auto;
-  min-height: 100%;
-  width: 100%;
-  max-width: 720px;
-  margin: 0 auto;
-}
-
-.my-plan-profile {
-  min-width: 0;
-  min-height: 42px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--page-bg);
-  display: grid;
-  grid-template-columns: 34px minmax(0, 1fr);
-  align-items: center;
-  gap: 9px;
-  padding: 5px 9px;
-}
-
-.my-plan-profile__photo {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: var(--soft);
-  color: var(--text-strong);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  object-fit: cover;
-  font-family: var(--font-display);
-  font-size: 14px;
-  font-weight: 800;
-  line-height: 1;
-}
-
-.my-plan-profile__copy {
-  min-width: 0;
-  display: grid;
-  gap: 2px;
-}
-
-.my-plan-profile__copy strong,
-.my-plan-profile__copy span {
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.my-plan-profile__copy strong {
-  color: var(--text-strong);
-  font-family: var(--font-display);
-  font-size: 13px;
-  font-weight: 800;
-  line-height: 1;
-}
-
-.my-plan-profile__copy span {
-  color: var(--muted-soft);
-  font-size: 11px;
-  font-weight: 500;
-  line-height: 1.1;
+  background-color: var(--brand-bg);
+  color: var(--brand-text);
+  height: 100dvh;
+  height: var(--app-height, 100dvh);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Trava a rolagem na raiz para permitir a rolagem interna */
 }
 
 /* ========================================================
-   PADRONIZAÇÃO DO RESUMO (ESTADO, NOTA E VIABILIDADE)
+   CABEÇALHO
+   ======================================================== */
+.my-plan-header {
+  flex: 0 0 auto;
+  min-height: 70px;
+  background: var(--brand-surface);
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  align-items: center;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--brand-border);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+  z-index: 10;
+}
+
+/* 1. Correção: Limitando severamente o tamanho da logo */
+.my-plan-header .logo-completa {
+  justify-self: center;
+  width: clamp(100px, 30vw, 130px);
+  max-width: 100%;
+  height: auto;
+  margin: 0;
+  font-size: clamp(15px, 4vw, 18px); /* Caso a logo use em/font-size internamente */
+}
+
+.my-plan-header__btn {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--brand-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.my-plan-header__btn:active {
+  background: rgba(17, 17, 17, 0.05);
+}
+
+.my-plan-header__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--brand-primary);
+  object-fit: cover;
+  background: var(--brand-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--brand-primary);
+}
+
+/* ========================================================
+   CONTEÚDO PRINCIPAL (SCROLL E FOOTER)
+   ======================================================== */
+/* 2, 4 e 5. Correção: Flex flexível com altura mínima zero permite que a rolagem aconteça */
+.my-plan-scroll {
+  flex: 1 1 0; 
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  padding: 24px 16px calc(var(--app-safe-bottom) + 120px);
+}
+
+.my-plan-shell {
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ========================================================
+   QUADRO DE RESUMO (OVERVIEW) E ESTRELAS
    ======================================================== */
 .my-plan-overview {
-  --overview-green: #3f9d46;
-  --overview-green-soft: #e5f4e7;
-  --overview-line: rgba(17, 17, 17, 0.1);
-  
-  --tamanho-destaque: clamp(36px, 10vw, 52px);
-  --tamanho-base: clamp(13px, 2.5vw, 15px);
-  
-  --overview-stars-width: calc((var(--tamanho-base) * 5) + 12px);
-
-  min-width: 0;
-  border: 1px solid rgba(17, 17, 17, 0.08);
-  border-radius: 20px;
-  background: var(--surface);
-  display: grid;
-  gap: 0;
-  padding: clamp(13px, 3.6vw, 18px);
-  box-shadow: 0 11px 26px rgba(17, 17, 17, 0.07);
+  background: var(--brand-surface);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(17, 17, 17, 0.04);
+  border: 1px solid var(--brand-border);
 }
 
 .my-plan-overview__metrics {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  align-items: stretch;
-  min-width: 0;
-}
-
-.my-plan-overview__metric {
-  min-width: 0;
-  min-height: 78px;
-  display: grid;
-  align-content: center;
-  justify-items: center;
-  gap: 0; 
-  padding: 0 clamp(4px, 2.2vw, 12px);
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
   text-align: center;
 }
 
-.my-plan-overview__metric + .my-plan-overview__metric {
-  border-left: 1px solid var(--overview-line);
-}
-
-.my-plan-overview__metric-title {
-  max-width: 100%;
-  overflow: hidden;
-  color: var(--muted);
-  font-size: clamp(9px, 2.2vw, 11px);
-  font-weight: 650;
-  line-height: 1.15;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  margin-bottom: -2px; 
-}
-
-.my-plan-overview__state-code,
-.my-plan-overview__score,
-.viability-thermometer__title strong {
-  max-width: 100%;
-  overflow: hidden;
-  color: var(--text-strong);
-  font-family: var(--font-display);
-  font-size: var(--tamanho-destaque);
-  font-weight: 850;
-  line-height: 1;
-  letter-spacing: 0;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.my-plan-overview__score,
-.viability-thermometer__title strong {
-  color: var(--overview-green);
-}
-
-.my-plan-overview__state-name {
-  font-size: var(--tamanho-base);
-  font-weight: 650;
-  color: var(--muted);
-  line-height: 1;
+.my-plan-overview__metric {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: var(--tamanho-base); 
-  margin-top: 2px; 
-}
-
-.my-plan-overview__stars {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  width: var(--overview-stars-width);
-  max-width: 100%;
-  height: var(--tamanho-base);
-  margin-top: 2px; 
-}
-
-.my-plan-overview__star {
   position: relative;
-  height: 100%; 
-  width: auto;
-  aspect-ratio: 1; 
-  color: var(--overview-green);
 }
 
-.my-plan-overview__star svg {
+.my-plan-overview__metric:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: -6px;
+  top: 10%;
+  height: 80%;
+  width: 1px;
+  background: var(--brand-border);
+}
+
+.my-plan-overview__label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--brand-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.my-plan-overview__value {
+  font-size: clamp(24px, 8vw, 32px);
+  font-weight: 900;
+  color: var(--brand-text);
+  line-height: 1;
+}
+
+.my-plan-overview__value--green {
+  color: var(--brand-primary);
+}
+
+.my-plan-overview__sub {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--brand-muted);
+  margin-top: 4px;
+}
+
+/* 3. Correção: Estrelas funcionais e fracionadas */
+.my-plan-stars-container {
+  display: inline-flex;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.star-wrapper {
+  position: relative;
+  width: 14px;
+  height: 14px;
+}
+
+.star-bg {
   width: 100%;
   height: 100%;
-  display: block;
+  color: var(--brand-border); /* Fundo cinza para a estrela vazia */
   fill: currentColor;
-  stroke: currentColor;
-  stroke-width: 0;
 }
 
-.my-plan-overview__star-base {
-  color: var(--overview-green-soft);
-}
-
-.my-plan-overview__star-fill {
-  position: absolute;
-  inset: 0;
-  width: var(--star-fill);
-  display: block;
-  overflow: hidden;
-  color: var(--overview-green);
-}
-
-.my-plan-overview__metric--viability {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-}
-
-.viability-thermometer-container {
-  display: flex;
-  flex-direction: column;
-  gap: 0; 
-  width: var(--overview-stars-width);
-  max-width: 100%;
-  align-items: center;
-}
-
-.viability-thermometer__header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-}
-
-.viability-thermometer__title {
-  font-family: var(--font-family);
-  font-size: 0;
-  color: var(--text-main);
-  display: flex;
-  align-items: baseline;
-  gap: 0;
-}
-
-.viability-thermometer__track {
-  position: relative;
-  width: var(--overview-stars-width);
-  height: calc(var(--tamanho-base) * 0.8); 
-  background-color: #f0f2ef;
-  border-radius: 999px;
-  overflow: hidden;
-  margin-top: 2px; 
-}
-
-.viability-thermometer__fill {
+.star-fill-wrapper {
   position: absolute;
   top: 0;
   left: 0;
   height: 100%;
-  background: #90df72;
-  border-radius: 999px;
-  transition: width 0.8s cubic-bezier(0.2, 0.8, 0.18, 1);
-  will-change: width;
+  overflow: hidden;
+  color: var(--brand-accent); /* Amarelo apenas para o preenchimento da estrela */
 }
 
-.viability-thermometer__tick {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background: rgba(255, 255, 255, 0.8);
-  z-index: 2;
+.star-fg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
 }
 
-.viability-thermometer__tick--first { left: 25%; }
-.viability-thermometer__tick--second { left: 50%; }
-.viability-thermometer__tick--third { left: 75%; }
-
-/* ======================================================== */
-
-.my-plan-mobile-handoff {
-  display: none;
+/* Termômetro de Viabilidade */
+.my-plan-gauge {
+  width: 100%;
+  max-width: 80px;
+  height: 6px;
+  background: var(--brand-border);
+  border-radius: 4px;
+  margin-top: 8px;
+  overflow: hidden;
+  position: relative;
 }
 
+.my-plan-gauge__fill {
+  height: 100%;
+  background: var(--brand-primary);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+/* ========================================================
+   SESSÕES DE ESCOLHA E CARDS REAPROVEITADOS
+   ======================================================== */
 .my-plan-choices {
-  display: grid;
-  grid-template-rows: auto auto;
-  align-content: start;
-  gap: 6px;
-  min-width: 0;
-  min-height: 0;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
-.my-plan-choice-section {
-  align-content: start;
-  gap: 2px;
-  min-width: 0;
-  min-height: 0;
-  overflow: hidden;
-  padding-top: 0;
-}
-
-.my-plan-choice-section + .my-plan-choice-section {
-  padding-top: 8px;
-}
-
-.my-plan-choice-section .prototype-section-heading {
-  margin-bottom: 0;
-  line-height: 1;
-}
-
-.my-plan-choice-section .prototype-section-heading__copy {
-  margin-bottom: 8px;
-}
-
-.my-plan-choice-section .prototype-section-heading p {
-  margin-top: 2px;
+.my-plan-choice-section h2 {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--brand-text);
+  margin-bottom: 12px;
+  padding-left: 4px;
 }
 
 .my-plan-choice-list {
-  display: grid; /* ESSA É A MÁGICA: Sem isso, o gap abaixo era ignorado pelo CSS! */
-  grid-template-columns: minmax(0, 1fr);
-  min-width: 0;
-  min-height: 0;
-  overflow: hidden;
-  gap: 12px; /* Agora sim esse espaço entre os Senadores vai funcionar */
-  padding-top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
-/* ========================================================
-   REFATORAÇÃO: CARDS NA LISTAGEM MEU PLANO (COMPACTOS)
-   ======================================================== */
 
-/* 1. Ocultar o botão de seleção (inútil nesta tela) */
+.my-plan-choice-list .prototype-candidate-card {
+  background-color: var(--brand-surface) !important;
+  border: 1px solid var(--brand-border) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 4px 12px rgba(17, 17, 17, 0.03) !important;
+  padding: 14px 16px !important;
+}
+
+.my-plan-choice-list .candidate-card__action-btn,
 .my-plan-choice-list .candidate-card__action-btn-icon {
   display: none !important;
 }
 
-/* 2. Forçar layout compacto e prevenir barra de rolagem */
-.my-plan-choice-list .prototype-candidate-card {
-  min-height: auto !important;
-  padding: 10px 12px !important;
-  gap: 8px !important;
-  border-radius: 12px !important;
-  overflow: hidden; 
-}
-
-/* 3. Compactar Textos do Cabeçalho */
-.my-plan-choice-list .candidate-card__name {
-  font-size: 15px !important;
-}
-.my-plan-choice-list .candidate-card__party {
-  font-size: 11px !important;
-}
-.my-plan-choice-list .candidate-card__number {
-  font-size: 11px !important;
-  margin-bottom: 0 !important;
-}
-
-/* 4. Compactar Barra de Viabilidade */
-.my-plan-choice-list .candidate-card__viability-row {
-  gap: 8px !important;
-}
-.my-plan-choice-list .candidate-card__bar-container {
-  height: 8px !important;
-}
-.my-plan-choice-list .candidate-card__viability-percent {
-  font-size: 14px !important;
-  min-width: 36px !important;
-}
-
-/* 5. Compactar as Tags Inferiores */
-.my-plan-choice-list .candidate-card__tags-row {
-  gap: 6px !important;
-}
-.my-plan-choice-list .candidate-card__tag {
-  padding: 5px 6px !important;
-  border-radius: 8px !important;
-  gap: 4px !important;
-}
-.my-plan-choice-list .tag-score-value {
-  font-size: 14px !important;
-}
-.my-plan-choice-list .tag-score-title {
-  font-size: 10px !important;
-}
-.my-plan-choice-list .tag-eval-text {
-  font-size: 11px !important;
-}
-.my-plan-choice-list .tag-icon {
-  width: 14px !important;
-  height: 14px !important;
-  flex-shrink: 0 !important;
-}
-
-/* ======================================================== */
-
-.my-plan-empty-choice {
-  min-height: 94px;
-  border: 1px dashed rgba(17, 17, 17, 0.18);
-  border-radius: 8px;
-  background: var(--surface);
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  align-items: center;
-  gap: 10px;
-  padding: 14px 16px;
-}
-
-.my-plan-empty-choice div {
-  min-width: 0;
-  display: grid;
+/* ========================================================
+   ESTADOS VAZIOS E AÇÕES
+   ======================================================== */
+.my-plan-empty {
+  background: transparent;
+  border: 2px dashed var(--brand-border);
+  border-radius: 12px;
+  padding: 24px 16px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
   gap: 4px;
 }
 
-.my-plan-empty-choice strong {
-  color: var(--text-strong);
-  font-size: 16px;
-  font-weight: 900;
-  line-height: 1.1;
+.my-plan-empty strong {
+  font-size: 14px;
+  color: var(--brand-text);
 }
 
-.my-plan-empty-choice span {
-  color: var(--muted-soft);
+.my-plan-empty span {
   font-size: 12px;
-  font-weight: 650;
-  line-height: 1.25;
-}
-
-.my-plan-save-invite button,
-.my-plan-continue-button {
-  min-height: 40px;
-  border: 0;
-  border-radius: 999px;
-  background: var(--ink);
-  color: var(--surface);
-  padding: 0 14px;
-  font-family: var(--font-family);
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.my-plan-save-invite button,
-.my-plan-continue-button {
-  min-height: 48px;
+  color: var(--brand-muted);
 }
 
 .my-plan-actions {
-  position: static;
-  z-index: auto;
-  display: grid;
-  gap: 0;
-  min-height: 0;
-  margin-top: 0;
-  padding: 0;
-  background: transparent;
-  pointer-events: none;
+  margin-top: 16px;
 }
 
-.my-plan-actions > * {
-  pointer-events: auto;
-}
-
-.my-plan-save-invite,
-.my-plan-share-disabled,
-.my-plan-continue-button {
-  width: 100%;
-  max-width: 448px;
-  justify-self: center;
-  border: 0;
-  border-radius: 999px;
-  background: var(--action, var(--orange));
-  display: grid;
-  align-items: center;
-  justify-items: center;
-  gap: 4px;
-  min-height: 58px;
-  padding: 14px 24px;
-  box-shadow: var(--action-shadow);
-}
-
-.my-plan-share-disabled {
-  opacity: 0.5;
-}
-
-.my-plan-save-invite strong,
-.my-plan-share-disabled strong,
-.my-plan-continue-button strong {
-  color: var(--text);
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 1.25;
-  letter-spacing: 0;
-  text-transform: none;
-}
-
-.my-plan-save-invite span,
-.my-plan-share-disabled span {
-  color: rgba(0, 0, 15, 0.72);
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1.15;
+.my-plan-action-box {
+  background: var(--brand-surface);
+  border: 1px solid var(--brand-border);
+  border-radius: 16px;
+  padding: 16px;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.my-plan-save-invite {
-  min-height: 0;
-  border: 1px solid var(--line);
-  background: var(--surface);
-  align-items: initial;
-  justify-items: stretch;
-  gap: 8px;
-  padding: 12px;
-}
-
-.my-plan-save-invite strong {
-  color: var(--text-strong);
-  font-size: 15px;
-  letter-spacing: 0;
-  text-transform: none;
-}
-
-.my-plan-save-invite span {
-  color: var(--muted-soft);
-  font-size: 12px;
-  line-height: 1.3;
-  text-align: left;
-}
-
-.my-plan-share-panel:not(.my-plan-share-panel--fab) {
-  min-height: 0;
-  margin-top: 0;
-  border: 0;
-  border-radius: 14px;
-  background: transparent;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  padding: 0;
-}
-
-.my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__copy {
-  display: none;
-}
-
-.my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__button {
-  width: 100%;
-  max-width: 448px;
-  min-height: 58px;
-  justify-self: center;
-  border-radius: 999px;
-  background: var(--action, var(--orange));
-  color: var(--action-foreground, var(--text));
-  padding: 14px 24px;
-  box-shadow: var(--action-shadow); 
-  font-family: var(--font-family);
+.my-plan-action-box strong {
   font-size: 16px;
-  font-weight: 600;
-  line-height: 1.25;
-  letter-spacing: 0;
-  text-transform: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
+  color: var(--brand-dark);
+}
+
+.my-plan-action-box span {
+  font-size: 13px;
+  color: var(--brand-muted);
+}
+
+.my-plan-btn-primary {
+  background: var(--brand-primary);
+  color: var(--brand-surface);
+  border: 0;
+  border-radius: 99px;
+  padding: 14px 24px;
+  font-size: 15px;
+  font-weight: 800;
   cursor: pointer;
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease;
+  transition: transform 0.1s, background 0.2s;
 }
 
-.my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__button:not(:disabled):hover {
-  background: var(--orange-dark, #e66000);
-}
-
-.my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__button:not(:disabled):active {
-  transform: scale(0.92); 
-}
-
-.my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__button svg {
-  display: block;
-  width: 22px;
-  height: 22px;
-  stroke-width: 2.2;
-}
-
-.my-plan-footer {
-  margin-top: clamp(90px, 12vw, 148px);
+.my-plan-btn-primary:active {
+  transform: scale(0.98);
+  background: var(--brand-dark);
 }
 
 /* ========================================================
-   MEDIA QUERIES 
+   MEDIA QUERIES DESKTOP
    ======================================================== */
-@media (max-width: 399px) {
-  .my-plan-overview {
-    --tamanho-destaque: 37px;
-  }
-
-  .my-plan-header {
-    grid-template-columns: 40px minmax(0, 1fr) 40px;
-    min-height: 58px;
-    padding-inline: 16px;
-  }
-
-  .my-plan-header__profile,
-  .my-plan-header__logout,
-  .my-plan-header__profile-wrap {
-    width: 36px;
-    height: 36px;
-    min-width: 36px;
-    min-height: 36px;
-  }
-
-  .my-plan-header__profile-avatar {
-    width: 32px;
-    height: 32px;
-  }
-
-  .my-plan-scroll {
-    padding: 0 10px calc(var(--bottom-nav-height) + var(--app-safe-bottom) + 144px);
-  }
-
-  .my-plan-shell {
-    gap: 5px;
-  }
-
-  .my-plan-overview {
-    border-radius: 13px;
-    padding: 12px 14px 13px;
-    box-shadow: 0 8px 22px rgba(17, 17, 17, 0.06);
-  }
-
-  .my-plan-overview__metric {
-    min-height: 58px;
-    gap: 0; 
-    padding-inline: 4px;
-  }
-
-  .my-plan-overview__metric-title {
-    font-size: 10.5px;
-    line-height: 1.05;
-  }
-
-  .my-plan-choices {
-    gap: 4px;
-  }
-
-  .my-plan-choice-section + .my-plan-choice-section {
-    padding-top: 5px;
-  }
-
-  .my-plan-choice-section .prototype-section-heading__copy {
-    margin-bottom: 5px;
-  }
-
-  .my-plan-choice-list .prototype-candidate-card {
-    padding: 7px 9px !important;
-    gap: 5px !important;
-  }
-
-  .my-plan-choice-list .candidate-card__name {
-    font-size: 13.5px !important;
-  }
-
-  .my-plan-choice-list .candidate-card__party,
-  .my-plan-choice-list .candidate-card__number {
-    font-size: 9.5px !important;
-  }
-
-  .my-plan-choice-list .candidate-card__viability-row {
-    gap: 5px !important;
-  }
-
-  .my-plan-choice-list .candidate-card__bar-container {
-    height: 7px !important;
-  }
-
-  .my-plan-choice-list .candidate-card__viability-percent {
-    font-size: 12px !important;
-    min-width: 30px !important;
-  }
-
-  .my-plan-choice-list .candidate-card__tags-row {
-    gap: 4px !important;
-  }
-
-  .my-plan-choice-list .candidate-card__tag {
-    padding: 4px 4px !important;
-    gap: 3px !important;
-  }
-
-  .my-plan-choice-list .tag-score-value {
-    font-size: 11px !important;
-  }
-
-  .my-plan-choice-list .tag-score-title,
-  .my-plan-choice-list .tag-eval-text {
-    font-size: 9px !important;
-  }
-
-  .my-plan-actions {
-    padding-bottom: 6px;
-  }
-
-  .my-plan-share-disabled strong {
-    font-size: 18px;
-  }
-
-  .my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__button {
-    font-size: 16px;
-  }
-
-  .my-plan-empty-choice {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-@media (max-width: 743px) and (max-height: 780px) {
-  .my-plan-overview {
-    --tamanho-destaque: 35px;
-  }
-
-  .my-plan-shell {
-    gap: 4px;
-  }
-
-  .my-plan-overview {
-    padding: 10px 12px 11px;
-  }
-
-  .my-plan-overview__metric {
-    min-height: 56px;
-  }
-
-  .my-plan-choices {
-    gap: 4px;
-  }
-
-  .my-plan-choice-section + .my-plan-choice-section {
-    padding-top: 4px;
-  }
-
-  .my-plan-choice-section .prototype-section-heading__copy {
-    margin-bottom: 4px;
-  }
-
-  .my-plan-choice-list {
-    gap: 8px;
-  }
-
-  .my-plan-scroll {
-    padding-bottom: calc(var(--bottom-nav-height) + var(--app-safe-bottom) + 152px);
-  }
-
-  .my-plan-actions {
-    align-self: end;
-    padding-top: 2px;
-  }
-
-  .my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__button,
-  .my-plan-continue-button {
-    min-height: 52px;
-  }
-}
-
-@media (min-width: 744px) and (max-width: 1023px) {
-  .my-plan-scroll {
-    padding: 0 var(--screen-gutter) 24px;
-    overflow-y: auto;
-  }
-
-  .my-plan-shell {
-    width: min(100%, 860px);
-    max-width: none;
-    height: auto;
-    gap: 14px;
-  }
-
-  .my-plan-overview {
-    border-radius: 22px;
-    padding: 26px;
-  }
-
-  .my-plan-overview__metric {
-    min-height: 132px;
-  }
-}
-
 @media (min-width: 768px) {
-  .my-plan-overview {
-    --tamanho-destaque: 62px;
-    --tamanho-base: 18px;
-  }
-
-  .my-plan-page {
-    background: var(--desktop-bg);
-  }
-
-  .my-plan-header {
-    min-height: 74px;
-    padding: 0 var(--screen-gutter);
-  }
-
-  .my-plan-scroll {
-    padding: 0 var(--screen-gutter) 24px;
-    overflow-y: auto;
-  }
-
-  .my-plan-shell {
-    max-width: 960px;
-    height: auto;
-    gap: 14px;
-  }
-
-  .my-plan-profile {
-    min-height: 54px;
-    grid-template-columns: 42px minmax(0, 1fr);
-    gap: 12px;
-    padding: 6px 12px;
-  }
-
-  .my-plan-profile__photo {
-    width: 42px;
-    height: 42px;
-    font-size: 16px;
-  }
-
-  .my-plan-profile__copy strong {
-    font-size: 16px;
-  }
-
-  .my-plan-profile__copy span {
-    font-size: 13px;
-  }
-
-  .my-plan-overview {
-    border-radius: 22px;
-    padding: 28px;
-  }
-
-  .my-plan-overview__metric {
-    min-height: 148px;
-    gap: 2px; 
-  }
-
-  .my-plan-choices {
-    gap: 14px;
-  }
-
-  .my-plan-actions {
-    max-width: 720px;
-    width: 100%;
-    justify-self: center;
-  }
-
-  .my-plan-share-disabled {
-    min-height: 70px;
-  }
-
-  .my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__button {
-    min-height: 58px;
-  }
-
-  .my-plan-share-disabled strong {
-    font-size: 18px;
-  }
-
-  .my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__button {
-    font-size: 16px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .my-plan-scroll {
-    padding: 0 clamp(44px, 6vw, 86px) 28px;
-  }
-
-  .my-plan-shell {
-    width: min(100%, 1160px);
-    max-width: none;
-    height: auto;
-    min-height: calc(var(--app-height) - 74px - 86px);
-    grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
-    grid-template-rows: auto minmax(0, 1fr) auto;
-    grid-template-areas:
-      "overview handoff"
-      "choices handoff"
-      "actions handoff";
-    align-items: start;
-    gap: 16px clamp(24px, 3vw, 36px);
-  }
-
-  .my-plan-overview {
-    grid-area: overview;
-    padding: 30px clamp(28px, 3vw, 42px);
-  }
-
-  .my-plan-choices {
-    grid-area: choices;
-    gap: 10px;
-    overflow: visible;
-  }
-
-  .my-plan-choice-section {
-    gap: 4px;
-    overflow: visible;
-  }
-
-  .my-plan-choice-section + .my-plan-choice-section {
-    padding-top: 4px;
-  }
-
-  .my-plan-choice-section .prototype-section-heading__copy {
-    margin-bottom: 6px;
-  }
-
-  .my-plan-choice-list {
-    gap: 14px; /* Gap generoso para o Desktop */
-    overflow: visible;
-  }
-
-  .my-plan-actions {
-    position: static;
-    grid-area: actions;
-    width: 100%;
-    max-width: none;
-    justify-self: stretch;
-    margin-top: 6px;
-    pointer-events: auto;
-  }
-
-  .my-plan-actions > *:not(.my-plan-share-panel--fab) {
-    width: min(100%, 520px);
-    justify-self: start;
-  }
-
-  .my-plan-mobile-handoff {
-    grid-area: handoff;
-    position: sticky;
-    top: 24px;
-    min-width: 0;
-    border: 1px solid var(--desktop-border);
-    border-radius: 8px;
-    background: var(--surface);
-    display: grid;
-    gap: 16px;
-    padding: 22px;
-    box-shadow: 0 16px 42px rgba(17, 17, 17, 0.06);
-  }
-
-  .my-plan-mobile-handoff__copy {
-    display: grid;
-    gap: 9px;
-    min-width: 0;
-  }
-
-  .my-plan-mobile-handoff__copy > span {
-    width: fit-content;
-    border: 1px solid rgba(255, 139, 73, 0.25);
-    border-radius: 999px;
-    background: var(--orange-soft);
-    color: var(--orange-dark);
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 7px 11px;
-    font-size: 11px;
-    font-weight: 950;
-    line-height: 1;
-    text-transform: uppercase;
-  }
-
-  .my-plan-mobile-handoff__copy svg,
-  .my-plan-mobile-handoff__actions svg {
-    width: 16px;
-    height: 16px;
-    flex: 0 0 16px;
-  }
-
-  .my-plan-mobile-handoff h2 {
-    margin: 0;
-    color: var(--text-strong);
-    font-size: clamp(27px, 2.5vw, 36px);
-    font-weight: 950;
-    line-height: 1.02;
-  }
-
-  .my-plan-mobile-handoff p {
-    margin: 0;
-    color: var(--muted-soft);
-    font-size: 14px;
-    font-weight: 650;
-    line-height: 1.45;
-  }
-
-  .my-plan-mobile-handoff__qr {
-    aspect-ratio: 1;
-    width: min(100%, 230px);
-    justify-self: center;
-    border: 1px solid rgba(17, 17, 17, 0.08);
-    border-radius: 8px;
-    background: linear-gradient(180deg, #ffffff 0%, #fffaf5 100%);
-    display: grid;
-    place-items: center;
-    padding: 16px;
-  }
-
-  .my-plan-mobile-handoff__qr img {
-    width: 100%;
-    height: 100%;
-    display: block;
-    object-fit: contain;
-  }
-
-  .my-plan-mobile-handoff__qr > svg {
-    width: 96px;
-    height: 96px;
-    color: rgba(17, 17, 17, 0.24);
-    stroke-width: 1.8;
-  }
-
-  .my-plan-mobile-handoff__actions {
-    display: grid;
-    gap: 9px;
-  }
-
-  .my-plan-mobile-handoff__primary,
-  .my-plan-mobile-handoff__secondary {
-    min-height: 46px;
-    border-radius: 999px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 0 18px;
-    font-family: var(--font-family);
-    font-size: 13px;
-    font-weight: 900;
-    line-height: 1;
-    cursor: pointer;
-  }
-
-  .my-plan-mobile-handoff__primary {
-    border: 0;
-    background: linear-gradient(90deg, #ffd565 0%, var(--orange) 100%);
-    color: var(--text);
-    box-shadow: 0 10px 22px rgba(255, 152, 0, 0.18);
-  }
-
-  .my-plan-mobile-handoff__primary:disabled {
-    cursor: wait;
-    opacity: 0.68;
-  }
-
-  .my-plan-mobile-handoff__secondary {
-    border: 1px solid var(--ink);
-    background: var(--surface);
-    color: var(--text-strong);
-  }
-
-  .my-plan-mobile-handoff__status {
-    border-top: 1px solid rgba(17, 17, 17, 0.08);
-    padding-top: 14px;
-    font-size: 12px !important;
-    line-height: 1.35 !important;
-  }
-}
-
-@media (min-width: 1280px) {
-  .my-plan-shell {
-    width: min(100%, 1220px);
-    grid-template-columns: minmax(0, 1fr) minmax(340px, 400px);
-  }
-}
-
-@media (orientation: landscape) and (max-width: 1100px) and (max-height: 480px) {
-  .my-plan-overview {
-    --tamanho-destaque: 30px;
-    --tamanho-base: 11px;
-  }
-
-  .my-plan-header {
-    min-height: 52px;
-    padding-inline: var(--screen-gutter);
-  }
-
-  .my-plan-header__profile,
-  .my-plan-header__logout,
-  .my-plan-header__profile-wrap {
-    width: 36px;
-    height: 36px;
-    min-width: 36px;
-    min-height: 36px;
-  }
-
-  .my-plan-header__profile-avatar {
-    width: 32px;
-    height: 32px;
-  }
-
-  .my-plan-scroll {
-    padding: 0 var(--screen-gutter) 10px;
-    overflow-y: auto;
-  }
-
-  .my-plan-shell {
-    width: min(100%, 760px);
-    max-width: none;
-    height: auto;
-    min-height: 100%;
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto auto auto;
-    grid-template-areas: none;
-    gap: 8px;
-  }
-
-  .my-plan-overview {
-    grid-area: auto;
-    border-radius: 14px;
-    padding: 10px 12px;
-  }
-
-  .my-plan-overview__metric {
-    min-height: 58px;
-  }
-
-  .my-plan-overview__state-code,
-  .my-plan-overview__score {
-    font-size: 30px;
-  }
-
-  .my-plan-choices {
-    grid-area: auto;
-    gap: 6px;
-  }
-
-  .my-plan-choice-list {
-    gap: 8px;
-  }
-
-  .my-plan-actions {
-    grid-area: auto;
-    position: static;
-    width: 100%;
-    max-width: none;
-  }
-
-  .my-plan-share-panel:not(.my-plan-share-panel--fab) .share-choice-panel__button,
-  .my-plan-continue-button {
-    min-height: 48px;
-    max-width: 430px;
-  }
+  .my-plan-scroll { padding: 40px 16px; }
+  .my-plan-shell { max-width: 800px; gap: 32px; }
+  .my-plan-overview { padding: 32px; border-radius: 24px; }
+  .my-plan-overview__label { font-size: 13px; }
+  .my-plan-overview__value { font-size: 42px; }
+  .my-plan-choice-list { grid-template-columns: 1fr 1fr; display: grid; }
 }

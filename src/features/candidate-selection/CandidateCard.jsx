@@ -74,7 +74,6 @@ export default function CandidateCard({
     onLockedMetricClick?.();
   };
 
-  // Função para lidar com o clique no card inteiro
   const handleCardClick = (e) => {
     if (disabled || isBlocked) return;
     onSelect?.(e);
@@ -124,9 +123,7 @@ export default function CandidateCard({
       <div className="candidate-card__viability-row" onClick={lockPersonalizedFields ? handleLockedFieldClick : undefined}>
         <div className="candidate-card__bar-container">
           <div className="candidate-card__bar-fill" style={{ width: `${chance}%` }}></div>
-          <div className="candidate-card__bar-tick tick-1"></div>
-          <div className="candidate-card__bar-tick tick-2"></div>
-          <div className="candidate-card__bar-tick tick-3"></div>
+          {/* Ticks removidos para uma barra contínua e mais limpa */}
         </div>
         <span className={`candidate-card__viability-percent ${selected ? (isWellEvaluated ? 'is-green' : 'is-red') : ''}`}>
           {lockPersonalizedFields ? '--' : Math.round(chance)}%

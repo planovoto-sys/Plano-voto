@@ -474,7 +474,7 @@ export default function SelectBase({
           {/* TÍTULO DEPUTADOS/SENADORES */}
           <div className="prototype-section-heading">
             <h2>{headingTitle}</h2>
-            <p>Selecione os candidatos que aceite votar</p>
+            <p>Selecione todos os candidatos que você consideraria votar</p>
           </div>
 
           {dados.length > 0 ? (

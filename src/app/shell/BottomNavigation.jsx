@@ -13,8 +13,9 @@ import {
 import './BottomNavigation.css';
 
 const NAV_ICON_STROKE_WIDTH = 2;
-const ACTIVE_COLOR = 'var(--bottom-nav-active, #22a65a)';
-const INACTIVE_COLOR = 'var(--bottom-nav-inactive, #7a7f87)';
+/* Cores sincronizadas com a nova paleta do Liquid Glass */
+const ACTIVE_COLOR = 'var(--bottom-nav-active, #16A34A)';
+const INACTIVE_COLOR = 'var(--bottom-nav-inactive, #6B7280)';
 
 function StateIcon({ className = '', strokeWidth = NAV_ICON_STROKE_WIDTH }) {
   return (
@@ -62,13 +63,12 @@ function SenatorIcon({ className = '', strokeWidth = NAV_ICON_STROKE_WIDTH }) {
   );
 }
 
-function ResultIcon({ className = '', strokeWidth = NAV_ICON_STROKE_WIDTH }) {
+/* NOVO ÍCONE: Resumo (Círculos em Interseção) */
+function SummaryIcon({ className = '', strokeWidth = NAV_ICON_STROKE_WIDTH }) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
-      <rect x="5" y="8" width="3.1" height="10.8" rx="1.2" fill="none" stroke="currentColor" strokeWidth={strokeWidth} />
-      <rect x="10.4" y="4.8" width="3.1" height="14" rx="1.2" fill="none" stroke="currentColor" strokeWidth={strokeWidth} />
-      <rect x="15.8" y="11" width="3.1" height="7.8" rx="1.2" fill="none" stroke="currentColor" strokeWidth={strokeWidth} />
-      <circle cx="20.4" cy="18.8" r="1.05" fill="currentColor" />
+      <circle cx="8.5" cy="12" r="6.5" fill="none" stroke="currentColor" strokeWidth={strokeWidth} />
+      <circle cx="15.5" cy="12" r="6.5" fill="none" stroke="currentColor" strokeWidth={strokeWidth} />
     </svg>
   );
 }
@@ -77,7 +77,8 @@ const STEPS = [
   { id: 'estado', label: 'Estado', path: BALLOT_ROUTES.estado, Icon: StateIcon },
   { id: 'deputado', label: 'Deputados', path: BALLOT_ROUTES.deputadoFederal, Icon: DeputyIcon },
   { id: 'senador', label: 'Senadores', path: BALLOT_ROUTES.senadores, Icon: SenatorIcon },
-  { id: 'resultado', label: 'Resultado', path: BALLOT_ROUTES.meuPlano, Icon: ResultIcon }
+  /* Atualizado Label para Resumo e Icon para SummaryIcon */
+  { id: 'resultado', label: 'Resumo', path: BALLOT_ROUTES.meuPlano, Icon: SummaryIcon }
 ];
 
 const STEP_BY_PATH = {

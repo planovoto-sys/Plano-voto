@@ -7,6 +7,8 @@ import { useUser } from '@/shared/hooks/useUser';
 import { auth, firebaseReady, googleProvider } from '@/shared/firebase/firebase';
 import { mergeVisitorBallotDraftIntoAccount } from '@/features/ballot';
 import { flowError, flowLog } from '@/shared/utils/debugFlow';
+
+// Importando os novos estilos refatorados
 import './Login.css';
 
 function Login() {
@@ -41,12 +43,14 @@ function Login() {
       setLoginSubmitting(true);
       flowLog('login.google.start');
       const result = await signInWithPopup(auth, googleProvider);
+      
       try {
         await mergeVisitorBallotDraftIntoAccount(result.user?.uid);
       } catch (mergeError) {
         flowError('login.visitor-draft.merge-error', mergeError);
         showLoginNotice('Login feito, mas o rascunho local não foi salvo agora.');
       }
+      
       flowLog('login.google.success', { userId: result.user?.uid });
       navigate(returnTo, { replace: true, state: { bypassVoteRedirect: true } });
     } catch (error) {
@@ -64,17 +68,28 @@ function Login() {
   return (
     <div className="login-wrapper nv-screen">
       <FlowToast key={loginNotice?.id || 'login-toast'} message={loginNotice?.message || ''} />
+      
       <main className="login-main nv-container-narrow">
         <LogoCompleta as="h1" />
 
-        <div className="video-card">
-          <button className="play-button nv-touch" type="button" aria-label="Reproduzir vídeo" onClick={() => showLoginNotice('Vídeo em breve.')}>
+        <section className="video-card" aria-label="Apresentação em vídeo">
+          <button 
+            className="play-button nv-touch" 
+            type="button" 
+            aria-label="Reproduzir vídeo" 
+            onClick={() => showLoginNotice('Vídeo em breve.')}
+          >
             <div className="play-icon"></div>
           </button>
-        </div>
+        </section>
 
-        <button className="btn-comecar nv-touch" type="button" onClick={handleGoogleLogin} disabled={loginSubmitting}>
-          <strong>{loginSubmitting ? 'ENTRANDO' : 'COMEÇAR'}</strong>
+        <button 
+          className="btn-comecar nv-touch" 
+          type="button" 
+          onClick={handleGoogleLogin} 
+          disabled={loginSubmitting}
+        >
+          <strong>{loginSubmitting ? 'ENTRANDO...' : 'COMEÇAR'}</strong>
           <span>Assista ao vídeo antes de começar</span>
         </button>
       </main>
