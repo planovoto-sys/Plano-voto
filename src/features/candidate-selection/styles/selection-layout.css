@@ -72,13 +72,12 @@
 .step-header__filter-wrapper {
   position: relative;
   transition: width 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
-  width: 38px; /* Reduzido de 44px para 38px */
+  width: 38px;
   opacity: 1;
-  overflow: hidden;
+  overflow: visible; 
   display: flex;
   justify-content: center;
 }
-
 .step-header__icon-btn {
   background: transparent;
   border: none;
