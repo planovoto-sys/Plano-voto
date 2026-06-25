@@ -109,11 +109,7 @@ function Login() {
 
         <div className="video-card-container">
           <div className="video-wrapper">
-            <img 
-              src="/caminho-para-sua-imagem.png" 
-              alt="Diagrama de intersecção" 
-              className="venn-diagram-image" 
-            />
+           
             {/* O botão foi inserido DENTRO do wrapper branco para garantir o alinhamento de 50% matematicamente perfeito */}
             <button 
               className="btn-play-video" 
