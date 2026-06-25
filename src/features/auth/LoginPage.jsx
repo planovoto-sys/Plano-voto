@@ -9,7 +9,7 @@ import { auth, firebaseReady, googleProvider } from '@/shared/firebase/firebase'
 import { mergeVisitorBallotDraftIntoAccount } from '@/features/ballot';
 import { flowError, flowLog } from '@/shared/utils/debugFlow';
 
-import './login.css';
+import './Login.css';
 
 // Ícone do botão play travado para não distorcer
 const PlayIcon = () => (
