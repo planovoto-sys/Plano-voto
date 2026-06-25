@@ -1,249 +1,266 @@
-.login-wrapper {
-  /* NOVA PALETA DE CORES */
-  --brand-primary: #16A34A;
-  --brand-light: #8DC63F;
-  --brand-dark: #0B6B3A;
-  --brand-accent: #F7C600;
-  --brand-bg: #F5F5F5;
-  --brand-text: #111111;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Merriweather:wght@700&display=swap');
 
+:root {
+  --color-bg: #FFFFFF;
+  --color-primary: #259841; 
+  --color-title: #1B7A2D; 
+  --color-subtitle: #000000;
+  --color-text-gray: #4A554D; 
+  --color-video-bg: #E4EFE7; 
+  --color-play-btn: #063C1B; 
+  
+  --font-main: 'Inter', -apple-system, sans-serif;
+  --font-serif: 'Merriweather', serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* 1. TRAVA ABSOLUTA DE ROLAGEM */
+html, body {
   width: 100%;
-  height: var(--app-height);
-  min-height: 100dvh;
+  height: 100%;
+  background-color: var(--color-bg);
+  font-family: var(--font-main);
+  overflow: hidden; 
+  touch-action: none; 
+}
+
+/* 2. WRAPPER PRINCIPAL RESPONSIVO */
+.login-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh; 
+  padding: clamp(16px, 3vh, 24px) 24px;
+  max-width: 480px; 
+  margin: 0 auto;
+  position: relative;
+  background-color: var(--color-bg);
   overflow: hidden;
-  background: var(--brand-bg);
-  color: var(--brand-text);
+}
+
+.bg-blobs {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.blob {
+  position: absolute;
+  background-color: rgba(37, 152, 65, 0.06); 
+  border-radius: 50%;
+}
+.blob-1 { width: 320px; height: 320px; top: 30%; left: -160px; }
+.blob-2 { width: 380px; height: 380px; bottom: 0%; right: -150px; }
+
+/* 3. DISTRIBUIÇÃO INTELIGENTE DE ESPAÇO */
+.login-header, .login-footer {
+  flex-shrink: 0; 
+  position: relative;
+  z-index: 2;
+}
+
+.login-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: clamp(16px, 2vh, 32px);
 }
 
 .login-main {
+  flex: 1; 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around; 
   width: 100%;
-  max-width: min(100%, 498px);
-  height: 100%;
-  min-height: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
-  align-items: stretch;
-  gap: clamp(18px, 3.6vh, 36px);
-  padding: calc(var(--app-safe-top) + clamp(34px, 6vh, 54px)) 18px calc(var(--app-safe-bottom) + clamp(14px, 2.5vh, 28px));
+  position: relative;
+  z-index: 2;
 }
 
-.video-card {
+/* =========================================
+   TEXTOS COM TAMANHO DINÂMICO (CLAMP)
+   ========================================= */
+.title-section {
+  text-align: center;
+  position: relative;
+  display: inline-block; 
+  padding: 8px 16px;
+  flex-shrink: 0;
+}
+
+.title-bg-lines {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(6px, 1.5vh, 10px);
+  z-index: -1;
+}
+
+.title-bg-line {
+  height: clamp(6px, 1vh, 8px); 
+  background-color: #F2F4F2; 
+  border-radius: 4px;
+}
+.line-1 { width: 88%; margin: 0 auto; transform: translateX(-4%); }
+.line-2 { width: 100%; margin: 0 auto; transform: translateX(2%); }
+.line-3 { width: 85%; margin: 0 auto; transform: translateX(5%); }
+
+.title-primary {
+  font-family: var(--font-serif);
+  font-size: clamp(22px, 6vw, 26px);
+  font-weight: 700;
+  color: var(--color-title);
+  margin-bottom: 4px;
+  letter-spacing: -0.2px;
+}
+
+.title-secondary {
+  font-family: var(--font-serif);
+  font-size: clamp(20px, 5.5vw, 24px);
+  font-weight: 700;
+  color: var(--color-subtitle);
+}
+
+.stats-section {
   width: 100%;
-  height: 100%;
-  min-height: 0;
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stats-box {
+  text-align: left; 
+  background-color: #F7F9F7; 
+  padding: clamp(12px, 2vh, 16px) clamp(16px, 4vw, 24px);
+  border-radius: 8px;
+  display: inline-block; 
   max-width: 100%;
-  aspect-ratio: auto;
-  justify-self: stretch;
-  border-radius: 10px;
-  border: 0;
-  background-color: #bbbbbb71;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
 }
 
-.play-button {
-  width: clamp(150px, 40vw, 198px);
-  height: clamp(150px, 40vw, 198px);
-  border: 0;
-  border-radius: 50%;
-  background: var(--brand-primary);
+.stats-intro, .stats-list {
+  font-size: clamp(12px, 3.5vw, 14px);
+  color: var(--color-text-gray);
+}
+.stats-intro { margin-bottom: 8px; }
+.stats-list { line-height: 1.6; font-weight: 400; list-style: none; }
+
+/* =========================================
+   CARD DO VÍDEO (CORRIGIDO O CORTE DO BOTÃO)
+   ========================================= */
+.video-card-container {
+  width: 100%;
+  background-color: var(--color-video-bg);
+  border-radius: 12px;
+  padding: clamp(10px, 2vh, 14px); 
+  padding-bottom: clamp(32px, 5vh, 40px); 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.video-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9; 
+  max-height: 25vh; 
+  background-color: #FFFFFF;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* OVERFLOW HIDDEN REMOVIDO PARA LIBERAR O BOTÃO! */
+}
+
+.venn-diagram-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  border-radius: 8px; /* Mantém as bordas do vídeo redondinhas */
+  font-size: 0;
+  color: transparent; 
+}
+
+.btn-play-video {
+  background-color: var(--color-play-btn);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 50px;
+  padding: clamp(10px, 2vh, 12px) clamp(16px, 4vw, 24px);
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
+  font-size: clamp(12px, 3.5vw, 14px);
+  font-weight: 600;
+  font-family: var(--font-main);
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translate(-50%, 50%); 
+  
+  box-shadow: 0px 6px 16px rgba(6, 60, 27, 0.25);
+  white-space: nowrap; 
+  z-index: 10; /* Garante que ele fique acima de tudo */
 }
 
-@media (hover: hover) {
-  .play-button:hover {
-    background: var(--brand-light);
-  }
+.btn-play-video:active {
+  transform: translate(-50%, calc(50% + 2px)); 
+  background-color: #03210e;
 }
 
-.play-button:active {
-  transform: scale(0.98);
-  background: var(--brand-dark);
-}
-
-.play-icon {
-  width: 0;
-  height: 0;
-  border-top: clamp(35px, 9.2vw, 46px) solid transparent;
-  border-bottom: clamp(35px, 9.2vw, 46px) solid transparent;
-  border-left: clamp(60px, 16vw, 80px) solid var(--brand-bg);
-  margin-left: clamp(10px, 2.8vw, 14px);
+/* =========================================
+   RODAPÉ
+   ========================================= */
+.login-footer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: clamp(8px, 1vh, 16px);
+  gap: clamp(16px, 3vh, 24px);
 }
 
 .btn-comecar {
   width: 100%;
-  min-height: clamp(78px, 9vh, 88px);
-  border: 0;
-  border-radius: 20px;
-  background: linear-gradient(90deg, var(--brand-primary) 0%, var(--brand-dark) 100%);
-  font-family: var(--font-family);
-  display: grid;
-  place-items: center;
-  align-content: center;
-  gap: 3px;
+  height: clamp(48px, 7vh, 56px);
+  background-color: var(--color-primary);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 28px; 
+  font-size: clamp(15px, 4vw, 17px);
+  font-weight: 600;
+  font-family: var(--font-main);
   cursor: pointer;
-  transition: transform 160ms ease, opacity 0.2s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.btn-comecar strong,
-.btn-comecar span {
-  display: block;
-  max-width: 100%;
-  overflow: visible;
-  text-align: center;
-  text-overflow: clip;
-  white-space: normal;
-  overflow-wrap: anywhere;
+.pagination-dots {
+  display: flex;
+  gap: 8px;
+  padding-bottom: 8px; 
 }
 
-.btn-comecar strong {
-  color: var(--brand-bg);
-  font-size: clamp(22px, 5.4vw, 28px);
-  font-weight: 900;
-  line-height: 1;
-  letter-spacing: 1.6px;
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #D6D6D6;
 }
 
-.btn-comecar span {
-  color: var(--brand-accent); /* Uso pontual do amarelo para destacar a instrução */
-  font-size: clamp(10px, 2.45vw, 12px);
-  font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: 0;
-}
-
-.btn-comecar:active {
-  transform: scale(0.99);
-}
-
-.btn-comecar:disabled {
-  cursor: wait;
-  opacity: 0.72;
-  transform: none;
-  background: var(--brand-text); /* Botão cinza/preto quando desativado */
-}
-
-.btn-comecar:disabled span {
-  color: var(--brand-bg);
-}
-
-/* =========================================
-   MEDIA QUERIES 
-   ========================================= */
-
-@media (max-width: 360px) {
-  .login-main {
-    gap: 16px;
-    padding: calc(var(--app-safe-top) + 28px) 14px calc(var(--app-safe-bottom) + 12px);
-  }
-
-  .btn-comecar {
-    min-height: 74px;
-    border-radius: 18px;
-  }
-}
-
-@media (max-width: 320px) {
-  .login-main {
-    gap: 12px;
-    padding: calc(var(--app-safe-top) + 20px) 10px calc(var(--app-safe-bottom) + 10px);
-  }
-
-  .btn-comecar {
-    min-height: 68px;
-  }
-
-  .btn-comecar strong {
-    font-size: 19px;
-  }
-}
-
-@media (min-width: 768px) {
-  .login-wrapper {
-    display: grid;
-    place-items: center;
-    padding: clamp(24px, 5vw, 48px);
-    background: var(--brand-bg);
-  }
-
-  .login-main {
-    width: min(100%, 760px);
-    max-width: 760px;
-    height: min(calc(100dvh - 48px), 920px);
-    background: var(--brand-bg);
-    border: 1px solid rgba(11, 107, 58, 0.1); /* Borda sutil verde escura */
-    border-radius: 8px;
-    padding: 42px clamp(28px, 4vw, 44px) 28px;
-    box-shadow: 0 10px 30px rgba(17, 17, 17, 0.08); /* Sombra elegante */
-  }
-
-  .video-card {
-    min-height: 430px;
-    aspect-ratio: 16 / 11;
-  }
-
-  .btn-comecar {
-    min-height: 92px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .login-main {
-    width: min(100%, 1120px);
-    max-width: 1120px;
-    height: min(calc(100dvh - 64px), 720px);
-    min-height: 620px;
-    display: grid;
-    grid-template-columns: minmax(280px, 0.75fr) minmax(0, 1.25fr);
-    grid-template-rows: auto minmax(0, 1fr);
-    align-items: stretch;
-    gap: 24px;
-    padding: clamp(30px, 4vw, 44px);
-  }
-
-  .login-main > .logo-completa {
-    grid-column: 1;
-    grid-row: 1;
-    align-self: start;
-    justify-content: flex-start;
-    font-size: clamp(32px, 3.4vw, 44px);
-  }
-
-  .login-main > .logo-completa {
-    width: clamp(35px, 3.6vw, 48px);
-  }
-
-  .video-card {
-    grid-column: 2;
-    grid-row: 1 / 3;
-    min-height: 0;
-  }
-
-  .btn-comecar {
-    grid-column: 1;
-    grid-row: 2;
-    align-self: end;
-    min-height: 118px;
-    transition: transform 160ms ease, box-shadow 160ms ease;
-  }
-
-  .btn-comecar:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 18px 34px rgba(22, 163, 74, 0.25); /* Sombra usando o verde principal */
-  }
-}
-
-@media (min-width: 1536px) {
-  .login-main {
-    width: min(100%, 1240px);
-    max-width: 1240px;
-  }
+.dot.active {
+  background-color: var(--color-primary);
 }
