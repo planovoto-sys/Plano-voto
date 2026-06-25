@@ -90,7 +90,7 @@ body.hide-bottom-nav nav {
 .share-trigger-fab {
   position: fixed;
   right: 20px;
-  bottom: calc(var(--bottom-nav-height, 70px) + 20px);
+  bottom: calc(var(--bottom-nav-height, 70px) + 52px);
   z-index: 40;
   width: 56px;
   height: 56px;

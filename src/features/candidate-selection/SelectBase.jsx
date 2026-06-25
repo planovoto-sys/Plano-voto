@@ -19,6 +19,7 @@ import {
   getSubNavLabel,
   haveSameSelectionIds
 } from './selectBaseViewModel';
+import LogoCompleta from '@/shared/ui/brand/LogoCompleta';
 import './SelectBase.css';
 
 export default function SelectBase({
@@ -59,7 +60,6 @@ export default function SelectBase({
   const isSenateOffice = variant === 'office-senado';
   const candidateCardMode = isCandidateOffice ? 'detailed' : 'compact';
   
-  // Determina o Passo Atual
   const stepNumber = isSenateOffice ? 3 : isDeputyOffice ? 2 : 1;
 
   const [selecionados, setSelecionados] = useState(selecaoInicial);
@@ -82,14 +82,12 @@ export default function SelectBase({
   const [modalCampoBloqueado, setModalCampoBloqueado] = useState(false);
   const [salvandoSelecao, setSalvandoSelecao] = useState(false);
 
-  // Focus na busca ao ativar
   useEffect(() => {
     if (isSearchActive && candidateSearchInputRef.current) {
       candidateSearchInputRef.current.focus();
     }
   }, [isSearchActive]);
 
-  // Fechar busca com tecla ESC
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === 'Escape') {
@@ -150,8 +148,6 @@ export default function SelectBase({
   ), [selecionados]);
   
   const showSavedSenateSharePanel = isSenateOffice && senateChoicesSaved && hasRequiredSelection && Boolean(shareData);
-  
-  // HABILITA O BOTÃO DE CONTINUAR/AVANÇAR PARA AS TELAS DE CANDIDATOS
   const shouldRenderContinue = hasAnySelection && !isHomeState;
   const shouldShowContinue = shouldRenderContinue && continueVisible;
   const shouldShowDesktopContinue = shouldRenderContinue;
@@ -432,9 +428,8 @@ export default function SelectBase({
     return (
       <div className="state-selection-flow nv-container">
         <section className="state-selection-panel" aria-label="Estados">
-          
-          {/* TÍTULO ESTADO */}
           <div className="prototype-section-heading">
+            <span className="step-indicator">Passo {stepNumber} de 3</span>
             <h2>Estado</h2>
             <p>Selecione seu estado</p>
           </div>
@@ -470,11 +465,10 @@ export default function SelectBase({
     return (
       <div className={`candidate-flow nv-container ${isSenateOffice ? 'candidate-flow--senate' : 'candidate-flow--single'}`} id="tour-lista">
         <section className="candidate-list-section">
-          
-          {/* TÍTULO DEPUTADOS/SENADORES */}
           <div className="prototype-section-heading">
+            <span className="step-indicator">Passo {stepNumber} de 3</span>
             <h2>{headingTitle}</h2>
-            <p>Selecione todos os candidatos que você consideraria votar</p>
+            <p>Selecione seus candidatos — todos que aceite votar</p>
           </div>
 
           {dados.length > 0 ? (
@@ -527,7 +521,6 @@ export default function SelectBase({
         disabled={salvandoSelecao}
         aria-label="Avançar para a próxima etapa"
       >
-        
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <line x1="5" y1="12" x2="19" y2="12"></line>
           <polyline points="12 5 19 12 12 19"></polyline>
@@ -543,91 +536,96 @@ export default function SelectBase({
   return (
     <div className={`select-base-container prototype-page nv-screen variant-${variant}`}>
       
-      {/* NOVO HEADER (COM PASSOS, BUSCA E FILTRO INTEGRADOS) */}
+      {/* NOVO HEADER: FLEXBOX E BUSCA ANIMADA PERFEITA */}
       <header className={`step-header ${isSearchActive ? 'is-searching' : ''}`}>
         
-        {/* MODO NORMAL: Título e Ícones */}
-        <div className="step-header__default">
-          <div className="step-header__title-group">
-            <h1 className="step-header__title">Passo {stepNumber} de 3</h1>
-          </div>
-
-          <div className="step-header__actions">
-            {candidateFilterItems.length > 0 && (
-              <div className="step-header__filter-wrapper" ref={candidateFilterRef}>
-                <button 
-                  className={`step-header__icon-btn nv-touch ${candidateFilterOpen ? 'is-active' : ''}`} 
-                  onClick={() => setCandidateFilterOpen(!candidateFilterOpen)}
-                  aria-expanded={candidateFilterOpen}
-                  aria-label="Filtrar"
-                >
-                  <FilterIcon />
-                  {activeCandidateFilterItem && activeCandidateFilterItem.id !== 'todos' && (
-                    <span className="step-header__filter-badge" />
-                  )}
-                </button>
-
-                {candidateFilterOpen && (
-                  <div className="step-header__filter-dropdown" role="menu" aria-label="Filtro de candidatos">
-                    {candidateFilterItems.map((item) => {
-                      const isActive = isCandidateFilterActive(item);
-                      return (
-                        <button
-                          key={item.id}
-                          className={`step-header__filter-option ${isActive ? 'is-active' : ''}`}
-                          type="button"
-                          role="menuitemradio"
-                          aria-checked={isActive}
-                          onClick={async () => {
-                            await handleSubNavigation(item);
-                            setCandidateFilterOpen(false);
-                          }}
-                        >
-                          <span className="step-header__filter-check" aria-hidden="true">
-                            {isActive && <CheckIcon />}
-                          </span>
-                          <span>{item.shortLabel}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {mostrarBusca && (
-              <button className="step-header__icon-btn nv-touch" onClick={() => setIsSearchActive(true)} aria-label="Buscar">
-                <SearchIcon />
-              </button>
-            )}
-          </div>
+        <div className="step-header__brand">
+          <LogoCompleta />
         </div>
 
-        {/* MODO BUSCA: Campo de texto e Voltar */}
-        <div className="step-header__search-mode">
-         
-          <input
-            ref={candidateSearchInputRef}
-            type="search"
-            className="step-header__search-input"
-            value={valorBusca}
-            onChange={handleSearchChange}
-            placeholder="Pesquisar"
-          />
-          <button 
-            className="step-header__icon-btn nv-touch" 
-            onClick={() => { 
-              setIsSearchActive(false); 
-              if (onChangeBusca) onChangeBusca(''); 
-            }}
-            aria-label="Fechar busca"
-          >
-            {/* Ícone de Fechar embutido em SVG puro para evitar erros de importação */}
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
+        <div className="step-header__actions">
+          {candidateFilterItems.length > 0 && (
+            <div className="step-header__filter-wrapper" ref={candidateFilterRef}>
+              <button 
+                className={`step-header__icon-btn nv-touch ${candidateFilterOpen ? 'is-active' : ''}`} 
+                onClick={() => setCandidateFilterOpen(!candidateFilterOpen)}
+                aria-expanded={candidateFilterOpen}
+                aria-label="Filtrar"
+              >
+                <FilterIcon />
+                {activeCandidateFilterItem && activeCandidateFilterItem.id !== 'todos' && (
+                  <span className="step-header__filter-badge" />
+                )}
+              </button>
+
+              {candidateFilterOpen && (
+                <div className="step-header__filter-dropdown" role="menu" aria-label="Filtro de candidatos">
+                  {candidateFilterItems.map((item) => {
+                    const isActive = isCandidateFilterActive(item);
+                    return (
+                      <button
+                        key={item.id}
+                        className={`step-header__filter-option ${isActive ? 'is-active' : ''}`}
+                        type="button"
+                        role="menuitemradio"
+                        aria-checked={isActive}
+                        onClick={async () => {
+                          await handleSubNavigation(item);
+                          setCandidateFilterOpen(false);
+                        }}
+                      >
+                        <span className="step-header__filter-check" aria-hidden="true">
+                          {isActive && <CheckIcon />}
+                        </span>
+                        <span>{item.shortLabel}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {mostrarBusca && (
+            <div className="step-header__search-wrapper">
+              <button
+                className="step-header__search-trigger nv-touch"
+                onClick={() => {
+                  if (!isSearchActive) setIsSearchActive(true);
+                }}
+                aria-label="Buscar"
+              >
+                <SearchIcon />
+              </button>
+              
+              <input
+                ref={candidateSearchInputRef}
+                type="search"
+                className="step-header__search-input"
+                value={valorBusca}
+                onChange={handleSearchChange}
+                placeholder="Pesquisar..."
+                tabIndex={isSearchActive ? 0 : -1}
+              />
+              
+              {isSearchActive && (
+                <button 
+                  className="step-header__search-close nv-touch" 
+                  onClick={(e) => { 
+                    e.stopPropagation();
+                    setIsSearchActive(false); 
+                    if (onChangeBusca) onChangeBusca(''); 
+                  }}
+                  aria-label="Fechar busca"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </header>
 
@@ -649,7 +647,7 @@ export default function SelectBase({
 
       <BottomNavigation currentStep={currentStep} placement="footer" />
 
-      {/* MODAIS */}
+      {/* MODAIS (Omitidos p/ simplificar, mas são os mesmos do código original) */}
       <ConfirmModal
         isOpen={modalMalAvaliado.aberto}
         titulo="ATENÇÃO!"
@@ -671,7 +669,6 @@ export default function SelectBase({
           efetivarSelecao(itemToSelect);
         }}
       />
-
       <ConfirmModal
         isOpen={modalAltaChance.aberto}
         titulo="ATENÇÃO!"
@@ -693,29 +690,22 @@ export default function SelectBase({
           setModalAltaChance({ aberto: false, item: null });
         }}
       />
-
       <ConfirmModal
         isOpen={modalCandidatoRepetido.aberto}
         titulo="CANDIDATO JÁ ESCOLHIDO"
         mensagem="Esse candidato já foi escolhido em outra etapa. Escolha um nome diferente para continuar."
         textoConfirmar="ESCOLHER OUTRO"
         mostrarCancelar={false}
-        onConfirm={() => {
-          setModalCandidatoRepetido({ aberto: false, item: null });
-        }}
+        onConfirm={() => setModalCandidatoRepetido({ aberto: false, item: null })}
       />
-
       <ConfirmModal
         isOpen={modalLimiteSelecao.aberto}
         titulo="LIMITE ATINGIDO"
         mensagem={isSenateOffice ? 'Você já escolheu 2 senadores. Remova um candidato em Meus candidatos para selecionar outro.' : 'Remova a escolha atual para selecionar outro candidato.'}
         textoConfirmar="OK, ENTENDI"
         mostrarCancelar={false}
-        onConfirm={() => {
-          setModalLimiteSelecao({ aberto: false });
-        }}
+        onConfirm={() => setModalLimiteSelecao({ aberto: false })}
       />
-
       <ConfirmModal
         isOpen={modalSubstituirSenador.aberto}
         titulo="SUBSTITUIR SENADOR"
@@ -732,7 +722,6 @@ export default function SelectBase({
           </button>
         </div>
       </ConfirmModal>
-
       <ConfirmModal
         isOpen={modalErroSalvar.aberto}
         titulo="NÃO FOI POSSÍVEL SALVAR"
@@ -741,7 +730,6 @@ export default function SelectBase({
         mostrarCancelar={false}
         onConfirm={() => setModalErroSalvar({ aberto: false, mensagem: '' })}
       />
-
       <ConfirmModal
         isOpen={modalCampoBloqueado}
         titulo="Recurso disponível com login"
