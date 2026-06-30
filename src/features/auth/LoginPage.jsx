@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { signInWithPopup } from 'firebase/auth';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 
 import FlowToast from '@/shared/ui/feedback/FlowToast';
 import LogoCompleta from '@/shared/ui/brand/LogoCompleta';
@@ -14,7 +14,7 @@ import './Login.css';
 // Ícone do botão play travado para não distorcer
 const PlayIcon = () => (
   <svg width="12" height="14" viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
-    <path d="M13.238 7.15174C13.918 7.53322 13.918 8.46678 13.238 8.84826L1.87913 15.2201C1.21319 15.5937 0.389648 15.1129 0.389648 14.3718L0.389649 1.62817C0.389649 0.88714 1.21319 0.406263 1.87913 0.779895L13.238 7.15174Z" fill="white"/>
+    <path d="M13.238 7.15174C13.918 7.53322 13.918 8.46678 13.238 8.84826L1.87913 15.2201C1.21319 15.5937 0.389648 15.1129 0.389648 14.3718L0.389649 1.62817C0.389649 0.88714 1.21319 0.406263 1.87913 0.779895L13.238 7.15174Z" fill="white" />
   </svg>
 );
 
@@ -49,14 +49,14 @@ function Login() {
       setLoginSubmitting(true);
       flowLog('login.google.start');
       const result = await signInWithPopup(auth, googleProvider);
-      
+
       try {
         await mergeVisitorBallotDraftIntoAccount(result.user?.uid);
       } catch (mergeError) {
         flowError('login.visitor-draft.merge-error', mergeError);
         showLoginNotice('Login feito, mas o rascunho local não foi salvo agora.');
       }
-      
+
       flowLog('login.google.success', { userId: result.user?.uid });
       navigate(returnTo, { replace: true, state: { bypassVoteRedirect: true } });
     } catch (error) {
@@ -73,25 +73,18 @@ function Login() {
 
   return (
     <div className="login-wrapper">
-      <div className="bg-blobs">
-        <div className="blob blob-1"></div>
-        <div className="blob blob-2"></div>
-      </div>
-
+    
       <FlowToast key={loginNotice?.id || 'login-toast'} message={loginNotice?.message || ''} />
 
       <header className="login-header">
-        <LogoCompleta as="div" />
+        <div className="logo-login">
+        <img src="public\icone-com-nome.svg" alt="" />
+        </div>
       </header>
 
       <main className="login-main">
-        
         <div className="title-section">
-          <div className="title-bg-lines">
-            <div className="title-bg-line line-1"></div>
-            <div className="title-bg-line line-2"></div>
-            <div className="title-bg-line line-3"></div>
-          </div>
+        
           <h1 className="title-primary">Você é bom de voto?</h1>
           <h2 className="title-secondary">Tem certeza?</h2>
         </div>
@@ -109,10 +102,8 @@ function Login() {
 
         <div className="video-card-container">
           <div className="video-wrapper">
-           
-            {/* O botão foi inserido DENTRO do wrapper branco para garantir o alinhamento de 50% matematicamente perfeito */}
-            <button 
-              className="btn-play-video" 
+            <button
+              className="btn-play-video"
               type="button"
               onClick={() => showLoginNotice('Vídeo em breve.')}
             >
@@ -124,11 +115,11 @@ function Login() {
 
       </main>
 
-      <footer className="login-footer">
-        <button 
-          className="btn-comecar" 
-          type="button" 
-          onClick={handleGoogleLogin} 
+<footer className="login-footer">
+        <button
+          className="btn-comecar"
+          type="button"
+          onClick={handleGoogleLogin}
           disabled={loginSubmitting}
         >
           {loginSubmitting ? 'Entrando...' : 'Começar'}
@@ -141,6 +132,16 @@ function Login() {
           <span className="dot"></span>
           <span className="dot"></span>
         </div>
+
+        {/* --- NOVOS LINKS LEGAIS AQUI --- */}
+        <div className="login-legal-links">
+          <Link to="/termos-de-uso">Termos de uso</Link>
+          <span className="separator">&bull;</span>
+          <Link to="/politica-de-privacidade">Privacidade</Link>
+          <span className="separator">&bull;</span>
+          <Link to="/cookies">Cookies</Link>
+        </div>
+
       </footer>
     </div>
   );

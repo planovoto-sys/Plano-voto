@@ -21,10 +21,10 @@
   --app-safe-top: env(safe-area-inset-top, 0px);
   --app-safe-bottom: env(safe-area-inset-bottom, 0px);
   --app-header-height: 56px;
-  
+
   /* ALTURA DA BARRA REDUZIDA AQUI */
-  --app-bottom-nav-height: 52px; 
-  
+  --app-bottom-nav-height: 52px;
+
   --app-gutter: clamp(14px, 4vw, 20px);
   --app-radius-card: 16px;
   --app-radius-modal: 22px;
@@ -44,11 +44,7 @@
   --ink: #171717;
   --ink-soft: #737373;
   --ink-soft-bg: #eeeeee;
-  --orange: #ff9800;
-  --orange-dark: #bd6400;
-  --orange-soft: #fff4e0;
-  --orange-line: #ffca8a;
-  --action: #ff9800;
+
   --action-foreground: #00000f;
   --action-shadow: 0 18px 30px rgba(255, 152, 0, 0.28);
   --action-shadow-strong: 0 20px 34px rgba(255, 152, 0, 0.36);
@@ -70,7 +66,6 @@
   --text-muted: rgba(17, 17, 17, 0.68);
   --tone-success: #72d552;
   --tone-success-bg: #f1ffef;
-  --tone-danger: #ff575f;
   --tone-danger-bg: #fff0f0;
   --tone-neutral: #a9a9a9;
   --bottom-nav-height: var(--app-bottom-nav-height);
@@ -125,7 +120,7 @@ body {
   min-height: 0;
   overflow: hidden;
   background: var(--page-bg);
-  box-shadow: 0 0 0 1px rgba(17, 17, 17, 0.12);
+
 }
 
 .sr-only {
@@ -170,7 +165,7 @@ body {
   padding-bottom: calc(var(--bottom-nav-height) + var(--app-safe-bottom) + 16px);
 }
 
-.prototype-page > .app-page-header {
+.prototype-page>.app-page-header {
   flex: 0 0 auto;
   position: relative;
   min-height: 56px;
@@ -311,7 +306,7 @@ body {
 .app-header-action--secondary {
   background: var(--soft);
   color: var(--text-main);
-  box-shadow: inset 0 0 0 1px var(--line);
+
 }
 
 .app-header-icon-action {
@@ -365,7 +360,7 @@ body {
   display: none;
 }
 
-.prototype-page > .app-page-header h1 {
+.prototype-page>.app-page-header h1 {
   margin: 0;
   color: var(--text-main);
   font-family: var(--font-family);
@@ -380,7 +375,7 @@ body {
   white-space: nowrap;
 }
 
-.prototype-page > .app-page-header p {
+.prototype-page>.app-page-header p {
   display: none;
 }
 
@@ -435,9 +430,6 @@ body {
 
 .loading-intro__ring {
   border: 2px solid rgba(74, 74, 74, 0.18);
-  box-shadow:
-    inset 0 0 34px rgba(255, 255, 255, 0.72),
-    0 0 40px rgba(74, 74, 74, 0.08);
   animation: loadingPulse 1400ms ease-in-out infinite;
 }
 
@@ -510,8 +502,7 @@ body {
 .loading-intro__flame-fill .loading-intro__flame {
   inset: auto 0 0;
   filter:
-    drop-shadow(0 7px 14px rgba(255, 122, 53, 0.28))
-    saturate(1.12);
+    drop-shadow(0 7px 14px rgba(255, 122, 53, 0.28)) saturate(1.12);
 }
 
 .loading-intro__caption {
@@ -556,6 +547,7 @@ body {
 }
 
 @keyframes loadingPulse {
+
   0%,
   100% {
     transform: scale(0.98);
@@ -569,6 +561,7 @@ body {
 }
 
 @keyframes loadingSweep {
+
   0%,
   100% {
     transform: translateX(-36%);
@@ -580,6 +573,7 @@ body {
 }
 
 @keyframes loadingInnerSweep {
+
   0%,
   100% {
     transform: translateX(-42%) skewX(-12deg);
@@ -591,6 +585,7 @@ body {
 }
 
 @keyframes loadingFlamePulse {
+
   0%,
   100% {
     transform: scale(0.96);
@@ -644,6 +639,7 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
@@ -758,14 +754,14 @@ body {
     --app-gutter: 18px;
   }
 
-  .prototype-page > .app-page-header {
+  .prototype-page>.app-page-header {
     min-height: 56px;
     grid-template-columns: minmax(40px, 1fr) minmax(0, max-content) minmax(40px, 1fr);
     gap: 6px;
     padding: 0 var(--screen-gutter);
   }
 
-  .prototype-page > .app-page-header h1 {
+  .prototype-page>.app-page-header h1 {
     font-size: 19px;
   }
 
@@ -804,14 +800,14 @@ body {
     --app-gutter: 14px;
   }
 
-  .prototype-page > .app-page-header {
+  .prototype-page>.app-page-header {
     min-height: 56px;
     grid-template-columns: minmax(40px, 1fr) minmax(0, max-content) minmax(40px, 1fr);
     gap: 6px;
     padding: 0 var(--screen-gutter);
   }
 
-  .prototype-page > .app-page-header h1 {
+  .prototype-page>.app-page-header h1 {
     font-size: 18.5px;
   }
 
@@ -856,7 +852,7 @@ body {
     --app-gutter: 10px;
   }
 
-  .prototype-page > .app-page-header h1 {
+  .prototype-page>.app-page-header h1 {
     font-size: 17.5px;
   }
 
@@ -887,7 +883,7 @@ body {
 }
 
 @media (min-width: 421px) and (max-width: 479px) {
-  .prototype-page > .app-page-header h1 {
+  .prototype-page>.app-page-header h1 {
     font-size: 19px;
   }
 }
@@ -935,19 +931,19 @@ body {
   :root {
     --app-gutter: clamp(12px, 2.8vw, 22px);
     --app-header-height: 52px;
-    
+
     /* ALTURA DA BARRA REDUZIDA NO MODO PAISAGEM */
     --app-bottom-nav-height: 52px;
     --bottom-nav-height: 52px;
   }
 
-  .prototype-page > .app-page-header {
+  .prototype-page>.app-page-header {
     min-height: var(--app-header-height);
     padding-top: 0;
     padding-bottom: 0;
   }
 
-  .prototype-page > .app-page-header h1 {
+  .prototype-page>.app-page-header h1 {
     font-size: 17px;
   }
 
@@ -959,10 +955,10 @@ body {
 @media (min-width: 768px) {
   :root {
     --app-width: 100%;
-    
+
     /* ALTURA DA BARRA REDUZIDA EM TABLETS */
     --app-bottom-nav-height: 52px;
-    
+
     --app-gutter: clamp(28px, 4vw, 64px);
   }
 
@@ -988,7 +984,7 @@ body {
     background: var(--desktop-bg);
   }
 
-  .prototype-page > .app-page-header {
+  .prototype-page>.app-page-header {
     position: relative;
     z-index: 20;
     min-height: auto;
@@ -1005,14 +1001,14 @@ body {
     text-align: center;
   }
 
-  .prototype-page > .app-page-header h1 {
+  .prototype-page>.app-page-header h1 {
     color: var(--text-main);
     font-size: 16px;
     font-weight: 600;
     letter-spacing: 0;
   }
 
-  .prototype-page > .app-page-header p {
+  .prototype-page>.app-page-header p {
     display: none;
   }
 
@@ -1107,13 +1103,13 @@ body {
     --app-gutter: clamp(36px, 4vw, 72px);
   }
 
-  .prototype-page > .app-page-header {
+  .prototype-page>.app-page-header {
     grid-template-columns: auto minmax(160px, 220px) minmax(170px, max-content) minmax(0, 1fr) auto;
     min-height: 62px;
     padding-top: 10px;
     padding-bottom: 10px;
     gap: 12px;
-    box-shadow: 0 1px 0 rgba(17, 17, 17, 0.02), 0 12px 28px rgba(17, 17, 17, 0.04);
+
   }
 
   .app-page-header__brand {
@@ -1208,7 +1204,7 @@ body {
     content: none;
   }
 
-  .prototype-page > .app-page-header h1 {
+  .prototype-page>.app-page-header h1 {
     font-size: 16px;
     font-weight: 600;
     letter-spacing: 0;
@@ -1216,7 +1212,7 @@ body {
 }
 
 @media (min-width: 1024px) and (max-width: 1279px) {
-  .prototype-page > .app-page-header {
+  .prototype-page>.app-page-header {
     gap: 10px;
     padding-left: clamp(24px, 3vw, 40px);
     padding-right: clamp(24px, 3vw, 40px);
@@ -1240,7 +1236,7 @@ body {
     max-width: min(100%, 260px);
   }
 
-  .prototype-page > .app-page-header h1 {
+  .prototype-page>.app-page-header h1 {
     font-size: 16px;
     font-weight: 600;
     letter-spacing: 0;
@@ -1255,14 +1251,14 @@ body {
 }
 
 @media (min-width: 1180px) {
-  .prototype-page > .app-page-header {
+  .prototype-page>.app-page-header {
     padding-left: clamp(40px, 4.5vw, 64px);
     padding-right: clamp(40px, 4.5vw, 64px);
   }
 }
 
 @media (min-width: 1280px) {
-  .prototype-page > .app-page-header {
+  .prototype-page>.app-page-header {
     grid-template-columns: auto minmax(178px, 240px) minmax(220px, max-content) minmax(0, 1fr) auto;
     gap: 14px;
   }
@@ -1295,7 +1291,7 @@ body {
 }
 
 @media (min-width: 1280px) and (max-width: 1439px) {
-  .prototype-page > .app-page-header {
+  .prototype-page>.app-page-header {
     gap: 10px;
     padding-left: clamp(36px, 4vw, 56px);
     padding-right: clamp(36px, 4vw, 56px);
@@ -1328,7 +1324,7 @@ body {
     --app-width: 100%;
     --app-gutter: clamp(12px, 2.8vw, 22px);
     --app-header-height: 52px;
-    
+
     /* ALTURA DA BARRA REDUZIDA AQUI TAMBÉM */
     --app-bottom-nav-height: 52px;
     --bottom-nav-height: 52px;
@@ -1346,7 +1342,63 @@ body {
     min-height: 0;
   }
 
-  .prototype-page > .app-page-header {
+  /* Container principal do ícone */
+  .loading-intro__mark {
+    position: relative;
+    display: inline-block;
+    width: 82px;
+    height: 82px;
+  }
+
+  /* Ícone de fundo (Base) - Fica mais clarinho */
+  .loading-intro__flame--base {
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0.2;
+    /* Deixa o ícone de fundo transparente */
+  }
+
+  /* Container do ícone que vai "encher" */
+  .loading-intro__flame-fill {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 0%;
+    /* Começa vazio */
+    overflow: hidden;
+    /* Esconde a parte do ícone que vaza */
+    animation: fillUp 2s ease-in-out infinite;
+    /* Chama a animação */
+  }
+
+  /* Ícone de preenchimento (Fill) - Tem que ficar alinhado no fundo */
+  .loading-intro__flame--fill {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 82px;
+    /* Mantém o tamanho original para não achatar */
+  }
+
+  /* Animação que faz a altura crescer e diminuir */
+  @keyframes fillUp {
+    0% {
+      height: 0%;
+    }
+
+    50% {
+      height: 100%;
+    }
+
+    /* Enche tudo na metade do tempo */
+    100% {
+      height: 0%;
+    }
+  }
+
+  .prototype-page>.app-page-header {
     min-height: var(--app-header-height);
     grid-template-columns: minmax(40px, 1fr) minmax(0, max-content) minmax(40px, 1fr);
     gap: 8px;
@@ -1379,7 +1431,7 @@ body {
     justify-self: start;
   }
 
-  .prototype-page > .app-page-header h1 {
+  .prototype-page>.app-page-header h1 {
     font-size: 17px;
   }
 

@@ -4,7 +4,6 @@ import ConfirmModal from '@/shared/ui/feedback/ConfirmModal';
 import AppFooter from '@/shared/ui/layout/AppFooter';
 import BottomNavigation from '@/app/shell/BottomNavigation';
 import { BackIcon, CheckIcon, FilterIcon, SearchIcon } from '@/shared/icons/AppIcons';
-import ShareChoicePanel from '@/features/sharing/ShareChoicePanel';
 import { useNotify } from '@/features/notifications/useNotify';
 import LoadingScreen from '@/shared/ui/feedback/LoadingScreen';
 import { flowLog, flowWarn } from '@/shared/utils/debugFlow';
@@ -69,10 +68,7 @@ export default function SelectBase({
 
   const candidateSearchInputRef = useRef(null);
   const candidateFilterRef = useRef(null);
-  const lastScrollTopRef = useRef(0);
   
-  const [continueVisible, setContinueVisible] = useState(false);
-  const [senateChoicesSaved, setSenateChoicesSaved] = useState(false);
   const [modalMalAvaliado, setModalMalAvaliado] = useState({ aberto: false, item: null });
   const [modalAltaChance, setModalAltaChance] = useState({ aberto: false, item: null });
   const [modalCandidatoRepetido, setModalCandidatoRepetido] = useState({ aberto: false, item: null });
@@ -128,49 +124,11 @@ export default function SelectBase({
     };
   }, [candidateFilterOpen]);
 
-  useEffect(() => {
-    let cancelled = false;
-    lastScrollTopRef.current = 0;
-    queueMicrotask(() => {
-      if (!cancelled) setContinueVisible(false);
-    });
-    return () => { cancelled = true; };
-  }, [variant]);
-
   const effectiveLimit = Number.isFinite(limiteSelecao) ? limiteSelecao : null;
   const requiredSelectionCount = isCandidateOffice ? minimoSelecao : (effectiveLimit || 1);
   const hasSelectionLimit = Number.isFinite(effectiveLimit) && effectiveLimit > 0;
   const visibleRows = Number.isFinite(linhasVisiveis) ? linhasVisiveis : 5;
   const hasRequiredSelection = selecionados.length >= requiredSelectionCount;
-  const hasAnySelection = selecionados.length > 0;
-  const selectedSignature = useMemo(() => (
-    selecionados.map((candidate) => candidate.id).filter(Boolean).sort().join('|')
-  ), [selecionados]);
-  
-  const showSavedSenateSharePanel = isSenateOffice && senateChoicesSaved && hasRequiredSelection && Boolean(shareData);
-  const shouldRenderContinue = hasAnySelection && !isHomeState;
-  const shouldShowContinue = shouldRenderContinue && continueVisible;
-  const shouldShowDesktopContinue = shouldRenderContinue;
-
-  useEffect(() => {
-    let cancelled = false;
-    queueMicrotask(() => {
-      if (!cancelled) {
-        lastScrollTopRef.current = 0;
-        setContinueVisible(hasAnySelection);
-      }
-    });
-    return () => { cancelled = true; };
-  }, [hasAnySelection, selectedSignature]);
-
-  useEffect(() => {
-    if (!isSenateOffice) return undefined;
-    let cancelled = false;
-    queueMicrotask(() => {
-      if (!cancelled) setSenateChoicesSaved(false);
-    });
-    return () => { cancelled = true; };
-  }, [isSenateOffice, selectedSignature]);
 
   const featuredCandidate = useMemo(() => {
     if (!isCandidateOffice) return null;
@@ -215,12 +173,15 @@ export default function SelectBase({
 
   const hasMoreCandidates = visibleSecondaryCandidates.length < dados.length;
 
-  const candidateFilterItems = useMemo(() => (
-    subNavigationItems.map((item) => ({
+// Substitua o useMemo do 'candidateFilterItems' no seu SelectBase.jsx
+const candidateFilterItems = useMemo(() => (
+  subNavigationItems
+    .filter(item => item.id === 'todos' || item.id === 'selecionados')
+    .map((item) => ({
       ...item,
       shortLabel: item.shortLabel || getSubNavLabel(item)
     }))
-  ), [subNavigationItems]);
+), [subNavigationItems]);
 
   const isCandidateFilterActive = (item) => (
     item.id === activeSubNavigationId || item.mode === activeSubNavigationId
@@ -245,26 +206,6 @@ export default function SelectBase({
       dedupeKey: `missing-selection-${variant}`,
       duration: 4200
     });
-  };
-
-  const handleScroll = (event) => {
-    const currentTop = event.currentTarget.scrollTop;
-    const diff = currentTop - lastScrollTopRef.current;
-    if (!hasAnySelection) {
-      if (continueVisible) setContinueVisible(false);
-      lastScrollTopRef.current = currentTop;
-      return;
-    }
-    if (Math.abs(diff) < 8) {
-      lastScrollTopRef.current = currentTop;
-      return;
-    }
-    if (diff < 0 || currentTop < 20) {
-      setContinueVisible(true);
-    } else if (diff > 0) {
-      setContinueVisible(false);
-    }
-    lastScrollTopRef.current = currentTop;
   };
 
   const commitSelection = async (nextSelecionados, { autoConfirm = false, completed = false } = {}) => {
@@ -358,32 +299,7 @@ export default function SelectBase({
       await commitSelection([item], { autoConfirm: true, completed: true });
       return;
     }
-    setContinueVisible(true);
     setSelecionados([item]);
-  };
-
-  const handleContinue = async () => {
-    if (salvandoSelecao || !onConfirmar) return;
-    if (!hasRequiredSelection) {
-      notifyMissingSelection();
-      return;
-    }
-    try {
-      setSalvandoSelecao(true);
-      const confirmed = await onConfirmar(selecionados);
-      if (confirmed === false) {
-        notifyMissingSelection();
-      } else if (isSenateOffice && confirmed !== 'navigated') {
-        setSenateChoicesSaved(true);
-      }
-    } catch (error) {
-      setModalErroSalvar({
-        aberto: true,
-        mensagem: error?.message || 'Não foi possível continuar. Tente novamente.'
-      });
-    } finally {
-      setSalvandoSelecao(false);
-    }
   };
 
   const handleSubNavigation = async (item) => {
@@ -510,25 +426,6 @@ export default function SelectBase({
     );
   };
 
-  const renderContinueContent = () => (
-    showSavedSenateSharePanel ? (
-      <ShareChoicePanel shareData={shareData} className="share-choice-panel--continue" />
-    ) : (
-      <button
-        className="floating-advance-button nv-touch"
-        type="button"
-        onClick={handleContinue}
-        disabled={salvandoSelecao}
-        aria-label="Avançar para a próxima etapa"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-          <polyline points="12 5 19 12 12 19"></polyline>
-        </svg>
-      </button>
-    )
-  );
-
   if (carregando && !isCandidateOffice) {
     return <LoadingScreen className="nv-screen" />;
   }
@@ -536,7 +433,6 @@ export default function SelectBase({
   return (
     <div className={`select-base-container prototype-page nv-screen variant-${variant}`}>
       
-      {/* NOVO HEADER: FLEXBOX E BUSCA ANIMADA PERFEITA */}
       <header className={`step-header ${isSearchActive ? 'is-searching' : ''}`}>
         
         <div className="step-header__brand">
@@ -629,25 +525,13 @@ export default function SelectBase({
         </div>
       </header>
 
-      <main className="prototype-scroll select-base__scroll nv-scroll" onScroll={handleScroll}>
+      <main className="prototype-scroll select-base__scroll nv-scroll">
         {isHomeState ? renderStateList() : renderCandidateList()}
-        {shouldRenderContinue && (
-          <div className={`select-base__desktop-action ${shouldShowDesktopContinue ? '' : 'is-hidden'}`}>
-            {renderContinueContent()}
-          </div>
-        )}
         <AppFooter className="app-footer--scroll-content" />
       </main>
 
-      {shouldRenderContinue && (
-        <div className={`select-base__continue-shell ${showSavedSenateSharePanel ? 'has-share-panel' : ''} ${shouldShowContinue ? '' : 'is-hidden'}`}>
-          {renderContinueContent()}
-        </div>
-      )}
-
       <BottomNavigation currentStep={currentStep} placement="footer" />
 
-      {/* MODAIS (Omitidos p/ simplificar, mas são os mesmos do código original) */}
       <ConfirmModal
         isOpen={modalMalAvaliado.aberto}
         titulo="ATENÇÃO!"

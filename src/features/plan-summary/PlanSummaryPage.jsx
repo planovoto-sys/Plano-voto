@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { LogIn, LogOut, Star } from 'lucide-react';
@@ -18,8 +18,11 @@ import {
   fetchCandidateTallies,
   readCachedTallies
 } from '@/features/candidate-selection/candidateService';
+
+// IMPORTAÇÕES ATUALIZADAS
+import ConvexBottomNavigation from '@/app/shell/BottomNavigation';
 import ShareChoicePanel from '@/features/sharing/ShareChoicePanel';
-import BottomNavigation from '@/app/shell/BottomNavigation';
+
 import AppFooter from '@/shared/ui/layout/AppFooter';
 import ConfirmModal from '@/shared/ui/feedback/ConfirmModal';
 import LoadingScreen from '@/shared/ui/feedback/LoadingScreen';
@@ -129,10 +132,8 @@ export default function MeuPlano() {
   const [remoteDraftState, setRemoteDraftState] = useState({ userId: null, draft: null, loading: false });
   const [candidateDetailsState, setCandidateDetailsState] = useState({ signature: '', candidatesById: new Map(), loading: false });
   const [modalCampoBloqueado, setModalCampoBloqueado] = useState(false);
-  const [isShareFabVisible, setIsShareFabVisible] = useState(true);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   
-  const scrollRootRef = useRef(null);
-  const lastScrollTopRef = useRef(0);
   const [planUrl] = useState(() => getPlanUrl());
 
   useEffect(() => {
@@ -237,22 +238,6 @@ export default function MeuPlano() {
   const handleLogin = () => navigate('/login', { state: { from: `${location.pathname}${location.search}` } });
   const handleLogout = async () => { await signOut(auth); navigate('/', { replace: true }); };
 
-  useEffect(() => {
-    const scrollRoot = scrollRootRef.current;
-    if (!scrollRoot || typeof window === 'undefined') return undefined;
-
-    const handleScroll = () => {
-      const currentTop = scrollRoot.scrollTop;
-      const delta = currentTop - lastScrollTopRef.current;
-      if (currentTop < 16 || delta < -6) setIsShareFabVisible(true);
-      else if (delta > 6) setIsShareFabVisible(false);
-      lastScrollTopRef.current = currentTop;
-    };
-
-    scrollRoot.addEventListener('scroll', handleScroll, { passive: true });
-    return () => scrollRoot.removeEventListener('scroll', handleScroll);
-  }, []);
-
   if (!isGuestMode && userLoading && !currentDraft) return <LoadingScreen className="nv-screen" />;
 
   if (isDesktopLayout) {
@@ -274,7 +259,6 @@ export default function MeuPlano() {
 
   return (
     <div className="my-plan-page">
-      
       <header className="my-plan-header">
         <button className="my-plan-header__btn" aria-label="Perfil">
           {profileImage ? (
@@ -291,7 +275,7 @@ export default function MeuPlano() {
         </button>
       </header>
 
-      <main ref={scrollRootRef} className="my-plan-scroll">
+      <main className="my-plan-scroll">
         <div className="my-plan-shell">
           
           <section className="my-plan-overview">
@@ -394,15 +378,29 @@ export default function MeuPlano() {
         <AppFooter />
       </main>
 
-      {!isGuestMode && shareData && (
-        <ShareChoicePanel
+      {/* Renderiza o modal de compartilhamento controlado por estado */}
+      {shareData && (
+        <ShareChoicePanel 
           shareData={shareData}
-          className={`my-plan-share-panel--fab ${!isShareFabVisible ? 'is-hidden' : ''}`}
-          appearance="fab"
+          isOpenControlled={isShareModalOpen}
+          onCloseControlled={() => setIsShareModalOpen(false)}
         />
       )}
 
-      <BottomNavigation currentStep="nossovoto" placement="footer" />
+      {/* Renderiza a barra e avisa que é a tela final, passando a ação do botão */}
+      <ConvexBottomNavigation 
+        currentStep="nossovoto" 
+        isFinalStep={true} 
+        onShareClick={() => {
+          if (canSharePlan) {
+            setIsShareModalOpen(true);
+          } else {
+            if (isGuestMode) {
+              setModalCampoBloqueado(true);
+            }
+          }
+        }} 
+      />
 
       <ConfirmModal
         isOpen={modalCampoBloqueado}

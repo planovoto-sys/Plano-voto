@@ -10,16 +10,11 @@ import {
   SHARE_CARD_TEMPLATES
 } from '@/features/sharing/shareCardService';
 
-// Importando o novo CSS Refatorado
 import './ShareChoicePanel.css';
 
-// Utilitários Locais
 const clampPercent = (val) => Math.max(0, Math.min(100, Math.round(Number(val) || 0)));
 const getCandidateName = (name, fallback) => name || fallback;
 
-/* =========================================================
-   COMPONENTE: PREVIEW HTML DA ARTE (MINIATURAS PERFEITAS)
-   ========================================================= */
 function SharePreviewArtwork({ templateId, analysis }) {
   const deputadoName = getCandidateName(analysis.deputadoName, 'Deputado federal');
   const senatorOne = getCandidateName(analysis.senatorNames[0], 'Senador 1');
@@ -29,7 +24,6 @@ function SharePreviewArtwork({ templateId, analysis }) {
   const scoreProgress = clampPercent(analysis.averageScore * 10);
   const chanceProgress = clampPercent(analysis.averageChance);
 
-  // Topo do Card (Fixo para todos)
   const renderBrand = () => (
     <div className="sp-card-brand">
       <div className="sp-card-brand__logo">
@@ -40,7 +34,6 @@ function SharePreviewArtwork({ templateId, analysis }) {
     </div>
   );
 
-  // Renderização Específica por Template
   if (templateId === 'completo') {
     return (
       <div className="sp-card-inner">
@@ -119,7 +112,6 @@ function SharePreviewArtwork({ templateId, analysis }) {
     );
   }
 
-  // Padrão: Resumo
   return (
     <div className="sp-card-inner">
       {renderBrand()}
@@ -145,19 +137,13 @@ function SharePreviewArtwork({ templateId, analysis }) {
   );
 }
 
-/* =========================================================
-   COMPONENTE: GALERIA COM SYNC DE SCROLL E DOTS RENOvADOS
-   ========================================================= */
 function ShareGallery({ activeTemplateId, analysis, onSelect }) {
   const trackRef = useRef(null);
   
-  // Função que detecta via scroll qual card está mais no centro da tela
   const handleScroll = useCallback(() => {
     if (!trackRef.current) return;
-    
     const track = trackRef.current;
     const trackCenter = track.getBoundingClientRect().left + track.offsetWidth / 2;
-    
     let closestTemplate = activeTemplateId;
     let minDistance = Infinity;
 
@@ -176,42 +162,33 @@ function ShareGallery({ activeTemplateId, analysis, onSelect }) {
     }
   }, [activeTemplateId, onSelect]);
 
-  // Função para quando o usuário clicar diretamente num dot
   const scrollToTemplate = (templateId) => {
     onSelect(templateId);
     const track = trackRef.current;
     const targetCard = track?.querySelector(`[data-id="${templateId}"]`);
-    
     if (targetCard && track) {
-      // scrollIntoView centraliza o elemento perfeitamente dentro do container
       targetCard.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
     }
   };
 
   return (
     <div className="share-gallery-container">
-      {/* O container deslizavel (snap) */}
       <div 
         ref={trackRef} 
         className="share-gallery-track nv-scroll" 
         onScroll={handleScroll}
       >
-        {SHARE_CARD_TEMPLATES.map((template) => {
-          const isActive = template.id === activeTemplateId;
-          return (
-            <div
-              key={template.id}
-              data-id={template.id}
-              className={`share-preview-card ${isActive ? 'is-active' : ''}`}
-              onClick={() => scrollToTemplate(template.id)}
-            >
-              <SharePreviewArtwork templateId={template.id} analysis={analysis} />
-            </div>
-          );
-        })}
+        {SHARE_CARD_TEMPLATES.map((template) => (
+          <div
+            key={template.id}
+            data-id={template.id}
+            className={`share-preview-card ${template.id === activeTemplateId ? 'is-active' : ''}`}
+            onClick={() => scrollToTemplate(template.id)}
+          >
+            <SharePreviewArtwork templateId={template.id} analysis={analysis} />
+          </div>
+        ))}
       </div>
-
-      {/* Navegação por Dots Sincronizada */}
       <div className="share-gallery-dots">
         {SHARE_CARD_TEMPLATES.map((template) => (
           <button
@@ -227,20 +204,23 @@ function ShareGallery({ activeTemplateId, analysis, onSelect }) {
   );
 }
 
-/* =========================================================
-   COMPONENTE PRINCIPAL (CONTAINER DO PAINEL)
-   ========================================================= */
-export default function ShareChoicePanel({ shareData, className = '', appearance = 'panel' }) {
+export default function ShareChoicePanel({ 
+  shareData, 
+  className = '', 
+  appearance = 'panel',
+  isOpenControlled,
+  onCloseControlled
+}) {
   const notify = useNotify();
-  const [isOpen, setIsOpen] = useState(false);
+  const [isInternalOpen, setIsInternalOpen] = useState(false);
   const [templateId, setTemplateId] = useState('resumo');
   const [shareNoticeAccepted, setShareNoticeAccepted] = useState(false);
   const [status, setStatus] = useState('');
   
   const analysis = useMemo(() => createShareAnalysis(shareData), [shareData]);
   const isFab = appearance === 'fab';
+  const isOpen = isOpenControlled !== undefined ? isOpenControlled : isInternalOpen;
 
-  // Trava o scroll do fundo enquanto o Modal está aberto
   useEffect(() => {
     if (!isOpen || typeof document === 'undefined') return undefined;
 
@@ -253,6 +233,11 @@ export default function ShareChoicePanel({ shareData, className = '', appearance
       document.body.classList.remove('hide-bottom-nav');
     };
   }, [isOpen]);
+
+  const handleClose = () => {
+    if (onCloseControlled) onCloseControlled();
+    setIsInternalOpen(false);
+  };
 
   const executeAction = async (actionFn, successMsg) => {
     setStatus('');
@@ -281,20 +266,16 @@ export default function ShareChoicePanel({ shareData, className = '', appearance
   if (!shareData) return null;
 
   const modalRender = isOpen ? (
-    <div className="share-modal-overlay share-panel-wrapper" onMouseDown={(e) => e.target === e.currentTarget && setIsOpen(false)}>
+    <div className="share-modal-overlay share-panel-wrapper" onMouseDown={(e) => e.target === e.currentTarget && handleClose()}>
       <div className="share-modal-sheet">
-        
-        {/* CABEÇALHO LIMPO */}
         <div className="share-modal-header">
           <h2>Escolha a Arte</h2>
-          <button className="share-modal-close" onClick={() => setIsOpen(false)} aria-label="Fechar">
+          <button className="share-modal-close" onClick={handleClose} aria-label="Fechar">
             <X size={24} />
           </button>
         </div>
 
         <div className="share-modal-body nv-scroll">
-          
-          {/* AVISO LEGAL REDESENHADO */}
           <div className="share-legal-notice">
             <p>O conteúdo compartilhado circula fora do Bom de Voto, sujeito às redes sociais onde for postado.</p>
             <label>
@@ -311,17 +292,14 @@ export default function ShareChoicePanel({ shareData, className = '', appearance
             </div>
           </div>
 
-          {/* NOVA GALERIA E DOTS */}
           <ShareGallery 
             activeTemplateId={templateId} 
             analysis={analysis} 
             onSelect={setTemplateId} 
           />
 
-          {/* AÇÕES DE EXPORTAÇÃO */}
           <div className="share-actions">
             {status && <span className="share-actions-status">{status}</span>}
-            
             <button className="share-btn-primary" onClick={handleShareText}>
               <Share2 size={18} /> Compartilhar Imagem
             </button>
@@ -329,35 +307,36 @@ export default function ShareChoicePanel({ shareData, className = '', appearance
               <Download size={18} /> Salvar Imagem
             </button>
           </div>
-
         </div>
       </div>
     </div>
   ) : null;
 
+  const renderTriggers = isOpenControlled === undefined && (
+    isFab ? (
+      <button 
+        className={`share-trigger-fab ${className}`} 
+        onClick={() => setIsInternalOpen(true)}
+        aria-label="Abrir painel de compartilhamento"
+      >
+        <Share2 size={24} />
+      </button>
+    ) : (
+      <div className={`share-trigger-panel ${className}`}>
+        <div className="share-trigger-panel__info">
+          <strong>Compartilhar meu plano</strong>
+          <span>Gere uma arte para as redes sociais</span>
+        </div>
+        <button className="share-trigger-btn" onClick={() => setIsInternalOpen(true)}>
+          <Share2 size={18} /> Abrir
+        </button>
+      </div>
+    )
+  );
+
   return (
     <>
-      {isFab ? (
-        <button 
-          className={`share-trigger-fab ${className}`} 
-          onClick={() => setIsOpen(true)}
-          aria-label="Abrir painel de compartilhamento"
-        >
-          <Share2 size={24} />
-        </button>
-      ) : (
-        <div className={`share-trigger-panel ${className}`}>
-          <div className="share-trigger-panel__info">
-            <strong>Compartilhar meu plano</strong>
-            <span>Gere uma arte para as redes sociais</span>
-          </div>
-          <button className="share-trigger-btn" onClick={() => setIsOpen(true)}>
-            <Share2 size={18} /> Abrir
-          </button>
-        </div>
-      )}
-
-      {/* Rendezição Segura via Portal */}
+      {renderTriggers}
       {modalRender && (typeof document !== 'undefined' ? createPortal(modalRender, document.body) : modalRender)}
     </>
   );

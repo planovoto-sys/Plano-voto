@@ -1,16 +1,31 @@
-import { ChanceFlame } from '@/shared/icons/ChanceFlame';
-
-const LOADING_WORD = 'nossovoto';
+const LOADING_WORD = 'Bom de voto';
 
 export default function LoadingScreen({ className = '' }) {
   return (
     <div className={`loading loading--intro ${className}`.trim()} role="status" aria-live="polite">
       <div className="loading-intro" aria-label="Carregando">
         <span className="loading-intro__mark" aria-hidden="true">
-          <ChanceFlame className="loading-intro__flame loading-intro__flame--base" size={82} />
+          
+          {/* Ícone Base */}
+          <img 
+            src="/icone-branco.svg" 
+            alt="" 
+            className="loading-intro__flame loading-intro__flame--base" 
+            width={82} 
+            height={82} 
+          />
+          
           <span className="loading-intro__flame-fill">
-            <ChanceFlame className="loading-intro__flame loading-intro__flame--fill" size={82} />
+
+            <img 
+              src="/icone-branco.svg" 
+              alt="" 
+              className="loading-intro__flame loading-intro__flame--fill" 
+              width={82} 
+              height={82} 
+            />
           </span>
+          
         </span>
         <span className="loading-intro__word" aria-hidden="true">
           {Array.from(LOADING_WORD).map((letter, index) => (

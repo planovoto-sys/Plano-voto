@@ -1,4 +1,3 @@
-
 :root {
   --color-bg: #FFFFFF;
   --color-primary: #259841; 
@@ -7,9 +6,9 @@
   --color-text-gray: #4A554D; 
   --color-video-bg: #E4EFE7; 
   --color-play-btn: #063C1B; 
-  
-  --font-main: 'Inter', -apple-system, sans-serif;
-  --font-serif: 'Merriweather', serif;
+
+  --font-main: 'Inter', sans-serif;
+  --font-serif: 'Plus Jakarta Sans', serif;
 }
 
 * {
@@ -18,29 +17,51 @@
   box-sizing: border-box;
 }
 
-/* 1. TRAVA ABSOLUTA DE ROLAGEM */
+/* 1. CONFIGURAÇÃO BASE */
 html, body {
   width: 100%;
-  height: 100%;
-  background-color: var(--color-bg);
+  min-height: 100%;
+  background-color: var(--color-bg); /* Fundo branco no mobile */
   font-family: var(--font-main);
-  overflow: hidden; 
-  touch-action: none; 
+}
+
+/* No desktop, criamos um fundo cinza suave para destacar o "formato celular" no centro */
+@media (min-width: 481px) {
+  html, body {
+    background-color: #F2F4F2; 
+  }
 }
 
 /* 2. WRAPPER PRINCIPAL RESPONSIVO */
 .login-wrapper {
   display: flex;
   flex-direction: column;
-  height: 100dvh; 
+  height: 100dvh; /* Usa a altura dinâmica da viewport */
+  min-height: 600px; /* Previne quebra em telas muito curtas */
   padding: clamp(16px, 3vh, 24px) 24px;
   max-width: 480px; 
   margin: 0 auto;
   position: relative;
   background-color: var(--color-bg);
-  overflow: hidden;
+  overflow-y: auto; /* Permite scroll se a tela for menor que 600px de altura */
+  overflow-x: hidden;
+  box-shadow: 0px 4px 24px rgba(0, 0, 0, 0.05); /* Sombra elegante no desktop */
 }
 
+.logo-login {
+  width: 50%;
+  max-width: 180px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.logo-login img {
+  width: 100%;
+  height: auto;
+}
+
+/* BACKGROUND BLOBS (Agora funcionando no JSX) */
 .bg-blobs {
   position: absolute;
   inset: 0;
@@ -54,8 +75,8 @@ html, body {
   background-color: rgba(37, 152, 65, 0.06); 
   border-radius: 50%;
 }
-.blob-1 { width: 320px; height: 320px; top: 30%; left: -160px; }
-.blob-2 { width: 380px; height: 380px; bottom: 0%; right: -150px; }
+.blob-1 { width: 320px; height: 320px; top: 25%; left: -160px; }
+.blob-2 { width: 380px; height: 380px; bottom: -5%; right: -150px; }
 
 /* 3. DISTRIBUIÇÃO INTELIGENTE DE ESPAÇO */
 .login-header, .login-footer {
@@ -76,14 +97,15 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-around; 
+  justify-content: space-evenly; /* Melhor distribuição no eixo Y */
   width: 100%;
   position: relative;
   z-index: 2;
+  gap: 24px;
 }
 
 /* =========================================
-   TEXTOS COM TAMANHO DINÂMICO (CLAMP)
+   TEXTOS E EFEITOS DE FUNDO
    ========================================= */
 .title-section {
   text-align: center;
@@ -91,6 +113,7 @@ html, body {
   display: inline-block; 
   padding: 8px 16px;
   flex-shrink: 0;
+  z-index: 1;
 }
 
 .title-bg-lines {
@@ -138,28 +161,34 @@ html, body {
 .stats-box {
   text-align: left; 
   background-color: #F7F9F7; 
-  padding: clamp(12px, 2vh, 16px) clamp(16px, 4vw, 24px);
-  border-radius: 8px;
+  padding: clamp(16px, 2.5vh, 20px) clamp(20px, 5vw, 24px);
+  border-radius: 12px; /* Cantos um pouco mais suaves */
   display: inline-block; 
-  max-width: 100%;
+  width: 100%;
+  border: 1px solid rgba(37, 152, 65, 0.1); /* Contorno sutil */
 }
 
 .stats-intro, .stats-list {
-  font-size: clamp(12px, 3.5vw, 14px);
+  font-size: clamp(13px, 3.8vw, 15px);
   color: var(--color-text-gray);
 }
-.stats-intro { margin-bottom: 8px; }
-.stats-list { line-height: 1.6; font-weight: 400; list-style: none; }
+.stats-intro { margin-bottom: 10px; font-weight: 600; }
+.stats-list { 
+  line-height: 1.6; 
+  font-weight: 400; 
+  list-style-type: disc; 
+  padding-left: 20px; 
+}
 
 /* =========================================
-   CARD DO VÍDEO (CORRIGIDO O CORTE DO BOTÃO)
+   CARD DO VÍDEO
    ========================================= */
 .video-card-container {
   width: 100%;
   background-color: var(--color-video-bg);
-  border-radius: 12px;
-  padding: clamp(10px, 2vh, 14px); 
-  padding-bottom: clamp(32px, 5vh, 40px); 
+  border-radius: 16px;
+  padding: clamp(12px, 2vh, 16px); 
+  padding-bottom: clamp(36px, 6vh, 44px); 
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -170,23 +199,20 @@ html, body {
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 9; 
-  max-height: 25vh; 
   background-color: #FFFFFF;
-  border-radius: 8px;
+  border-radius: 10px;
   display: flex;
   justify-content: center;
   align-items: center;
-  /* OVERFLOW HIDDEN REMOVIDO PARA LIBERAR O BOTÃO! */
+  box-shadow: inset 0px 0px 8px rgba(0,0,0,0.05);
 }
 
+/* Agora o JSX tem essa imagem! */
 .venn-diagram-image {
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  display: block;
-  border-radius: 8px; /* Mantém as bordas do vídeo redondinhas */
-  font-size: 0;
-  color: transparent; 
+  object-fit: cover;
+  border-radius: 10px;
 }
 
 .btn-play-video {
@@ -194,12 +220,12 @@ html, body {
   color: #FFFFFF;
   border: none;
   border-radius: 50px;
-  padding: clamp(10px, 2vh, 12px) clamp(16px, 4vw, 24px);
+  padding: clamp(12px, 2.5vh, 14px) clamp(20px, 5vw, 28px);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  font-size: clamp(12px, 3.5vw, 14px);
+  gap: 10px;
+  font-size: clamp(13px, 4vw, 15px);
   font-weight: 600;
   font-family: var(--font-main);
   cursor: pointer;
@@ -211,7 +237,12 @@ html, body {
   
   box-shadow: 0px 6px 16px rgba(6, 60, 27, 0.25);
   white-space: nowrap; 
-  z-index: 10; /* Garante que ele fique acima de tudo */
+  z-index: 10;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.btn-play-video:hover {
+  background-color: #042e14;
 }
 
 .btn-play-video:active {
@@ -227,7 +258,7 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: clamp(8px, 1vh, 16px);
+  padding-top: clamp(16px, 2vh, 24px);
   gap: clamp(16px, 3vh, 24px);
 }
 
@@ -245,6 +276,16 @@ html, body {
   display: flex;
   justify-content: center;
   align-items: center;
+  transition: opacity 0.2s ease;
+}
+
+.btn-comecar:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.btn-comecar:hover:not(:disabled) {
+  opacity: 0.9;
 }
 
 .pagination-dots {
@@ -258,8 +299,40 @@ html, body {
   height: 8px;
   border-radius: 50%;
   background-color: #D6D6D6;
+  transition: background-color 0.3s ease;
 }
 
 .dot.active {
   background-color: var(--color-primary);
+}
+/* =========================================
+   LINKS LEGAIS (LOGIN)
+   ========================================= */
+.login-legal-links {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 8px; /* Dá um leve respiro após as bolinhas de paginação */
+  padding-bottom: 16px;
+  font-size: clamp(12px, 3.5vw, 13px);
+  color: var(--color-text-gray);
+  width: 100%;
+}
+
+.login-legal-links a {
+  color: var(--color-text-gray);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.login-legal-links a:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.login-legal-links .separator {
+  color: #D6D6D6; /* Mesma cor das bolinhas inativas para manter harmonia */
+  font-size: 10px;
 }

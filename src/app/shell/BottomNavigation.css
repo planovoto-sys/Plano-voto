@@ -1,8 +1,4 @@
-/* ==========================================================================
-   Bottom Navigation - Liquid Glass (Light Theme Optimized)
-   ========================================================================== */
-
-.app-page-footer.bottom-nav-shell {
+.app-page-footer.convex-nav-shell {
   position: fixed !important;
   left: 50% !important;
   bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
@@ -11,173 +7,168 @@
   margin: 0 auto !important;
   z-index: 99999 !important;
   pointer-events: none !important;
-  background: transparent !important;
-  border: none !important;
   display: flex !important;
   justify-content: center !important;
 }
 
-.bottom-nav {
-  /* Paleta Atualizada e Contraste */
-  --bottom-nav-active: #16A34A; /* Verde primário */
-  --bottom-nav-inactive: #6B7280; /* Cinza ardósia suave para inativos */
-  --bottom-nav-border: rgba(0, 0, 0, 0.08); /* Borda escura ultra-fina para delinear sobre fundos brancos */
-  --bottom-nav-shadow: 0 16px 32px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.04); /* Elevação dupla */
-  --bottom-nav-active-bg: rgba(22, 163, 74, 0.12); /* Fundo da aba ativa (verde translúcido) */
+.convex-nav {
+  --nav-active: #16A34A;
+  --nav-inactive: #6B7280;
+  --nav-border: rgba(0, 0, 0, 0.08);
+  --nav-bg-glass: linear-gradient(180deg, rgba(252, 252, 252, 0.85) 0%, rgba(245, 245, 245, 0.75) 100%);
   
-  /* Proporções */
-  --bottom-nav-label-size: clamp(10.5px, 2.7vw, 12px);
-  --bottom-nav-icon-size: clamp(24px, 5.5vw, 26px);
-
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 4px;
-  padding: 8px 10px;
-  
-  border: 1px solid var(--bottom-nav-border);
+  padding: 0 12px;
+  min-height: 68px;
+  border: 1px solid var(--nav-border);
   border-radius: 999px;
-  
-  /* Fundo translúcido com leve densidade para barrar vazamento de texto traseiro */
-  background: linear-gradient(180deg, rgba(252, 252, 252, 0.85) 0%, rgba(245, 245, 245, 0.75) 100%);
-  
-
-  /* Efeito Liquid Glass */
+  background: var(--nav-bg-glass);
   backdrop-filter: blur(28px) saturate(200%);
   -webkit-backdrop-filter: blur(28px) saturate(200%);
-  
   pointer-events: auto;
-  
-  /* Transições suaves para expansão/colapso */
-  transition:
-    max-width 0.38s cubic-bezier(0.25, 1, 0.5, 1),
-    padding 0.38s cubic-bezier(0.25, 1, 0.5, 1),
-    transform 0.38s cubic-bezier(0.25, 1, 0.5, 1),
-    background-color 0.3s ease,
-
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.08);
+  transition: all 0.38s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-.bottom-nav.is-collapsed {
-  max-width: 330px;
-  padding: 6px 12px;
-}
-
-.bottom-nav__slot {
-  flex: 1;
+.convex-nav__side {
   display: flex;
-  justify-content: center;
-  min-width: 0;
+  flex: 1;
+  justify-content: space-around;
+  align-items: center;
 }
 
-.bottom-nav__step {
-  width: 100%;
+.convex-nav__step {
   border: 0;
   background: transparent;
-  color: var(--bottom-nav-inactive);
+  color: var(--nav-inactive);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 6px 4px;
-  border-radius: 28px;
+  padding: 10px 4px 8px;
+  min-width: 56px;
   cursor: default;
-  transition:
-    transform 0.25s cubic-bezier(0.25, 1, 0.5, 1),
-    background-color 0.25s cubic-bezier(0.25, 1, 0.5, 1),
-    color 0.25s cubic-bezier(0.25, 1, 0.5, 1),
-  
+  transition: transform 0.25s ease, color 0.25s ease;
 }
 
-.bottom-nav__step.is-clickable {
+.convex-nav__step.is-clickable {
   cursor: pointer;
 }
 
-.bottom-nav__step.is-clickable:active {
-  transform: scale(0.94);
+.convex-nav__step.is-clickable:active {
+  transform: scale(0.92);
 }
 
-.bottom-nav__step.is-active {
-  background: var(--bottom-nav-active-bg);
-  color: var(--bottom-nav-active);
+.convex-nav__step.is-active {
+  color: var(--nav-active);
 }
 
-.bottom-nav__icon-wrap {
-  width: var(--bottom-nav-icon-size);
-  height: var(--bottom-nav-icon-size);
+.convex-nav__icon-wrap {
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.bottom-nav__icon {
+.convex-nav__icon {
   width: 100%;
   height: 100%;
-  display: block;
   color: currentColor;
 }
 
-.bottom-nav__copy {
-  display: flex;
-  justify-content: center;
+.convex-nav__copy {
+  display: block;
   overflow: hidden;
-  max-height: 16px;
+  max-height: 24px;
   opacity: 1;
   margin-top: 4px;
-  transition:
-    max-height 0.32s cubic-bezier(0.25, 1, 0.5, 1),
-    opacity 0.22s cubic-bezier(0.25, 1, 0.5, 1),
-    margin-top 0.32s cubic-bezier(0.25, 1, 0.5, 1),
-    transform 0.32s cubic-bezier(0.25, 1, 0.5, 1);
+  padding-bottom: 2px;
+  transition: all 0.32s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-.bottom-nav__label {
-  color: inherit;
-  font-size: var(--bottom-nav-label-size);
+.convex-nav__label {
+  font-size: 11.5px;
   font-weight: 600;
-  line-height: 1;
+  line-height: 1.2;
   white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
 }
 
-.bottom-nav.is-collapsed .bottom-nav__copy {
+.convex-nav__center {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 64px;
+  height: 64px;
+  margin-top: -34px;
+  margin-bottom: 4px;
+  flex-shrink: 0;
+  z-index: 2;
+}
+
+.convex-nav__continue-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--nav-active);
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(22, 163, 74, 0.35);
+  transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.25s ease;
+}
+
+.convex-nav__continue-btn:active {
+  transform: scale(0.9);
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
+}
+
+.convex-nav__continue-btn:disabled {
+  background: #A7F3D0;
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.continue-icon {
+  width: 28px;
+  height: 28px;
+  stroke: white;
+}
+
+.convex-nav.is-collapsed {
+  max-width: 320px;
+  padding: 0 16px;
+  min-height: 52px;
+}
+
+.convex-nav.is-collapsed .convex-nav__step {
+  padding: 6px 4px;
+}
+
+.convex-nav.is-collapsed .convex-nav__copy {
   max-height: 0;
   opacity: 0;
   margin-top: 0;
-  transform: scale(0.72) translateY(6px);
-  pointer-events: none;
+  padding-bottom: 0;
+  transform: scale(0.8) translateY(10px);
 }
 
-/* Ajuste específico para ícones mais largos */
-.bottom-nav__step[data-step='deputado'] .bottom-nav__icon,
-.bottom-nav__step[data-step='senador'] .bottom-nav__icon {
-  width: 115%;
+.convex-nav.is-collapsed .convex-nav__center {
+  transform: scale(0.85) translateY(6px);
+  transition: transform 0.38s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-.bottom-nav__step:focus-visible {
-  outline: none;
-}
-
-.bottom-nav__step:focus-visible .bottom-nav__icon-wrap {
-  border-radius: 50%;
-
-}
-
-/* ==========================================================================
-   Responsividade Extrema (Mobile Pequeno)
-   ========================================================================== */
 @media (max-width: 360px) {
-  .app-page-footer.bottom-nav-shell {
+  .app-page-footer.convex-nav-shell {
     bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important;
     width: min(calc(100% - 12px), 430px) !important;
-  }
-
-  .bottom-nav {
-    padding: 7px 8px;
-  }
-
-  .bottom-nav.is-collapsed {
-    max-width: 280px;
   }
 }
