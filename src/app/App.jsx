@@ -18,6 +18,7 @@ const loadHome = () => import('@/features/state-selection/StateSelectionPage');
 const loadEscolherCandidatos = () => import('@/features/candidate-selection/CandidateSelectionPage');
 const loadLegalPage = () => import('@/features/privacy/LegalPage');
 const loadMeuPlano = () => import('@/features/plan-summary/PlanSummaryPage');
+const loadContinuarPlano = () => import('@/features/handoff/ContinuePlanPage');
 
 const Login = lazy(loadLogin);
 const Home = lazy(loadHome);
