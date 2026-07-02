@@ -18,8 +18,8 @@ export default function PrivacyConsent() {
       setExpanded(false);
     };
 
-    window.addEventListener('nossovoto:privacy-preferences-reset', showConsentAgain);
-    return () => window.removeEventListener('nossovoto:privacy-preferences-reset', showConsentAgain);
+    window.addEventListener('bomdevoto:privacy-preferences-reset', showConsentAgain);
+    return () => window.removeEventListener('bomdevoto:privacy-preferences-reset', showConsentAgain);
   }, []);
 
   const acceptNecessary = () => {

@@ -37,7 +37,7 @@ export default function LoadingScreen({ className = '' }) {
             </span>
           ))}
         </span>
-        <span className="sr-only">Carregando nossovoto</span>
+        <span className="sr-only">Carregando Bom de Voto</span>
       </div>
     </div>
   );

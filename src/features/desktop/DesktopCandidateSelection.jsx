@@ -58,7 +58,7 @@ function DesktopPlanSidebar({ draftStateLabel, selectedCandidates, officeCopy, o
 
       <p>{officeCopy.missing(selectedCount)}</p>
       <button className="desktop-button-secondary nv-touch" type="button" onClick={onReview}>
-        Ver nossovoto
+        Ver Bom de Voto
       </button>
     </aside>
   );

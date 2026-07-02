@@ -40,7 +40,7 @@ export default function AppFooter({ className = '' }) {
     <footer className={`app-footer nv-no-overflow ${className}`.trim()}>
       <div className="app-footer__inner nv-container">
         <div className="app-footer__brand">
-          <strong>nossovoto.org</strong>
+          <strong>Bom de Voto</strong>
           <span>Voto consciente, simples e organizado.</span>
         </div>
 
@@ -66,7 +66,7 @@ export default function AppFooter({ className = '' }) {
         </div>
 
         <div className="app-footer__copyright">
-          <span>© {currentYear} nossovoto.org. Todos os direitos reservados.</span>
+          <span>© {currentYear} Bom de Voto. Todos os direitos reservados.</span>
         </div>
       </div>
     </footer>

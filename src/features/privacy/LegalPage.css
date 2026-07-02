@@ -37,10 +37,16 @@
   text-decoration: none;
 }
 
+.about-header__brand-logo {
+  max-height: 44px;
+  width: auto;
+  display: block;
+}
+
 .about-header__flame {
   width: 24px;
   height: 29px;
-  color: var(--orange);
+  color: var(--brand-green);
 }
 
 .about-header__brand strong {
@@ -135,7 +141,7 @@
 }
 
 .about-eyebrow {
-  color: var(--orange-dark);
+  color: var(--brand-green-dark);
   font-size: 12px;
   font-weight: 950;
   letter-spacing: 0.08em;
@@ -194,9 +200,9 @@
 
 .about-primary-action {
   border: 0;
-  background: linear-gradient(90deg, #ffd565 0%, var(--orange) 100%);
-  color: var(--text);
-  box-shadow: 0 16px 32px rgba(255, 152, 0, 0.22);
+  background: linear-gradient(90deg, #F7C600 0%, #16A34A 100%);
+  color: var(--brand-black);
+  box-shadow: 0 16px 32px rgba(16, 107, 58, 0.22);
 }
 
 .about-secondary-action {
@@ -210,7 +216,7 @@
   border: 1px solid rgba(17, 17, 17, 0.08);
   border-radius: 8px;
   background:
-    linear-gradient(135deg, #fffaf5 0%, var(--surface) 48%, #f7fff4 100%);
+    linear-gradient(135deg, #F5F5F5 0%, var(--surface) 48%, #eff9ec 100%);
   display: grid;
   gap: 12px;
   padding: clamp(18px, 3vw, 26px);
@@ -230,13 +236,13 @@
 }
 
 .about-preview-card--state {
-  border-color: rgba(36, 89, 61, 0.18);
-  background: #f7fff4;
+  border-color: rgba(22, 163, 58, 0.18);
+  background: #edf9ec;
 }
 
 .about-preview-card--candidate.is-selected {
-  border-color: rgba(255, 139, 73, 0.36);
-  background: #fff7ef;
+  border-color: rgba(247, 198, 0, 0.28);
+  background: #fffce3;
 }
 
 .about-preview-card span,
@@ -272,7 +278,7 @@
   border-radius: 50%;
   background:
     radial-gradient(circle at center, var(--surface) 0 58%, transparent 59%),
-    conic-gradient(var(--orange) 72%, rgba(17, 17, 17, 0.12) 0);
+    conic-gradient(#F7C600 72%, rgba(17, 17, 17, 0.12) 0);
   transform: translateY(-50%);
 }
 
@@ -360,8 +366,8 @@
 }
 
 .about-capability-card--login {
-  border-color: rgba(255, 139, 73, 0.26);
-  background: #fffaf5;
+  border-color: rgba(16, 107, 58, 0.22);
+  background: #f5f9ee;
 }
 
 .about-capability-card ul {
@@ -387,7 +393,7 @@
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: var(--orange);
+  background: var(--brand-green);
   align-self: center;
   justify-self: center;
 }
@@ -405,12 +411,12 @@
 }
 
 .about-section--text .about-eyebrow {
-  color: #ffd565;
+  color: #F7C600;
 }
 
 .about-inline-link {
   width: fit-content;
-  color: #ffd565;
+  color: #F7C600;
   font-size: 13px;
   font-weight: 900;
   line-height: 1.2;
@@ -427,7 +433,7 @@
   justify-content: space-between;
   margin-bottom: 52px;
   padding: clamp(26px, 4vw, 38px);
-  background: #fff7ef;
+  background: #fffce3;
 }
 
 .about-final-cta h2 {
@@ -559,8 +565,8 @@
 .legal-nav a:hover,
 .legal-nav a:focus-visible,
 .legal-nav a.is-active {
-  border-color: rgba(255, 153, 0, 0.36);
-  background: rgba(255, 153, 0, 0.08);
+  border-color: rgba(22, 163, 58, 0.36);
+  background: rgba(22, 163, 58, 0.08);
   color: var(--text-strong);
 }
 
@@ -582,8 +588,8 @@
 
 .legal-cta__primary {
   border: 0;
-  background: linear-gradient(90deg, #ffd565 0%, var(--orange) 100%);
-  color: var(--text);
+  background: linear-gradient(90deg, #F7C600 0%, #16A34A 100%);
+  color: var(--brand-black);
 }
 
 .legal-cta__secondary {

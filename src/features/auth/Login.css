@@ -1,11 +1,11 @@
 :root {
-  --color-bg: #FFFFFF;
-  --color-primary: #259841; 
-  --color-title: #1B7A2D; 
-  --color-subtitle: #000000;
-  --color-text-gray: #4A554D; 
-  --color-video-bg: #E4EFE7; 
-  --color-play-btn: #063C1B; 
+  --color-bg: #F5F5F5;
+  --color-primary: #16A34A;
+  --color-title: #0B6B3A;
+  --color-subtitle: #111111;
+  --color-text-gray: #111111;
+  --color-video-bg: #F5F5F5;
+  --color-play-btn: #0B6B3A;
 
   --font-main: 'Inter', sans-serif;
   --font-serif: 'Plus Jakarta Sans', serif;
@@ -25,27 +25,31 @@ html, body {
   font-family: var(--font-main);
 }
 
+html.login-page-active,
+body.login-page-active {
+  overflow: hidden;
+}
+
 /* No desktop, criamos um fundo cinza suave para destacar o "formato celular" no centro */
 @media (min-width: 481px) {
   html, body {
-    background-color: #F2F4F2; 
+    background-color: var(--brand-gray-light);
   }
 }
 
 /* 2. WRAPPER PRINCIPAL RESPONSIVO */
 .login-wrapper {
+  position: fixed;
+  inset: 0;
   display: flex;
   flex-direction: column;
-  height: 100dvh; /* Usa a altura dinâmica da viewport */
-  min-height: 600px; /* Previne quebra em telas muito curtas */
-  padding: clamp(16px, 3vh, 24px) 24px;
-  max-width: 480px; 
+  height: 100dvh;
+  width: min(100%, 480px);
+  padding: clamp(18px, 4vh, 28px) 20px;
   margin: 0 auto;
-  position: relative;
   background-color: var(--color-bg);
-  overflow-y: auto; /* Permite scroll se a tela for menor que 600px de altura */
-  overflow-x: hidden;
-  box-shadow: 0px 4px 24px rgba(0, 0, 0, 0.05); /* Sombra elegante no desktop */
+  overflow: hidden;
+  box-shadow: 0px 4px 24px rgba(0, 0, 0, 0.05);
 }
 
 .logo-login {
@@ -72,7 +76,7 @@ html, body {
 
 .blob {
   position: absolute;
-  background-color: rgba(37, 152, 65, 0.06); 
+  background-color: rgba(22, 163, 58, 0.08);
   border-radius: 50%;
 }
 .blob-1 { width: 320px; height: 320px; top: 25%; left: -160px; }
@@ -89,7 +93,9 @@ html, body {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding-bottom: clamp(16px, 2vh, 32px);
+  min-height: 110px;
+  padding-top: clamp(22px, 4vh, 30px);
+  padding-bottom: clamp(18px, 3vh, 26px);
 }
 
 .login-main {
@@ -127,8 +133,8 @@ html, body {
 }
 
 .title-bg-line {
-  height: clamp(6px, 1vh, 8px); 
-  background-color: #F2F4F2; 
+  height: clamp(6px, 1vh, 8px);
+  background-color: var(--brand-gray-light);
   border-radius: 4px;
 }
 .line-1 { width: 88%; margin: 0 auto; transform: translateX(-4%); }
@@ -159,13 +165,13 @@ html, body {
 }
 
 .stats-box {
-  text-align: left; 
-  background-color: #F7F9F7; 
+  text-align: left;
+  background-color: var(--brand-gray-light);
   padding: clamp(16px, 2.5vh, 20px) clamp(20px, 5vw, 24px);
-  border-radius: 12px; /* Cantos um pouco mais suaves */
-  display: inline-block; 
+  border-radius: 12px;
+  display: inline-block;
   width: 100%;
-  border: 1px solid rgba(37, 152, 65, 0.1); /* Contorno sutil */
+  border: 1px solid rgba(11, 107, 58, 0.16);
 }
 
 .stats-intro, .stats-list {
@@ -185,10 +191,10 @@ html, body {
    ========================================= */
 .video-card-container {
   width: 100%;
-  background-color: var(--color-video-bg);
+  background-color: var(--brand-gray-light);
   border-radius: 16px;
-  padding: clamp(12px, 2vh, 16px); 
-  padding-bottom: clamp(36px, 6vh, 44px); 
+  padding: clamp(12px, 2vh, 16px);
+  padding-bottom: clamp(36px, 6vh, 44px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -242,12 +248,12 @@ html, body {
 }
 
 .btn-play-video:hover {
-  background-color: #042e14;
+  background-color: var(--brand-green-dark);
 }
 
 .btn-play-video:active {
-  transform: translate(-50%, calc(50% + 2px)); 
-  background-color: #03210e;
+  transform: translate(-50%, calc(50% + 2px));
+  background-color: var(--brand-green);
 }
 
 /* =========================================
@@ -298,7 +304,7 @@ html, body {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: #D6D6D6;
+  background-color: rgba(17, 17, 17, 0.16);
   transition: background-color 0.3s ease;
 }
 
@@ -333,6 +339,6 @@ html, body {
 }
 
 .login-legal-links .separator {
-  color: #D6D6D6; /* Mesma cor das bolinhas inativas para manter harmonia */
+  color: rgba(17, 17, 17, 0.24); /* Mesma cor das bolinhas inativas para manter harmonia */
   font-size: 10px;
 }

@@ -121,6 +121,7 @@ function AppRoutes({ rootElement, publicExplorationRoute, privateRedirect }) {
           <Route path="/escolher-senadores/reeleger" element={privateRedirect(BALLOT_ROUTES.senadores)} />
           <Route path="/escolher-senadores/renovar" element={privateRedirect(BALLOT_ROUTES.senadores)} />
           <Route path={BALLOT_ROUTES.meuPlano} element={publicExplorationRoute(<MeuPlano />)} />
+          <Route path="/meu-plano" element={<Navigate to={BALLOT_ROUTES.meuPlano} replace />} />
           <Route path={`${BALLOT_ROUTES.continuarPlano}/:token`} element={<ContinuarPlano />} />
           <Route path={`${BALLOT_ROUTES.continuarPlanoCurto}/:token`} element={<ContinuarPlano />} />
           <Route path="/meu-nossovoto" element={privateRedirect(BALLOT_ROUTES.meuPlano)} />

@@ -1,18 +1,18 @@
 {
-  "short_name": "nossovoto",
-  "name": "nossovoto.org",
-  "description": "PWA para organizar escolhas de voto com funcionamento fluido em redes instaveis.",
+  "short_name": "Bom de Voto",
+  "name": "Bom de Voto",
+  "description": "PWA para organizar escolhas de voto com funcionamento fluido em redes instáveis.",
   "id": "/",
   "lang": "pt-BR",
   "icons": [
     {
-      "src": "/icons/nossovoto-192.png?v=1.6.3-20260602",
+      "src": "/icons/bomdevoto-192.png?v=1.6.3-20260602",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/nossovoto-512.png?v=1.6.3-20260602",
+      "src": "/icons/bomdevoto-512.png?v=1.6.3-20260602",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any maskable"

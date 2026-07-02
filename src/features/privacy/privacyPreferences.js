@@ -85,7 +85,7 @@ export const resetCookiePermissions = () => {
   }
 
   if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent('nossovoto:privacy-preferences-reset'));
+    window.dispatchEvent(new CustomEvent('bomdevoto:privacy-preferences-reset'));
   }
 
   return { ...DEFAULT_PRIVACY_PREFERENCES };

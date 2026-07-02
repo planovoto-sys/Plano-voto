@@ -72,7 +72,7 @@ export default function DesktopPlanSummary({
 
   return (
     <DesktopShell
-      currentStep="nossovoto"
+      currentStep="resumo"
       onBack={onBack}
       onMobileCta={handoff.generate}
       mobileCtaLabel="Gerar QR"
@@ -81,7 +81,7 @@ export default function DesktopPlanSummary({
         <section className="desktop-summary-main">
           <DesktopPageIntro
             badge="Revisão"
-            title="nossovoto"
+            title="Resumo"
             limitText="Use o computador para revisar. Salve, compartilhe e continue pelo celular."
           >
             Revise suas escolhas no computador e continue pelo celular para salvar e compartilhar.

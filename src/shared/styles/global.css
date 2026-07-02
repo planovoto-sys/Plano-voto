@@ -64,6 +64,12 @@
   --text-strong: #111111;
   --text-main: #171717;
   --text-muted: rgba(17, 17, 17, 0.68);
+  --brand-green: #16A34A;
+  --brand-green-light: #8DC63F;
+  --brand-green-dark: #0B6B3A;
+  --brand-yellow: #F7C600;
+  --brand-gray-light: #F5F5F5;
+  --brand-black: #111111;
   --tone-success: #72d552;
   --tone-success-bg: #f1ffef;
   --tone-danger-bg: #fff0f0;
@@ -472,7 +478,7 @@ body {
   height: clamp(58px, 18vw, 82px);
   display: block;
   overflow: visible;
-  filter: drop-shadow(0 12px 22px rgba(255, 122, 53, 0.24));
+  filter: none;
   animation: loadingFlamePulse 1100ms var(--ease-standard) infinite;
 }
 
@@ -501,8 +507,7 @@ body {
 
 .loading-intro__flame-fill .loading-intro__flame {
   inset: auto 0 0;
-  filter:
-    drop-shadow(0 7px 14px rgba(255, 122, 53, 0.28)) saturate(1.12);
+  filter: none;
 }
 
 .loading-intro__caption {

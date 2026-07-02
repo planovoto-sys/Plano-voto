@@ -23,7 +23,7 @@ export const BALLOT_ROUTES = {
   senadores: '/escolher-senadores',
   senador1: '/escolher-senador-1',
   senador2: '/escolher-senador-2',
-  meuPlano: '/meu-plano',
+  meuPlano: '/resumo',
   continuarPlano: '/continuar-plano',
   continuarPlanoCurto: '/c'
 };

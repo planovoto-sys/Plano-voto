@@ -35,6 +35,7 @@ function ContinueIcon({ className = '' }) {
   );
 }
 
+
 function ShareIcon({ className = '' }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -171,9 +172,19 @@ export default function ConvexBottomNavigation({
     });
   };
 
-  return (
-    <div className="app-page-footer convex-nav-shell">
-      <nav className={`convex-nav ${isCollapsed ? 'is-collapsed' : ''}`}>
+ return (
+    <div className={`app-page-footer convex-nav-shell ${isCollapsed ? 'is-collapsed' : ''}`}>
+      
+      {/* Camada Visual de Fundo: Efeito Vitral (Glassmorphism) Uniforme */}
+      <div className="convex-nav__bg-wrapper">
+        <div className="convex-nav__bg-side left" />
+        {/* A curva não é mais um SVG, é uma div recortada por CSS para embaçar o fundo */}
+        <div className="convex-nav__bg-center" />
+        <div className="convex-nav__bg-side right" />
+      </div>
+
+      {/* Camada Lógica Interativa */}
+      <nav className="convex-nav">
         
         <div className="convex-nav__side">
           {renderNavItems(LEFT_STEPS)}

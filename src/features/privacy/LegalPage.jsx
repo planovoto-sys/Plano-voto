@@ -167,9 +167,8 @@ function AboutLanding({ user, isDesktopExperience, onPrimaryCta, onLoginCta }) {
   return (
     <div className="about-page nv-screen">
       <header className="about-header">
-        <Link to="/" className="about-header__brand" aria-label="nossovoto.org">
-          <ChanceFlame className="about-header__flame" size={26} />
-          <strong>nossovoto<span>.org</span></strong>
+        <Link to="/" className="about-header__brand" aria-label="Bom de Voto">
+          <img src="/logo-horizontal.svg" alt="Bom de Voto" className="about-header__brand-logo" />
         </Link>
 
         <nav className="about-header__nav" aria-label="Navegação institucional">
@@ -199,7 +198,7 @@ function AboutLanding({ user, isDesktopExperience, onPrimaryCta, onLoginCta }) {
             <span className="about-eyebrow">Plano de voto simples, revisável e seguro</span>
             <h1>Monte seu plano de voto com mais clareza</h1>
             <p>
-              O nossovoto ajuda você a organizar seus candidatos por cargo, revisar suas escolhas
+              O Bom de Voto ajuda você a organizar seus candidatos por cargo, revisar suas escolhas
               e salvar um rascunho antes da decisão final.
             </p>
             <p className="about-hero__support">
@@ -359,10 +358,10 @@ export default function LegalPage({ type }) {
       document.head.appendChild(canonicalLink);
     }
 
-    document.title = content.meta?.title || `${content.title} | nossovoto.org`;
+    document.title = content.meta?.title || `${content.title} | Bom de Voto`;
     descriptionMeta.setAttribute('content', content.meta?.description || content.subtitle || '');
     robotsMeta.setAttribute('content', content.meta?.noindex ? 'noindex,follow' : 'index,follow');
-    canonicalLink.setAttribute('href', `https://nossovoto.org${content.meta?.path || window.location.pathname}`);
+    canonicalLink.setAttribute('href', `https://bomdevoto.org${content.meta?.path || window.location.pathname}`);
 
     return () => {
       document.title = previousTitle;
@@ -407,7 +406,7 @@ export default function LegalPage({ type }) {
   return (
     <div className="legal-page nv-screen">
       <header className="legal-header nv-container">
-        <Link to="/" className="legal-header__brand">nossovoto.org</Link>
+        <Link to="/" className="legal-header__brand">Bom de Voto</Link>
         <button className="legal-header__back nv-touch" type="button" onClick={() => navigate(-1)}>
           ← Voltar
         </button>

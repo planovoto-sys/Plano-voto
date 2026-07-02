@@ -32,6 +32,15 @@ function Login() {
   };
 
   useEffect(() => {
+    document.body.classList.add('login-page-active');
+    document.documentElement.classList.add('login-page-active');
+    return () => {
+      document.body.classList.remove('login-page-active');
+      document.documentElement.classList.remove('login-page-active');
+    };
+  }, []);
+
+  useEffect(() => {
     if (!loading && user?.uid && !loginFlowActiveRef.current) {
       navigate(returnTo, { replace: true, state: { bypassVoteRedirect: true } });
     }

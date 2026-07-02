@@ -7,7 +7,7 @@ export const registerPwaServiceWorker = () => {
     navigator.serviceWorker.register('/sw.js', { scope: '/' })
       .then((registration) => {
         registration.addEventListener('updatefound', () => {
-          window.dispatchEvent(new CustomEvent('nossovoto:pwa-update-available'));
+          window.dispatchEvent(new CustomEvent('bomdevoto:pwa-update-available'));
         });
 
         window.setInterval(() => {

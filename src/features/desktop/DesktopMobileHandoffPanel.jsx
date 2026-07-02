@@ -13,7 +13,7 @@ export default function DesktopMobileHandoffPanel({ handoff, title = 'Continue p
         </span>
         <h2>{title}</h2>
         <p>
-          Escaneie o QR Code para abrir o nossovoto no navegador do celular.
+          Escaneie o QR Code para abrir o Bom de Voto no navegador do celular.
         </p>
       </div>
 

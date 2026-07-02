@@ -1,6 +1,5 @@
 import { ArrowLeft, Smartphone } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { ChanceFlame } from '@/shared/icons/ChanceFlame';
 import DesktopStepNav from './DesktopStepNav';
 
 export default function DesktopHeader({
@@ -21,9 +20,8 @@ export default function DesktopHeader({
           )}
         </div>
 
-        <Link className="desktop-header__brand" to="/" aria-label="nossovoto.org">
-          <ChanceFlame size={24} />
-          <strong>nossovoto<em>.org</em></strong>
+        <Link className="desktop-header__brand" to="/" aria-label="Bom de Voto">
+          <img src="/logo-horizontal.svg" alt="Bom de Voto" className="desktop-header__brand-logo" />
         </Link>
 
         <DesktopStepNav currentStep={currentStep} />

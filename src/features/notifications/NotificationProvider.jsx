@@ -103,7 +103,7 @@ export default function NotificationProvider({ children }) {
 
     window.addEventListener('offline', handleOffline);
     window.addEventListener('online', handleOnline);
-    window.addEventListener('nossovoto:pwa-update-available', handlePwaUpdate);
+    window.addEventListener('bomdevoto:pwa-update-available', handlePwaUpdate);
 
     return () => {
       window.removeEventListener('offline', handleOffline);

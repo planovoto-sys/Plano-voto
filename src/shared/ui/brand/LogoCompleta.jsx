@@ -1,7 +1,7 @@
 export default function LogoCompleta({
   as = 'div',
   className = '',
-  label = 'nossovoto.org'
+  label = 'Bom de Voto'
 }) {
   const Element = as;
 
@@ -12,7 +12,7 @@ export default function LogoCompleta({
     <Element className={classNames} aria-label={label}>
       <img 
         src="/logo-horizontal.svg" 
-        alt="Logo Nosso Voto" 
+        alt="Logo Bom de Voto" 
         className="logo-completa__image"
       />
     </Element>

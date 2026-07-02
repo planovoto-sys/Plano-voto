@@ -56,7 +56,7 @@ const getCandidateOfficeKey = (candidate = {}) => {
 };
 
 const getPlanUrl = () => {
-  if (typeof window === 'undefined') return 'https://bomdevoto.com.br/meu-plano';
+  if (typeof window === 'undefined') return 'https://bomdevoto.com.br/resumo';
   return `${window.location.origin}${BALLOT_ROUTES.meuPlano}`;
 };
 
