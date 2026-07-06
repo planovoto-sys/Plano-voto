@@ -6,6 +6,7 @@
   --brand-light: #8DC63F;
   --brand-dark: #0B6B3A;
   --brand-accent: #F7C600;
+  --brand-danger: #EF4444; /* Vermelho para notas baixas */
   --brand-bg: #F5F5F5;
   --brand-surface: #FFFFFF;
   --brand-text: #111111;
@@ -18,7 +19,7 @@
   height: var(--app-height, 100dvh);
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* Trava a rolagem na raiz para permitir a rolagem interna */
+  overflow: hidden; 
 }
 
 /* ========================================================
@@ -26,7 +27,7 @@
    ======================================================== */
 .my-plan-header {
   flex: 0 0 auto;
-  min-height: 70px;
+  min-height: 55px;
   background: var(--brand-surface);
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr) 44px;
@@ -37,14 +38,13 @@
   z-index: 10;
 }
 
-/* 1. Correção: Limitando severamente o tamanho da logo */
 .my-plan-header .logo-completa {
   justify-self: center;
   width: clamp(100px, 30vw, 130px);
   max-width: 100%;
   height: auto;
   margin: 0;
-  font-size: clamp(15px, 4vw, 18px); /* Caso a logo use em/font-size internamente */
+  font-size: clamp(15px, 4vw, 18px); 
 }
 
 .my-plan-header__btn {
@@ -83,7 +83,6 @@
 /* ========================================================
    CONTEÚDO PRINCIPAL (SCROLL E FOOTER)
    ======================================================== */
-/* 2, 4 e 5. Correção: Flex flexível com altura mínima zero permite que a rolagem aconteça */
 .my-plan-scroll {
   flex: 1 1 0; 
   min-height: 0;
@@ -101,20 +100,20 @@
 }
 
 /* ========================================================
-   QUADRO DE RESUMO (OVERVIEW) E ESTRELAS
+   QUADRO DE RESUMO (OVERVIEW) COMPACTADO E ESTRELAS
    ======================================================== */
 .my-plan-overview {
   background: var(--brand-surface);
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 4px 20px rgba(17, 17, 17, 0.04);
+  border-radius: 12px;
+  padding: 14px 12px;
+  box-shadow: 0 4px 12px rgba(17, 17, 17, 0.04);
   border: 1px solid var(--brand-border);
 }
 
 .my-plan-overview__metrics {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  gap: 8px;
   text-align: center;
 }
 
@@ -129,57 +128,70 @@
 .my-plan-overview__metric:not(:last-child)::after {
   content: '';
   position: absolute;
-  right: -6px;
-  top: 10%;
-  height: 80%;
+  right: -4px;
+  top: 15%;
+  height: 70%;
   width: 1px;
   background: var(--brand-border);
 }
 
+/* ========================================================
+   CORES DINÂMICAS GLOBAIS: PINTA TUDO (TÍTULO, VALOR E SUB)
+   ======================================================== */
+.my-plan-overview__metric--green .my-plan-overview__label,
+.my-plan-overview__metric--green .my-plan-overview__value,
+.my-plan-overview__metric--green .my-plan-overview__sub {
+  color: var(--brand-primary);
+}
+
+.my-plan-overview__metric--red .my-plan-overview__label,
+.my-plan-overview__metric--red .my-plan-overview__value,
+.my-plan-overview__metric--red .my-plan-overview__sub {
+  color: var(--brand-danger);
+}
+
 .my-plan-overview__label {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   color: var(--brand-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
+  transition: color 0.3s ease;
 }
 
 .my-plan-overview__value {
-  font-size: clamp(24px, 8vw, 32px);
+  font-size: clamp(20px, 6vw, 26px);
   font-weight: 900;
   color: var(--brand-text);
   line-height: 1;
-}
-
-.my-plan-overview__value--green {
-  color: var(--brand-primary);
+  transition: color 0.3s ease;
 }
 
 .my-plan-overview__sub {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--brand-muted);
-  margin-top: 4px;
+  margin-top: 2px;
+  transition: color 0.3s ease;
 }
 
-/* 3. Correção: Estrelas funcionais e fracionadas */
 .my-plan-stars-container {
   display: inline-flex;
-  gap: 2px;
+  gap: 1px;
   margin-top: 4px;
 }
 
 .star-wrapper {
   position: relative;
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
 }
 
 .star-bg {
   width: 100%;
   height: 100%;
-  color: var(--brand-border); /* Fundo cinza para a estrela vazia */
+  color: var(--brand-border);
   fill: currentColor;
 }
 
@@ -189,63 +201,68 @@
   left: 0;
   height: 100%;
   overflow: hidden;
-  color: var(--brand-accent); /* Amarelo apenas para o preenchimento da estrela */
 }
 
+.star-fill-wrapper--default { color: var(--brand-accent); }
+.star-fill-wrapper--red { color: var(--brand-danger); }
+
 .star-fg {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   fill: currentColor;
 }
 
 /* Termômetro de Viabilidade */
 .my-plan-gauge {
   width: 100%;
-  max-width: 80px;
-  height: 6px;
+  max-width: 60px;
+  height: 4px;
   background: var(--brand-border);
   border-radius: 4px;
-  margin-top: 8px;
+  margin-top: 6px;
   overflow: hidden;
   position: relative;
 }
 
 .my-plan-gauge__fill {
   height: 100%;
-  background: var(--brand-primary);
   border-radius: 4px;
-  transition: width 0.5s ease;
+  transition: width 0.5s ease, background-color 0.3s ease;
 }
 
+.my-plan-gauge__fill--green { background: var(--brand-primary); }
+.my-plan-gauge__fill--red { background: var(--brand-danger); }
+
 /* ========================================================
-   SESSÕES DE ESCOLHA E CARDS REAPROVEITADOS
+   SESSÕES DE ESCOLHA COMPACTADAS
    ======================================================== */
 .my-plan-choices {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
 }
 
 .my-plan-choice-section h2 {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 800;
   color: var(--brand-text);
-  margin-bottom: 12px;
-  padding-left: 4px;
+  margin-bottom: 8px;
+  padding-left: 2px;
 }
 
 .my-plan-choice-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .my-plan-choice-list .prototype-candidate-card {
   background-color: var(--brand-surface) !important;
   border: 1px solid var(--brand-border) !important;
-  border-radius: 14px !important;
-  box-shadow: 0 4px 12px rgba(17, 17, 17, 0.03) !important;
-  padding: 14px 16px !important;
+  border-radius: 12px !important;
+  box-shadow: 0 2px 8px rgba(17, 17, 17, 0.03) !important;
+  padding: 10px 12px !important;
+  min-height: auto !important;
 }
 
 .my-plan-choice-list .candidate-card__action-btn,
@@ -325,8 +342,8 @@
 @media (min-width: 768px) {
   .my-plan-scroll { padding: 40px 16px; }
   .my-plan-shell { max-width: 800px; gap: 32px; }
-  .my-plan-overview { padding: 32px; border-radius: 24px; }
+  .my-plan-overview { padding: 24px; border-radius: 16px; }
   .my-plan-overview__label { font-size: 13px; }
-  .my-plan-overview__value { font-size: 42px; }
+  .my-plan-overview__value { font-size: 36px; }
   .my-plan-choice-list { grid-template-columns: 1fr 1fr; display: grid; }
 }

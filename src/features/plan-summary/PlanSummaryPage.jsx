@@ -106,13 +106,15 @@ const getScoreStarFills = (score) => {
   ));
 };
 
-function ScoreStars({ score }) {
+function ScoreStars({ score, isBad }) {
+  const starClass = isBad ? 'star-fill-wrapper--red' : 'star-fill-wrapper--default';
+  
   return (
     <div className="my-plan-stars-container" aria-hidden="true">
       {getScoreStarFills(score).map((fill, index) => (
         <div key={index} className="star-wrapper">
           <Star className="star-bg" />
-          <div className="star-fill-wrapper" style={{ width: `${Math.round(fill * 100)}%` }}>
+          <div className={`star-fill-wrapper ${starClass}`} style={{ width: `${Math.round(fill * 100)}%` }}>
             <Star className="star-fg" />
           </div>
         </div>
@@ -257,6 +259,23 @@ export default function MeuPlano() {
     );
   }
 
+  // ==========================================
+  // LÓGICA DE CORES GLOBAIS DO PAINEL DE RESUMO
+  // ==========================================
+  const hasMetrics = averageScore > 0 || averageChance > 0;
+  
+  // O Plano inteiro é considerado "Ruim" se a nota for menor que 6 OU a viabilidade menor que 30%
+  const isPlanBad = hasMetrics && (averageScore < 6 || averageChance < 30);
+  
+  // Se o plano for ruim, TUDO fica vermelho. Se for bom, TUDO fica verde. Se estiver vazio, fica neutro.
+  const globalMetricClass = hasMetrics 
+    ? (isPlanBad ? 'my-plan-overview__metric--red' : 'my-plan-overview__metric--green')
+    : ''; 
+    
+  const gaugeColorClass = hasMetrics 
+    ? (isPlanBad ? 'my-plan-gauge__fill--red' : 'my-plan-gauge__fill--green')
+    : '';
+
   return (
     <div className="my-plan-page">
       <header className="my-plan-header">
@@ -281,27 +300,30 @@ export default function MeuPlano() {
           <section className="my-plan-overview">
             <div className="my-plan-overview__metrics">
               
-              <div className="my-plan-overview__metric">
+              {/* ESTADO - Agora muda de cor junto com o resto! */}
+              <div className={`my-plan-overview__metric ${globalMetricClass}`}>
                 <span className="my-plan-overview__label">Estado</span>
                 <span className="my-plan-overview__value">{estadoSigla || '--'}</span>
                 <span className="my-plan-overview__sub">{estadoSigla ? estadoNome : 'Definir'}</span>
               </div>
 
-              <div className="my-plan-overview__metric">
+              {/* NOTA - Muda de cor junto */}
+              <div className={`my-plan-overview__metric ${globalMetricClass}`}>
                 <span className="my-plan-overview__label">Nota</span>
-                <span className="my-plan-overview__value my-plan-overview__value--green">
+                <span className="my-plan-overview__value">
                   {averageScore > 0 ? formatScore(averageScore) : '--'}
                 </span>
-                <ScoreStars score={averageScore} />
+                <ScoreStars score={averageScore} isBad={isPlanBad} />
               </div>
 
-              <div className="my-plan-overview__metric">
+              {/* VIABILIDADE - Muda de cor junto */}
+              <div className={`my-plan-overview__metric ${globalMetricClass}`}>
                 <span className="my-plan-overview__label">Viabilidade</span>
-                <span className="my-plan-overview__value my-plan-overview__value--green">
-                  {Math.round(averageChance)}%
+                <span className="my-plan-overview__value">
+                  {averageChance > 0 ? `${Math.round(averageChance)}%` : '--'}
                 </span>
                 <div className="my-plan-gauge">
-                  <div className="my-plan-gauge__fill" style={{ width: `${Math.round(averageChance)}%` }}></div>
+                  <div className={`my-plan-gauge__fill ${gaugeColorClass}`} style={{ width: `${Math.round(averageChance)}%` }}></div>
                 </div>
               </div>
 
@@ -314,15 +336,18 @@ export default function MeuPlano() {
               <h2>Deputado Federal</h2>
               <div className="my-plan-choice-list">
                 {featuredDeputadosFederais.length > 0 ? (
-                  featuredDeputadosFederais.map((candidate) => (
-                    <CandidateCard
-                      key={candidate.id}
-                      candidate={candidate}
-                      showNumberAbove={true} 
-                      onSelect={() => handleEdit(BALLOT_ROUTES.deputadoFederal)}
-                      onLockedMetricClick={() => setModalCampoBloqueado(true)}
-                    />
-                  ))
+                  featuredDeputadosFederais.map((candidate, index) => {
+                    const candWithNumber = { ...candidate, numero: candidate.numero || `123${index + 1}` };
+                    return (
+                      <CandidateCard
+                        key={candWithNumber.id}
+                        candidate={candWithNumber}
+                        showNumberAbove={true} 
+                        onSelect={() => handleEdit(BALLOT_ROUTES.deputadoFederal)}
+                        onLockedMetricClick={() => setModalCampoBloqueado(true)}
+                      />
+                    );
+                  })
                 ) : (
                   <div className="my-plan-empty">
                     <strong>Nenhum Candidato</strong>
@@ -336,15 +361,18 @@ export default function MeuPlano() {
               <h2>Senadores</h2>
               <div className="my-plan-choice-list">
                 {featuredSenadores.length > 0 ? (
-                  featuredSenadores.map((candidate) => (
-                    <CandidateCard
-                      key={candidate.id}
-                      candidate={candidate}
-                      showNumberAbove={true}
-                      onSelect={() => handleEdit(BALLOT_ROUTES.senadores)}
-                      onLockedMetricClick={() => setModalCampoBloqueado(true)}
-                    />
-                  ))
+                  featuredSenadores.map((candidate, index) => {
+                    const candWithNumber = { ...candidate, numero: candidate.numero || `12${index + 1}` };
+                    return (
+                      <CandidateCard
+                        key={candWithNumber.id}
+                        candidate={candWithNumber}
+                        showNumberAbove={true}
+                        onSelect={() => handleEdit(BALLOT_ROUTES.senadores)}
+                        onLockedMetricClick={() => setModalCampoBloqueado(true)}
+                      />
+                    );
+                  })
                 ) : (
                   <div className="my-plan-empty">
                     <strong>Nenhum Candidato</strong>
@@ -378,7 +406,6 @@ export default function MeuPlano() {
         <AppFooter />
       </main>
 
-      {/* Renderiza o modal de compartilhamento controlado por estado */}
       {shareData && (
         <ShareChoicePanel 
           shareData={shareData}
@@ -387,7 +414,6 @@ export default function MeuPlano() {
         />
       )}
 
-      {/* Renderiza a barra e avisa que é a tela final, passando a ação do botão */}
       <ConvexBottomNavigation 
         currentStep="nossovoto" 
         isFinalStep={true} 

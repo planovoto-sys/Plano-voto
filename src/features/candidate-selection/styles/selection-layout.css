@@ -20,39 +20,39 @@
 .variant-home-state .select-base__scroll {
   --screen-gutter: 18px;
 }
+
 /* ==========================================================================
-   NOVO HEADER (50px ALTURA FIXA E BUSCA EXPANSÍVEL ANIMADA)
+   NOVO HEADER (FIXO EM 55PX, ALINHAMENTO COM TELAS DE RESUMO)
    ========================================================================== */
 .step-header {
   position: sticky;
   top: 0;
-  z-index: 50;
+  z-index: 55;
   width: 100%;
-  /* Define exatamente 50px + a área segura do celular (Notch/Status Bar) */
-  height: calc(50px + var(--app-safe-top, 0px));
+
+  /* Trava absolutamente a altura em 55px (+ safe area do topo) */
+  height: calc(55px + var(--app-safe-top, 0px));
+  min-height: calc(55px + var(--app-safe-top, 0px));
+  max-height: calc(55px + var(--app-safe-top, 0px));
+
   padding: var(--app-safe-top, 0px) var(--screen-gutter) 0;
-  background: #f3f3f3;
+  background-color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  box-shadow: 0 1px 0 rgba(17,17,17,0.06);
+  box-shadow: 0 1px 0 rgba(17, 17, 17, 0.06);
 }
 
 .step-header__brand {
   display: flex;
   align-items: center;
-  transition: width 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
-  white-space: nowrap; 
-  overflow: hidden;
-  width: auto;
-  opacity: 1;
 }
 
 .step-header__brand svg,
 .step-header__brand img {
-  /* Logo reduzida para caber nos 50px com respiro */
-  max-height: 50px; 
+  /* Reduzido um pouco para casar perfeitamente com os 55px sem encostar nas bordas */
+  max-height: 40px;
   width: auto;
   display: block;
 }
@@ -62,8 +62,6 @@
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
-  flex: 1;
-  transition: gap 0.3s ease;
 }
 
 /* ==========================================================================
@@ -71,13 +69,10 @@
    ========================================================================== */
 .step-header__filter-wrapper {
   position: relative;
-  transition: width 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
-  width: 38px;
-  opacity: 1;
-  overflow: visible; 
   display: flex;
   justify-content: center;
 }
+
 .step-header__icon-btn {
   background: transparent;
   border: none;
@@ -89,8 +84,8 @@
   cursor: pointer;
   position: relative;
   transition: color 0.2s ease, transform 0.2s ease;
-  width: 38px;  /* Ajustado para caber nos 50px */
-  height: 38px; /* Ajustado para caber nos 50px */
+  width: 38px;
+  height: 38px;
 }
 
 .step-header__icon-btn:active {
@@ -102,14 +97,14 @@
 }
 
 .step-header__icon-btn svg {
-  width: 20px; /* Ícone um pouco menor */
+  width: 20px;
   height: 20px;
-  stroke-width: 2.2; 
+  stroke-width: 2.2;
 }
 
 .step-header__filter-badge {
   position: absolute;
-  top: 6px; 
+  top: 6px;
   right: 6px;
   width: 8px;
   height: 8px;
@@ -119,21 +114,21 @@
 }
 
 .step-header__filter-dropdown {
-position: absolute;
+  position: absolute;
   top: 100%;
   right: 0;
   margin-top: 10px;
   background: #ffffff;
-  border: 1px solid rgba(0,0,0,0.1);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-  min-width: 160px; 
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  min-width: 160px;
   padding: 4px 0;
   z-index: 60;
 }
 
 .step-header__filter-option {
-display: flex;
+  display: flex;
   align-items: center;
   gap: 10px;
   padding: 10px 16px;
@@ -149,8 +144,8 @@ display: flex;
 }
 
 .step-header__filter-option.is-active {
- color: #0B6B3A; 
-  background: #F0FDF4; 
+  color: #0B6B3A;
+  background: #F0FDF4;
 }
 
 .step-header__filter-check {
@@ -167,56 +162,45 @@ display: flex;
 }
 
 /* ==========================================================================
-   A MÁGICA DA BUSCA EXPANSÍVEL (Esconde Logo/Filtro e cresce)
+   A MÁGICA DA BUSCA: TAKEOVER PROPORCIONAL
    ========================================================================== */
-@media (max-width: 767px) {
-  /* Em telas mobile, esconde a logo e o filtro para dar lugar à busca */
-  .step-header.is-searching .step-header__brand {
-    width: 0;
-    opacity: 0;
-    margin: 0;
-    padding: 0;
-    pointer-events: none;
-  }
-  
-  .step-header.is-searching .step-header__filter-wrapper {
-    width: 0;
-    opacity: 0;
-    margin: 0;
-    pointer-events: none;
-  }
-  
-  .step-header.is-searching .step-header__actions {
-    gap: 0;
-  }
-}
-
 .step-header__search-wrapper {
   display: flex;
   align-items: center;
-  height: 38px; /* Ajustado de 44px para 38px */
-  width: 38px;  /* Começa com o tamanho exato do ícone */
-  border-radius: 999px;
+  justify-content: flex-end;
+  height: 38px;
+  width: 38px;
   background: transparent;
-  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.4s ease;
   position: relative;
 }
 
-/* Quando ativo, cresce e preenche o fundo */
+/* 1. OVERLAY ABSOLUTO: Cobre os 55px perfeitamente */
 .step-header.is-searching .step-header__search-wrapper {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  background: rgba(17,17,17,0.06); 
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(8px);
+  padding: var(--app-safe-top, 0px) var(--screen-gutter) 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  opacity: 0;
+  animation: takeoverFadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-@media (min-width: 768px) {
-  .step-header.is-searching .step-header__search-wrapper {
-    width: 320px; 
+@keyframes takeoverFadeIn {
+  to {
+    opacity: 1;
   }
 }
 
+/* 2. LUPA (GATILHO E DECORAÇÃO): Reduzida */
 .step-header__search-trigger {
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -227,59 +211,78 @@ display: flex;
   cursor: pointer;
   padding: 0;
   border-radius: 50%;
-  transition: color 0.2s ease, transform 0.2s ease;
-}
-
-.step-header__search-trigger:active {
-  transform: scale(0.9);
+  transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 .step-header__search-trigger svg {
-  width: 20px;
-  height: 20px;
+  /* Ícone menor e mais elegante */
+  width: 18px;
+  height: 18px;
   stroke-width: 2.2;
 }
 
+.step-header__search-trigger:active {
+  background-color: rgba(17, 17, 17, 0.05);
+  transform: scale(0.92);
+}
+
 .step-header.is-searching .step-header__search-trigger {
-  cursor: default;
+  position: absolute;
+  left: calc(var(--screen-gutter) + 12px);
   color: var(--muted);
-}
-
-.step-header.is-searching .step-header__search-trigger:active {
+  cursor: text;
   transform: none;
+  pointer-events: none;
+  z-index: 65;
 }
 
+/* 3. INPUT: Pílula reduzida para 38px para sobrar respiro nos 55px de header */
 .step-header__search-input {
-  flex: 1;
-  height: 100%;
-  background: transparent;
-  border: none;
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--text-strong);
-  outline: none;
-  padding: 0;
-  opacity: 0;
-  width: 0; 
-  pointer-events: none;
-  transition: opacity 0.3s ease 0.1s, width 0.3s ease;
+  display: none;
 }
 
 .step-header.is-searching .step-header__search-input {
-  opacity: 1;
-  width: 100%;
-  pointer-events: auto;
-  padding-right: 8px;
+  display: block;
+  flex: 1;
+  height: 38px;
+  background: #F3F4F6;
+  border: 1px solid transparent;
+  border-radius: 999px;
+
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-strong);
+  outline: none;
+
+  padding: 0 16px 0 42px;
+
+  opacity: 0;
+  transform: translateY(4px);
+  animation: slideUpIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) 0.05s forwards;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+@keyframes slideUpIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.step-header.is-searching .step-header__search-input:focus {
+  background: #ffffff;
+  border-color: #16A34A;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.08);
 }
 
 .step-header__search-input::placeholder {
   color: var(--muted);
-  font-weight: 500;
 }
 
+/* 4. BOTÃO FECHAR: Menor e com Bounce In */
 .step-header__search-close {
-  width: 30px; /* Reduzido para encaixar bem nos 38px do input */
-  height: 30px;
+  width: 32px;
+  height: 32px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -288,26 +291,35 @@ display: flex;
   border: none;
   color: var(--text-strong);
   cursor: pointer;
-  padding: 0;
-  margin-right: 4px;
   border-radius: 50%;
+  margin-left: 6px;
+
   opacity: 0;
-  transition: background 0.2s ease;
-  animation: fadeIn 0.3s forwards 0.2s;
+  transform: scale(0.7);
+  animation: bounceIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s forwards;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+@keyframes bounceIn {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .step-header__search-close svg {
   width: 16px;
   height: 16px;
-  stroke-width: 2.5;
+  stroke-width: 2.2;
 }
 
 .step-header__search-close:hover {
-  background: rgba(17,17,17,0.08);
+  background: #FEE2E2;
+  color: #EF4444;
 }
 
-@keyframes fadeIn {
-  to { opacity: 1; }
+.step-header__search-close:active {
+  transform: scale(0.9);
 }
 
 /* ==========================================================================
@@ -331,7 +343,6 @@ display: flex;
   border-radius: 8px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-
 }
 
 .prototype-section-heading h2 {
