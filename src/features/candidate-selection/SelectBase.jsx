@@ -21,17 +21,24 @@ import {
 import LogoCompleta from '@/shared/ui/brand/LogoCompleta';
 import './SelectBase.css';
 
+const LogoBomDeVoto = () => (
+  <div className="logo-bom-de-voto">
+    <div className="logo-bom-de-voto__circles">
+      <div className="logo-bom-de-voto__circle" />
+      <div className="logo-bom-de-voto__circle" />
+    </div>
+    <span className="logo-bom-de-voto__text">Bom de Voto</span>
+  </div>
+);
+
 export default function SelectBase({
   titulo,
-  subtitulo = '',
   dados,
   limiteSelecao,
-  minimoSelecao = 1,
   selecaoInicial = [],
   carregando,
   onConfirmar,
   onLimiteAtingido,
-  onVoltar,
   mostrarBusca = false,
   valorBusca = '',
   onChangeBusca,
@@ -45,7 +52,6 @@ export default function SelectBase({
   onSubNavigationSelect,
   variant = '',
   emptyMessage = 'Nenhum resultado encontrado.',
-  shareData = null,
   featuredCandidateId = null,
   personalizedFieldsLocked = false,
   renderItem
@@ -125,10 +131,10 @@ export default function SelectBase({
   }, [candidateFilterOpen]);
 
   const effectiveLimit = Number.isFinite(limiteSelecao) ? limiteSelecao : null;
-  const requiredSelectionCount = isCandidateOffice ? minimoSelecao : (effectiveLimit || 1);
+  
   const hasSelectionLimit = Number.isFinite(effectiveLimit) && effectiveLimit > 0;
   const visibleRows = Number.isFinite(linhasVisiveis) ? linhasVisiveis : 5;
-  const hasRequiredSelection = selecionados.length >= requiredSelectionCount;
+  
 
   const featuredCandidate = useMemo(() => {
     if (!isCandidateOffice) return null;
@@ -189,24 +195,9 @@ const candidateFilterItems = useMemo(() => (
 
   const activeCandidateFilterItem = candidateFilterItems.find(isCandidateFilterActive) || candidateFilterItems[0] || null;
 
-  const getRequiredSelectionMessage = () => {
-    if (isSenateOffice) {
-      return selecionados.length === 1
-        ? 'Escolha mais 1 senador para continuar.'
-        : 'Escolha 2 senadores para continuar.';
-    }
-    if (isDeputyOffice) {
-      return 'Escolha 1 deputado federal para continuar.';
-    }
-    return 'Escolha uma opção para continuar.';
-  };
+  
 
-  const notifyMissingSelection = () => {
-    notify.warning(getRequiredSelectionMessage(), {
-      dedupeKey: `missing-selection-${variant}`,
-      duration: 4200
-    });
-  };
+  
 
   const commitSelection = async (nextSelecionados, { autoConfirm = false, completed = false } = {}) => {
     const previousSelecionados = selecionados;
@@ -436,7 +427,7 @@ const candidateFilterItems = useMemo(() => (
       <header className={`step-header ${isSearchActive ? 'is-searching' : ''}`}>
         
         <div className="step-header__brand">
-          <LogoCompleta />
+    <LogoBomDeVoto />
         </div>
 
         <div className="step-header__actions">

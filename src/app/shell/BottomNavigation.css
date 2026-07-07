@@ -1,4 +1,4 @@
-/* Container fixo invisível que segura toda a navegação */
+/* Container fixo invisível */
 .app-page-footer.convex-nav-shell {
   position: fixed;
   left: 50%;
@@ -10,66 +10,57 @@
   pointer-events: none;
 }
 
-/* Camada base: Alinha os itens no chão e aplica a sombra projetada */
+/* Base que alinha tudo e aplica a sombra geral */
 .convex-nav__bg-wrapper {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 92px;
+  inset: 0;
   display: flex;
+  justify-content: center;
   align-items: flex-end;
-  filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.12));
+  filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.18)); 
   z-index: 0;
 }
 
-/* EFEITO VITRAL (GLASSMORPHISM)
-  Aplicado nas laterais e no centro curvo uniformemente
-*/
+/* =========================================================
+   FUNDO VERDE SÓLIDO (Sem frestas)
+   ========================================================= */
 .convex-nav__bg-side,
 .convex-nav__bg-center {
-  /* Branco puro com 90% de opacidade (10% transparente). 
-     Se quiser mais transparente, mude o 0.9 para 0.5, por exemplo. */
-  background: rgba(255, 255, 255, 0.98); 
-  
-  /* O embaçado do vidro */
-  backdrop-filter: blur(26px) saturate(280%);
-  -webkit-backdrop-filter: blur(26px) saturate(280%);
+  background: #16A34A; /* Verde 100% Sólido */
 }
 
-/* Laterais da barra */
 .convex-nav__bg-side {
-  flex-grow: 1;
   height: 68px;
+  flex-grow: 1;
+  transition: height 0.38s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .convex-nav__bg-side.left {
   border-top-left-radius: 999px;
   border-bottom-left-radius: 999px;
-  margin-right: -1px;
 }
 
 .convex-nav__bg-side.right {
   border-top-right-radius: 999px;
   border-bottom-right-radius: 999px;
-  margin-left: -1px;
 }
 
-/* O centro agora recorta a div em forma de curva para embaçar o fundo! */
 .convex-nav__bg-center {
   flex-shrink: 0;
   width: 150px;
-  height: 92px;
+  height: 92px; 
   clip-path: path('M0,24 C30,24 45,0 75,0 C105,0 120,24 150,24 L150,92 L0,92 Z');
-  z-index: 1;
-  transition: transform 0.38s cubic-bezier(0.25, 1, 0.5, 1);
+  z-index: 1; 
+  margin-left: -5px;
+  margin-right: -5px;
+  transform-origin: bottom center; 
+  transition: height 0.38s cubic-bezier(0.25, 1, 0.5, 1), transform 0.38s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-/* Container de conteúdo interativo (Ícones e Botões) */
+/* =========================================================
+   TEXTOS E ÍCONES: 100% BRANCOS, DESTAQUE PELA GROSSURA
+   ========================================================= */
 .convex-nav {
-  --nav-active: #16A34A;
-  --nav-inactive: #6B7280;
-  
   position: relative;
   width: 100%;
   height: 68px;
@@ -85,7 +76,8 @@
 .convex-nav__side {
   display: flex;
   flex: 1;
-  justify-content: space-around;
+  /* Mudamos para space-evenly para uma distribuição mais limpa e equilibrada */
+  justify-content: space-evenly; 
   align-items: center;
   height: 100%;
 }
@@ -94,39 +86,38 @@
   position: relative;
   border: 0;
   background: transparent;
-  color: var(--nav-inactive);
+  color: #FFFFFF !important;  
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 8px 4px 4px;
-  min-width: 56px;
+  padding: 8px 2px 4px;
+  /* Reduzido de 56px para 48px para dar fôlego nas telas pequenas */
+  min-width: 48px; 
   height: 100%;
   cursor: default;
-  transition: transform 0.25s ease, color 0.25s ease;
+  transition: transform 0.25s ease, opacity 0.2s ease;
 }
 
 .convex-nav__step.is-clickable { cursor: pointer; }
 .convex-nav__step.is-clickable:active { transform: scale(0.92); }
-.convex-nav__step.is-active { color: var(--nav-active); }
 
-/* Barrinha superior indicadora */
+
+/* Barrinha superior do item ativo (TRAÇO MAIS GROSSO) */
 .convex-nav__step::before {
   content: "";
   position: absolute;
   top: 0px;
   left: 50%;
   transform: translateX(-50%) scaleX(0);
-  width: 20px;
-  height: 3px;
-  background-color: var(--nav-active);
-  border-bottom-left-radius: 4px;
-  border-bottom-right-radius: 4px;
+  width: 24px; 
+  height: 4.5px; /* Grosso e destacado */
+  background-color: #FFFFFF !important; /* Traço branco puro */
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
   transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
 }
-.convex-nav__step.is-active::before {
-  transform: translateX(-50%) scaleX(1);
-}
+.convex-nav__step.is-active::before { transform: translateX(-50%) scaleX(1); }
 
 .convex-nav__icon-wrap {
   width: 24px;
@@ -140,80 +131,107 @@
   width: 100%;
   height: 100%;
   color: currentColor;
+  filter: drop-shadow(0px 1px 3px rgba(0, 0, 0, 0.15));
+  transition: stroke-width 0.25s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .convex-nav__copy {
-  display: block;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   max-height: 24px;
   opacity: 1;
   margin-top: 4px;
-  transition: all 0.32s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: max-height 0.38s cubic-bezier(0.25, 1, 0.5, 1), 
+              opacity 0.25s ease, margin-top 0.3s ease, transform 0.38s ease;
 }
 
 .convex-nav__label {
   font-size: 11.5px;
-  font-weight: 600;
+  font-weight: 500; /* Texto inativo é fino */
   line-height: 1.2;
   white-space: nowrap;
+  text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.15);
+  transition: font-weight 0.25s ease;
 }
 
-/* O encapsulamento do botão central */
+/* O Segredo: Texto ativo fica muito mais grosso (Extra-Bold) */
+.convex-nav__step.is-active .convex-nav__label {
+  font-weight: 800;
+  color: #FFFFFF;
+}
+
+
+/* =========================================================
+   BOTÃO CENTRAL (REDUZIDO PARA 48px PARA GANHAR ESPAÇO)
+   ========================================================= */
 .convex-nav__center {
   position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 64px;
-  height: 64px;
-  margin-top: -38px;
+  width: 56px; /* Reduzido de 64px para 56px */
+  height: 56px;
+  /* Margem lateral reduzida de 22px para 12px para devolver espaço aos labels */
+  margin: -30px 12px 0 12px; 
   flex-shrink: 0;
   z-index: 3;
   transition: transform 0.38s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .convex-nav__continue-btn {
-  width: 56px;
-  height: 56px;
+  width: 48px; /* Reduzido de 56px para 48px */
+  height: 48px;
   border-radius: 50%;
-  background: var(--nav-active);
-  color: white;
+  background: #FFFFFF; 
+  color: #000000; 
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 8px 20px rgba(22, 163, 74, 0.35);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); 
   transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.25s ease;
 }
 
-.convex-nav__continue-btn:active {
-  transform: scale(0.9);
-  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
-}
-
-.convex-nav__continue-btn:disabled {
-  background: #A7F3D0;
-  box-shadow: none;
-  cursor: not-allowed;
-  transform: none;
-}
-
+/* Ajuste do ícone para o tamanho novo do botão */
 .continue-icon {
-  width: 28px;
-  height: 28px;
-  stroke: white;
+  width: 22px; /* Reduzido de 28px para 22px */
+  height: 22px;
+  stroke: #000000; 
 }
 
-/* Animações e Comportamento de Retração (Scroll) */
-.convex-nav-shell.is-collapsed .convex-nav { height: 52px; }
-.convex-nav-shell.is-collapsed .convex-nav__copy { max-height: 0; opacity: 0; margin-top: 0; transform: scale(0.8) translateY(10px); }
-.convex-nav-shell.is-collapsed .convex-nav__center { transform: scale(0.85) translateY(10px); }
-.convex-nav-shell.is-collapsed .convex-nav__bg-center { transform: scale(0.85) translateY(12px); }
+/* =========================================================
+   COMPORTAMENTO DE COMPACTAÇÃO (SCROLL EFEITO)
+   ========================================================= */
+.convex-nav-shell.is-collapsed .convex-nav,
+.convex-nav-shell.is-collapsed .convex-nav__bg-side { 
+  height: 54.4px; 
+}
+
+.convex-nav-shell.is-collapsed .convex-nav__bg-center { 
+  height: 78.4px; 
+}
+
+.convex-nav-shell.is-collapsed .convex-nav__step {
+  padding-bottom: 0px;
+  padding-top: 0px;
+}
+
+.convex-nav-shell.is-collapsed .convex-nav__copy { 
+  max-height: 0; 
+  opacity: 0; 
+  margin-top: 0; 
+  transform: scale(0.6) translateY(10px); 
+}
+
+.convex-nav-shell.is-collapsed .convex-nav__center { 
+  transform: scale(0.82) translateY(18px); 
+}
 
 @media (max-width: 360px) {
   .app-page-footer.convex-nav-shell {
     bottom: calc(10px + env(safe-area-inset-bottom, 0px));
-    width: min(calc(100% - 12px), 430px);
+    width: calc(100% - 12px);
   }
 }

@@ -12,19 +12,18 @@ import {
 } from '@/features/ballot';
 import './BottomNavigation.css';
 
-const NAV_ICON_STROKE = 2;
-
-function StateIcon({ className = '' }) {
-  return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={NAV_ICON_STROKE}><path d="M12 21s-6-5.2-6-11a6 6 0 1 1 12 0c0 5.8-6 11-6 11Z"/><circle cx="12" cy="10" r="2.4"/></svg>;
+// Ícones Dinâmicos: Linha fina (1.5) inativo -> Linha GROSSA (2.8) ativo
+function StateIcon({ className = '', isActive }) {
+  return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={isActive ? 2.8 : 1.5}><path d="M12 21s-6-5.2-6-11a6 6 0 1 1 12 0c0 5.8-6 11-6 11Z"/><circle cx="12" cy="10" r="2.4"/></svg>;
 }
-function DeputyIcon({ className = '' }) {
-  return <svg className={className} viewBox="0 0 30 18" fill="none" stroke="currentColor" strokeWidth={NAV_ICON_STROKE + 0.2}><path d="M4.1 4.4h21.8a10.9 10.9 0 0 1-21.8 0Z"/></svg>;
+function DeputyIcon({ className = '', isActive }) {
+  return <svg className={className} viewBox="0 0 30 18" fill="none" stroke="currentColor" strokeWidth={isActive ? 3.0 : 1.5}><path d="M4.1 4.4h21.8a10.9 10.9 0 0 1-21.8 0Z"/></svg>;
 }
-function SenatorIcon({ className = '' }) {
-  return <svg className={className} viewBox="0 0 30 18" fill="none" stroke="currentColor" strokeWidth={NAV_ICON_STROKE + 0.2}><path d="M4.1 13.6h21.8a10.9 10.9 0 0 0-21.8 0Z"/></svg>;
+function SenatorIcon({ className = '', isActive }) {
+  return <svg className={className} viewBox="0 0 30 18" fill="none" stroke="currentColor" strokeWidth={isActive ? 3.0 : 1.5}><path d="M4.1 13.6h21.8a10.9 10.9 0 0 0-21.8 0Z"/></svg>;
 }
-function SummaryIcon({ className = '' }) {
-  return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={NAV_ICON_STROKE}><circle cx="8.5" cy="12" r="6.5"/><circle cx="15.5" cy="12" r="6.5"/></svg>;
+function SummaryIcon({ className = '', isActive }) {
+  return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={isActive ? 2.8 : 1.5}><circle cx="8.5" cy="12" r="6.5"/><circle cx="15.5" cy="12" r="6.5"/></svg>;
 }
 
 function ContinueIcon({ className = '' }) {
@@ -34,7 +33,6 @@ function ContinueIcon({ className = '' }) {
     </svg>
   );
 }
-
 
 function ShareIcon({ className = '' }) {
   return (
@@ -60,17 +58,17 @@ const RIGHT_STEPS = [
 
 const ALL_STEPS = [...LEFT_STEPS, ...RIGHT_STEPS];
 
-const STEP_BY_PATH = {
-  '/home': 'estado',
-  [BALLOT_ROUTES.estado]: 'estado',
-  [BALLOT_ROUTES.deputadoFederal]: 'deputado',
-  [BALLOT_ROUTES.senadores]: 'senador',
-  [BALLOT_ROUTES.meuPlano]: 'resultado',
-  '/resultado': 'resultado'
-};
-
+// Lógica de Rota à prova de falhas: Lê qualquer parte da URL para ativar o botão
 function getActiveStep(currentStep, pathname) {
-  return currentStep || STEP_BY_PATH[pathname] || 'estado';
+  if (currentStep) return currentStep;
+  
+  const path = (pathname || '').toLowerCase();
+  
+  if (path.includes('resultado') || path.includes('plano') || path.includes('resumo')) return 'resultado';
+  if (path.includes('senador')) return 'senador';
+  if (path.includes('deputado')) return 'deputado';
+  
+  return 'estado'; // Default
 }
 
 function getStepLogicState(stepId, activeStep, completedSteps) {
@@ -94,22 +92,73 @@ export default function ConvexBottomNavigation({
 
   useEffect(() => {
     let lastScrollY = 0;
+    let touchStartY = 0;
+
     const handleScroll = (e) => {
       const target = e.target;
-      const currentScrollY = (target === document || target === window) ? window.scrollY : target.scrollTop;
-      
-      if (typeof currentScrollY !== 'number' || currentScrollY < 0) return;
+      let currentY = 0;
+      let isMainContainer = false;
 
-      if (currentScrollY > lastScrollY && currentScrollY > 20) {
-        setIsCollapsed(true);
-      } else if (currentScrollY < lastScrollY) {
-        setIsCollapsed(false);
+      if (target === window || target === document) {
+        currentY = window.scrollY || document.documentElement.scrollTop;
+        isMainContainer = true;
+      } else if (target.scrollTop !== undefined) {
+        currentY = target.scrollTop;
+        if (target.clientHeight > window.innerHeight * 0.4) {
+          isMainContainer = true;
+        }
       }
-      lastScrollY = currentScrollY;
+
+      if (!isMainContainer) return;
+
+      if (currentY <= 10) {
+        setIsCollapsed(false);
+        lastScrollY = currentY;
+        return;
+      }
+
+      if (Math.abs(currentY - lastScrollY) > 15) {
+        setIsCollapsed(currentY > lastScrollY);
+        lastScrollY = currentY;
+      }
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    const handleTouchStart = (e) => {
+      touchStartY = e.touches[0].clientY;
+    };
+
+    const handleTouchMove = (e) => {
+      const touchY = e.touches[0].clientY;
+      const delta = touchStartY - touchY;
+      
+      if (delta > 20) {
+        setIsCollapsed(true);
+        touchStartY = touchY;
+      } else if (delta < -20) {
+        setIsCollapsed(false);
+        touchStartY = touchY;
+      }
+    };
+
+    const handleWheel = (e) => {
+      if (e.deltaY > 15) {
+        setIsCollapsed(true);
+      } else if (e.deltaY < -15) {
+        setIsCollapsed(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, true);
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener('wheel', handleWheel, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll, true);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('wheel', handleWheel);
+    };
   }, []);
 
   const draft = user?.uid ? readBallotDraft(user.uid, userData?.estado) : readVisitorBallotDraft();
@@ -126,7 +175,12 @@ export default function ConvexBottomNavigation({
   };
 
   const activeIndex = Math.max(0, ALL_STEPS.findIndex(s => s.id === activeStep));
-  const firstPendingIndex = Math.min(activeIndex + 1, ALL_STEPS.length - 1);
+  const isCurrentStepComplete = completedSteps[activeStep];
+  
+  const firstPendingIndex = isCurrentStepComplete 
+    ? Math.min(activeIndex + 1, ALL_STEPS.length - 1) 
+    : activeIndex;
+    
   const nextStep = ALL_STEPS[firstPendingIndex];
 
   const handleNavigate = (step, isClickable) => {
@@ -143,7 +197,7 @@ export default function ConvexBottomNavigation({
     } else if (onContinueClick) {
       onContinueClick();
     } else {
-      handleNavigate(nextStep, true);
+      handleNavigate(nextStep, isCurrentStepComplete);
     }
   };
 
@@ -160,9 +214,10 @@ export default function ConvexBottomNavigation({
           className={`convex-nav__step is-${state} ${isClickable ? 'is-clickable' : ''} ${isActive ? 'is-active' : ''}`}
           onClick={() => handleNavigate(step, isClickable)}
           disabled={!isClickable}
+          aria-current={isActive ? 'step' : undefined}
         >
           <span className="convex-nav__icon-wrap">
-            <step.Icon className="convex-nav__icon" />
+            <step.Icon className="convex-nav__icon" isActive={isActive} />
           </span>
           <span className="convex-nav__copy">
             <span className="convex-nav__label">{step.label}</span>
@@ -172,18 +227,16 @@ export default function ConvexBottomNavigation({
     });
   };
 
- return (
+  return (
     <div className={`app-page-footer convex-nav-shell ${isCollapsed ? 'is-collapsed' : ''}`}>
       
-      {/* Camada Visual de Fundo: Efeito Vitral (Glassmorphism) Uniforme */}
+      {/* Camada Visual de Fundo Sólida */}
       <div className="convex-nav__bg-wrapper">
         <div className="convex-nav__bg-side left" />
-        {/* A curva não é mais um SVG, é uma div recortada por CSS para embaçar o fundo */}
         <div className="convex-nav__bg-center" />
         <div className="convex-nav__bg-side right" />
       </div>
 
-      {/* Camada Lógica Interativa */}
       <nav className="convex-nav">
         
         <div className="convex-nav__side">

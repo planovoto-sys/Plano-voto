@@ -20,7 +20,11 @@
 .variant-home-state .select-base__scroll {
   --screen-gutter: 18px;
 }
-
+.step-header__icon-btn,
+.step-header__search-trigger,
+.step-header__search-close {
+  color: #ffffff !important; /* Ícones brancos */
+}
 /* ==========================================================================
    NOVO HEADER (FIXO EM 55PX, ALINHAMENTO COM TELAS DE RESUMO)
    ========================================================================== */
@@ -29,14 +33,11 @@
   top: 0;
   z-index: 55;
   width: 100%;
-
-  /* Trava absolutamente a altura em 55px (+ safe area do topo) */
-  height: calc(55px + var(--app-safe-top, 0px));
-  min-height: calc(55px + var(--app-safe-top, 0px));
-  max-height: calc(55px + var(--app-safe-top, 0px));
-
+  height: calc(65px + var(--app-safe-top, 0px));
+  min-height: calc(65px + var(--app-safe-top, 0px));
+  max-height: calc(65px + var(--app-safe-top, 0px));
   padding: var(--app-safe-top, 0px) var(--screen-gutter) 0;
-  background-color: #ffffff;
+  background-color: #16A34A;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -49,20 +50,61 @@
   align-items: center;
 }
 
-.step-header__brand svg,
-.step-header__brand img {
-  /* Reduzido um pouco para casar perfeitamente com os 55px sem encostar nas bordas */
-  max-height: 40px;
-  width: auto;
-  display: block;
+/* Estilização da Nova Logo */
+.logo-bom-de-voto {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: -0.2px;
 }
 
+.logo-bom-de-voto__circles {
+  position: relative;
+  width: 28px;
+  height: 16px;
+}
+
+.logo-bom-de-voto__circle {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  top: -2px; /* Ajuste para centralizar verticalmente */
+}
+
+.logo-bom-de-voto__circle:first-child {
+  left: 0;
+}
+
+.logo-bom-de-voto__circle:last-child {
+  left: 10px; /* Sobreposição parcial para criar a intersecção */
+}
+
+.step-header.is-searching .step-header__icon-btn,
+.step-header.is-searching .step-header__search-trigger,
+.step-header.is-searching .step-header__search-close {
+  color: #000000 !important; /* Força ícones para preto */
+}
+
+/* Garante que o input de busca também tenha contraste */
+.step-header.is-searching .step-header__search-input {
+  color: #000000 !important;
+}
+
+.step-header.is-searching .step-header__search-input::placeholder {
+  color: #666666 !important;
+}
 .step-header__actions {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
 }
+
 
 /* ==========================================================================
    ESTILOS DO FILTRO
@@ -77,7 +119,7 @@
   background: transparent;
   border: none;
   padding: 0;
-  color: var(--text-strong);
+  color:#F0FDF4;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -90,10 +132,11 @@
 
 .step-header__icon-btn:active {
   transform: scale(0.9);
+  color: #D1FAE5;
 }
 
 .step-header__icon-btn.is-active {
-  color: #16A34A;
+    color: #D1FAE5;
 }
 
 .step-header__icon-btn svg {
@@ -166,6 +209,7 @@
    ========================================================================== */
 .step-header__search-wrapper {
   display: flex;
+ background-color: #D1FAE5;
   align-items: center;
   justify-content: flex-end;
   height: 38px;

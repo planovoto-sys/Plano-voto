@@ -27,7 +27,7 @@
    ======================================================== */
 .my-plan-header {
   flex: 0 0 auto;
-  min-height: 55px;
+  min-height: 65px;
   background: var(--brand-surface);
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr) 44px;

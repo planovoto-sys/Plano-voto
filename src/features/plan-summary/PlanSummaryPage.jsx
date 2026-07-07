@@ -415,7 +415,7 @@ export default function MeuPlano() {
       )}
 
       <ConvexBottomNavigation 
-        currentStep="nossovoto" 
+        currentStep="resultado" 
         isFinalStep={true} 
         onShareClick={() => {
           if (canSharePlan) {
