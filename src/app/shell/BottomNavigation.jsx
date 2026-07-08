@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { BALLOT_ROUTES } from '@/shared/constants/ballot';
 import { useUser } from '@/shared/hooks/useUser';
 import { useNotify } from '@/features/notifications/useNotify';
@@ -61,14 +61,13 @@ const ALL_STEPS = [...LEFT_STEPS, ...RIGHT_STEPS];
 // Lógica de Rota à prova de falhas: Lê qualquer parte da URL para ativar o botão
 function getActiveStep(currentStep, pathname) {
   if (currentStep) return currentStep;
-  
   const path = (pathname || '').toLowerCase();
   
   if (path.includes('resultado') || path.includes('plano') || path.includes('resumo')) return 'resultado';
   if (path.includes('senador')) return 'senador';
   if (path.includes('deputado')) return 'deputado';
   
-  return 'estado'; // Default
+  return 'estado'; 
 }
 
 function getStepLogicState(stepId, activeStep, completedSteps) {
@@ -88,11 +87,22 @@ export default function ConvexBottomNavigation({
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  // Estados possíveis: 'expanded', 'shrunk', 'hidden'
+  const [navState, setNavState] = useState('expanded');
+  const navStateRef = useRef('expanded');
 
   useEffect(() => {
     let lastScrollY = 0;
-    let touchStartY = 0;
+    let downScrollDistance = 0;
+    let upScrollDistance = 0;
+    let lastTime = Date.now();
+
+    const changeState = (newState) => {
+      if (navStateRef.current !== newState) {
+        navStateRef.current = newState;
+        setNavState(newState);
+      }
+    };
 
     const handleScroll = (e) => {
       const target = e.target;
@@ -111,53 +121,60 @@ export default function ConvexBottomNavigation({
 
       if (!isMainContainer) return;
 
+      const deltaY = currentY - lastScrollY;
+      const currentTime = Date.now();
+      const timeDelta = currentTime - lastTime || 1;
+      const velocity = Math.abs(deltaY / timeDelta);
+
+      lastScrollY = currentY;
+      lastTime = currentTime;
+
+      // Se voltar ao topo absoluto, mostra a barra completa
       if (currentY <= 10) {
-        setIsCollapsed(false);
-        lastScrollY = currentY;
+        downScrollDistance = 0;
+        upScrollDistance = 0;
+        changeState('expanded');
         return;
       }
 
-      if (Math.abs(currentY - lastScrollY) > 15) {
-        setIsCollapsed(currentY > lastScrollY);
-        lastScrollY = currentY;
-      }
-    };
+      // Rolando para BAIXO
+      if (deltaY > 0) {
+        upScrollDistance = 0;
+        downScrollDistance += deltaY;
 
-    const handleTouchStart = (e) => {
-      touchStartY = e.touches[0].clientY;
-    };
+        // Scroll muito rápido ou puxão muito longo: Esconde direto
+        if (velocity > 1.2 || deltaY > 40) {
+          changeState('hidden');
+          downScrollDistance = 0;
+        } 
+        // Scroll normal: Vai por etapas
+        else {
+          if (navStateRef.current === 'expanded' && downScrollDistance > 25) {
+            changeState('shrunk');
+            downScrollDistance = 0; // Exige novo movimento para esconder
+          } else if (navStateRef.current === 'shrunk' && downScrollDistance > 60) {
+            changeState('hidden');
+            downScrollDistance = 0;
+          }
+        }
+      } 
+      // Rolando para CIMA
+      else if (deltaY < -2) {
+        downScrollDistance = 0;
+        upScrollDistance += Math.abs(deltaY);
 
-    const handleTouchMove = (e) => {
-      const touchY = e.touches[0].clientY;
-      const delta = touchStartY - touchY;
-      
-      if (delta > 20) {
-        setIsCollapsed(true);
-        touchStartY = touchY;
-      } else if (delta < -20) {
-        setIsCollapsed(false);
-        touchStartY = touchY;
-      }
-    };
-
-    const handleWheel = (e) => {
-      if (e.deltaY > 15) {
-        setIsCollapsed(true);
-      } else if (e.deltaY < -15) {
-        setIsCollapsed(false);
+        // Exige rolar 20px para cima para evitar que ela fique piscando com vibrações do dedo
+        if (upScrollDistance > 20) {
+          changeState('expanded');
+          upScrollDistance = 0;
+        }
       }
     };
 
     window.addEventListener('scroll', handleScroll, true);
-    window.addEventListener('touchstart', handleTouchStart, { passive: true });
-    window.addEventListener('touchmove', handleTouchMove, { passive: true });
-    window.addEventListener('wheel', handleWheel, { passive: true });
 
     return () => {
       window.removeEventListener('scroll', handleScroll, true);
-      window.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchmove', handleTouchMove);
-      window.removeEventListener('wheel', handleWheel);
     };
   }, []);
 
@@ -228,13 +245,11 @@ export default function ConvexBottomNavigation({
   };
 
   return (
-    <div className={`app-page-footer convex-nav-shell ${isCollapsed ? 'is-collapsed' : ''}`}>
+    <div className={`app-page-footer convex-nav-shell is-${navState}`}>
       
-      {/* Camada Visual de Fundo Sólida */}
+      {/* Camada Visual de Fundo Liquid Glass */}
       <div className="convex-nav__bg-wrapper">
-        <div className="convex-nav__bg-side left" />
-        <div className="convex-nav__bg-center" />
-        <div className="convex-nav__bg-side right" />
+        <div className="glass-highlight"></div>
       </div>
 
       <nav className="convex-nav">

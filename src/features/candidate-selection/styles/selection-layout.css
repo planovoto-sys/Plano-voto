@@ -43,6 +43,17 @@
   justify-content: space-between;
   gap: 12px;
   box-shadow: 0 1px 0 rgba(17, 17, 17, 0.06);
+  transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1),
+              margin-bottom 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.step-header.is-header-hidden {
+  transform: translateY(-100%);
+  margin-bottom: calc(-65px - var(--app-safe-top, 0px));
+}
+
+.select-base-container.is-header-hidden .select-base__scroll {
+  padding-top: 0;
 }
 
 .step-header__brand {
@@ -126,8 +137,8 @@
   cursor: pointer;
   position: relative;
   transition: color 0.2s ease, transform 0.2s ease;
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
 }
 
 .step-header__icon-btn:active {
@@ -209,11 +220,10 @@
    ========================================================================== */
 .step-header__search-wrapper {
   display: flex;
- background-color: #D1FAE5;
   align-items: center;
   justify-content: flex-end;
-  height: 38px;
-  width: 38px;
+  height: 44px;
+  width: 44px;
   background: transparent;
   position: relative;
 }
@@ -243,8 +253,8 @@
 
 /* 2. LUPA (GATILHO E DECORAÇÃO): Reduzida */
 .step-header__search-trigger {
-  width: 36px;
-  height: 36px;
+  width: 42px;
+  height: 42px;
   flex-shrink: 0;
   display: flex;
   align-items: center;

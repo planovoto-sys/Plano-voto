@@ -83,6 +83,32 @@ export default function SelectBase({
   const [modalErroSalvar, setModalErroSalvar] = useState({ aberto: false, mensagem: '' });
   const [modalCampoBloqueado, setModalCampoBloqueado] = useState(false);
   const [salvandoSelecao, setSalvandoSelecao] = useState(false);
+  const scrollContainerRef = useRef(null);
+  const [headerVisible, setHeaderVisible] = useState(true);
+  const lastScrollYRef = useRef(0);
+
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const currentY = el.scrollTop;
+          if (currentY > 50 && currentY > lastScrollYRef.current + 10) {
+            setHeaderVisible(false);
+          } else if (currentY < lastScrollYRef.current - 10) {
+            setHeaderVisible(true);
+          }
+          lastScrollYRef.current = currentY;
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    el.addEventListener('scroll', handleScroll, { passive: true });
+    return () => el.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     if (isSearchActive && candidateSearchInputRef.current) {
@@ -422,9 +448,9 @@ const candidateFilterItems = useMemo(() => (
   }
 
   return (
-    <div className={`select-base-container prototype-page nv-screen variant-${variant}`}>
+    <div className={`select-base-container prototype-page nv-screen variant-${variant}${!headerVisible ? ' is-header-hidden' : ''}`}>
       
-      <header className={`step-header ${isSearchActive ? 'is-searching' : ''}`}>
+      <header className={`step-header ${isSearchActive ? 'is-searching' : ''} ${!headerVisible ? 'is-header-hidden' : ''}`}>
         
         <div className="step-header__brand">
     <LogoBomDeVoto />
@@ -516,7 +542,7 @@ const candidateFilterItems = useMemo(() => (
         </div>
       </header>
 
-      <main className="prototype-scroll select-base__scroll nv-scroll">
+      <main ref={scrollContainerRef} className="prototype-scroll select-base__scroll nv-scroll">
         {isHomeState ? renderStateList() : renderCandidateList()}
         <AppFooter className="app-footer--scroll-content" />
       </main>

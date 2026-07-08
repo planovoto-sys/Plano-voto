@@ -1,69 +1,84 @@
-/* Container fixo invisível */
+/* =========================================================
+   CONTAINER BASE
+   ========================================================= */
 .app-page-footer.convex-nav-shell {
   position: fixed;
   left: 50%;
   bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-  transform: translateX(-50%);
-  width: min(calc(100% - 20px), 460px);
+  /* Transform base: 0px no Y. A opacidade também vai na transição */
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  /* Largura 100% menos 10px (garante exatos 5px de distância de cada lado) */
+  width: min(calc(100% - 10px), 460px);
   margin: 0 auto;
   z-index: 99999;
+  pointer-events: none; /* Para os vãos não bloquearem clique, itens filhos tem auto */
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease;
+}
+
+/* =========================================================
+   ESTADO: HIDDEN (Barra some da tela ao rolar)
+   ========================================================= */
+.app-page-footer.convex-nav-shell.is-hidden {
+  transform: translateX(-50%) translateY(150px);
+  opacity: 0;
   pointer-events: none;
 }
 
-/* Base que alinha tudo e aplica a sombra geral */
+/* =========================================================
+   FUNDO LIQUID GLASS VERDE TRANSLÚCIDO
+   ========================================================= */
 .convex-nav__bg-wrapper {
   position: absolute;
   inset: 0;
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.18)); 
+  background: rgba(22, 163, 74, 0.72);
+  backdrop-filter: blur(28px) saturate(1.5);
+  -webkit-backdrop-filter: blur(28px) saturate(1.5);
+  border-radius: 16px;
+  filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.18));
   z-index: 0;
-}
-
-/* =========================================================
-   FUNDO VERDE SÓLIDO (Sem frestas)
-   ========================================================= */
-.convex-nav__bg-side,
-.convex-nav__bg-center {
-  background: #16A34A; /* Verde 100% Sólido */
-}
-
-.convex-nav__bg-side {
-  height: 68px;
-  flex-grow: 1;
+  overflow: hidden;
   transition: height 0.38s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-.convex-nav__bg-side.left {
-  border-top-left-radius: 999px;
-  border-bottom-left-radius: 999px;
+/* Reflexo superficial principal (shine) */
+.convex-nav__bg-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  background: linear-gradient(175deg,
+    rgba(255, 255, 255, 0.35) 0%,
+    rgba(255, 255, 255, 0.12) 25%,
+    rgba(255, 255, 255, 0.04) 45%,
+    transparent 60%
+  );
+  pointer-events: none;
+  z-index: 1;
 }
 
-.convex-nav__bg-side.right {
-  border-top-right-radius: 999px;
-  border-bottom-right-radius: 999px;
+/* Reflexo curvo inferior (vítreo) */
+.convex-nav__bg-wrapper .glass-highlight {
+  position: absolute;
+  bottom: 0;
+  left: 8%;
+  right: 8%;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.13) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 1;
 }
 
-.convex-nav__bg-center {
-  flex-shrink: 0;
-  width: 150px;
-  height: 92px; 
-  clip-path: path('M0,24 C30,24 45,0 75,0 C105,0 120,24 150,24 L150,92 L0,92 Z');
-  z-index: 1; 
-  margin-left: -5px;
-  margin-right: -5px;
-  transform-origin: bottom center; 
-  transition: height 0.38s cubic-bezier(0.25, 1, 0.5, 1), transform 0.38s cubic-bezier(0.25, 1, 0.5, 1);
-}
+
 
 /* =========================================================
-   TEXTOS E ÍCONES: 100% BRANCOS, DESTAQUE PELA GROSSURA
+   ESTRUTURA DE NAVEGAÇÃO E ÍCONES
    ========================================================= */
 .convex-nav {
   position: relative;
   width: 100%;
-  height: 68px;
+  height: 50px; /* Altura padrão ajustada para 50px */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -76,7 +91,6 @@
 .convex-nav__side {
   display: flex;
   flex: 1;
-  /* Mudamos para space-evenly para uma distribuição mais limpa e equilibrada */
   justify-content: space-evenly; 
   align-items: center;
   height: 100%;
@@ -91,8 +105,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 8px 2px 4px;
-  /* Reduzido de 56px para 48px para dar fôlego nas telas pequenas */
+  padding: 4px 2px 2px;
   min-width: 48px; 
   height: 100%;
   cursor: default;
@@ -102,8 +115,7 @@
 .convex-nav__step.is-clickable { cursor: pointer; }
 .convex-nav__step.is-clickable:active { transform: scale(0.92); }
 
-
-/* Barrinha superior do item ativo (TRAÇO MAIS GROSSO) */
+/* Barrinha superior do item ativo */
 .convex-nav__step::before {
   content: "";
   position: absolute;
@@ -111,8 +123,8 @@
   left: 50%;
   transform: translateX(-50%) scaleX(0);
   width: 24px; 
-  height: 4.5px; /* Grosso e destacado */
-  background-color: #FFFFFF !important; /* Traço branco puro */
+  height: 4.5px; 
+  background-color: #FFFFFF !important; 
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
   transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
@@ -120,8 +132,8 @@
 .convex-nav__step.is-active::before { transform: translateX(-50%) scaleX(1); }
 
 .convex-nav__icon-wrap {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -141,46 +153,45 @@
   overflow: hidden;
   max-height: 24px;
   opacity: 1;
-  margin-top: 4px;
+  margin-top: 2px;
   transition: max-height 0.38s cubic-bezier(0.25, 1, 0.5, 1), 
               opacity 0.25s ease, margin-top 0.3s ease, transform 0.38s ease;
 }
 
 .convex-nav__label {
-  font-size: 11.5px;
-  font-weight: 500; /* Texto inativo é fino */
+  font-size: 11px;
+  font-weight: 500; 
   line-height: 1.2;
   white-space: nowrap;
   text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.15);
   transition: font-weight 0.25s ease;
 }
 
-/* O Segredo: Texto ativo fica muito mais grosso (Extra-Bold) */
 .convex-nav__step.is-active .convex-nav__label {
   font-weight: 800;
   color: #FFFFFF;
 }
 
-
 /* =========================================================
-   BOTÃO CENTRAL (REDUZIDO PARA 48px PARA GANHAR ESPAÇO)
+   BOTÃO CENTRAL (Flutuando acima da barra)
    ========================================================= */
 .convex-nav__center {
   position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 56px; /* Reduzido de 64px para 56px */
+  width: 56px;
   height: 56px;
-  /* Margem lateral reduzida de 22px para 12px para devolver espaço aos labels */
-  margin: -30px 12px 0 12px; 
+  margin: 0 12px; 
+  /* Joga o botão 16px para fora da barra para ficar resaltado e aparente */
+  transform: translateY(-16px); 
   flex-shrink: 0;
   z-index: 3;
   transition: transform 0.38s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .convex-nav__continue-btn {
-  width: 48px; /* Reduzido de 56px para 48px */
+  width: 48px; 
   height: 48px;
   border-radius: 50%;
   background: #FFFFFF; 
@@ -190,45 +201,44 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); 
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25); 
   transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.25s ease;
 }
 
-/* Ajuste do ícone para o tamanho novo do botão */
 .continue-icon {
-  width: 22px; /* Reduzido de 28px para 22px */
+  width: 22px; 
   height: 22px;
   stroke: #000000; 
 }
 
 /* =========================================================
-   COMPORTAMENTO DE COMPACTAÇÃO (SCROLL EFEITO)
+   ESTADO: SHRUNK (Comportamento de encolhimento para 48px)
    ========================================================= */
-.convex-nav-shell.is-collapsed .convex-nav,
-.convex-nav-shell.is-collapsed .convex-nav__bg-side { 
-  height: 54.4px; 
+.convex-nav-shell.is-shrunk .convex-nav {
+  height: 48px; 
 }
 
-.convex-nav-shell.is-collapsed .convex-nav__bg-center { 
-  height: 78.4px; 
-}
-
-.convex-nav-shell.is-collapsed .convex-nav__step {
+.convex-nav-shell.is-shrunk .convex-nav__step {
   padding-bottom: 0px;
   padding-top: 0px;
 }
 
-.convex-nav-shell.is-collapsed .convex-nav__copy { 
+/* SOME COM AS ESCRITAS E DEIXA A BARRA LIMPA */
+.convex-nav-shell.is-shrunk .convex-nav__copy { 
   max-height: 0; 
   opacity: 0; 
   margin-top: 0; 
   transform: scale(0.6) translateY(10px); 
 }
 
-.convex-nav-shell.is-collapsed .convex-nav__center { 
-  transform: scale(0.82) translateY(18px); 
+/* Reduz o botão ligeiramente e desce ele para se encaixar na versão compacta */
+.convex-nav-shell.is-shrunk .convex-nav__center { 
+  transform: scale(0.85) translateY(0px); 
 }
 
+/* =========================================================
+   MEDIA QUERY: TELAS MUITO PEQUENAS
+   ========================================================= */
 @media (max-width: 360px) {
   .app-page-footer.convex-nav-shell {
     bottom: calc(10px + env(safe-area-inset-bottom, 0px));
