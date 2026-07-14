@@ -205,8 +205,8 @@ export default function EscolherCandidatos({
 
   const tourSteps = [
     { target: '.app-help-action', title: 'AJUDA', content: 'Abre este guia sempre que você quiser revisar a tela.' },
-    { target: '#tour-busca', title: 'PESQUISA', content: 'Pesquisa candidatos por nome ou partido.' },
-    { target: '.candidate-search-filter__trigger', title: 'FILTROS', content: '<b>Todos:</b> Exibe todos os candidatos disponíveis.<br><b>Atuais:</b> Exibe candidatos que atuaram na última legislatura.<br><b>Novos:</b> Exibe candidatos que não atuaram na última legislatura.<br><b>Selecionados:</b> Exibe apenas os candidatos escolhidos.' },
+    { target: '.step-header__search-trigger', title: 'PESQUISA', content: 'Pesquisa candidatos por nome ou partido.' },
+    { target: '.filter-chip', title: 'FILTROS', content: '<b>Todos:</b> Exibe todos os candidatos.<br><b>Seleção:</b> Exibe apenas os escolhidos.<br><b>Avaliação:</b> Ordena pela nota.<br><b>Viabilidade:</b> Ordena pela chance.<br><b>Partido:</b> Ordena por partido.' },
     { target: '.prototype-candidate-card.is-fire-featured .candidate-thermometer, .candidate-card-list .prototype-candidate-card', title: 'FOGUINHO', content: 'O foguinho destaca o candidato bem avaliado com a maior viabilidade entre as opções disponíveis.' },
     { target: '.prototype-candidate-card.is-viability-complete .candidate-thermometer, .candidate-card-list .prototype-candidate-card', title: 'VIÁVEL 100', content: 'Quando a viabilidade está em 100, esse candidato já possui grandes chances e não precisa de mais voto.' }
   ];
@@ -423,13 +423,9 @@ export default function EscolherCandidatos({
   const listaExibida = useMemo(() => {
     let disponiveis = candidatosDoEstado;
 
-    if (filtroLista === 'selecionados') {
+    if (filtroLista === 'selecao') {
       const idsSelecionados = new Set(selecionadosNaTela.map((candidate) => candidate.id));
       disponiveis = disponiveis.filter((candidate) => idsSelecionados.has(candidate.id));
-    } else if (filtroLista === 'renovar') {
-      disponiveis = disponiveis.filter((candidate) => getCandidateElectionFilter(candidate) === 'renovar');
-    } else if (filtroLista === 'reeleger') {
-      disponiveis = disponiveis.filter((candidate) => getCandidateElectionFilter(candidate) === 'reeleger');
     }
 
     const termo = normalizeSearch(buscaDiferida);
@@ -450,18 +446,47 @@ export default function EscolherCandidatos({
 
     const desempatarPorNome = (a, b) => getCandidateName(a).localeCompare(getCandidateName(b));
 
-    if (isGuestMode) {
-      return listaComEstado
-        .map((candidate) => ({
-          ...candidate,
-          isChanceFeatured: false
-        }))
-        .sort((a, b) => {
-          const blockedDiff = Number(a.isAlreadyChosen) - Number(b.isAlreadyChosen);
-          if (blockedDiff !== 0) return blockedDiff;
-
+    const aplicarOrdenacao = (lista) => {
+      if (filtroLista === 'avaliacao') {
+        return [...lista].sort((a, b) => {
+          const scoreA = getCandidateSystemScore(a);
+          const scoreB = getCandidateSystemScore(b);
+          if (scoreB !== scoreA) return scoreB - scoreA;
           return desempatarPorNome(a, b);
         });
+      }
+      if (filtroLista === 'viabilidade') {
+        return [...lista].sort((a, b) => {
+          const chanceA = getCandidateChance(a);
+          const chanceB = getCandidateChance(b);
+          if (chanceB !== chanceA) return chanceB - chanceA;
+          return desempatarPorNome(a, b);
+        });
+      }
+      if (filtroLista === 'partido') {
+        return [...lista].sort((a, b) => {
+          const partidoA = normalizeSearch(a.Partido || a.partido || a.sigla_partido || '');
+          const partidoB = normalizeSearch(b.Partido || b.partido || b.sigla_partido || '');
+          if (partidoA !== partidoB) return partidoA.localeCompare(partidoB);
+          return desempatarPorNome(a, b);
+        });
+      }
+      return lista;
+    };
+
+    if (isGuestMode) {
+      return aplicarOrdenacao(
+        listaComEstado
+          .map((candidate) => ({
+            ...candidate,
+            isChanceFeatured: false
+          }))
+          .sort((a, b) => {
+            const blockedDiff = Number(a.isAlreadyChosen) - Number(b.isAlreadyChosen);
+            if (blockedDiff !== 0) return blockedDiff;
+            return desempatarPorNome(a, b);
+          })
+      );
     }
 
     const grupoVisual = (candidate) => {
@@ -475,26 +500,28 @@ export default function EscolherCandidatos({
       return 4;
     };
 
-    return listaComEstado
-      .map((candidate) => ({
-        ...candidate,
-        isChanceFeatured: candidate.id === featuredCandidateId
-      }))
-      .sort((a, b) => {
-        const blockedDiff = Number(a.isAlreadyChosen) - Number(b.isAlreadyChosen);
-        if (blockedDiff !== 0) return blockedDiff;
+    return aplicarOrdenacao(
+      listaComEstado
+        .map((candidate) => ({
+          ...candidate,
+          isChanceFeatured: candidate.id === featuredCandidateId
+        }))
+        .sort((a, b) => {
+          const blockedDiff = Number(a.isAlreadyChosen) - Number(b.isAlreadyChosen);
+          if (blockedDiff !== 0) return blockedDiff;
 
-        const groupDiff = grupoVisual(a) - grupoVisual(b);
-        if (groupDiff !== 0) return groupDiff;
+          const groupDiff = grupoVisual(a) - grupoVisual(b);
+          if (groupDiff !== 0) return groupDiff;
 
-        const chanceDiff = getCandidateChance(b) - getCandidateChance(a);
-        if (chanceDiff !== 0) return chanceDiff;
+          const chanceDiff = getCandidateChance(b) - getCandidateChance(a);
+          if (chanceDiff !== 0) return chanceDiff;
 
-        const scoreDiff = getCandidateSystemScore(b) - getCandidateSystemScore(a);
-        if (scoreDiff !== 0) return scoreDiff;
+          const scoreDiff = getCandidateSystemScore(b) - getCandidateSystemScore(a);
+          if (scoreDiff !== 0) return scoreDiff;
 
-        return desempatarPorNome(a, b);
-      });
+          return desempatarPorNome(a, b);
+        })
+    );
   }, [candidatosDoEstado, featuredCandidateId, filtroLista, buscaDiferida, isGuestMode, selectedCandidateIdsInOtherSteps, selecionadosNaTela]);
 
   const persistirEtapa = async (listaFinalDaTela, { markCompleted = false } = {}) => {

@@ -39,9 +39,11 @@ export const getScreenCopy = ({ variant, titulo, subtitulo }) => {
 };
 
 export const getSubNavLabel = (item) => {
-  if (item.mode === 'selecionados' || item.id?.includes('selecionados')) return 'Selecionados';
-  if (item.mode === 'renovar' || item.id?.includes('renovar')) return 'À renovação';
-  return 'À reeleição';
+  if (item.mode === 'selecao' || item.id?.includes('selecao')) return 'Seleção';
+  if (item.mode === 'avaliacao' || item.id?.includes('avaliacao')) return 'Avaliação';
+  if (item.mode === 'viabilidade' || item.id?.includes('viabilidade')) return 'Viabilidade';
+  if (item.mode === 'partido' || item.id?.includes('partido')) return 'Partido';
+  return 'Todos';
 };
 
 export const haveSameSelectionIds = (currentItems = [], nextItems = []) => {

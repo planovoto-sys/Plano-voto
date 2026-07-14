@@ -168,7 +168,7 @@ body {
   overflow-x: hidden;
   overflow-y: auto;
   padding: 0 var(--app-gutter);
-  padding-bottom: calc(var(--bottom-nav-height) + var(--app-safe-bottom) + 16px);
+  padding-bottom: calc(var(--bottom-nav-height) + var(--app-safe-bottom));
 }
 
 .prototype-page>.app-page-header {

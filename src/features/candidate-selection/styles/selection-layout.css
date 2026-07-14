@@ -15,45 +15,50 @@
   padding: 31px var(--screen-gutter) calc(var(--bottom-nav-height) + var(--app-safe-bottom) + 72px);
   overflow-x: hidden;
   overscroll-behavior: contain;
+  background: #f3f3f3;
 }
 
 .variant-home-state .select-base__scroll {
   --screen-gutter: 18px;
 }
-.step-header__icon-btn,
+
 .step-header__search-trigger,
 .step-header__search-close {
-  color: #ffffff !important; /* Ícones brancos */
+  color: #111111 !important;
 }
+
 /* ==========================================================================
-   NOVO HEADER (FIXO EM 55PX, ALINHAMENTO COM TELAS DE RESUMO)
+   STICKY WRAPPER (header + filter chips)
    ========================================================================== */
-.step-header {
+.step-header-sticky {
   position: sticky;
   top: 0;
   z-index: 55;
-  width: 100%;
-  height: calc(65px + var(--app-safe-top, 0px));
-  min-height: calc(65px + var(--app-safe-top, 0px));
-  max-height: calc(65px + var(--app-safe-top, 0px));
-  padding: var(--app-safe-top, 0px) var(--screen-gutter) 0;
-  background-color: #16A34A;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  box-shadow: 0 1px 0 rgba(17, 17, 17, 0.06);
   transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1),
               margin-bottom 0.35s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-.step-header.is-header-hidden {
+.step-header-sticky.is-header-hidden {
   transform: translateY(-100%);
-  margin-bottom: calc(-65px - var(--app-safe-top, 0px));
+  margin-bottom: -200px;
 }
 
-.select-base-container.is-header-hidden .select-base__scroll {
-  padding-top: 0;
+/* ==========================================================================
+   HEADER
+   ========================================================================== */
+.step-header {
+  width: 100%;
+  height: calc(56px + var(--app-safe-top, 0px));
+  min-height: calc(56px + var(--app-safe-top, 0px));
+  max-height: calc(56px + var(--app-safe-top, 0px));
+  padding: var(--app-safe-top, 0px) var(--screen-gutter) 0;
+  background-color: #f3f3f3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  box-shadow: 0 1px 0 rgba(17, 17, 17, 0.06);
+  position: relative;
 }
 
 .step-header__brand {
@@ -61,54 +66,12 @@
   align-items: center;
 }
 
-/* Estilização da Nova Logo */
-.logo-bom-de-voto {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #ffffff;
-  font-weight: 700;
-  font-size: 20px;
-  letter-spacing: -0.2px;
+.step-header__logo {
+  height: 48px;
+  width: auto;
+  display: block;
 }
 
-.logo-bom-de-voto__circles {
-  position: relative;
-  width: 28px;
-  height: 16px;
-}
-
-.logo-bom-de-voto__circle {
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  border: 2px solid #ffffff;
-  border-radius: 50%;
-  top: -2px; /* Ajuste para centralizar verticalmente */
-}
-
-.logo-bom-de-voto__circle:first-child {
-  left: 0;
-}
-
-.logo-bom-de-voto__circle:last-child {
-  left: 10px; /* Sobreposição parcial para criar a intersecção */
-}
-
-.step-header.is-searching .step-header__icon-btn,
-.step-header.is-searching .step-header__search-trigger,
-.step-header.is-searching .step-header__search-close {
-  color: #000000 !important; /* Força ícones para preto */
-}
-
-/* Garante que o input de busca também tenha contraste */
-.step-header.is-searching .step-header__search-input {
-  color: #000000 !important;
-}
-
-.step-header.is-searching .step-header__search-input::placeholder {
-  color: #666666 !important;
-}
 .step-header__actions {
   display: flex;
   align-items: center;
@@ -116,103 +79,61 @@
   gap: 8px;
 }
 
-
 /* ==========================================================================
-   ESTILOS DO FILTRO
+   FILTER CHIPS
    ========================================================================== */
-.step-header__filter-wrapper {
-  position: relative;
+.filter-chips {
   display: flex;
-  justify-content: center;
-}
-
-.step-header__icon-btn {
+  align-items: center;
+  gap: 6px;
+  padding: 10px var(--screen-gutter);
   background: transparent;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.filter-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-chip {
+  flex-shrink: 0;
+  padding: 5px 12px;
   border: none;
-  padding: 0;
-  color:#F0FDF4;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  position: relative;
-  transition: color 0.2s ease, transform 0.2s ease;
-  width: 44px;
-  height: 44px;
-}
-
-.step-header__icon-btn:active {
-  transform: scale(0.9);
-  color: #D1FAE5;
-}
-
-.step-header__icon-btn.is-active {
-    color: #D1FAE5;
-}
-
-.step-header__icon-btn svg {
-  width: 20px;
-  height: 20px;
-  stroke-width: 2.2;
-}
-
-.step-header__filter-badge {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #16A34A;
-  border: 2px solid var(--page-bg);
-}
-
-.step-header__filter-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  margin-top: 10px;
+  border-radius: 8px;
   background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  min-width: 160px;
-  padding: 4px 0;
-  z-index: 60;
-}
-
-.step-header__filter-option {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 16px;
-  cursor: pointer;
-  font-size: 13px;
+  color: #111111;
+  font-family: var(--font-family);
+  font-size: 12px;
   font-weight: 600;
-  color: #333;
-  width: 100%;
+  line-height: 1.3;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  white-space: nowrap;
 }
 
-.step-header__filter-option:hover {
-  background: var(--page-bg);
+.filter-chip:active {
+  transform: scale(0.96);
 }
 
-.step-header__filter-option.is-active {
-  color: #0B6B3A;
-  background: #F0FDF4;
+.filter-chip.is-active {
+  background: #bbf7d0;
+  color: #111111;
 }
 
-.step-header__filter-check {
-  width: 20px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+.step-header.is-searching .step-header__search-trigger,
+.step-header.is-searching .step-header__search-close {
+  color: #000000 !important;
 }
 
-.step-header__filter-check svg {
-  width: 16px;
-  height: 16px;
-  stroke-width: 3;
+.step-header.is-searching .step-header__search-input {
+  color: #000000 !important;
+}
+
+.step-header.is-searching .step-header__search-input::placeholder {
+  color: #666666 !important;
 }
 
 /* ==========================================================================
@@ -222,13 +143,12 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  height: 44px;
-  width: 44px;
+  height: 48px;
+  width: 48px;
   background: transparent;
   position: relative;
 }
 
-/* 1. OVERLAY ABSOLUTO: Cobre os 55px perfeitamente */
 .step-header.is-searching .step-header__search-wrapper {
   position: absolute;
   inset: 0;
@@ -251,10 +171,9 @@
   }
 }
 
-/* 2. LUPA (GATILHO E DECORAÇÃO): Reduzida */
 .step-header__search-trigger {
-  width: 42px;
-  height: 42px;
+  width: 48px;
+  height: 48px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -269,9 +188,8 @@
 }
 
 .step-header__search-trigger svg {
-  /* Ícone menor e mais elegante */
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
   stroke-width: 2.2;
 }
 
@@ -290,7 +208,6 @@
   z-index: 65;
 }
 
-/* 3. INPUT: Pílula reduzida para 38px para sobrar respiro nos 55px de header */
 .step-header__search-input {
   display: none;
 }
@@ -302,14 +219,11 @@
   background: #F3F4F6;
   border: 1px solid transparent;
   border-radius: 999px;
-
   font-size: 14px;
   font-weight: 500;
   color: var(--text-strong);
   outline: none;
-
   padding: 0 16px 0 42px;
-
   opacity: 0;
   transform: translateY(4px);
   animation: slideUpIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) 0.05s forwards;
@@ -333,7 +247,6 @@
   color: var(--muted);
 }
 
-/* 4. BOTÃO FECHAR: Menor e com Bounce In */
 .step-header__search-close {
   width: 32px;
   height: 32px;
@@ -347,7 +260,6 @@
   cursor: pointer;
   border-radius: 50%;
   margin-left: 6px;
-
   opacity: 0;
   transform: scale(0.7);
   animation: bounceIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s forwards;

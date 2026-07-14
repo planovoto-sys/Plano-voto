@@ -607,6 +607,34 @@
   font-weight: 700;
 }
 
+/* ==========================================================================
+   FILTER CHIPS
+   ========================================================================== */
+.filter-chip {
+  flex-shrink: 0;
+  padding: 5px 12px;
+  border: none;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #111111;
+  font-family: var(--font-family);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.3;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  white-space: nowrap;
+}
+
+.filter-chip:active {
+  transform: scale(0.96);
+}
+
+.filter-chip.is-active {
+  background: #bbf7d0;
+  color: #111111;
+}
+
 .desktop-empty-state {
   min-height: 92px;
   border: 1px dashed rgba(17, 17, 17, 0.16);
@@ -730,28 +758,9 @@
   gap: 8px;
 }
 
-.desktop-candidate-filters > svg {
-  width: 17px;
-  height: 17px;
-  color: var(--muted-soft);
-}
-
-.desktop-candidate-filter {
-  min-height: 40px;
-  border: 1px solid rgba(17, 17, 17, 0.1);
-  border-radius: 999px;
-  background: var(--surface);
-  color: var(--text-strong);
-  padding: 0 14px;
-  font-family: var(--font-family);
+.desktop-candidate-filters .filter-chip {
+  padding: 5px 12px;
   font-size: 12px;
-  font-weight: 850;
-  cursor: pointer;
-}
-
-.desktop-candidate-filter.is-active {
-  border-color: rgba(255, 153, 0, 0.36);
-  background: rgba(255, 153, 0, 0.1);
 }
 
 .desktop-candidate-results {

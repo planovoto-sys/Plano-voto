@@ -3,16 +3,14 @@
    ========================================================= */
 .app-page-footer.convex-nav-shell {
   position: fixed;
-  left: 50%;
-  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-  /* Transform base: 0px no Y. A opacidade também vai na transição */
-  transform: translateX(-50%) translateY(0);
+  left: 0;
+  bottom: 0;
+  transform: translateY(0);
   opacity: 1;
-  /* Largura 100% menos 10px (garante exatos 5px de distância de cada lado) */
-  width: min(calc(100% - 10px), 460px);
-  margin: 0 auto;
+  width: 100%;
   z-index: 99999;
-  pointer-events: none; /* Para os vãos não bloquearem clique, itens filhos tem auto */
+  pointer-events: none;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease;
 }
 
@@ -20,54 +18,23 @@
    ESTADO: HIDDEN (Barra some da tela ao rolar)
    ========================================================= */
 .app-page-footer.convex-nav-shell.is-hidden {
-  transform: translateX(-50%) translateY(150px);
+  transform: translateY(150px);
   opacity: 0;
   pointer-events: none;
 }
 
 /* =========================================================
-   FUNDO LIQUID GLASS VERDE TRANSLÚCIDO
+   FUNDO CINZA
    ========================================================= */
 .convex-nav__bg-wrapper {
   position: absolute;
   inset: 0;
-  background: rgba(22, 163, 74, 0.72);
-  backdrop-filter: blur(28px) saturate(1.5);
-  -webkit-backdrop-filter: blur(28px) saturate(1.5);
-  border-radius: 16px;
-  filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.18));
+  background: #ffffff;
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -1px 0 rgba(17, 17, 17, 0.06);
   z-index: 0;
   overflow: hidden;
   transition: height 0.38s cubic-bezier(0.25, 1, 0.5, 1);
-}
-
-/* Reflexo superficial principal (shine) */
-.convex-nav__bg-wrapper::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 16px;
-  background: linear-gradient(175deg,
-    rgba(255, 255, 255, 0.35) 0%,
-    rgba(255, 255, 255, 0.12) 25%,
-    rgba(255, 255, 255, 0.04) 45%,
-    transparent 60%
-  );
-  pointer-events: none;
-  z-index: 1;
-}
-
-/* Reflexo curvo inferior (vítreo) */
-.convex-nav__bg-wrapper .glass-highlight {
-  position: absolute;
-  bottom: 0;
-  left: 8%;
-  right: 8%;
-  height: 18px;
-  border-radius: 50%;
-  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.13) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 1;
 }
 
 
@@ -100,7 +67,7 @@
   position: relative;
   border: 0;
   background: transparent;
-  color: #FFFFFF !important;  
+  color: #111111 !important;  
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -124,7 +91,7 @@
   transform: translateX(-50%) scaleX(0);
   width: 24px; 
   height: 4.5px; 
-  background-color: #FFFFFF !important; 
+  background-color: #111111 !important; 
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
   transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
@@ -143,7 +110,6 @@
   width: 100%;
   height: 100%;
   color: currentColor;
-  filter: drop-shadow(0px 1px 3px rgba(0, 0, 0, 0.15));
   transition: stroke-width 0.25s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
@@ -163,13 +129,20 @@
   font-weight: 500; 
   line-height: 1.2;
   white-space: nowrap;
-  text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.15);
   transition: font-weight 0.25s ease;
+}
+
+.convex-nav__step.is-active {
+  color: #16A34A !important;
 }
 
 .convex-nav__step.is-active .convex-nav__label {
   font-weight: 800;
-  color: #FFFFFF;
+  color: #16A34A;
+}
+
+.convex-nav__step.is-active::before {
+  background-color: #16A34A !important;
 }
 
 /* =========================================================
@@ -194,21 +167,21 @@
   width: 48px; 
   height: 48px;
   border-radius: 50%;
-  background: #FFFFFF; 
-  color: #000000; 
+  background: #16A34A; 
+  color: #ffffff; 
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25); 
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25); 
   transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.25s ease;
 }
 
 .continue-icon {
   width: 22px; 
   height: 22px;
-  stroke: #000000; 
+  stroke: #ffffff; 
 }
 
 /* =========================================================
@@ -241,7 +214,7 @@
    ========================================================= */
 @media (max-width: 360px) {
   .app-page-footer.convex-nav-shell {
-    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
-    width: calc(100% - 12px);
+    bottom: 0;
+    width: 100%;
   }
 }

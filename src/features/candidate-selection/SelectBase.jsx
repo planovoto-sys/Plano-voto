@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import ConfirmModal from '@/shared/ui/feedback/ConfirmModal';
 import AppFooter from '@/shared/ui/layout/AppFooter';
 import BottomNavigation from '@/app/shell/BottomNavigation';
-import { BackIcon, CheckIcon, FilterIcon, SearchIcon } from '@/shared/icons/AppIcons';
+import { SearchIcon } from '@/shared/icons/AppIcons';
 import { useNotify } from '@/features/notifications/useNotify';
 import LoadingScreen from '@/shared/ui/feedback/LoadingScreen';
 import { flowLog, flowWarn } from '@/shared/utils/debugFlow';
@@ -18,18 +18,7 @@ import {
   getSubNavLabel,
   haveSameSelectionIds
 } from './selectBaseViewModel';
-import LogoCompleta from '@/shared/ui/brand/LogoCompleta';
 import './SelectBase.css';
-
-const LogoBomDeVoto = () => (
-  <div className="logo-bom-de-voto">
-    <div className="logo-bom-de-voto__circles">
-      <div className="logo-bom-de-voto__circle" />
-      <div className="logo-bom-de-voto__circle" />
-    </div>
-    <span className="logo-bom-de-voto__text">Bom de Voto</span>
-  </div>
-);
 
 export default function SelectBase({
   titulo,
@@ -69,11 +58,9 @@ export default function SelectBase({
 
   const [selecionados, setSelecionados] = useState(selecaoInicial);
   const [candidateRenderLimit, setCandidateRenderLimit] = useState(INITIAL_CANDIDATE_RENDER_LIMIT);
-  const [candidateFilterOpen, setCandidateFilterOpen] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
 
   const candidateSearchInputRef = useRef(null);
-  const candidateFilterRef = useRef(null);
   
   const [modalMalAvaliado, setModalMalAvaliado] = useState({ aberto: false, item: null });
   const [modalAltaChance, setModalAltaChance] = useState({ aberto: false, item: null });
@@ -139,22 +126,7 @@ export default function SelectBase({
     return () => { cancelled = true; };
   }, [selecaoInicial]);
 
-  useEffect(() => {
-    if (!candidateFilterOpen || typeof document === 'undefined') return undefined;
-    const handlePointerDown = (event) => {
-      if (candidateFilterRef.current?.contains(event.target)) return;
-      setCandidateFilterOpen(false);
-    };
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') setCandidateFilterOpen(false);
-    };
-    document.addEventListener('pointerdown', handlePointerDown);
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [candidateFilterOpen]);
+
 
   const effectiveLimit = Number.isFinite(limiteSelecao) ? limiteSelecao : null;
   
@@ -205,21 +177,16 @@ export default function SelectBase({
 
   const hasMoreCandidates = visibleSecondaryCandidates.length < dados.length;
 
-// Substitua o useMemo do 'candidateFilterItems' no seu SelectBase.jsx
 const candidateFilterItems = useMemo(() => (
-  subNavigationItems
-    .filter(item => item.id === 'todos' || item.id === 'selecionados')
-    .map((item) => ({
-      ...item,
-      shortLabel: item.shortLabel || getSubNavLabel(item)
-    }))
+  subNavigationItems.map((item) => ({
+    ...item,
+    shortLabel: item.shortLabel || getSubNavLabel(item)
+  }))
 ), [subNavigationItems]);
 
   const isCandidateFilterActive = (item) => (
     item.id === activeSubNavigationId || item.mode === activeSubNavigationId
   );
-
-  const activeCandidateFilterItem = candidateFilterItems.find(isCandidateFilterActive) || candidateFilterItems[0] || null;
 
   
 
@@ -450,97 +417,74 @@ const candidateFilterItems = useMemo(() => (
   return (
     <div className={`select-base-container prototype-page nv-screen variant-${variant}${!headerVisible ? ' is-header-hidden' : ''}`}>
       
-      <header className={`step-header ${isSearchActive ? 'is-searching' : ''} ${!headerVisible ? 'is-header-hidden' : ''}`}>
-        
-        <div className="step-header__brand">
-    <LogoBomDeVoto />
-        </div>
+      <div className={`step-header-sticky ${!headerVisible ? 'is-header-hidden' : ''}`}>
+        <header className={`step-header ${isSearchActive ? 'is-searching' : ''}`}>
+          <div className="step-header__brand">
+            <img src="/logo-horizontal.svg" alt="Bom de Voto" className="step-header__logo" />
+          </div>
 
-        <div className="step-header__actions">
-          {candidateFilterItems.length > 0 && (
-            <div className="step-header__filter-wrapper" ref={candidateFilterRef}>
-              <button 
-                className={`step-header__icon-btn nv-touch ${candidateFilterOpen ? 'is-active' : ''}`} 
-                onClick={() => setCandidateFilterOpen(!candidateFilterOpen)}
-                aria-expanded={candidateFilterOpen}
-                aria-label="Filtrar"
-              >
-                <FilterIcon />
-                {activeCandidateFilterItem && activeCandidateFilterItem.id !== 'todos' && (
-                  <span className="step-header__filter-badge" />
-                )}
-              </button>
-
-              {candidateFilterOpen && (
-                <div className="step-header__filter-dropdown" role="menu" aria-label="Filtro de candidatos">
-                  {candidateFilterItems.map((item) => {
-                    const isActive = isCandidateFilterActive(item);
-                    return (
-                      <button
-                        key={item.id}
-                        className={`step-header__filter-option ${isActive ? 'is-active' : ''}`}
-                        type="button"
-                        role="menuitemradio"
-                        aria-checked={isActive}
-                        onClick={async () => {
-                          await handleSubNavigation(item);
-                          setCandidateFilterOpen(false);
-                        }}
-                      >
-                        <span className="step-header__filter-check" aria-hidden="true">
-                          {isActive && <CheckIcon />}
-                        </span>
-                        <span>{item.shortLabel}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )}
-
-          {mostrarBusca && (
-            <div className="step-header__search-wrapper">
-              <button
-                className="step-header__search-trigger nv-touch"
-                onClick={() => {
-                  if (!isSearchActive) setIsSearchActive(true);
-                }}
-                aria-label="Buscar"
-              >
-                <SearchIcon />
-              </button>
-              
-              <input
-                ref={candidateSearchInputRef}
-                type="search"
-                className="step-header__search-input"
-                value={valorBusca}
-                onChange={handleSearchChange}
-                placeholder="Pesquisar..."
-                tabIndex={isSearchActive ? 0 : -1}
-              />
-              
-              {isSearchActive && (
-                <button 
-                  className="step-header__search-close nv-touch" 
-                  onClick={(e) => { 
-                    e.stopPropagation();
-                    setIsSearchActive(false); 
-                    if (onChangeBusca) onChangeBusca(''); 
+          <div className="step-header__actions">
+            {mostrarBusca && (
+              <div className="step-header__search-wrapper">
+                <button
+                  className="step-header__search-trigger nv-touch"
+                  onClick={() => {
+                    if (!isSearchActive) setIsSearchActive(true);
                   }}
-                  aria-label="Fechar busca"
+                  aria-label="Buscar"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                  </svg>
+                  <SearchIcon />
                 </button>
-              )}
-            </div>
-          )}
-        </div>
-      </header>
+                
+                <input
+                  ref={candidateSearchInputRef}
+                  type="search"
+                  className="step-header__search-input"
+                  value={valorBusca}
+                  onChange={handleSearchChange}
+                  placeholder="Pesquisar..."
+                  tabIndex={isSearchActive ? 0 : -1}
+                />
+                
+                {isSearchActive && (
+                  <button 
+                    className="step-header__search-close nv-touch" 
+                    onClick={(e) => { 
+                      e.stopPropagation();
+                      setIsSearchActive(false); 
+                      if (onChangeBusca) onChangeBusca(''); 
+                    }}
+                    aria-label="Fechar busca"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        </header>
+
+        {!isHomeState && candidateFilterItems.length > 0 && (
+          <div className="filter-chips">
+            {candidateFilterItems.map((item) => {
+              const isActive = isCandidateFilterActive(item);
+              return (
+                <button
+                  key={item.id}
+                  className={`filter-chip ${isActive ? 'is-active' : ''}`}
+                  type="button"
+                  onClick={() => handleSubNavigation(item)}
+                >
+                  {item.shortLabel}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       <main ref={scrollContainerRef} className="prototype-scroll select-base__scroll nv-scroll">
         {isHomeState ? renderStateList() : renderCandidateList()}

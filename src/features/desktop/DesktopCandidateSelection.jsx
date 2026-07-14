@@ -1,4 +1,4 @@
-import { Filter, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { STATE_NAMES } from '@/shared/constants/states';
 import { getCandidateName } from '@/shared/utils/candidateMetrics';
 import CandidateCardDesktop from './CandidateCardDesktop';
@@ -113,7 +113,7 @@ export default function DesktopCandidateSelection({
           </DesktopPageIntro>
 
           <DesktopActionBar>
-            <button className="desktop-button-secondary nv-touch" type="button" onClick={() => onFilterSelect({ id: 'selecionados', mode: 'selecionados' })}>
+            <button className="desktop-button-secondary nv-touch" type="button" onClick={() => onFilterSelect({ id: 'selecao', mode: 'selecao' })}>
               Ver selecionados
             </button>
             <button className="desktop-button-ghost nv-touch" type="button" onClick={onBack}>
@@ -133,11 +133,10 @@ export default function DesktopCandidateSelection({
             </label>
 
             <div className="desktop-candidate-filters" aria-label="Filtros de candidatos">
-              <Filter aria-hidden="true" />
               {filterItems.map((item) => (
                 <button
                   key={item.id}
-                  className={`desktop-candidate-filter nv-touch ${item.id === activeFilterId || item.mode === activeFilterId ? 'is-active' : ''}`}
+                  className={`filter-chip ${item.id === activeFilterId || item.mode === activeFilterId ? 'is-active' : ''}`}
                   type="button"
                   onClick={() => onFilterSelect(item)}
                 >

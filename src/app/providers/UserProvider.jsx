@@ -15,7 +15,7 @@ const readPersistedFilter = () => {
 
   try {
     const value = window.localStorage.getItem(FILTER_STORAGE_KEY);
-    return ['todos', 'reeleger', 'renovar', 'selecionados'].includes(value) ? value : 'todos';
+    return ['todos', 'selecao', 'avaliacao', 'viabilidade', 'partido'].includes(value) ? value : 'todos';
   } catch {
     return 'todos';
   }
