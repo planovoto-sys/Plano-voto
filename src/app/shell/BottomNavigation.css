@@ -20,7 +20,7 @@
 .app-page-footer.convex-nav-shell.is-hidden {
   transform: translateY(150px);
   opacity: 0;
-  pointer-events: none;
+
 }
 
 /* =========================================================

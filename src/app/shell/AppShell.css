@@ -6,7 +6,7 @@
   overscroll-behavior: contain;
   scrollbar-width: none;
 }
-
+/* teste */
 .app-main::-webkit-scrollbar {
   display: none;
 }
