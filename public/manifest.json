@@ -6,14 +6,8 @@
   "lang": "pt-BR",
   "icons": [
     {
-      "src": "/icons/bomdevoto-192.png?v=1.6.3-20260602",
-      "type": "image/png",
-      "sizes": "192x192",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icons/bomdevoto-512.png?v=1.6.3-20260602",
-      "type": "image/png",
+      "src": "/icone-branco.svg",
+      "type": "image/svg+xml",
       "sizes": "512x512",
       "purpose": "any maskable"
     }

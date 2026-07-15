@@ -12,7 +12,7 @@
 .select-base__scroll {
   width: 100%;
   max-width: 100%;
-  padding: 31px var(--screen-gutter) calc(var(--bottom-nav-height) + var(--app-safe-bottom) + 72px);
+  padding: 6px var(--screen-gutter) calc(var(--bottom-nav-height) + var(--app-safe-bottom) + 72px);
   overflow-x: hidden;
   overscroll-behavior: contain;
   background: #f3f3f3;
@@ -86,7 +86,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 10px var(--screen-gutter);
+  padding: 8px var(--screen-gutter) 2px;
   background: transparent;
   overflow-x: auto;
   overflow-y: hidden;
@@ -144,7 +144,7 @@
   align-items: center;
   justify-content: flex-end;
   height: 48px;
-  width: 48px;
+  width: 52px;
   background: transparent;
   position: relative;
 }
@@ -172,13 +172,13 @@
 }
 
 .step-header__search-trigger {
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 52px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
+  background: rgba(17, 17, 17, 0.04);
   border: none;
   color: var(--text-strong);
   cursor: pointer;
@@ -188,13 +188,13 @@
 }
 
 .step-header__search-trigger svg {
-  width: 22px;
-  height: 22px;
-  stroke-width: 2.2;
+  width: 24px;
+  height: 24px;
+  stroke-width: 2.4;
 }
 
 .step-header__search-trigger:active {
-  background-color: rgba(17, 17, 17, 0.05);
+  background-color: rgba(17, 17, 17, 0.08);
   transform: scale(0.92);
 }
 
@@ -292,23 +292,12 @@
    SECTION HEADING E STEP INDICATOR
    ========================================================================== */
 .prototype-section-heading {
-  margin: 0 0 20px 0;
+  margin: 0 0 12px 0;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 6px;
+  gap: 4px;
   min-width: 0;
-}
-
-.step-indicator {
-  display: inline-block;
-  color: #00B84A;
-  font-size: 13px;
-  font-weight: 800;
-  padding: 6px 12px;
-  border-radius: 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 .prototype-section-heading h2 {
@@ -344,7 +333,7 @@
 .state-selection-flow,
 .candidate-flow {
   display: grid;
-  gap: 29px;
+  gap: 16px;
 }
 
 .state-selection-panel,
@@ -564,12 +553,6 @@
 
   .prototype-section-heading p {
     font-size: 13px;
-  }
-
-  .step-indicator {
-    font-size: 11px;
-    padding: 4px 10px;
-    margin-bottom: 4px;
   }
 
   .app-header-mode-action {
@@ -880,7 +863,7 @@
 
 @media (max-width: 360px) {
   .select-base__scroll {
-    padding-top: 24px;
+    padding-top: 4px;
     padding-bottom: calc(var(--bottom-nav-height) + var(--app-safe-bottom) + 72px);
   }
 
@@ -1191,11 +1174,6 @@
 
   .prototype-section-heading p {
     font-size: 16px;
-  }
-
-  .step-indicator {
-    font-size: 14px;
-    margin-bottom: 12px;
   }
 
   .select-base__scroll {

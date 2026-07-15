@@ -188,7 +188,7 @@ export default function EscolherCandidatos({
   const [erroCarregamento, setErroCarregamento] = useState('');
   const [busca, setBusca] = useState('');
   const buscaDiferida = useDeferredValue(busca);
-  const [filtroLista, setFiltroLista] = useState('todos');
+  const [filtroLista, setFiltroLista] = useState('avaliacao');
   const [selecionadosNaTela, setSelecionadosNaTela] = useState([]);
   const [ballotDraft, setBallotDraft] = useState(null);
   const [modalAviso, setModalAviso] = useState({ aberto: false, mensagem: '' });
@@ -202,6 +202,9 @@ export default function EscolherCandidatos({
   const currentStep = chaveBanco === 'deputado_federal'
     ? 'deputado'
     : 'senador';
+  const currentFilters = chaveBanco === 'deputado_federal'
+    ? CANDIDATE_FILTERS
+    : CANDIDATE_FILTERS.filter((f) => f.id !== 'todos');
 
   const tourSteps = [
     { target: '.app-help-action', title: 'AJUDA', content: 'Abre este guia sempre que você quiser revisar a tela.' },
@@ -460,14 +463,6 @@ export default function EscolherCandidatos({
           const chanceA = getCandidateChance(a);
           const chanceB = getCandidateChance(b);
           if (chanceB !== chanceA) return chanceB - chanceA;
-          return desempatarPorNome(a, b);
-        });
-      }
-      if (filtroLista === 'partido') {
-        return [...lista].sort((a, b) => {
-          const partidoA = normalizeSearch(a.Partido || a.partido || a.sigla_partido || '');
-          const partidoB = normalizeSearch(b.Partido || b.partido || b.sigla_partido || '');
-          if (partidoA !== partidoB) return partidoA.localeCompare(partidoB);
           return desempatarPorNome(a, b);
         });
       }
@@ -787,7 +782,7 @@ export default function EscolherCandidatos({
           featuredCandidateId={featuredCandidateId}
           searchValue={busca}
           onSearchChange={setBusca}
-          filterItems={CANDIDATE_FILTERS}
+          filterItems={currentFilters}
           activeFilterId={filtroLista}
           onFilterSelect={handleSubNavigation}
           onCandidateSelect={handleDesktopCandidateSelect}
@@ -836,7 +831,7 @@ export default function EscolherCandidatos({
         currentStep={currentStep}
         autoAvancarAoSelecionar={false}
         variant={chaveBanco === 'deputado_federal' ? 'office-deputado' : 'office-senado'}
-        subNavigationItems={CANDIDATE_FILTERS}
+        subNavigationItems={currentFilters}
         activeSubNavigationId={filtroLista}
         onSubNavigationSelect={handleSubNavigation}
         featuredCandidateId={featuredCandidateId}

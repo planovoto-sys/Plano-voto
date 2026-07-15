@@ -72,7 +72,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 4px 2px 2px;
+  padding: 3px 2px 2px;
   min-width: 48px; 
   height: 100%;
   cursor: default;
@@ -99,8 +99,8 @@
 .convex-nav__step.is-active::before { transform: translateX(-50%) scaleX(1); }
 
 .convex-nav__icon-wrap {
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -119,15 +119,15 @@
   overflow: hidden;
   max-height: 24px;
   opacity: 1;
-  margin-top: 2px;
+  margin-top: 1px;
   transition: max-height 0.38s cubic-bezier(0.25, 1, 0.5, 1), 
               opacity 0.25s ease, margin-top 0.3s ease, transform 0.38s ease;
 }
 
 .convex-nav__label {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 500; 
-  line-height: 1.2;
+  line-height: 1.15;
   white-space: nowrap;
   transition: font-weight 0.25s ease;
 }

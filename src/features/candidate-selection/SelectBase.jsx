@@ -53,8 +53,6 @@ export default function SelectBase({
   const isDeputyOffice = variant === 'office-deputado';
   const isSenateOffice = variant === 'office-senado';
   const candidateCardMode = isCandidateOffice ? 'detailed' : 'compact';
-  
-  const stepNumber = isSenateOffice ? 3 : isDeputyOffice ? 2 : 1;
 
   const [selecionados, setSelecionados] = useState(selecaoInicial);
   const [candidateRenderLimit, setCandidateRenderLimit] = useState(INITIAL_CANDIDATE_RENDER_LIMIT);
@@ -329,7 +327,6 @@ const candidateFilterItems = useMemo(() => (
       <div className="state-selection-flow nv-container">
         <section className="state-selection-panel" aria-label="Estados">
           <div className="prototype-section-heading">
-            <span className="step-indicator">Passo {stepNumber} de 3</span>
             <h2>Estado</h2>
             <p>Selecione seu estado</p>
           </div>
@@ -366,7 +363,6 @@ const candidateFilterItems = useMemo(() => (
       <div className={`candidate-flow nv-container ${isSenateOffice ? 'candidate-flow--senate' : 'candidate-flow--single'}`} id="tour-lista">
         <section className="candidate-list-section">
           <div className="prototype-section-heading">
-            <span className="step-indicator">Passo {stepNumber} de 3</span>
             <h2>{headingTitle}</h2>
             <p>Selecione seus candidatos — todos que aceite votar</p>
           </div>

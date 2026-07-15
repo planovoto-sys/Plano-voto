@@ -5,10 +5,8 @@ const APP_SHELL = [
   '/',
   '/index.html',
   '/manifest.json?v=1.6.3-20260602',
-  '/icons/favicon-32.png?v=1.6.3-20260602',
-  '/icons/apple-touch-icon.png?v=1.6.3-20260602',
-  '/icons/bomdevoto-192.png?v=1.6.3-20260602',
-  '/icons/bomdevoto-512.png?v=1.6.3-20260602'
+  '/icone-branco.svg',
+  '/icone-modo-escuro.svg'
 ];
 const CURRENT_CACHES = [APP_CACHE, STATIC_CACHE];
 const NAVIGATION_TIMEOUT_MS = 4500;
