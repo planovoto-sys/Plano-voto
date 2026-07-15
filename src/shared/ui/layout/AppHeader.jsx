@@ -1,7 +1,8 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, X } from 'lucide-react';
 import LogoCompleta from '@/shared/ui/brand/LogoCompleta';
+import { SearchIcon } from '@/shared/icons/AppIcons';
 import './AppHeader.css';
 
 const BRAND_MAP = {
@@ -22,6 +23,13 @@ export default function AppHeader({
   backTo,
   actions,
   scrollHide = false,
+  hideBrand = false,
+  searchActive = false,
+  searchValue = '',
+  onSearchChange,
+  onSearchClose,
+  searchRef,
+  searchPlaceholder = 'Pesquisar...',
   children,
   className = ''
 }) {
@@ -53,11 +61,18 @@ export default function AppHeader({
     return () => window.removeEventListener('scroll', handleScroll);
   }, [handleScroll, scrollHide]);
 
+  useEffect(() => {
+    if (searchActive && searchRef?.current) {
+      searchRef.current.focus();
+    }
+  }, [searchActive, searchRef]);
+
   const classNames = [
     'app-header',
     `app-header--${variant}`,
     scrollHide ? 'app-header--scroll-hide' : '',
     hidden ? 'app-header--hidden' : '',
+    searchActive ? 'app-header--search-active' : '',
     className
   ].filter(Boolean).join(' ');
 
@@ -70,34 +85,63 @@ export default function AppHeader({
   return (
     <header className={classNames}>
       <div className="app-header__inner">
-        <div className="app-header__left">
-          {onBack && (
-            <button className="app-header__back nv-touch" type="button" onClick={onBack}>
-              <ArrowLeft aria-hidden="true" />
-              <span>{backLabel}</span>
-            </button>
-          )}
-          {backTo && !onBack && (
-            <Link to={backTo} className="app-header__back app-header__back--link nv-touch">
-              <ArrowLeft aria-hidden="true" />
-              <span>{backLabel}</span>
-            </Link>
-          )}
-          {variant !== 'minimal' && brandContent}
-        </div>
+        {searchActive ? (
+          <>
+            <div className="app-header__search-field">
+              <SearchIcon className="app-header__search-field-icon" />
+              <input
+                ref={searchRef}
+                type="search"
+                className="app-header__search-field-input"
+                value={searchValue}
+                onChange={onSearchChange}
+                placeholder={searchPlaceholder}
+                autoFocus
+              />
+            </div>
+            <div className="app-header__right">
+              <button
+                className="app-header__search-close-btn nv-touch"
+                type="button"
+                onClick={onSearchClose}
+                aria-label="Fechar busca"
+              >
+                <X size={22} strokeWidth={2.5} />
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="app-header__left">
+              {onBack && (
+                <button className="app-header__back nv-touch" type="button" onClick={onBack}>
+                  <ArrowLeft aria-hidden="true" />
+                  <span>{backLabel}</span>
+                </button>
+              )}
+              {backTo && !onBack && (
+                <Link to={backTo} className="app-header__back app-header__back--link nv-touch">
+                  <ArrowLeft aria-hidden="true" />
+                  <span>{backLabel}</span>
+                </Link>
+              )}
+              {!hideBrand && variant !== 'minimal' && brandContent}
+            </div>
 
-        {variant === 'minimal' && (
-          <div className="app-header__center">
-            <BrandComponent />
-          </div>
+            {variant === 'minimal' && (
+              <div className="app-header__center">
+                <BrandComponent />
+              </div>
+            )}
+
+            <div className="app-header__right">
+              {actions}
+            </div>
+          </>
         )}
-
-        <div className="app-header__right">
-          {actions}
-        </div>
       </div>
 
-      {children && (
+      {!searchActive && children && (
         <div className="app-header__bottom">
           {children}
         </div>

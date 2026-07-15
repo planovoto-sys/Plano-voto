@@ -10,24 +10,10 @@
 }
 
 .app-header--scroll-hide {
-  position: relative;
   transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .app-header--scroll-hide.app-header--hidden {
-  transform: translateY(-100%);
-}
-
-.app-header--scroll-hide {
-  position: relative;
-  transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
-}
-
-.app-header--scroll-hide.app-header--hidden {
-  transform: translateY(-100%);
-}
-
-.app-header--hidden {
   transform: translateY(-100%);
 }
 
@@ -120,15 +106,74 @@
   scrollbar-width: none;
 }
 
-.app-header__bottom > .filter-chips {
-  padding: 12px 0 2px;
-  margin-left: 0;
-}
-
 .app-header__bottom::-webkit-scrollbar {
   display: none;
 }
 
+.app-header__bottom > .filter-chips {
+  padding: 6px 0 2px;
+  margin-left: 0;
+}
+
+/* Search mode */
+.app-header--search-active .app-header__inner {
+  box-shadow: 0 1px 0 rgba(17, 17, 17, 0.06);
+}
+
+.app-header__search-field {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: 8px;
+  min-width: 0;
+}
+
+.app-header__search-field-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: #999;
+}
+
+.app-header__search-field-input {
+  flex: 1;
+  height: 36px;
+  border: none;
+  border-radius: 999px;
+  background: #ffffff;
+  font-family: var(--font-family);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-strong, #111);
+  outline: none;
+  padding: 0 12px;
+  min-width: 0;
+}
+
+.app-header__search-field-input::placeholder {
+  color: #aaa;
+}
+
+.app-header__search-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-strong, #111);
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.app-header__search-close-btn:active {
+  background: rgba(17, 17, 17, 0.06);
+}
+
+/* Profile actions */
 .app-header__profile-actions {
   display: flex;
   align-items: center;
@@ -171,7 +216,28 @@
   font-weight: 800;
 }
 
-/* Variant: minimal (used by login page, transparent/simple) */
+/* About page actions */
+.app-header__about-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.app-header__about-login {
+  min-height: 42px;
+  border-radius: 999px;
+  font-family: var(--font-family);
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--surface);
+  padding: 0 18px;
+}
+
+/* Variant: minimal (used by login page) */
 .app-header--minimal {
   background: transparent;
   box-shadow: none;
@@ -182,7 +248,7 @@
   box-shadow: none;
 }
 
-/* Variant: desktop (wider, more spacing) */
+/* Variant: desktop */
 @media (min-width: 1024px) {
   .app-header--desktop {
     --app-header-min-height: 72px;
@@ -201,7 +267,6 @@
   }
 }
 
-/* Variant: default (mobile) */
 @media (max-width: 1023px) {
   .app-header--default .app-header__inner {
     --screen-gutter: 18px;
