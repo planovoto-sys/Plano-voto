@@ -2,6 +2,7 @@
   --app-header-min-height: 56px;
   --app-header-brand-max-height: 48px;
 
+  position: relative;
   width: 100%;
   flex-shrink: 0;
   background: var(--app-header-bg, #f3f3f3);

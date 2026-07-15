@@ -183,7 +183,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(17, 17, 17, 0.04);
+  background: rgba(17, 17, 17, 0.06);
   border: none;
   color: var(--text-strong);
   cursor: pointer;
@@ -196,6 +196,11 @@
   width: 24px;
   height: 24px;
   stroke-width: 2.4;
+}
+
+.step-header__search-trigger svg.app-icon {
+  width: 24px;
+  height: 24px;
 }
 
 .step-header__search-trigger:active {
