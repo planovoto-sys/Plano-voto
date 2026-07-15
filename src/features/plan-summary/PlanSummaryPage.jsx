@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { LogIn, LogOut, Star } from 'lucide-react';
@@ -24,7 +24,7 @@ import ConvexBottomNavigation from '@/app/shell/BottomNavigation';
 import ShareChoicePanel from '@/features/sharing/ShareChoicePanel';
 
 import AppFooter from '@/shared/ui/layout/AppFooter';
-import AppHeader from '@/shared/ui/layout/AppHeader';
+import '@/shared/ui/layout/AppHeader.css';
 import ConfirmModal from '@/shared/ui/feedback/ConfirmModal';
 import LoadingScreen from '@/shared/ui/feedback/LoadingScreen';
 import CandidateCard from '@/features/candidate-selection/CandidateCard';
@@ -138,6 +138,33 @@ export default function MeuPlano() {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   
   const [planUrl] = useState(() => getPlanUrl());
+
+  const scrollRef = useRef(null);
+  const [headerVisible, setHeaderVisible] = useState(true);
+  const lastScrollYRef = useRef(0);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const currentY = el.scrollTop;
+          if (currentY > 50 && currentY > lastScrollYRef.current + 10) {
+            setHeaderVisible(false);
+          } else if (currentY < lastScrollYRef.current - 10) {
+            setHeaderVisible(true);
+          }
+          lastScrollYRef.current = currentY;
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    el.addEventListener('scroll', handleScroll, { passive: true });
+    return () => el.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     if (!user?.uid) return undefined;
@@ -278,11 +305,10 @@ export default function MeuPlano() {
     : '';
 
   return (
-    <div className="my-plan-page">
-      <AppHeader
-        variant="default"
-        actions={
-          <div className="app-header__profile-actions">
+    <div className={`my-plan-page prototype-page nv-screen${!headerVisible ? ' is-header-hidden' : ''}`}>
+      <header className={`app-header app-header--default step-header-sticky ${!headerVisible ? 'is-header-hidden' : ''}`}>
+        <div className="app-header__inner">
+          <div className="app-header__left">
             <button className="app-header__icon-btn" aria-label="Perfil">
               {profileImage ? (
                 <img className="app-header__avatar" src={profileImage} alt="" referrerPolicy="no-referrer" />
@@ -290,14 +316,21 @@ export default function MeuPlano() {
                 <div className="app-header__avatar app-header__avatar--initial">{profileInitial}</div>
               )}
             </button>
+          </div>
+          <div className="app-header__center">
+            <span className="app-header__brand-link">
+              <LogoCompleta />
+            </span>
+          </div>
+          <div className="app-header__right">
             <button className="app-header__icon-btn" onClick={isGuestMode ? handleLogin : handleLogout} aria-label={isGuestMode ? 'Entrar' : 'Sair'}>
               {isGuestMode ? <LogIn size={20} /> : <LogOut size={20} />}
             </button>
           </div>
-        }
-      />
+        </div>
+      </header>
 
-      <main className="my-plan-scroll">
+      <main ref={scrollRef} className="prototype-scroll my-plan-scroll">
         <div className="my-plan-shell">
           
           <section className="my-plan-overview">
@@ -406,7 +439,7 @@ export default function MeuPlano() {
 
         </div>
         
-        <AppFooter />
+        <AppFooter className="app-footer--scroll-content" />
       </main>
 
       {shareData && (
