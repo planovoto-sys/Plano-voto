@@ -3,6 +3,7 @@ import { signInWithPopup } from 'firebase/auth';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 
 import FlowToast from '@/shared/ui/feedback/FlowToast';
+import AppHeader from '@/shared/ui/layout/AppHeader';
 import { useUser } from '@/shared/hooks/useUser';
 import { auth, firebaseReady, googleProvider } from '@/shared/firebase/firebase';
 import { mergeVisitorBallotDraftIntoAccount } from '@/features/ballot';
@@ -83,10 +84,7 @@ function Login() {
     <div className="login-wrapper">
       <FlowToast key={loginNotice?.id || 'login-toast'} message={loginNotice?.message || ''} />
 
-      <header className="login-header">
-        {/* Adicionei a classe logo-img e limpei a div desnecessária que estava em volta */}
-        <img src="/icone-com-nome.svg" alt="Bom de Voto" className="logo-img" />
-      </header>
+      <AppHeader variant="minimal" brand="icon-name" />
 
       <main className="login-main">
         <div className="title-section">

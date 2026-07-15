@@ -24,6 +24,7 @@ import ConvexBottomNavigation from '@/app/shell/BottomNavigation';
 import ShareChoicePanel from '@/features/sharing/ShareChoicePanel';
 
 import AppFooter from '@/shared/ui/layout/AppFooter';
+import AppHeader from '@/shared/ui/layout/AppHeader';
 import ConfirmModal from '@/shared/ui/feedback/ConfirmModal';
 import LoadingScreen from '@/shared/ui/feedback/LoadingScreen';
 import CandidateCard from '@/features/candidate-selection/CandidateCard';
@@ -278,21 +279,23 @@ export default function MeuPlano() {
 
   return (
     <div className="my-plan-page">
-      <header className="my-plan-header">
-        <button className="my-plan-header__btn" aria-label="Perfil">
-          {profileImage ? (
-            <img className="my-plan-header__avatar" src={profileImage} alt="" referrerPolicy="no-referrer" />
-          ) : (
-            <div className="my-plan-header__avatar">{profileInitial}</div>
-          )}
-        </button>
-        
-        <LogoCompleta as="h1" />
-
-        <button className="my-plan-header__btn" onClick={isGuestMode ? handleLogin : handleLogout} aria-label={isGuestMode ? 'Entrar' : 'Sair'}>
-          {isGuestMode ? <LogIn size={20} /> : <LogOut size={20} />}
-        </button>
-      </header>
+      <AppHeader
+        variant="default"
+        actions={
+          <div className="app-header__profile-actions">
+            <button className="app-header__icon-btn" aria-label="Perfil">
+              {profileImage ? (
+                <img className="app-header__avatar" src={profileImage} alt="" referrerPolicy="no-referrer" />
+              ) : (
+                <div className="app-header__avatar app-header__avatar--initial">{profileInitial}</div>
+              )}
+            </button>
+            <button className="app-header__icon-btn" onClick={isGuestMode ? handleLogin : handleLogout} aria-label={isGuestMode ? 'Entrar' : 'Sair'}>
+              {isGuestMode ? <LogIn size={20} /> : <LogOut size={20} />}
+            </button>
+          </div>
+        }
+      />
 
       <main className="my-plan-scroll">
         <div className="my-plan-shell">

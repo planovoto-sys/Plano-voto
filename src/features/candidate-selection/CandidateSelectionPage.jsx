@@ -202,9 +202,7 @@ export default function EscolherCandidatos({
   const currentStep = chaveBanco === 'deputado_federal'
     ? 'deputado'
     : 'senador';
-  const currentFilters = chaveBanco === 'deputado_federal'
-    ? CANDIDATE_FILTERS
-    : CANDIDATE_FILTERS.filter((f) => f.id !== 'todos');
+  const currentFilters = CANDIDATE_FILTERS.filter((f) => f.id !== 'todos');
 
   const tourSteps = [
     { target: '.app-help-action', title: 'AJUDA', content: 'Abre este guia sempre que você quiser revisar a tela.' },

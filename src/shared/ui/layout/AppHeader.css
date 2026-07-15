@@ -1,0 +1,208 @@
+.app-header {
+  --app-header-min-height: 56px;
+  --app-header-brand-max-height: 48px;
+
+  width: 100%;
+  flex-shrink: 0;
+  background: var(--app-header-bg, #f3f3f3);
+  z-index: 55;
+}
+
+.app-header--scroll-hide {
+  position: relative;
+  transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.app-header--scroll-hide.app-header--hidden {
+  transform: translateY(-100%);
+}
+
+.app-header--scroll-hide {
+  position: relative;
+  transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.app-header--scroll-hide.app-header--hidden {
+  transform: translateY(-100%);
+}
+
+.app-header--hidden {
+  transform: translateY(-100%);
+}
+
+.app-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  height: calc(var(--app-header-min-height) + var(--app-safe-top, 0px));
+  min-height: calc(var(--app-header-min-height) + var(--app-safe-top, 0px));
+  padding: var(--app-safe-top, 0px) var(--screen-gutter, 18px) 0;
+  box-shadow: 0 1px 0 rgba(17, 17, 17, 0.06);
+}
+
+.app-header__left,
+.app-header__right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 0 1 auto;
+}
+
+.app-header__center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+.app-header__brand-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+}
+
+.app-header__brand-link img,
+.app-header__brand-link .logo-completa__image {
+  display: block;
+  max-height: var(--app-header-brand-max-height, 36px);
+  width: auto;
+}
+
+.app-header__brand-img {
+  display: block;
+  max-height: var(--app-header-brand-max-height, 36px);
+  width: auto;
+}
+
+.app-header__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  background: transparent;
+  color: var(--text-strong, #111);
+  font-family: var(--font-family);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 999px;
+  min-height: 36px;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.app-header__back svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.app-header__back:active {
+  background: rgba(17, 17, 17, 0.06);
+}
+
+.app-header__back--link {
+  display: inline-flex;
+}
+
+.app-header__bottom {
+  padding: 0 var(--screen-gutter, 18px) 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.app-header__bottom > .filter-chips {
+  padding: 12px 0 2px;
+  margin-left: 0;
+}
+
+.app-header__bottom::-webkit-scrollbar {
+  display: none;
+}
+
+.app-header__profile-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.app-header__icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-strong, #111);
+  cursor: pointer;
+  padding: 0;
+  transition: background-color 0.2s ease;
+}
+
+.app-header__icon-btn:active {
+  background: rgba(17, 17, 17, 0.06);
+}
+
+.app-header__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.app-header__avatar--initial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--brand-green, #16A34A);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+/* Variant: minimal (used by login page, transparent/simple) */
+.app-header--minimal {
+  background: transparent;
+  box-shadow: none;
+}
+
+.app-header--minimal .app-header__inner {
+  justify-content: center;
+  box-shadow: none;
+}
+
+/* Variant: desktop (wider, more spacing) */
+@media (min-width: 1024px) {
+  .app-header--desktop {
+    --app-header-min-height: 72px;
+    --app-header-brand-max-height: 52px;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(17, 17, 17, 0.06);
+  }
+
+  .app-header--desktop .app-header__inner {
+    --screen-gutter: clamp(24px, 3vw, 48px);
+    max-width: 1240px;
+    margin: 0 auto;
+    width: 100%;
+    box-shadow: none;
+  }
+}
+
+/* Variant: default (mobile) */
+@media (max-width: 1023px) {
+  .app-header--default .app-header__inner {
+    --screen-gutter: 18px;
+  }
+}

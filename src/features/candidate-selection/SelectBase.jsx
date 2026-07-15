@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ConfirmModal from '@/shared/ui/feedback/ConfirmModal';
 import AppFooter from '@/shared/ui/layout/AppFooter';
+import AppHeader from '@/shared/ui/layout/AppHeader';
 import BottomNavigation from '@/app/shell/BottomNavigation';
 import { SearchIcon } from '@/shared/icons/AppIcons';
 import { useNotify } from '@/features/notifications/useNotify';
@@ -413,56 +414,50 @@ const candidateFilterItems = useMemo(() => (
   return (
     <div className={`select-base-container prototype-page nv-screen variant-${variant}${!headerVisible ? ' is-header-hidden' : ''}`}>
       
-      <div className={`step-header-sticky ${!headerVisible ? 'is-header-hidden' : ''}`}>
-        <header className={`step-header ${isSearchActive ? 'is-searching' : ''}`}>
-          <div className="step-header__brand">
-            <img src="/logo-horizontal.svg" alt="Bom de Voto" className="step-header__logo" />
-          </div>
+      <AppHeader
+        variant="default"
+        className={`step-header-sticky ${!headerVisible ? 'is-header-hidden' : ''} ${isSearchActive ? 'is-searching' : ''}`}
+        actions={mostrarBusca && (
+          <div className="step-header__search-wrapper">
+            <button
+              className="step-header__search-trigger nv-touch"
+              onClick={() => {
+                if (!isSearchActive) setIsSearchActive(true);
+              }}
+              aria-label="Buscar"
+            >
+              <SearchIcon />
+            </button>
 
-          <div className="step-header__actions">
-            {mostrarBusca && (
-              <div className="step-header__search-wrapper">
-                <button
-                  className="step-header__search-trigger nv-touch"
-                  onClick={() => {
-                    if (!isSearchActive) setIsSearchActive(true);
-                  }}
-                  aria-label="Buscar"
-                >
-                  <SearchIcon />
-                </button>
-                
-                <input
-                  ref={candidateSearchInputRef}
-                  type="search"
-                  className="step-header__search-input"
-                  value={valorBusca}
-                  onChange={handleSearchChange}
-                  placeholder="Pesquisar..."
-                  tabIndex={isSearchActive ? 0 : -1}
-                />
-                
-                {isSearchActive && (
-                  <button 
-                    className="step-header__search-close nv-touch" 
-                    onClick={(e) => { 
-                      e.stopPropagation();
-                      setIsSearchActive(false); 
-                      if (onChangeBusca) onChangeBusca(''); 
-                    }}
-                    aria-label="Fechar busca"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="18" y1="6" x2="6" y2="18"></line>
-                      <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                  </button>
-                )}
-              </div>
+            <input
+              ref={candidateSearchInputRef}
+              type="search"
+              className="step-header__search-input"
+              value={valorBusca}
+              onChange={handleSearchChange}
+              placeholder="Pesquisar..."
+              tabIndex={isSearchActive ? 0 : -1}
+            />
+
+            {isSearchActive && (
+              <button
+                className="step-header__search-close nv-touch"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsSearchActive(false);
+                  if (onChangeBusca) onChangeBusca('');
+                }}
+                aria-label="Fechar busca"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
             )}
           </div>
-        </header>
-
+        )}
+      >
         {!isHomeState && candidateFilterItems.length > 0 && (
           <div className="filter-chips">
             {candidateFilterItems.map((item) => {
@@ -480,7 +475,7 @@ const candidateFilterItems = useMemo(() => (
             })}
           </div>
         )}
-      </div>
+      </AppHeader>
 
       <main ref={scrollContainerRef} className="prototype-scroll select-base__scroll nv-scroll">
         {isHomeState ? renderStateList() : renderCandidateList()}

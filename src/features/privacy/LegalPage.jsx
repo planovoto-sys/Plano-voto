@@ -10,6 +10,7 @@ import {
 import { useDesktopExperience } from '@/shared/hooks/useDesktopExperience';
 import { useUser } from '@/shared/hooks/useUser';
 import AppFooter from '@/shared/ui/layout/AppFooter';
+import AppHeader from '@/shared/ui/layout/AppHeader';
 import AccountDeletionPanel from '@/features/privacy-controls/AccountDeletionPanel';
 import LocalDataActions from '@/features/privacy-controls/LocalDataActions';
 import PrivacyControlCenter from '@/features/privacy-controls/PrivacyControlCenter';
@@ -166,31 +167,31 @@ function AboutLanding({ user, isDesktopExperience, onPrimaryCta, onLoginCta }) {
 
   return (
     <div className="about-page nv-screen">
-      <header className="about-header">
-        <Link to="/" className="about-header__brand" aria-label="Bom de Voto">
-          <img src="/logo-horizontal.svg" alt="Bom de Voto" className="about-header__brand-logo" />
-        </Link>
-
-        <nav className="about-header__nav" aria-label="Navegação institucional">
+      <AppHeader
+        variant="default"
+        brand="horizontal"
+        actions={
+          <div className="app-header__about-actions">
+            {!isDesktopExperience && (
+              <button className="app-header__back nv-touch" type="button" onClick={() => window.history.back()}>
+                ← Voltar
+              </button>
+            )}
+            {!user?.uid && (
+              <button className="app-header__about-login nv-touch" type="button" onClick={onLoginCta}>
+                Fazer login
+              </button>
+            )}
+          </div>
+        }
+      >
+        <nav className="app-header__about-nav" aria-label="Navegação institucional">
           <a href="#como-funciona">Como funciona</a>
           <a href="#privacidade">Privacidade</a>
           <a href="#celular">Celular</a>
           <Link to="/aviso-eleitoral">Aviso Eleitoral</Link>
         </nav>
-
-        <div className="about-header__actions">
-          {!isDesktopExperience && (
-            <button className="about-header__ghost nv-touch" type="button" onClick={() => window.history.back()}>
-              Voltar
-            </button>
-          )}
-          {!user?.uid && (
-            <button className="about-header__login nv-touch" type="button" onClick={onLoginCta}>
-              Fazer login
-            </button>
-          )}
-        </div>
-      </header>
+      </AppHeader>
 
       <main className="about-main nv-scroll" ref={aboutMainRef}>
         <section className="about-hero">
@@ -405,12 +406,12 @@ export default function LegalPage({ type }) {
 
   return (
     <div className="legal-page nv-screen">
-      <header className="legal-header nv-container">
-        <Link to="/" className="legal-header__brand">Bom de Voto</Link>
-        <button className="legal-header__back nv-touch" type="button" onClick={() => navigate(-1)}>
-          ← Voltar
-        </button>
-      </header>
+      <AppHeader
+        variant="default"
+        brand="horizontal"
+        onBack={() => navigate(-1)}
+        backLabel="Voltar"
+      />
 
       <main className="legal-main nv-scroll">
         <section className="legal-panel nv-container">
