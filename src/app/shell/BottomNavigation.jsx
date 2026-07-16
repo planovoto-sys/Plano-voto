@@ -137,6 +137,20 @@ export default function ConvexBottomNavigation({
         return;
       }
 
+      // Se está nos últimos 50px do fim da página, ignora o scroll
+      // para evitar flicker causado por overscroll/rubber-banding
+      const totalScrollHeight = (target === window || target === document)
+        ? document.documentElement.scrollHeight
+        : target.scrollHeight;
+      const viewportHeight = (target === window || target === document)
+        ? window.innerHeight
+        : target.clientHeight;
+      if (totalScrollHeight - viewportHeight - currentY <= 50) {
+        lastScrollY = currentY;
+        lastTime = currentTime;
+        return;
+      }
+
       // Rolando para BAIXO
       if (deltaY > 0) {
         upScrollDistance = 0;

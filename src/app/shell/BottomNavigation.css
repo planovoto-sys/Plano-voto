@@ -164,8 +164,8 @@
 }
 
 .convex-nav__continue-btn {
-  width: 48px; 
-  height: 48px;
+  width: 56px; 
+  height: 56px;
   border-radius: 50%;
   background: #16A34A; 
   color: #ffffff; 
@@ -179,8 +179,8 @@
 }
 
 .continue-icon {
-  width: 22px; 
-  height: 22px;
+  width: 26px; 
+  height: 26px;
   stroke: #ffffff; 
 }
 

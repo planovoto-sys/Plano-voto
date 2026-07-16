@@ -1,6 +1,6 @@
 .app-header {
   --app-header-min-height: 56px;
-  --app-header-brand-max-height: 48px;
+  --app-header-brand-max-height: 52px;
 
   position: relative;
   width: 100%;
@@ -64,6 +64,14 @@
   width: auto;
 }
 
+/* Login / minimal variant — logo maior sem constraint */
+.app-header--minimal .app-header__brand-img {
+  max-height: none;
+  height: 180px;
+  width: auto;
+  margin-top: 32px;
+}
+
 .app-header__back {
   display: inline-flex;
   align-items: center;
@@ -98,6 +106,7 @@
 }
 
 .app-header__bottom {
+  margin-top: 8px;
   padding: 0 var(--screen-gutter, 18px) 10px;
   display: flex;
   align-items: center;
@@ -252,7 +261,7 @@
 @media (min-width: 1024px) {
   .app-header--desktop {
     --app-header-min-height: 72px;
-    --app-header-brand-max-height: 52px;
+    --app-header-brand-max-height: 56px;
     background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(16px);
     border-bottom: 1px solid rgba(17, 17, 17, 0.06);

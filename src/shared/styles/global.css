@@ -37,18 +37,18 @@
   --ease-emphasized: cubic-bezier(.2, 0, 0, 1.15);
   --app-width: 430px;
   --app-height: 100dvh;
-  --bg: #fbfcfd;
-  --text: #00000f;
+  --bg: #ffffff;
+  --text: #111111;
   --muted: #3f3f46;
   --muted-soft: #71717a;
   --ink: #171717;
   --ink-soft: #737373;
   --ink-soft-bg: #eeeeee;
 
-  --action-foreground: #00000f;
-  --action-shadow: 0 18px 30px rgba(255, 152, 0, 0.28);
-  --action-shadow-strong: 0 20px 34px rgba(255, 152, 0, 0.36);
-  --line: #e2e2e2;
+  --action-foreground: #111111;
+  --action-shadow: 0 18px 30px rgba(22, 163, 74, 0.28);
+  --action-shadow-strong: 0 20px 34px rgba(22, 163, 74, 0.36);
+  --line: #E5E5E5;
   --surface: #ffffff;
   --soft: #f2f2f2;
   --shadow: 0 18px 36px rgba(17, 17, 17, 0.08);
@@ -62,16 +62,22 @@
   --card-bg: var(--soft);
   --nav-line: var(--line);
   --text-strong: #111111;
-  --text-main: #171717;
+  --text-main: #111111;
   --text-muted: rgba(17, 17, 17, 0.68);
   --brand-green: #16A34A;
   --brand-green-light: #8DC63F;
   --brand-green-dark: #0B6B3A;
   --brand-yellow: #F7C600;
+  --brand-danger: #DC2626;
+  --card-green: var(--brand-green);
+  --card-green-soft: rgba(141, 198, 63, 0.15);
+  --card-red: var(--brand-danger);
+  --card-red-soft: #FEF2F2;
   --brand-gray-light: #F5F5F5;
   --brand-black: #111111;
   --tone-success: #72d552;
   --tone-success-bg: #f1ffef;
+  --tone-danger: var(--brand-danger);
   --tone-danger-bg: #fff0f0;
   --tone-neutral: #a9a9a9;
   --bottom-nav-height: var(--app-bottom-nav-height);
@@ -194,6 +200,7 @@ body {
   overflow-x: hidden;
   overflow-y: auto;
   scrollbar-width: none;
+  overscroll-behavior: contain;
 }
 
 .prototype-scroll::-webkit-scrollbar {

@@ -1,11 +1,11 @@
 :root {
-  --color-bg: #F5F5F5;
-  --color-primary: #16A34A;
+  --color-bg: var(--page-bg);
+  --color-primary: var(--brand-green);
   --color-primary-hover: #15803d;
-  --color-title: #0B6B3A;
-  --color-subtitle: #111111;
-  --color-text-gray: #333333;
-  --color-play-btn: #0B6B3A;
+  --color-title: var(--brand-green-dark);
+  --color-subtitle: var(--text-strong);
+  --color-text-gray: var(--text-strong);
+  --color-play-btn: var(--brand-green-dark);
   
   --font-main: 'Inter', sans-serif;
   --font-serif: 'Plus Jakarta Sans', serif;

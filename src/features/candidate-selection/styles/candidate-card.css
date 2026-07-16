@@ -2,12 +2,12 @@
    NOVO CANDIDATE CARD (UX REFINADO)
    ========================================================================== */
 .prototype-candidate-card {
-  --card-green: #00B84A;
-  --card-green-soft: #F2FCF5;
+  --card-green: var(--brand-green);
+  --card-green-soft: rgba(141, 198, 63, 0.15);
   --card-gray-border: #E5E7EB; 
-  --card-gray-text: #4B5563; 
+  --card-gray-text: var(--text-muted);
   --card-gray-track: #F3F4F6;
-  --card-red: #EF4444; 
+  --card-red: var(--brand-danger);
   --card-red-soft: #FEF2F2;
 
   position: relative;

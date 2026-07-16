@@ -16,7 +16,7 @@
   --color-nossovoto-line: #e2e2e2;
   --color-nossovoto-surface: #ffffff;
   --color-nossovoto-soft: #f2f2f2;
-  --color-nossovoto-fire: #ff9800;
+  --color-nossovoto-fire: #F7C600;
   --color-nossovoto-yellow: #ffd565;
   --color-nossovoto-success: #72d552;
   --color-nossovoto-danger: #ff575f;
@@ -29,6 +29,7 @@
 
   .nv-scroll {
     @apply min-w-0 overflow-x-hidden overflow-y-auto;
+    overscroll-behavior: contain;
   }
 
   .nv-container {

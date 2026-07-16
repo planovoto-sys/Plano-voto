@@ -95,7 +95,7 @@
 
 .filter-chip {
   flex-shrink: 0;
-  padding: 5px 12px;
+  padding: 8px 14px;
   border: none;
   border-radius: 8px;
   background: #ffffff;
@@ -114,8 +114,8 @@
 }
 
 .filter-chip.is-active {
-  background: #bbf7d0;
-  color: #111111;
+  background: var(--card-green-soft);
+  color: var(--card-green);
 }
 
 /* ==========================================================================
@@ -603,8 +603,8 @@
   }
 
   .prototype-candidate-card.is-fire-featured {
-    --candidate-card-bg: #ffefdf;
-    --candidate-card-fg: #f05a24;
+    --candidate-card-bg: rgba(247, 198, 0, 0.10);
+    --candidate-card-fg: var(--brand-yellow);
   }
 
   .candidate-list-section .prototype-candidate-card:not(.is-selected),
@@ -625,7 +625,7 @@
 
   .candidate-status-icon--fire {
     --candidate-status-icon-box: 18px;
-    filter: drop-shadow(0 2px 4px rgba(255, 152, 0, 0.22));
+    filter: drop-shadow(0 2px 4px rgba(247, 198, 0, 0.30));
   }
 
   .candidate-card__name-row {

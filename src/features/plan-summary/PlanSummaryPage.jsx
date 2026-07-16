@@ -151,6 +151,12 @@ export default function MeuPlano() {
       if (!ticking) {
         requestAnimationFrame(() => {
           const currentY = el.scrollTop;
+          // Se está nos últimos 50px do fim, ignora o scroll para evitar flicker
+          if (el.scrollHeight - el.clientHeight - currentY <= 50) {
+            lastScrollYRef.current = currentY;
+            ticking = false;
+            return;
+          }
           if (currentY > 50 && currentY > lastScrollYRef.current + 10) {
             setHeaderVisible(false);
           } else if (currentY < lastScrollYRef.current - 10) {
