@@ -408,7 +408,7 @@
    ========================================================================== */
 
 @media (max-width: 420px) {
-  .prototype-section-heading {
+  .variant-home-state .prototype-section-heading {
     margin-top: 10px;
   }
 
