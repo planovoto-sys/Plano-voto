@@ -4,13 +4,13 @@
 .share-panel-wrapper,
 .share-trigger-fab,
 .share-trigger-panel {
-  --sp-primary: #16A34A;       /* Verde Principal */
+  --sp-primary: #8DC63F;       /* Verde Principal */
   --sp-primary-dark: #0B6B3A;  /* Verde Escuro */
-  --sp-bg: #F5F5F5;            /* Fundo Acinzentado da Tela */
+  --sp-bg: #F4F8F2;            /* Fundo da Tela */
   --sp-surface: #FFFFFF;       /* Branco (Cards e Painéis) */
   --sp-text: #111111;          /* Texto Escuro Forte */
   --sp-muted: #737373;         /* Texto Secundário Cinza */
-  --sp-border: #E5E5E5;        /* Bordas Suaves */
+  --sp-border: #E0E7DE;        /* Bordas Suaves */
   --sp-overlay: rgba(0, 0, 0, 0.6);
   --sp-card-bg: #FAFAFA;
   
@@ -19,7 +19,7 @@
   --sp-radius-sm: 8px;
   --sp-shadow-modal: 0 -8px 40px rgba(0, 0, 0, 0.12);
   --sp-shadow-card: 0 4px 16px rgba(17, 17, 17, 0.06);
-  --sp-shadow-btn: 0 8px 20px rgba(22, 163, 74, 0.25);
+  --sp-shadow-btn: 0 8px 20px rgba(11, 107, 58, 0.25);
 }
 /* =========================================================
    2. OCULTAR BOTTOM NAV E TRAVAR O FUNDO
@@ -70,7 +70,7 @@ body.hide-bottom-nav nav {
   justify-content: center;
   gap: 8px;
   background: var(--sp-primary);
-  color: #fff;
+  color: var(--sp-primary-dark);
   border: none;
   border-radius: 99px;
   padding: 12px 24px;
@@ -96,7 +96,7 @@ body.hide-bottom-nav nav {
   height: 56px;
   border-radius: 50%;
   background: var(--sp-primary);
-  color: #fff;
+  color: var(--sp-primary-dark);
   border: none;
   box-shadow: var(--sp-shadow-btn);
   display: flex;
@@ -234,7 +234,7 @@ body.hide-bottom-nav nav {
 .share-legal-links a {
   font-size: 11px;
   font-weight: 800;
-  color: var(--sp-primary);
+  color: var(--sp-primary-dark);
   text-decoration: none;
 }
 
@@ -287,7 +287,7 @@ body.hide-bottom-nav nav {
   opacity: 1;
   transform: scale(1);
   border-color: var(--sp-primary);
-  box-shadow: 0 8px 24px rgba(22, 163, 74, 0.15);
+  box-shadow: 0 8px 24px rgba(11, 107, 58, 0.20);
 }
 
 /* =========================================================
@@ -323,7 +323,7 @@ body.hide-bottom-nav nav {
 .sp-card-brand__logo strong {
   font-size: 11px;
   font-weight: 900;
-  color: var(--sp-primary);
+  color: var(--sp-primary-dark);
   letter-spacing: 0.5px;
 }
 
@@ -430,7 +430,7 @@ body.hide-bottom-nav nav {
 
 .sp-card-list-item small {
   font-size: 9px;
-  color: var(--sp-primary);
+  color: var(--sp-primary-dark);
   font-weight: 800;
 }
 
@@ -456,7 +456,7 @@ body.hide-bottom-nav nav {
 
 .sp-card-check-item::before {
   content: '✓';
-  color: var(--sp-primary);
+  color: var(--sp-primary-dark);
   font-weight: 900;
 }
 
@@ -502,7 +502,7 @@ body.hide-bottom-nav nav {
   text-align: center;
   font-size: 12px;
   font-weight: 700;
-  color: var(--sp-primary);
+  color: var(--sp-primary-dark);
   margin-bottom: -4px;
   animation: fadeIn 0.3s;
 }
@@ -525,7 +525,7 @@ body.hide-bottom-nav nav {
 
 .share-btn-primary {
   background: var(--sp-primary);
-  color: #fff;
+  color: var(--sp-primary-dark);
   box-shadow: var(--sp-shadow-btn);
 }
 

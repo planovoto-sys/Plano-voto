@@ -195,8 +195,8 @@
   }
 
   .prototype-candidate-card.is-fire-featured {
-    --candidate-card-bg: rgba(247, 198, 0, 0.10);
-    --candidate-card-fg: var(--brand-yellow);
+    --candidate-card-bg: rgba(141, 198, 63, 0.10);
+    --candidate-card-fg: var(--brand-green-dark);
   }
 
   .candidate-list-section .prototype-candidate-card:not(.is-selected),

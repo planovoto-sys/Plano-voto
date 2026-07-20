@@ -47,7 +47,7 @@
 .about-header__flame {
   width: 24px;
   height: 29px;
-  color: var(--brand-green);
+  color: var(--brand-green-dark);
 }
 
 .about-header__brand strong {
@@ -205,9 +205,9 @@
 
 .about-primary-action {
   border: 0;
-  background: linear-gradient(90deg, #F7C600 0%, #16A34A 100%);
-  color: var(--brand-black);
-  box-shadow: 0 16px 32px rgba(16, 107, 58, 0.22);
+  background: linear-gradient(90deg, #8DC63F 0%, #16A34A 100%);
+  color: var(--brand-green-dark);
+  box-shadow: 0 16px 32px rgba(11, 107, 58, 0.22);
 }
 
 .about-secondary-action {
@@ -221,7 +221,7 @@
   border: 1px solid rgba(17, 17, 17, 0.08);
   border-radius: 8px;
   background:
-    linear-gradient(135deg, #F5F5F5 0%, var(--surface) 48%, #eff9ec 100%);
+    linear-gradient(135deg, #F4F8F2 0%, var(--surface) 48%, #eff9ec 100%);
   display: grid;
   gap: 12px;
   padding: clamp(18px, 3vw, 26px);
@@ -241,8 +241,8 @@
 }
 
 .about-preview-card--state {
-  border-color: rgba(22, 163, 58, 0.18);
-  background: #edf9ec;
+  border-color: rgba(11, 107, 58, 0.18);
+  background: rgba(141, 198, 63, 0.15);
 }
 
 .about-preview-card--candidate.is-selected {
@@ -283,7 +283,7 @@
   border-radius: 50%;
   background:
     radial-gradient(circle at center, var(--surface) 0 58%, transparent 59%),
-    conic-gradient(#F7C600 72%, rgba(17, 17, 17, 0.12) 0);
+    conic-gradient(#8DC63F 72%, rgba(17, 17, 17, 0.12) 0);
   transform: translateY(-50%);
 }
 
@@ -371,8 +371,8 @@
 }
 
 .about-capability-card--login {
-  border-color: rgba(16, 107, 58, 0.22);
-  background: #f5f9ee;
+  border-color: rgba(11, 107, 58, 0.22);
+  background: rgba(141, 198, 63, 0.15);
 }
 
 .about-capability-card ul {
@@ -416,12 +416,12 @@
 }
 
 .about-section--text .about-eyebrow {
-  color: #F7C600;
+  color: #8DC63F;
 }
 
 .about-inline-link {
   width: fit-content;
-  color: #F7C600;
+  color: #8DC63F;
   font-size: 13px;
   font-weight: 900;
   line-height: 1.2;
@@ -570,8 +570,8 @@
 .legal-nav a:hover,
 .legal-nav a:focus-visible,
 .legal-nav a.is-active {
-  border-color: rgba(22, 163, 58, 0.36);
-  background: rgba(22, 163, 58, 0.08);
+  border-color: rgba(11, 107, 58, 0.36);
+  background: rgba(141, 198, 63, 0.15);
   color: var(--text-strong);
 }
 
@@ -593,8 +593,8 @@
 
 .legal-cta__primary {
   border: 0;
-  background: linear-gradient(90deg, #F7C600 0%, #16A34A 100%);
-  color: var(--brand-black);
+  background: linear-gradient(90deg, #8DC63F 0%, #16A34A 100%);
+  color: var(--brand-green-dark);
 }
 
 .legal-cta__secondary {

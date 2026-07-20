@@ -5,7 +5,7 @@
   position: relative;
   width: 100%;
   flex-shrink: 0;
-  background: var(--app-header-bg, #f3f3f3);
+  background: var(--app-header-bg, #F4F8F2);
   z-index: 55;
 }
 
@@ -219,8 +219,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--brand-green, #16A34A);
-  color: #fff;
+  background: var(--brand-green);
+  color: var(--brand-green-dark);
   font-size: 14px;
   font-weight: 800;
 }

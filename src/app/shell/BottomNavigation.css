@@ -133,16 +133,16 @@
 }
 
 .convex-nav__step.is-active {
-  color: #16A34A !important;
+  color: var(--brand-green-dark) !important;
 }
 
 .convex-nav__step.is-active .convex-nav__label {
   font-weight: 800;
-  color: #16A34A;
+  color: var(--brand-green-dark);
 }
 
 .convex-nav__step.is-active::before {
-  background-color: #16A34A !important;
+  background-color: var(--brand-green) !important;
 }
 
 /* =========================================================
@@ -167,21 +167,21 @@
   width: 56px; 
   height: 56px;
   border-radius: 50%;
-  background: #16A34A; 
-  color: #ffffff; 
+  background: var(--brand-green); 
+  color: var(--brand-green-dark); 
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25); 
+  box-shadow: 0 4px 12px rgba(11, 107, 58, 0.25); 
   transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.25s ease;
 }
 
 .continue-icon {
   width: 26px; 
   height: 26px;
-  stroke: #ffffff; 
+  stroke: var(--brand-green-dark); 
 }
 
 /* =========================================================

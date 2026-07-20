@@ -2,6 +2,22 @@
 
 Todas as mudanças relevantes deste projeto serão documentadas aqui.
 
+## [1.7.0] - 2026-07-20
+
+### Adicionado
+- Nova paleta de cores com 3 cores de marca: `#8DC63F` (protagonista), `#0B6B3A` (contraste), `#16A34A` (interação/hover).
+- Substitui cinzas frios por neutros harmonizados com o verde (`#F4F8F2`, `#E8F0E6`, `#EBF1EA`, `#E0E7DE`).
+- Adiciona variáveis `--app-bg`, `--app-surface` e `--brand-green-mid` no `global.css`.
+
+### Alterado
+- Refatora `Login.css`, `candidate-card.css`, `BottomNavigation.css`, `AppHeader.css`, `selection-layout.css`, `continue-bar.css`, `MeuPlano.css`, `desktop.css` para a nova paleta.
+- Atualiza `ShareChoicePanel.css`, `LegalPage.css`, `PrivacyConsent.css`, `AppFooter.css` e `tailwind.css` com as novas cores neutras.
+- Ajusta contraste de textos: elementos com fundo `#8DC63F` passam a usar texto `#0B6B3A`.
+
+### Removido
+- Remove cores banidas: `#15803D`, `#084C29`, `#478F48`, `#129342`, `#F7C600`, `rgba(0, 184, 74, ...)`.
+- Remove `--brand-yellow` e `--color-nossovoto-yellow`.
+
 ## [1.5.3] - 2026-06-09
 
 ### Corrigido

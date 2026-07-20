@@ -56,7 +56,7 @@ bottom: calc(var(--bottom-nav-height) + var(--app-safe-bottom) + 100px);
   border: 0;
   border-radius: 999px;
   background: var(--brand-green);
-  color: #ffffff;
+  color: var(--brand-green-dark);
   font-family: var(--font-family);
   font-size: 16px;
   font-weight: 600;

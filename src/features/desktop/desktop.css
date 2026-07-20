@@ -91,10 +91,10 @@
   min-height: 48px;
   border: 0;
   background: var(--brand-green);
-  color: #ffffff;
+  color: var(--brand-green-dark);
   padding: 0 20px;
   font-size: 13px;
-  box-shadow: 0 10px 22px rgba(16, 107, 58, 0.18);
+  box-shadow: 0 10px 22px rgba(11, 107, 58, 0.20);
 }
 
 .desktop-step-nav {
@@ -121,18 +121,18 @@
 
 .desktop-step-nav__link:hover,
 .desktop-step-nav__link:focus-visible {
-  background: rgba(22, 163, 58, 0.08);
+  background: rgba(141, 198, 63, 0.15);
   transform: translateY(-1px);
 }
 
 .desktop-step-nav__link.is-active {
   background: var(--brand-green);
-  color: #ffffff;
+  color: var(--brand-green-dark);
 }
 
 .desktop-step-nav__link.is-active:hover,
 .desktop-step-nav__link.is-active:focus-visible {
-  background: #129342;
+  background: var(--brand-green-mid);
 }
 
 .desktop-main {
@@ -152,7 +152,7 @@
 
 .desktop-page-intro__badge {
   width: fit-content;
-  border: 1px solid rgba(16, 107, 58, 0.28);
+  border: 1px solid rgba(11, 107, 58, 0.28);
   border-radius: 999px;
   background: rgba(141, 198, 63, 0.2);
   color: var(--brand-green-dark);
@@ -206,10 +206,10 @@
 .desktop-button-primary {
   min-height: 48px;
   border: 0;
-  background: linear-gradient(135deg, #F7C600, #16A34A);
-  color: var(--brand-black);
+  background: linear-gradient(135deg, #8DC63F, #16A34A);
+  color: var(--brand-green-dark);
   padding: 0 22px;
-  box-shadow: 0 10px 22px rgba(16, 107, 58, 0.18);
+  box-shadow: 0 10px 22px rgba(11, 107, 58, 0.20);
 }
 
 .desktop-button-secondary {
@@ -269,7 +269,7 @@
 
 .desktop-mobile-handoff-panel__eyebrow {
   width: fit-content;
-  border: 1px solid rgba(16, 107, 58, 0.26);
+  border: 1px solid rgba(11, 107, 58, 0.26);
   border-radius: 999px;
   background: rgba(141, 198, 63, 0.2);
   color: var(--brand-green-dark);
@@ -471,7 +471,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--brand-green);
+  background: var(--brand-green-dark);
   justify-self: center;
 }
 
@@ -632,7 +632,7 @@
 
 .filter-chip.is-active {
   background: var(--card-green-soft);
-  color: var(--card-green);
+  color: var(--brand-green-dark);
 }
 
 .desktop-empty-state {
@@ -788,9 +788,9 @@
 }
 
 .desktop-candidate-card--success {
-  --desktop-candidate-accent: #478f48;
-  background: rgba(71, 143, 72, 0.08);
-  border-color: rgba(71, 143, 72, 0.22);
+  --desktop-candidate-accent: var(--brand-green-mid);
+  background: rgba(141, 198, 63, 0.15);
+  border-color: rgba(11, 107, 58, 0.22);
 }
 
 .desktop-candidate-card--danger {
@@ -1021,8 +1021,8 @@
 }
 
 .desktop-plan-status.is-complete {
-  border-color: rgba(71, 143, 72, 0.22);
-  background: rgba(71, 143, 72, 0.08);
+  border-color: rgba(11, 107, 58, 0.22);
+  background: rgba(141, 198, 63, 0.15);
 }
 
 .desktop-plan-status.is-incomplete {

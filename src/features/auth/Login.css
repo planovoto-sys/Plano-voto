@@ -1,7 +1,7 @@
 :root {
   --color-bg: var(--page-bg);
   --color-primary: var(--brand-green);
-  --color-primary-hover: #15803d;
+  --color-primary-hover: var(--brand-green-mid);
   --color-title: var(--brand-green-dark);
   --color-subtitle: var(--text-strong);
   --color-text-gray: var(--text-strong);
@@ -103,7 +103,7 @@ html, body {
 .stats-box {
   width: 100%;
   background-color: #FFFFFF;
-  border: 1px solid rgba(11, 107, 58, 0.16);
+  border: 1px solid rgba(11, 107, 58, 0.18);
   border-radius: 12px;
   padding: clamp(12px, 3dvh, 20px); 
   box-shadow: 0px 2px 8px rgba(0,0,0,0.02);
@@ -150,7 +150,7 @@ html, body {
 .video-placeholder {
   width: 100%;
   height: 100%;
-  background-color: #E5E5E5; 
+  background-color: #E0E7DE; 
   border-radius: 8px;
   object-fit: cover;
 }
@@ -163,6 +163,7 @@ html, body {
   transform: translateX(-50%);
   background-color: var(--color-play-btn);
   color: #FFFFFF;
+
   border: none;
   border-radius: 30px;
   padding: clamp(8px, 1.5dvh, 12px) clamp(16px, 3dvh, 24px);
@@ -178,7 +179,7 @@ html, body {
 }
 
 .btn-play-video:hover {
-  background-color: #084c29;
+  background-color: var(--brand-green-dark);
 }
 
 .btn-play-video:active {
@@ -200,7 +201,7 @@ html, body {
   width: 100%;
   height: clamp(44px, 7dvh, 52px); 
   background-color: var(--color-primary);
-  color: #FFFFFF;
+  color: var(--brand-green-dark);
   border: none;
   border-radius: 26px;
   font-size: clamp(14px, 2.8dvh, 16px);

@@ -2,16 +2,15 @@
    NOVA PALETA E VARIÁVEIS DO MEU PLANO
    ======================================================== */
 .my-plan-page {
-  --brand-primary: #16A34A;
+  --brand-primary: #8DC63F;
   --brand-light: #8DC63F;
   --brand-dark: #0B6B3A;
-  --brand-accent: #F7C600;
   --brand-danger: #DC2626;
-  --brand-bg: #F9F9F9;
+  --brand-bg: #F4F8F2;
   --brand-surface: #FFFFFF;
   --brand-text: #111111;
   --brand-muted: #737373;
-  --brand-border: #E5E5E5;
+  --brand-border: #E0E7DE;
   --bottom-nav-height: 52px;
 }
 
@@ -82,7 +81,7 @@
 .my-plan-overview__metric--green .my-plan-overview__label,
 .my-plan-overview__metric--green .my-plan-overview__value,
 .my-plan-overview__metric--green .my-plan-overview__sub {
-  color: var(--brand-primary);
+  color: var(--brand-green-dark);
 }
 
 .my-plan-overview__metric--red .my-plan-overview__label,
@@ -262,7 +261,7 @@
 
 .my-plan-btn-primary {
   background: var(--brand-primary);
-  color: var(--brand-surface);
+  color: var(--brand-green-dark);
   border: 0;
   border-radius: 99px;
   padding: 14px 24px;
@@ -270,6 +269,10 @@
   font-weight: 800;
   cursor: pointer;
   transition: transform 0.1s, background 0.2s;
+}
+
+.my-plan-btn-primary:hover {
+  background: var(--brand-green-mid);
 }
 
 .my-plan-btn-primary:active {

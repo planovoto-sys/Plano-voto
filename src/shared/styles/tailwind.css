@@ -10,14 +10,13 @@
   --breakpoint-3xl: 120rem;
 
   --font-sans: "Inter", Arial, sans-serif;
-  --color-nossovoto-bg: #fbfcfd;
+  --color-nossovoto-bg: #F4F8F2;
   --color-nossovoto-text: #171717;
   --color-nossovoto-muted: #3f3f46;
   --color-nossovoto-line: #e2e2e2;
   --color-nossovoto-surface: #ffffff;
-  --color-nossovoto-soft: #f2f2f2;
-  --color-nossovoto-fire: #F7C600;
-  --color-nossovoto-yellow: #ffd565;
+  --color-nossovoto-soft: #E8F0E6;
+  --color-nossovoto-fire: #8DC63F;
   --color-nossovoto-success: #72d552;
   --color-nossovoto-danger: #ff575f;
 }
