@@ -35,9 +35,9 @@ export function ShareIcon({ className = 'app-icon' }) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
       <path d="M8.3 12.35 15.8 8.1M8.3 11.65l7.5 4.25" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" />
-      <circle cx="6" cy="13" r="2.65" fill="none" stroke="currentColor" strokeWidth="2.25" />
-      <circle cx="18" cy="7" r="2.65" fill="none" stroke="currentColor" strokeWidth="2.25" />
-      <circle cx="18" cy="17" r="2.65" fill="none" stroke="currentColor" strokeWidth="2.25" />
+      <circle cx="6" cy="13" r="2.65" fill="currentColor" stroke="currentColor" strokeWidth="2.25" />
+      <circle cx="18" cy="7" r="2.65" fill="currentColor" stroke="currentColor" strokeWidth="2.25" />
+      <circle cx="18" cy="17" r="2.65" fill="currentColor" stroke="currentColor" strokeWidth="2.25" />
     </svg>
   );
 }
