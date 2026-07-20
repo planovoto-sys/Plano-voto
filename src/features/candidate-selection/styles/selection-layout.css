@@ -20,6 +20,7 @@
 
 .variant-home-state .select-base__scroll {
   --screen-gutter: 18px;
+  padding-top: 20px;
 }
 
 /* ==========================================================================
@@ -407,6 +408,10 @@
    ========================================================================== */
 
 @media (max-width: 420px) {
+  .prototype-section-heading {
+    margin-top: 10px;
+  }
+
   .prototype-section-heading h2 {
     font-size: 20px;
   }
