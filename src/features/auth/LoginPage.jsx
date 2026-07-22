@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { signInWithPopup } from 'firebase/auth';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
+import { Shield } from 'lucide-react';
 
 import FlowToast from '@/shared/ui/feedback/FlowToast';
-import AppHeader from '@/shared/ui/layout/AppHeader';
 import { useUser } from '@/shared/hooks/useUser';
 import { auth, firebaseReady, googleProvider } from '@/shared/firebase/firebase';
 import { mergeVisitorBallotDraftIntoAccount } from '@/features/ballot';
@@ -11,12 +11,30 @@ import { flowError, flowLog } from '@/shared/utils/debugFlow';
 
 import './Login.css';
 
-// Ícone do botão play
-const PlayIcon = () => (
-  <svg width="12" height="14" viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
-    <path d="M13.238 7.15174C13.918 7.53322 13.918 8.46678 13.238 8.84826L1.87913 15.2201C1.21319 15.5937 0.389648 15.1129 0.389648 14.3718L0.389649 1.62817C0.389649 0.88714 1.21319 0.406263 1.87913 0.779895L13.238 7.15174Z" fill="white" />
-  </svg>
-);
+function LoginLogo() {
+  return (
+    <img src="/icone-com-nome.svg" alt="Bom de Voto" className="login-logo__icon" />
+  );
+}
+
+function GoogleIcon() {
+  return (
+    <svg viewBox="0 0 48 48" className="login-google-btn__icon" aria-hidden="true">
+      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+      <path fill="#FBBC05" d="M10.54 28.59A14.5 14.5 0 0 1 9.5 24c0-1.59.28-3.14.76-4.59l-7.98-6.19A24.5 24.5 0 0 0 0 24c0 3.95.94 7.69 2.56 11.02l7.98-6.43z" />
+      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.43C6.51 42.62 14.62 48 24 48z" />
+    </svg>
+  );
+}
+
+function PlayIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 5.14v13.72a1 1 0 0 0 1.5.86l11.14-6.86a1 1 0 0 0 0-1.72L9.5 4.28A1 1 0 0 0 8 5.14z" fill="currentColor" />
+    </svg>
+  );
+}
 
 function Login() {
   const { user, loading } = useUser();
@@ -26,6 +44,7 @@ function Login() {
   const loginFlowActiveRef = useRef(false);
   const [loginSubmitting, setLoginSubmitting] = useState(false);
   const [loginNotice, setLoginNotice] = useState(null);
+  const [videoModalOpen, setVideoModalOpen] = useState(false);
 
   const showLoginNotice = (message) => {
     setLoginNotice({ id: Date.now(), message });
@@ -82,62 +101,94 @@ function Login() {
 
   return (
     <div className="login-wrapper">
-      <FlowToast key={loginNotice?.id || 'login-toast'} message={loginNotice?.message || ''} />
+      <FlowToast
+        className="login-toast"
+        key={loginNotice?.id || 'login-toast'}
+        message={loginNotice?.message || ''}
+      />
 
-      <AppHeader variant="minimal" brand="icon-name" />
-
-      <main className="login-main">
-        <div className="title-section">
-          <h1 className="title-primary">Você é bom de voto?</h1>
-          <h2 className="title-secondary">Tem certeza?</h2>
+      <div className="login-container">
+        {/* Logo */}
+        <div className="login-logo animate-fade-up a-delay-1">
+          <LoginLogo />
         </div>
 
-        <div className="stats-box">
-          <p className="stats-intro">A cada 10 votos para o Congresso:</p>
-          <ul className="stats-list">
-            <li>1 elege candidatos bem avaliados</li>
-            <li>2 elegem candidatos mal avaliados</li>
-            <li>7 não elegem ninguém (veja o vídeo)</li>
-          </ul>
-        </div>
+        {/* Headline */}
+        <h1 className="login-headline animate-fade-up a-delay-2">
+          Seu voto,<br />um <span className="highlight">futuro melhor</span>
+        </h1>
 
-        {/* CONTAINER DO VÍDEO VERTICAL 9:16 */}
-        <div className="video-section">
-          <div className="video-card-container">
-            <div className="video-placeholder">
-              {/* Quando houver o vídeo real, coloque-o aqui dentro */}
-            </div>
-            
-            <button
-              className="btn-play-video"
-              type="button"
-              onClick={() => showLoginNotice('Vídeo em breve.')}
-            >
-              <PlayIcon />
-              <span>Assistir vídeo (1:30)</span>
-            </button>
+        {/* Subtitle */}
+        <p className="login-subtitle animate-fade-up a-delay-3">
+          Informação de qualidade para escolhas que transformam.
+        </p>
+
+        {/* Video Card */}
+        <div
+          className="login-video-card animate-fade-up a-delay-4"
+          onClick={() => setVideoModalOpen(true)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setVideoModalOpen(true); }}
+          aria-label="Assistir ao vídeo institucional"
+        >
+          <img className="login-video-card__image" src="/capa-video.jpg" alt="Vídeo institucional" />
+          <div className="login-video-card__overlay" />
+          <div className="login-video-card__play">
+            <PlayIcon />
+          </div>
+          <div className="login-video-card__footer">
+            <span>Assista ao vídeo institucional</span>
+            <span>1:30</span>
           </div>
         </div>
-      </main>
 
-      <footer className="login-footer">
+        {/* Google Button */}
         <button
-          className="btn-comecar"
+          className="login-google-btn animate-fade-up a-delay-5"
           type="button"
           onClick={handleGoogleLogin}
           disabled={loginSubmitting}
         >
-          {loginSubmitting ? 'Entrando...' : 'Começar'}
+          <GoogleIcon />
+          {loginSubmitting ? 'Entrando...' : 'Continuar com Google'}
         </button>
 
-        <div className="login-legal-links">
-          <Link to="/termos-de-uso">Termos de uso</Link>
-          <span className="separator">&bull;</span>
+        {/* Trust Indicator */}
+        <div className="login-trust animate-fade-up a-delay-6">
+          <span className="login-trust__line">—</span>
+          <Shield className="login-trust__shield" />
+          <span>Seguro, rápido e gratuito</span>
+          <span className="login-trust__line">—</span>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="login-footer animate-fade-up a-delay-6">
+        <div className="login-footer__links">
+          <Link to="/sobre-nos">Sobre nós</Link>
+          <span className="login-footer__sep">|</span>
           <Link to="/politica-de-privacidade">Privacidade</Link>
-          <span className="separator">&bull;</span>
-          <Link to="/cookies">Cookies</Link>
+          <span className="login-footer__sep">|</span>
+          <Link to="/cookies">Dados</Link>
         </div>
       </footer>
+
+      {/* Video Modal */}
+      {videoModalOpen && (
+        <div className="video-modal-backdrop" onClick={() => setVideoModalOpen(false)}>
+          <button className="video-modal-close" onClick={() => setVideoModalOpen(false)} aria-label="Fechar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
+          <div className="video-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="video-modal-placeholder">
+              Vídeo institucional em breve
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
