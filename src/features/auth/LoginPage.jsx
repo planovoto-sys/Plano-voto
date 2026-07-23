@@ -113,16 +113,6 @@ function Login() {
           <LoginLogo />
         </div>
 
-        {/* Headline */}
-        <h1 className="login-headline animate-fade-up a-delay-2">
-          Seu voto,<br />um <span className="highlight">futuro melhor</span>
-        </h1>
-
-        {/* Subtitle */}
-        <p className="login-subtitle animate-fade-up a-delay-3">
-          Informação de qualidade para escolhas que transformam.
-        </p>
-
         {/* Video Card */}
         <div
           className="login-video-card animate-fade-up a-delay-4"
@@ -132,7 +122,7 @@ function Login() {
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setVideoModalOpen(true); }}
           aria-label="Assistir ao vídeo institucional"
         >
-          <img className="login-video-card__image" src="/capa-video.jpg" alt="Vídeo institucional" />
+          <img className="login-video-card__image" src="/capa-video-V.png" alt="Vídeo institucional" />
           <div className="login-video-card__overlay" />
           <div className="login-video-card__play">
             <PlayIcon />

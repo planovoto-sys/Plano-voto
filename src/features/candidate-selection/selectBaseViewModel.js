@@ -4,7 +4,6 @@ import {
 } from '@/shared/utils/candidateMetrics';
 
 export const INITIAL_CANDIDATE_RENDER_LIMIT = 80;
-export const DESKTOP_LAYOUT_QUERY = '(min-width: 1024px) and (min-height: 640px)';
 export const CARD_MODE_OPTIONS = [
   { id: 'detailed', label: 'Detalhado' },
   { id: 'compact', label: 'Resumido' }
