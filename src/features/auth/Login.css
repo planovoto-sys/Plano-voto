@@ -65,10 +65,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   position: relative;
   z-index: 1;
-  padding: 8px 0 12px;
+  padding: 32px 0 12px;
 }
 
 /* ==========================================================================
@@ -83,7 +83,7 @@
 }
 
 .login-logo__icon {
-  width: 140px;
+  width: 210px;
   height: auto;
   display: block;
 }
@@ -94,8 +94,9 @@
 .login-video-card {
   position: relative;
   width: 100%;
-  max-width: 320px;
+  max-width: 100%;
   aspect-ratio: 9 / 16;
+  max-height: 420px;
   border-radius: 24px;
   overflow: hidden;
   cursor: pointer;
@@ -405,11 +406,12 @@
   }
 
   .login-logo__icon {
-    width: 90px;
+    width: 135px;
   }
 
   .login-video-card {
-    max-width: 180px;
+    max-width: 100%;
+    max-height: 320px;
     border-radius: 18px;
   }
 
@@ -458,11 +460,12 @@
 /* Regular phones (360px - 389px) */
 @media (min-width: 360px) and (max-width: 389px) {
   .login-logo__icon {
-    width: 110px;
+    width: 165px;
   }
 
   .login-video-card {
-    max-width: 210px;
+    max-width: 100%;
+    max-height: 360px;
   }
 
   .login-google-btn {
@@ -474,11 +477,12 @@
 /* Medium phones (390px - 419px) */
 @media (min-width: 390px) and (max-width: 419px) {
   .login-logo__icon {
-    width: 130px;
+    width: 195px;
   }
 
   .login-video-card {
-    max-width: 250px;
+    max-width: 100%;
+    max-height: 400px;
   }
 
   .login-google-btn {
@@ -490,11 +494,12 @@
 /* Large phones / small tablets (≥420px) */
 @media (min-width: 420px) {
   .login-logo__icon {
-    width: 150px;
+    width: 225px;
   }
 
   .login-video-card {
-    max-width: 340px;
+    max-width: 100%;
+    max-height: 440px;
   }
 
   .login-video-card__play {
@@ -524,11 +529,12 @@
 /* Large screens (≥500px) */
 @media (min-width: 500px) {
   .login-logo__icon {
-    width: 160px;
+    width: 240px;
   }
 
   .login-video-card {
-    max-width: 360px;
+    max-width: 100%;
+    max-height: 460px;
   }
 
   .login-google-btn {
