@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { signInWithPopup } from 'firebase/auth';
-import { useLocation, useNavigate, Link } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Shield } from 'lucide-react';
 
 import FlowToast from '@/shared/ui/feedback/FlowToast';
@@ -153,16 +153,7 @@ function Login() {
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="login-footer animate-fade-up a-delay-6">
-        <div className="login-footer__links">
-          <Link to="/sobre-nos">Sobre nós</Link>
-          <span className="login-footer__sep">|</span>
-          <Link to="/politica-de-privacidade">Privacidade</Link>
-          <span className="login-footer__sep">|</span>
-          <Link to="/cookies">Dados</Link>
-        </div>
-      </footer>
+
 
       {/* Video Modal */}
       {videoModalOpen && (
