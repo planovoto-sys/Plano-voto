@@ -68,6 +68,7 @@
   justify-content: flex-start;
   position: relative;
   z-index: 1;
+  overflow-y: auto;
   padding: 0 0 12px;
 }
 
@@ -460,7 +461,7 @@
   }
 
   .login-video-card {
-    height: 440px;
+    height: 400px;
   }
 
   .login-google-btn {
