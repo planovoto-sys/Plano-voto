@@ -93,7 +93,7 @@
 .login-video-card {
   position: relative;
   width: 90%;
-  height: 468px;
+  height: 500px;
   border-radius: 24px;
   overflow: hidden;
   cursor: pointer;
@@ -407,7 +407,7 @@
   }
 
   .login-video-card {
-    height: 342px;
+    height: 370px;
     border-radius: 18px;
   }
 
@@ -460,7 +460,7 @@
   }
 
   .login-video-card {
-    height: 414px;
+    height: 440px;
   }
 
   .login-google-btn {
@@ -476,7 +476,7 @@
   }
 
   .login-video-card {
-    height: 468px;
+    height: 500px;
   }
 
   .login-google-btn {
@@ -492,7 +492,7 @@
   }
 
   .login-video-card {
-    height: 504px;
+    height: 540px;
   }
 
   .login-video-card__play {
@@ -526,7 +526,7 @@
   }
 
   .login-video-card {
-    height: 522px;
+    height: 560px;
   }
 
   .login-google-btn {
