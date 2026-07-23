@@ -65,7 +65,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: safe center;
   position: relative;
   z-index: 1;
   padding: 0 0 12px;
@@ -93,7 +93,7 @@
 .login-video-card {
   position: relative;
   width: 100%;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 4 / 5;
   border-radius: 24px;
   overflow: hidden;
   cursor: pointer;
@@ -358,15 +358,60 @@
 /* Very small phones (< 360px) */
 @media (max-width: 359px) {
   .login-container {
-    padding: 0 0 8px;
+    padding: 0 0 6px;
   }
 
   .login-logo__icon {
-    width: 110px;
+    width: 80px;
   }
 
   .login-video-card {
+    max-height: 300px;
     border-radius: 18px;
+  }
+
+  .login-video-card__play {
+    width: 44px;
+    height: 44px;
+  }
+
+  .login-video-card__play svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .login-video-card__footer {
+    padding: 6px 10px;
+    font-size: 10px;
+  }
+
+  .login-google-btn {
+    font-size: 13px;
+    height: 36px;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .login-google-btn__icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .login-trust {
+    font-size: 10px;
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+}
+
+/* Small phones (360px - 389px) — ex: iPhone SE 375x663 */
+@media (min-width: 360px) and (max-width: 389px) {
+  .login-logo__icon {
+    width: 100px;
+  }
+
+  .login-video-card {
+    max-height: 400px;
   }
 
   .login-video-card__play {
@@ -379,48 +424,14 @@
     height: 20px;
   }
 
-  .login-video-card__footer {
-    padding: 8px 12px;
-    font-size: 10px;
-  }
-
   .login-google-btn {
     font-size: 14px;
     height: 40px;
-    gap: 8px;
-  }
-
-  .login-google-btn__icon {
-    width: 18px;
-    height: 18px;
+    margin-bottom: 10px;
   }
 
   .login-trust {
-    font-size: 10px;
-    gap: 4px;
     margin-bottom: 8px;
-  }
-}
-
-/* Small phones (360px - 389px) — ex: iPhone SE 375x663 */
-@media (min-width: 360px) and (max-width: 389px) {
-  .login-logo__icon {
-    width: 135px;
-  }
-
-  .login-video-card__play {
-    width: 50px;
-    height: 50px;
-  }
-
-  .login-video-card__play svg {
-    width: 22px;
-    height: 22px;
-  }
-
-  .login-google-btn {
-    font-size: 14px;
-    height: 40px;
   }
 }
 
