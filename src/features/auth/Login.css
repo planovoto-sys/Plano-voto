@@ -93,7 +93,7 @@
 .login-video-card {
   position: relative;
   width: 100%;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 9 / 16;
   border-radius: 24px;
   overflow: hidden;
   cursor: pointer;
@@ -362,17 +362,17 @@
   }
 
   .login-logo__icon {
-    width: 80px;
+    width: 70px;
   }
 
   .login-video-card {
-    max-height: 300px;
+    max-height: 380px;
     border-radius: 18px;
   }
 
   .login-video-card__play {
-    width: 44px;
-    height: 44px;
+    width: 42px;
+    height: 42px;
   }
 
   .login-video-card__play svg {
@@ -407,16 +407,16 @@
 /* Small phones (360px - 389px) — ex: iPhone SE 375x663 */
 @media (min-width: 360px) and (max-width: 389px) {
   .login-logo__icon {
-    width: 100px;
+    width: 80px;
   }
 
   .login-video-card {
-    max-height: 400px;
+    max-height: 435px;
   }
 
   .login-video-card__play {
-    width: 48px;
-    height: 48px;
+    width: 46px;
+    height: 46px;
   }
 
   .login-video-card__play svg {
@@ -438,7 +438,11 @@
 /* Medium phones (390px - 419px) */
 @media (min-width: 390px) and (max-width: 419px) {
   .login-logo__icon {
-    width: 195px;
+    width: 160px;
+  }
+
+  .login-video-card {
+    max-height: 520px;
   }
 
   .login-google-btn {
@@ -450,7 +454,11 @@
 /* Large phones (420px - 767px) */
 @media (min-width: 420px) and (max-width: 767px) {
   .login-logo__icon {
-    width: 225px;
+    width: 195px;
+  }
+
+  .login-video-card {
+    max-height: 560px;
   }
 
   .login-video-card__play {
@@ -483,6 +491,10 @@
     width: 240px;
   }
 
+  .login-video-card {
+    max-height: 540px;
+  }
+
   .login-video-card__play {
     width: 66px;
     height: 66px;
@@ -511,6 +523,10 @@
 
   .login-logo__icon {
     width: 260px;
+  }
+
+  .login-video-card {
+    max-height: 560px;
   }
 
   .login-video-card__play {
