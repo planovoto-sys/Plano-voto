@@ -59,13 +59,13 @@
    CONTAINER
    ========================================================================== */
 .login-container {
-  width: 88%;
+  width: 90%;
   max-width: 440px;
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   position: relative;
   z-index: 1;
   padding: 0 0 12px;
@@ -92,15 +92,14 @@
    ========================================================================== */
 .login-video-card {
   position: relative;
-  width: 90%;
-  height: 500px;
+  width: 100%;
+  aspect-ratio: 3 / 4;
   border-radius: 24px;
   overflow: hidden;
   cursor: pointer;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06);
   transition: box-shadow 0.3s ease, transform 0.2s ease;
   margin-bottom: 20px;
-  flex-shrink: 0;
 }
 
 .login-video-card:active {
@@ -247,42 +246,6 @@
 }
 
 /* ==========================================================================
-   FOOTER
-   ========================================================================== */
-.login-footer {
-  width: 88%;
-  max-width: 440px;
-  display: flex;
-  justify-content: center;
-  padding: 0 0 20px;
-  position: relative;
-  z-index: 1;
-}
-
-.login-footer__links {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 13px;
-  font-weight: 400;
-}
-
-.login-footer__links a {
-  color: var(--login-green-dark);
-  text-decoration: none;
-  transition: color 0.2s ease;
-}
-
-.login-footer__links a:hover {
-  color: var(--login-green);
-}
-
-.login-footer__sep {
-  color: #C8D0C8;
-  font-size: 12px;
-}
-
-/* ==========================================================================
    VIDEO MODAL
    ========================================================================== */
 .video-modal-backdrop {
@@ -392,33 +355,28 @@
    RESPONSIVE
    ========================================================================== */
 
-/* Small phones (< 360px) */
+/* Very small phones (< 360px) */
 @media (max-width: 359px) {
   .login-container {
     padding: 0 0 8px;
   }
 
-  .login-logo {
-    margin-bottom: 0;
-  }
-
   .login-logo__icon {
-    width: 135px;
+    width: 110px;
   }
 
   .login-video-card {
-    height: 370px;
     border-radius: 18px;
   }
 
   .login-video-card__play {
-    width: 50px;
-    height: 50px;
+    width: 48px;
+    height: 48px;
   }
 
   .login-video-card__play svg {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
   }
 
   .login-video-card__footer {
@@ -442,35 +400,22 @@
     gap: 4px;
     margin-bottom: 8px;
   }
-
-  .login-footer__links {
-    font-size: 12px;
-    gap: 10px;
-  }
-
-  .login-footer {
-    padding: 0 0 12px;
-  }
 }
 
-/* Regular phones (360px - 389px) — ex: iPhone SE 375x663 */
+/* Small phones (360px - 389px) — ex: iPhone SE 375x663 */
 @media (min-width: 360px) and (max-width: 389px) {
   .login-logo__icon {
-    width: 110px;
-  }
-
-  .login-video-card {
-    height: 330px;
+    width: 135px;
   }
 
   .login-video-card__play {
-    width: 48px;
-    height: 48px;
+    width: 50px;
+    height: 50px;
   }
 
   .login-video-card__play svg {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
   }
 
   .login-google-btn {
@@ -485,24 +430,16 @@
     width: 195px;
   }
 
-  .login-video-card {
-    height: 500px;
-  }
-
   .login-google-btn {
     font-size: 17px;
     height: 47px;
   }
 }
 
-/* Large phones / small tablets (≥420px) */
-@media (min-width: 420px) {
+/* Large phones (420px - 767px) */
+@media (min-width: 420px) and (max-width: 767px) {
   .login-logo__icon {
     width: 225px;
-  }
-
-  .login-video-card {
-    height: 540px;
   }
 
   .login-video-card__play {
@@ -523,24 +460,119 @@
   .login-trust {
     font-size: 12px;
   }
-
-  .login-footer__links {
-    font-size: 14px;
-  }
 }
 
-/* Large screens (≥500px) */
-@media (min-width: 500px) {
+/* Tablets portrait (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .login-container {
+    max-width: 520px;
+  }
+
   .login-logo__icon {
     width: 240px;
   }
 
-  .login-video-card {
-    height: 560px;
+  .login-video-card__play {
+    width: 66px;
+    height: 66px;
+  }
+
+  .login-video-card__play svg {
+    width: 32px;
+    height: 32px;
   }
 
   .login-google-btn {
     font-size: 20px;
     height: 54px;
+  }
+
+  .login-trust {
+    font-size: 12px;
+  }
+}
+
+/* Large screens (≥1024px) */
+@media (min-width: 1024px) {
+  .login-container {
+    max-width: 560px;
+  }
+
+  .login-logo__icon {
+    width: 260px;
+  }
+
+  .login-video-card__play {
+    width: 68px;
+    height: 68px;
+  }
+
+  .login-video-card__play svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  .login-google-btn {
+    font-size: 21px;
+    height: 56px;
+  }
+
+  .login-trust {
+    font-size: 13px;
+  }
+}
+
+/* Landscape orientation on short viewports */
+@media (orientation: landscape) and (max-height: 600px) {
+  .login-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 0;
+  }
+
+  .login-logo {
+    width: 35%;
+  }
+
+  .login-logo__icon {
+    width: 100px;
+  }
+
+  .login-video-card {
+    width: 55%;
+    aspect-ratio: 16 / 9;
+    margin-bottom: 0;
+    border-radius: 16px;
+  }
+
+  .login-video-card__play {
+    width: 40px;
+    height: 40px;
+  }
+
+  .login-video-card__play svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .login-video-card__footer {
+    display: none;
+  }
+
+  .login-google-btn {
+    width: 92%;
+    height: 36px;
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+
+  .login-trust {
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 4px;
+    font-size: 10px;
   }
 }
