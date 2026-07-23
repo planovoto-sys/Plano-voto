@@ -133,11 +133,11 @@
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.96);
+  background: var(--login-green);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 6px 20px rgba(22, 163, 74, 0.35);
   z-index: 2;
   transition: transform 0.2s ease;
 }
@@ -149,8 +149,8 @@
 .login-video-card__play svg {
   width: 16px;
   height: 16px;
-  fill: var(--login-green);
-  margin-left: 2px;
+  fill: #fff;
+  margin-left: 3px;
 }
 
 .login-video-card__footer {
