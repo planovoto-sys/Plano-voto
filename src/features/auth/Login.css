@@ -11,7 +11,7 @@
 }
 
 /* ==========================================================================
-   WRAPPER
+   WRAPPER — full viewport, no scroll, background decorative blobs
    ========================================================================== */
 .login-wrapper {
   height: 100dvh;
@@ -25,7 +25,6 @@
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* Background decorative blurred circles */
 .login-wrapper::before,
 .login-wrapper::after {
   content: '';
@@ -56,7 +55,7 @@
 }
 
 /* ==========================================================================
-   CONTAINER
+   CONTAINER — centered column holding logo, video, button, trust
    ========================================================================== */
 .login-container {
   width: 90%;
@@ -72,27 +71,26 @@
 }
 
 /* ==========================================================================
-   LOGO
+   LOGO — inline SVG with two overlapping circles + text
    ========================================================================== */
 .login-logo {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
 }
 
 .login-logo__icon {
-  width: 210px;
+  width: 150px;
   height: auto;
   display: block;
 }
 
 /* ==========================================================================
-   VIDEO CARD
+   VIDEO CARD — 9:16 vertical video thumbnail
    ========================================================================== */
 .login-video-card {
   position: relative;
-  width: 340px;
+  width: 300px;
   max-width: 100%;
   aspect-ratio: 9 / 16;
   border-radius: 24px;
@@ -100,7 +98,7 @@
   cursor: pointer;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06);
   transition: box-shadow 0.3s ease, transform 0.2s ease;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .login-video-card:active {
@@ -128,8 +126,8 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 60px;
-  height: 60px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(10px);
@@ -155,8 +153,8 @@
 }
 
 .login-video-card__play svg {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   fill: #fff;
   display: block;
   filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.15));
@@ -222,7 +220,7 @@
 }
 
 /* ==========================================================================
-   TRUST INDICATOR
+   TRUST INDICATOR — Seguro, rápido e gratuito
    ========================================================================== */
 .login-trust {
   display: flex;
@@ -331,14 +329,8 @@
 }
 
 @keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(18px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-fade-up {
@@ -346,17 +338,16 @@
   animation: fadeUp 0.4s ease forwards;
 }
 
-/* Stagger delays */
 .a-delay-1 { animation-delay: 0.05s; }
 .a-delay-4 { animation-delay: 0.35s; }
 .a-delay-5 { animation-delay: 0.45s; }
 .a-delay-6 { animation-delay: 0.55s; }
 
 /* ==========================================================================
-   RESPONSIVE
+   RESPONSIVE — ordered smallest to largest
    ========================================================================== */
 
-/* Very small phones (< 360px) */
+/* --- < 360px (very small phones) --- */
 @media (max-width: 359px) {
   .login-container {
     padding: 0 0 6px;
@@ -367,13 +358,13 @@
   }
 
   .login-video-card {
-    width: 200px;
+    width: 190px;
     border-radius: 18px;
   }
 
   .login-video-card__play {
-    width: 40px;
-    height: 40px;
+    width: 38px;
+    height: 38px;
   }
 
   .login-video-card__play svg {
@@ -387,8 +378,8 @@
   }
 
   .login-google-btn {
-    font-size: 13px;
     height: 34px;
+    font-size: 13px;
     gap: 6px;
     margin-bottom: 8px;
   }
@@ -405,14 +396,14 @@
   }
 }
 
-/* Small phones (360px - 389px) — ex: iPhone SE 375x663 */
+/* --- 360 — 389px (iPhone SE 375×667) --- */
 @media (min-width: 360px) and (max-width: 389px) {
   .login-logo__icon {
     width: 70px;
   }
 
   .login-video-card {
-    width: 260px;
+    width: 250px;
   }
 
   .login-video-card__play {
@@ -426,9 +417,9 @@
   }
 
   .login-google-btn {
-    font-size: 14px;
     height: 38px;
-    margin-bottom: 8px;
+    font-size: 14px;
+    margin-bottom: 10px;
   }
 
   .login-trust {
@@ -436,7 +427,7 @@
   }
 }
 
-/* Medium phones (390px - 419px) */
+/* --- 390 — 419px (iPhone 14 390×844) --- */
 @media (min-width: 390px) and (max-width: 419px) {
   .login-logo__icon {
     width: 150px;
@@ -445,21 +436,16 @@
   .login-video-card {
     width: 300px;
   }
-
-  .login-google-btn {
-    font-size: 17px;
-    height: 47px;
-  }
 }
 
-/* Large phones (420px - 767px) */
+/* --- 420 — 767px (large phones) --- */
 @media (min-width: 420px) and (max-width: 767px) {
   .login-logo__icon {
     width: 180px;
   }
 
   .login-video-card {
-    width: 330px;
+    width: 340px;
   }
 
   .login-video-card__play {
@@ -473,8 +459,8 @@
   }
 
   .login-google-btn {
-    font-size: 18px;
     height: 50px;
+    font-size: 18px;
   }
 
   .login-trust {
@@ -482,7 +468,7 @@
   }
 }
 
-/* Tablets portrait (768px - 1023px) */
+/* --- 768 — 1023px (tablets portrait) --- */
 @media (min-width: 768px) and (max-width: 1023px) {
   .login-container {
     max-width: 520px;
@@ -507,8 +493,8 @@
   }
 
   .login-google-btn {
-    font-size: 20px;
     height: 54px;
+    font-size: 20px;
   }
 
   .login-trust {
@@ -516,7 +502,7 @@
   }
 }
 
-/* Large screens (≥1024px) */
+/* --- ≥ 1024px (large screens) --- */
 @media (min-width: 1024px) {
   .login-container {
     max-width: 560px;
@@ -541,8 +527,8 @@
   }
 
   .login-google-btn {
-    font-size: 20px;
     height: 54px;
+    font-size: 20px;
   }
 
   .login-trust {
@@ -550,23 +536,23 @@
   }
 }
 
-/* Landscape orientation on short viewports */
+/* --- Landscape on short viewports --- */
 @media (orientation: landscape) and (max-height: 600px) {
   .login-container {
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     padding: 8px 0;
   }
 
   .login-logo {
-    width: 35%;
+    width: auto;
   }
 
   .login-logo__icon {
-    width: 80px;
+    width: 70px;
   }
 
   .login-video-card {
@@ -577,13 +563,13 @@
   }
 
   .login-video-card__play {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
   }
 
   .login-video-card__play svg {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
   }
 
   .login-video-card__footer {
