@@ -140,6 +140,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  padding-left: 4px;
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.25);
@@ -157,10 +158,10 @@
 }
 
 .login-video-card__play svg {
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
   fill: #fff;
-  margin-left: 4px;
+  display: block;
   filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.15));
 }
 
@@ -416,11 +417,12 @@
   .login-video-card__play {
     width: 50px;
     height: 50px;
+    padding-left: 3px;
   }
 
   .login-video-card__play svg {
-    width: 16px;
-    height: 16px;
+    width: 22px;
+    height: 22px;
   }
 
   .login-video-card__footer {
@@ -500,11 +502,12 @@
   .login-video-card__play {
     width: 64px;
     height: 64px;
+    padding-left: 5px;
   }
 
   .login-video-card__play svg {
-    width: 22px;
-    height: 22px;
+    width: 30px;
+    height: 30px;
   }
 
   .login-google-btn {
