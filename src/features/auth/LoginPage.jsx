@@ -13,7 +13,17 @@ import './Login.css';
 
 function LoginLogo() {
   return (
-    <img src="/icone-com-nome.svg" alt="Bom de Voto" className="login-logo__icon" />
+    <svg className="login-logo__icon" viewBox="0 0 104 76" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Bom de Voto">
+      <defs>
+        <clipPath id="right-circle">
+          <circle cx="62" cy="26" r="22" />
+        </clipPath>
+      </defs>
+      <circle cx="42" cy="26" r="22" fill="#8dc63f" />
+      <circle cx="62" cy="26" r="22" fill="#16a34a" />
+      <circle cx="42" cy="26" r="22" fill="#0b6b3a" clip-path="url(#right-circle)" />
+      <text x="52" y="65" textAnchor="middle" fill="#16351D" fontSize="13" fontFamily="'Inter', -apple-system, BlinkMacSystemFont, sans-serif" fontWeight="600">bom de voto</text>
+    </svg>
   );
 }
 
