@@ -68,7 +68,6 @@
   justify-content: flex-start;
   position: relative;
   z-index: 1;
-  overflow-y: auto;
   padding: 0 0 12px;
 }
 
@@ -457,7 +456,7 @@
 /* Regular phones (360px - 389px) — ex: iPhone SE 375x663 */
 @media (min-width: 360px) and (max-width: 389px) {
   .login-logo__icon {
-    width: 130px;
+    width: 110px;
   }
 
   .login-video-card {
