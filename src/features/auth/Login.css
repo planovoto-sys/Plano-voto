@@ -68,7 +68,7 @@
   justify-content: flex-start;
   position: relative;
   z-index: 1;
-  padding: 32px 0 12px;
+  padding: 12px 0 12px;
 }
 
 /* ==========================================================================
@@ -79,7 +79,7 @@
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  margin-bottom: 24px;
+  margin-bottom: 12px;
 }
 
 .login-logo__icon {
@@ -95,7 +95,7 @@
   position: relative;
   width: 100%;
   max-width: 100%;
-  aspect-ratio: 9 / 16;
+  height: 520px;
   border-radius: 24px;
   overflow: hidden;
   cursor: pointer;
@@ -410,7 +410,7 @@
 
   .login-video-card {
     max-width: 100%;
-
+    height: 380px;
     border-radius: 18px;
   }
 
@@ -464,6 +464,7 @@
 
   .login-video-card {
     max-width: 100%;
+    height: 460px;
   }
 
   .login-google-btn {
@@ -480,6 +481,7 @@
 
   .login-video-card {
     max-width: 100%;
+    height: 520px;
   }
 
   .login-google-btn {
@@ -496,6 +498,7 @@
 
   .login-video-card {
     max-width: 100%;
+    height: 560px;
   }
 
   .login-video-card__play {
@@ -530,6 +533,7 @@
 
   .login-video-card {
     max-width: 100%;
+    height: 580px;
   }
 
   .login-google-btn {
