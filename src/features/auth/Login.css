@@ -52,7 +52,7 @@
 }
 
 .login-logo {
-  width: clamp(130px, 30vw, 180px);
+  width: clamp(170px, 38vw, 260px);
   height: auto;
   display: block;
 }
@@ -377,7 +377,7 @@
   }
 
   .login-logo {
-    width: clamp(90px, 18vw, 130px);
+    width: clamp(120px, 24vw, 180px);
   }
 
   .login-main {
