@@ -1,21 +1,19 @@
 :root {
-  --login-bg: #F4F8F2;
-  --login-text-dark: #16351D;
-  --login-text-muted: #6B7280;
-  --login-green: #16A34A;
-  --login-green-light: #8DC63F;
-  --login-green-dark: #0B6B3A;
-  --login-btn-text: #111827;
-  --login-gray: #9CA3AF;
-  --login-border: #D1D5DB;
+  --login-bg: #FFFFFF;
+  --login-green: #00A859;
+  --login-green-light: #88C057;
+  --login-green-dark: #0b6b3a;
+  --login-white: #FFFFFF;
+  --login-text-primary: #1F1F1F;
+  --login-text-secondary: #4A4A4A;
+  --login-text-muted: #757575;
+  --login-border: #E5E5E5;
+  --login-content-w: min(90%, 420px);
+  --login-gap: clamp(24px, 3.5dvh, 44px);
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --login-content-width: min(75%, 340px);
 }
 
-/* ==========================================================================
-   WRAPPER — full viewport, no scroll, decorative blobs
-   ========================================================================== */
 .login-wrapper {
   height: 100dvh;
   height: 100svh;
@@ -23,203 +21,245 @@
   background: var(--login-bg);
   display: flex;
   flex-direction: column;
-  align-items: center;
   position: relative;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   padding-top: var(--safe-top);
   padding-bottom: var(--safe-bottom);
 }
 
-.login-wrapper::before,
-.login-wrapper::after {
-  content: '';
-  position: absolute;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.login-wrapper::before {
-  width: min(360px, 60vw);
-  height: min(360px, 60vw);
-  background: #8DC63F;
-  top: -120px;
-  left: -100px;
-  opacity: 0.04;
-  filter: blur(100px);
-}
-
-.login-wrapper::after {
-  width: min(300px, 50vw);
-  height: min(300px, 50vw);
-  background: #16A34A;
-  bottom: -80px;
-  right: -80px;
-  opacity: 0.04;
-  filter: blur(100px);
-}
-
 /* ==========================================================================
-   CONTAINER — column flex using space-between for natural 3-zone layout:
-               logo (top), video (center), button+trust (bottom).
+   HEADER — green section with wave bottom and dot overlay
    ========================================================================== */
-.login-container {
-  width: 100%;
-  max-width: clamp(360px, 90%, 480px);
-  flex: 1;
+.login-header {
+  position: relative;
+  min-height: 34dvh;
+  background: var(--login-green-dark);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: clamp(40px, 6dvh, 80px) 24px 0;
+  overflow: hidden;
+}
+
+.login-header__content {
   position: relative;
   z-index: 1;
-  padding: clamp(12px, 3dvh, 32px) 0 clamp(12px, 2dvh, 24px);
-}
-
-/* ==========================================================================
-   LOGO — fluid width via clamp, no breakpoints needed
-   ========================================================================== */
-.login-logo {
-  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-.login-logo__icon {
-  width: clamp(140px, 38vw, 280px);
+.login-logo {
+  width: clamp(130px, 30vw, 180px);
   height: auto;
   display: block;
 }
 
+.login-header__wave {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: clamp(60px, 10vw, 120px);
+  z-index: 1;
+  pointer-events: none;
+  display: block;
+}
+
 /* ==========================================================================
-   VIDEO CARD — flex-shrink: 0 + fluid width: the card sizes naturally
-                and space-between places it centred between logo & button.
+   MAIN
    ========================================================================== */
-.login-video-card {
+.login-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 24px;
   position: relative;
+  z-index: 2;
+}
+
+.login-main__center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.login-main__spacer {
+  flex: 1;
+  min-height: 0;
+}
+
+.login-main__btn-gap {
   flex-shrink: 0;
-  width: var(--login-content-width);
-  max-width: 100%;
-  aspect-ratio: 9 / 16;
-  max-height: min(55dvh, 500px);
-  border-radius: clamp(16px, 3vw, 24px);
-  overflow: hidden;
+  height: clamp(16px, 2.5dvh, 28px);
+}
+
+/* ==========================================================================
+   HOW IT WORKS — CTA row with play icon + text
+   ========================================================================== */
+.login-how-it-works {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: clamp(10px, 2vw, 14px);
+  width: var(--login-content-w);
+  padding: clamp(10px, 1.8dvh, 14px) clamp(14px, 2.5vw, 20px);
+  border: none;
+  border-radius: clamp(16px, 2.5vw, 20px);
+  background: var(--login-white);
   cursor: pointer;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06);
-  transition: box-shadow 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.25s ease;
+  text-align: left;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-.login-video-card:hover {
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1);
+.login-how-it-works:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
-.login-video-card:active {
+.login-how-it-works:active {
   transform: scale(0.98);
 }
 
-.login-video-card__image {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-}
-
-.login-video-card__overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.55) 0%, transparent 50%);
-  z-index: 1;
-}
-
-.login-video-card__play {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: clamp(38px, 8vw, 64px);
-  height: clamp(38px, 8vw, 64px);
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 2px solid rgba(255, 255, 255, 0.35);
+.login-how-it-works__icon {
+  flex-shrink: 0;
+  width: clamp(32px, 5.5vw, 40px);
+  height: clamp(32px, 5.5vw, 40px);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25);
-  z-index: 2;
-  transition: transform 0.2s ease, background 0.2s ease;
+  border: 2px solid var(--login-green);
+  border-radius: 50%;
+  color: var(--login-green);
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
-.login-video-card:hover .login-video-card__play {
-  background: rgba(255, 255, 255, 0.20);
-  border-color: rgba(255, 255, 255, 0.5);
+.login-how-it-works:hover .login-how-it-works__icon {
+  background: var(--login-green);
+  color: var(--login-white);
 }
 
-.login-video-card:active .login-video-card__play {
-  transform: translate(-50%, -50%) scale(0.93);
-}
-
-.login-video-card__play svg {
-  width: clamp(16px, 3.5vw, 30px);
-  height: clamp(16px, 3.5vw, 30px);
-  fill: #fff;
-  display: block;
-  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.15));
-}
-
-.login-video-card__footer {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: clamp(6px, 1dvh, 12px) clamp(10px, 2vw, 16px);
+.login-how-it-works__text {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: #fff;
-  font-size: clamp(10px, 1.5vw, 11px);
-  font-weight: 500;
-  z-index: 2;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.login-how-it-works__title {
+  font-size: clamp(13px, 2.2vw, 15px);
+  font-weight: 700;
+  color: var(--login-green);
+  line-height: 1.3;
+}
+
+.login-how-it-works__sub {
+  font-size: clamp(11px, 1.8vw, 13px);
+  font-weight: 400;
+  color: var(--login-text-muted);
+  line-height: 1.3;
 }
 
 /* ==========================================================================
-   GOOGLE BUTTON — pill shape, full-width, comfortable touch target
+   VIDEO MODAL — overlay + player
    ========================================================================== */
-.login-google-btn {
-  flex-shrink: 0;
-  width: var(--login-content-width);
-  height: clamp(40px, 6dvh, 50px);
+.login-video-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: clamp(6px, 1.5vw, 10px);
-  background: #ffffff;
+  padding: 16px;
+  animation: fadeIn 0.2s ease;
+}
+
+.login-video-modal {
+  position: relative;
+  width: min(100%, 420px);
+  border-radius: clamp(16px, 2.5vw, 20px);
+  background: #000;
+  animation: fadeUp 0.3s ease;
+}
+
+.login-video-modal__close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+  width: 36px;
+  height: 36px;
   border: none;
-  border-radius: 999px;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: clamp(13px, 2vw, 17px);
-  font-weight: 600;
-  color: var(--login-btn-text);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  color: #ffffff;
   cursor: pointer;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+
+.login-video-modal__close:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.login-video-modal__close svg {
+  width: 20px;
+  height: 20px;
+}
+
+.login-video-modal__video {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 9 / 16;
+  object-fit: contain;
+  background: #000;
+}
+
+/* ==========================================================================
+   GOOGLE BUTTON
+   ========================================================================== */
+.login-google-btn {
+  flex-shrink: 0;
+  width: var(--login-content-w);
+  height: clamp(54px, 8dvh, 62px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: var(--login-white);
+  border: none;
+  border-radius: clamp(16px, 2.5vw, 20px);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: clamp(15px, 2.5vw, 17px);
+  font-weight: 600;
+  color: var(--login-text-primary);
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   transition: transform 0.2s ease, box-shadow 0.25s ease;
 }
 
 .login-google-btn__icon {
-  width: clamp(15px, 2.5vw, 18px);
-  height: clamp(15px, 2.5vw, 18px);
+  width: clamp(18px, 2.5vw, 22px);
+  height: clamp(18px, 2.5vw, 22px);
   flex-shrink: 0;
 }
 
 .login-google-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 .login-google-btn:active {
@@ -233,89 +273,75 @@
 }
 
 /* ==========================================================================
-   TRUST INDICATOR — Seguro, rápido e gratuito
+   TRUST GRID — 3 columns (Seguro | Privado | Transparente)
    ========================================================================== */
 .login-trust {
   flex-shrink: 0;
   display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: clamp(4px, 1vw, 6px);
-  color: var(--login-gray);
-  font-size: clamp(10px, 1.5vw, 12px);
-  font-weight: 400;
+  justify-content: center;
+  width: var(--login-content-w);
+  padding: clamp(16px, 2.5dvh, 28px) 0;
 }
 
-.login-trust__line {
-  color: #D8DCD8;
-  font-size: clamp(10px, 1.5vw, 12px);
+.login-trust__item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
 }
 
-.login-trust__shield {
-  width: clamp(10px, 1.5vw, 12px);
-  height: clamp(10px, 1.5vw, 12px);
+.login-trust__icon {
+  width: clamp(20px, 3vw, 24px);
+  height: clamp(20px, 3vw, 24px);
+  color: var(--login-green-dark);
   flex-shrink: 0;
-  color: var(--login-gray);
+}
+
+.login-trust__label {
+  font-size: clamp(12px, 1.8vw, 14px);
+  font-weight: 500;
+  color: var(--login-text-secondary);
+  white-space: nowrap;
+}
+
+.login-trust__divider {
+  width: 1px;
+  height: clamp(36px, 5dvh, 48px);
+  background: var(--login-border);
+  flex-shrink: 0;
 }
 
 /* ==========================================================================
-   VIDEO MODAL
+   FOOTER
    ========================================================================== */
-.video-modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.82);
+.login-footer {
+  flex-shrink: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  z-index: 200;
-  animation: fadeIn 0.2s ease;
-  padding: 24px;
+  gap: clamp(16px, 2dvh, 24px);
+  padding: clamp(12px, 2dvh, 20px) 24px clamp(16px, 2dvh, 24px);
+  position: relative;
+  z-index: 2;
 }
 
-.video-modal-content {
-  width: 100%;
-  max-width: min(90vw, 560px);
-  aspect-ratio: 9 / 16;
-  max-height: 85vh;
-  background: #000;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
-  animation: scaleIn 0.25s ease;
+.login-security {
+  font-size: clamp(11px, 1.5vw, 13px);
+  color: var(--login-text-muted);
+  text-align: center;
+  line-height: 1.6;
+  margin: 0;
 }
 
-.video-modal-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #666;
-  font-size: 14px;
-  font-weight: 500;
-  background: #111;
-}
-
-.video-modal-close {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.15);
-  border: none;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background 0.2s;
-  z-index: 3;
-}
-
-.video-modal-close:hover {
-  background: rgba(255, 255, 255, 0.25);
+.login-home-indicator {
+  width: 134px;
+  height: 5px;
+  background: var(--login-green);
+  border-radius: 10px;
+  flex-shrink: 0;
 }
 
 /* ==========================================================================
@@ -330,82 +356,95 @@
 }
 
 /* ==========================================================================
-   ANIMATIONS
+   LANDSCAPE (short viewports)
    ========================================================================== */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.92); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(18px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.animate-fade-up {
-  opacity: 0;
-  animation: fadeUp 0.4s ease forwards;
-}
-
-.a-delay-1 { animation-delay: 0.05s; }
-.a-delay-4 { animation-delay: 0.35s; }
-.a-delay-5 { animation-delay: 0.45s; }
-.a-delay-6 { animation-delay: 0.55s; }
-
-/* ==========================================================================
-   LANDSCAPE (short viewports: phones + foldables)
-   Reflows to horizontal row with 16:9 video card
-   ========================================================================== */
-@media (max-height: 600px) and (orientation: landscape) {
-  .login-container {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    gap: clamp(4px, 1.5dvh, 12px);
-    padding: clamp(4px, 1dvh, 8px) 0;
+@media (max-height: 640px) and (orientation: landscape) {
+  :root {
+    --login-gap: clamp(12px, 2.5dvh, 28px);
   }
 
-  .login-logo__icon {
-    width: clamp(60px, 15vw, 90px);
+  .login-wrapper {
+    overflow-y: auto;
   }
 
-  .login-video-card {
-    width: min(45%, 320px);
-    aspect-ratio: 16 / 9;
-    max-height: 70dvh;
-    border-radius: clamp(8px, 1.5vw, 16px);
+  .login-header {
+    min-height: 40dvh;
+    padding-top: clamp(12px, 2dvh, 32px);
   }
 
-  .login-video-card__play {
-    width: clamp(32px, 5vw, 44px);
-    height: clamp(32px, 5vw, 44px);
+  .login-header__wave {
+    height: clamp(30px, 5vw, 60px);
   }
 
-  .login-video-card__play svg {
-    width: clamp(14px, 2.5vw, 20px);
-    height: clamp(14px, 2.5vw, 20px);
+  .login-logo {
+    width: clamp(90px, 18vw, 130px);
   }
 
-  .login-video-card__footer {
-    display: none;
+  .login-main {
+    padding: 0 16px;
   }
 
-  .login-google-btn {
-    width: min(92%, 400px);
-    height: clamp(32px, 5dvh, 38px);
-    font-size: clamp(11px, 1.8vw, 14px);
+  .login-main__btn-gap {
+    height: clamp(10px, 1.5dvh, 18px);
   }
 
   .login-trust {
-    width: 100%;
-    justify-content: center;
-    font-size: clamp(9px, 1.5vw, 11px);
+    padding: clamp(10px, 1.5dvh, 18px) 0;
+  }
+
+  .login-how-it-works {
+    padding: clamp(8px, 1.2dvh, 10px) clamp(12px, 1.8vw, 14px);
+    gap: clamp(8px, 1.2vw, 10px);
+  }
+
+  .login-how-it-works__icon {
+    width: clamp(26px, 4vw, 30px);
+    height: clamp(26px, 4vw, 30px);
+  }
+
+  .login-how-it-works__icon svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .login-video-overlay {
+    padding: 8px;
+  }
+
+  .login-video-modal {
+    width: min(100%, 500px);
+  }
+
+  .login-video-modal__video {
+    aspect-ratio: 16 / 9;
+  }
+
+  .login-google-btn {
+    height: clamp(44px, 7dvh, 50px);
+    font-size: clamp(13px, 2vw, 14px);
+  }
+
+  .login-trust {
+    margin-top: clamp(10px, 1.5dvh, 18px);
+    margin-bottom: var(--login-gap);
+  }
+
+  .login-trust__icon {
+    width: clamp(16px, 2.5vw, 20px);
+    height: clamp(16px, 2.5vw, 20px);
+  }
+
+  .login-trust__label {
+    font-size: clamp(10px, 1.5vw, 12px);
+  }
+
+  .login-trust__divider {
+    height: clamp(24px, 4dvh, 36px);
+  }
+
+  .login-footer {
+    padding: clamp(8px, 1.5dvh, 14px) 16px;
+    gap: clamp(8px, 1.5dvh, 14px);
   }
 }
 
@@ -413,20 +452,14 @@
    REDUCED MOTION
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
-  .login-video-card,
-  .login-video-card__play,
-  .login-video-card__play svg,
-  .login-video-card__footer,
+  .login-how-it-works,
+  .login-how-it-works__icon,
   .login-google-btn,
-  .login-wrapper::before,
-  .login-wrapper::after {
+  .login-how-it-works__play,
+  .login-video-overlay,
+  .login-video-modal {
     transition: none !important;
     animation: none !important;
-  }
-
-  .animate-fade-up {
-    opacity: 1;
-    animation: none;
   }
 }
 
@@ -438,30 +471,27 @@
     background: #fff;
   }
 
-  .login-wrapper::before,
-  .login-wrapper::after {
-    display: none;
-  }
-
-  .login-video-card {
-    box-shadow: 0 0 0 2px #000;
-  }
-
-  .login-video-card__overlay {
-    background: rgba(0, 0, 0, 0.7);
-  }
-
+  .login-how-it-works,
   .login-google-btn {
     border: 2px solid #000;
     box-shadow: none;
   }
 
+  .login-how-it-works:hover,
   .login-google-btn:hover {
     background: #000;
     color: #fff;
+    box-shadow: none;
   }
 
-  .login-trust__shield {
-    color: #000;
+  .login-how-it-works:hover .login-how-it-works__icon {
+    background: #000;
+    border-color: #fff;
+    color: #fff;
+  }
+
+  .login-how-it-works:hover .login-how-it-works__title,
+  .login-how-it-works:hover .login-how-it-works__sub {
+    color: #fff;
   }
 }
