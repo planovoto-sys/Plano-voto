@@ -120,22 +120,23 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding-top: clamp(8px, 2dvh, 20px);
+  padding-top: clamp(4px, 1dvh, 12px);
+  padding-bottom: clamp(32px, 5dvh, 60px);
 }
 
 .login-logo {
-  width: clamp(180px, 40vw, 280px);
+  width: clamp(150px, 35vw, 280px);
   height: auto;
   flex-shrink: 0;
 }
 
 /* ==========================================================================
-   URNA — max-height em svh para nao estourar
+   URNA — max-height fluido (altura × largura via min)
    ========================================================================== */
 .login-urna {
   width: 100%;
   max-width: 600px;
-  max-height: 56svh;
+  max-height: min(50svh, 70vw);
   object-fit: contain;
   flex-shrink: 1;
 }
@@ -153,7 +154,7 @@
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  margin: 0 0 clamp(12px, 2dvh, 24px);
+  margin: 0;
 }
 
 .login-slogan__main {
@@ -172,10 +173,10 @@
 .login-card {
   width: 100%;
   height: auto;
-  min-height: clamp(220px, 36dvh, 400px);
+  min-height: clamp(170px, 26dvh, 300px);
   background: var(--login-green);
   border-radius: 32px 32px 0 0;
-  padding: clamp(20px, 4dvh, 36px) 20px clamp(16px, 2.5dvh, 24px);
+  padding: clamp(14px, 2.5dvh, 24px) 20px clamp(16px, 2.5dvh, 24px);
   box-sizing: border-box;
   position: relative;
   display: flex;
@@ -397,9 +398,6 @@
   .login-logo {
     width: 140px;
   }
-  .login-urna {
-    max-height: 24svh;
-  }
   .login-slogan {
     font-size: 18px;
   }
@@ -415,9 +413,6 @@
 
 /* 2. ANDROID PEQUENO (360px - 389px) */
 @media (min-width: 360px) and (max-width: 389px) {
-  .login-urna {
-    max-height: 28svh;
-  }
   .login-slogan {
     font-size: 20px;
   }
@@ -428,9 +423,6 @@
 
 /* 3. IPHONES MODERNOS (390px - 411px) */
 @media (min-width: 390px) and (max-width: 411px) {
-  .login-urna {
-    max-height: 32svh;
-  }
   .login-slogan {
     font-size: 22px;
   }
@@ -438,9 +430,6 @@
 
 /* 4. ANDROID GRANDES (412px - 429px) */
 @media (min-width: 412px) and (max-width: 429px) {
-  .login-urna {
-    max-height: 34svh;
-  }
   .login-slogan {
     font-size: 24px;
   }
@@ -448,9 +437,6 @@
 
 /* 5. IPHONE PLUS / PRO MAX (430px - 479px) */
 @media (min-width: 430px) and (max-width: 479px) {
-  .login-urna {
-    max-height: 36svh;
-  }
   .login-slogan {
     font-size: 25px;
   }
@@ -458,9 +444,6 @@
 
 /* 6. FOLDABLES FECHADOS / LANDSCAPE PEQUENO (480px - 599px) */
 @media (min-width: 480px) and (max-width: 599px) {
-  .login-urna {
-    max-height: 30svh;
-  }
   .login-slogan {
     font-size: 24px;
   }
@@ -470,9 +453,6 @@
 @media (min-width: 600px) and (max-width: 767px) {
   .login-logo {
     width: 220px;
-  }
-  .login-urna {
-    max-height: 40svh;
   }
   .login-slogan {
     font-size: 28px;
@@ -486,9 +466,6 @@
 @media (min-width: 768px) and (max-width: 819px) {
   .login-logo {
     width: 260px;
-  }
-  .login-urna {
-    max-height: 44svh;
   }
   .login-slogan {
     font-size: 30px;
@@ -504,9 +481,6 @@
 
 /* 9. TABLETS MÉDIOS (820px - 833px) */
 @media (min-width: 820px) and (max-width: 833px) {
-  .login-urna {
-    max-height: 46svh;
-  }
   .login-slogan {
     font-size: 32px;
   }
@@ -519,9 +493,6 @@
   }
   .login-logo {
     width: 280px;
-  }
-  .login-urna {
-    max-height: 48svh;
   }
   .login-slogan {
     font-size: 34px;
@@ -545,10 +516,6 @@
     flex: 1;
     height: 100%;
     justify-content: space-around;
-  }
-
-  .login-urna {
-    max-height: 55vh;
   }
 
   .login-card {
@@ -581,10 +548,6 @@
     width: 260px;
   }
 
-  .login-urna {
-    max-height: 60vh;
-  }
-
   .login-slogan {
     font-size: 36px;
   }
@@ -612,7 +575,7 @@
   }
 
   .login-urna {
-    max-height: 24svh;
+    max-height: 32svh;
   }
 
   .login-slogan {
@@ -672,38 +635,38 @@
 }
 
 /* ==========================================================================
-   PORTRAIT SHORT (ex: 450x663) — reduz urna, card e botoes
+   PORTRAIT SHORT (< 680px altura, >= 430px largura)
    ========================================================================== */
-@media (max-height: 700px) and (orientation: portrait) {
+@media (max-height: 680px) and (orientation: portrait) and (min-width: 430px) {
+  .login-logo {
+    width: clamp(140px, 30vw, 200px);
+  }
+
   .login-urna {
-    max-height: 26svh;
+    max-height: 32svh;
   }
 
   .login-card {
-    min-height: clamp(180px, 28dvh, 280px);
-  }
-
-  .login-slogan {
-    margin-bottom: clamp(6px, 1dvh, 12px);
+    min-height: clamp(160px, 24dvh, 240px);
   }
 
   .login-card__content {
-    gap: clamp(6px, 1dvh, 10px);
+    gap: clamp(4px, 0.8dvh, 8px);
   }
 
   .login-google-btn,
   .login-how-it-works {
-    height: clamp(40px, 6dvh, 50px);
-    font-size: clamp(12px, 2.5vw, 16px);
+    height: clamp(36px, 5dvh, 44px);
+    font-size: clamp(11px, 2vw, 14px);
   }
 
   .login-how-it-works__icon {
-    width: clamp(18px, 3vw, 22px);
-    height: clamp(18px, 3vw, 22px);
+    width: clamp(16px, 2.5vw, 20px);
+    height: clamp(16px, 2.5vw, 20px);
   }
 
   .login-tagline {
-    font-size: clamp(10px, 1.4vw, 12px);
+    font-size: clamp(9px, 1.2vw, 11px);
   }
 }
 
