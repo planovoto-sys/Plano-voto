@@ -175,8 +175,8 @@ export default function LoginPage() {
               <Play size={18} />
             </span>
             <span className="login-how-it-works__text">
-              <strong className="login-how-it-works__title">Como funciona o app?</strong>
-              <span className="login-how-it-works__sub">Assista um vídeo rápido e conheça.</span>
+              <strong className="login-how-it-works__title">Conheça o app</strong>
+              <span className="login-how-it-works__sub">Assistir Vídeo</span>
             </span>
           </button>
 
