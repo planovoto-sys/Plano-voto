@@ -35,7 +35,7 @@ function LoginLogo() {
       <circle cx="78" cy="42" r="38" fill="#0F4C2A" clipPath="url(#logo-intersect)" />
       <text x="100" y="110" textAnchor="middle" fontFamily="Inter, sans-serif" fontSize="28">
         <tspan fontWeight="700" fill="#0F4C2A">bom</tspan>
-        <tspan fontWeight="400" fill="#00A859"> de </tspan>
+        <tspan fontWeight="700" fill="#00A859"> de </tspan>
         <tspan fontWeight="700" fill="#0F4C2A">voto</tspan>
       </text>
     </svg>
@@ -179,6 +179,14 @@ export default function LoginPage() {
               <span className="login-how-it-works__sub">Assista um vídeo rápido e conheça.</span>
             </span>
           </button>
+
+          <p className="login-tagline">
+            <span>Rápido</span>
+            <span className="login-tagline__sep">|</span>
+            <span>Simples</span>
+            <span className="login-tagline__sep">|</span>
+            <span>Inteligente</span>
+          </p>
         </div>
 
         <div className="login-home-indicator" />

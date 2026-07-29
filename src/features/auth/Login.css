@@ -291,6 +291,27 @@
 }
 
 /* ==========================================================================
+   TAGLINE — Rápido | Simples | Inteligente
+   ========================================================================== */
+.login-tagline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(6px, 1vw, 10px);
+  font-size: clamp(11px, 1.6vw, 13px);
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.login-tagline__sep {
+  opacity: 0.4;
+  font-weight: 300;
+}
+
+/* ==========================================================================
    VIDEO MODAL — overlay + player
    ========================================================================== */
 .login-video-overlay {
@@ -441,6 +462,10 @@
     aspect-ratio: 16 / 9;
   }
 
+  .login-tagline {
+    font-size: clamp(10px, 1.4vw, 12px);
+  }
+
   .login-dot--1,
   .login-dot--2,
   .login-dot--3,
@@ -508,5 +533,9 @@
 
   .login-home-indicator {
     background: #fff;
+  }
+
+  .login-tagline {
+    color: #fff;
   }
 }
