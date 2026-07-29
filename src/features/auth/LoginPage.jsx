@@ -176,16 +176,15 @@ export default function LoginPage() {
             </span>
             <span>Conheça o App</span>
           </button>
-
-          <p className="login-tagline">
-            <span>Rápido</span>
-            <span className="login-tagline__sep">|</span>
-            <span>Simples</span>
-            <span className="login-tagline__sep">|</span>
-            <span>Inteligente</span>
-          </p>
         </div>
 
+        <p className="login-tagline">
+          <span>Rápido</span>
+          <span className="login-tagline__sep">|</span>
+          <span>Simples</span>
+          <span className="login-tagline__sep">|</span>
+          <span>Inteligente</span>
+        </p>
       </section>
     </div>
   );
