@@ -1,15 +1,12 @@
 :root {
-  --login-bg: #FFFFFF;
+  --login-offwhite: #F8FAF8;
   --login-green: #00A859;
-  --login-green-light: #88C057;
-  --login-green-dark: #0b6b3a;
+  --login-green-dark: #0F4C2A;
+  --login-green-lime: #70C832;
   --login-white: #FFFFFF;
-  --login-text-primary: #1F1F1F;
-  --login-text-secondary: #4A4A4A;
-  --login-text-muted: #757575;
-  --login-border: #E5E5E5;
-  --login-content-w: min(90%, 420px);
-  --login-gap: clamp(24px, 3.5dvh, 44px);
+  --login-text-muted: #6B7280;
+  --login-text-dark: #1F2937;
+  --login-content-w: min(85%, 380px);
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
@@ -18,7 +15,6 @@
   height: 100dvh;
   height: 100svh;
   overflow: hidden;
-  background: var(--login-bg);
   display: flex;
   flex-direction: column;
   position: relative;
@@ -28,76 +24,203 @@
 }
 
 /* ==========================================================================
-   HEADER — green section with wave bottom and dot overlay
+   TOP SECTION — off-white background ~60%
    ========================================================================== */
-.login-header {
+.login-top {
   position: relative;
-  min-height: 34dvh;
-  background: var(--login-green-dark);
+  flex: 0 0 62%;
+  min-height: 52dvh;
+  background: var(--login-offwhite);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  padding: clamp(40px, 6dvh, 80px) 24px 0;
+  justify-content: flex-start;
+  padding-top: clamp(24px, 3.5dvh, 48px);
   overflow: hidden;
 }
 
-.login-header__content {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.login-logo {
-  width: clamp(170px, 38vw, 260px);
-  height: auto;
-  display: block;
-}
-
-.login-header__wave {
+.login-top__pattern {
   position: absolute;
-  bottom: -1px;
-  left: 0;
-  width: 100%;
-  height: clamp(60px, 10vw, 120px);
-  z-index: 1;
+  inset: 0;
+  background-image: repeating-radial-gradient(
+    circle at 50% 40%,
+    transparent,
+    transparent 50px,
+    rgba(0, 168, 89, 0.04) 50px,
+    rgba(0, 168, 89, 0.04) 51px
+  );
   pointer-events: none;
-  display: block;
 }
 
 /* ==========================================================================
-   MAIN
+   FLOATING DOTS
    ========================================================================== */
-.login-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0 24px;
-  position: relative;
-  z-index: 2;
+.login-dots {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
 }
 
-.login-main__center {
+.login-dot {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.login-dot--1 {
+  width: 12px;
+  height: 12px;
+  background: var(--login-green-lime);
+  top: 12%;
+  left: 18%;
+  opacity: 0.5;
+}
+
+.login-dot--2 {
+  width: 8px;
+  height: 8px;
+  background: var(--login-green-dark);
+  top: 22%;
+  right: 20%;
+  opacity: 0.35;
+}
+
+.login-dot--3 {
+  width: 10px;
+  height: 10px;
+  background: var(--login-green);
+  bottom: 30%;
+  left: 12%;
+  opacity: 0.4;
+}
+
+.login-dot--4 {
+  width: 6px;
+  height: 6px;
+  background: var(--login-green-lime);
+  bottom: 25%;
+  right: 15%;
+  opacity: 0.6;
+}
+
+/* ==========================================================================
+   LOGO
+   ========================================================================== */
+.login-top__content {
+  position: relative;
+  z-index: 1;
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding: 0 24px;
+}
+
+.login-logo {
+  width: clamp(180px, 40vw, 280px);
+  height: auto;
+  display: block;
+  flex-shrink: 0;
+}
+
+.login-urna {
+  width: 100vw;
+  max-width: 700px;
+  height: auto;
+  display: block;
+  margin: auto calc(-50vw + 50%);
+  flex-shrink: 0;
+}
+
+.login-slogan {
+  margin: auto 0 clamp(24px, 4dvh, 48px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: clamp(22px, 5vw, 32px);
+  text-align: center;
+  line-height: 1.3;
+  flex-shrink: 0;
+}
+
+.login-slogan__main {
+  font-weight: 700;
+  color: var(--login-green-dark);
+}
+
+.login-slogan__accent {
+  font-weight: 700;
+  color: var(--login-green);
+}
+
+/* ==========================================================================
+   BOTTOM CARD — green section ~40%
+   ========================================================================== */
+.login-card {
+  flex: 1;
+  background: var(--login-green);
+  border-radius: 32px 32px 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(28px, 4dvh, 44px) 24px 0;
+  position: relative;
+}
+
+.login-card__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(20px, 3dvh, 36px);
   width: 100%;
 }
 
-.login-main__spacer {
-  flex: 1;
-  min-height: 0;
+/* ==========================================================================
+   GOOGLE BUTTON — pill shape
+   ========================================================================== */
+.login-google-btn {
+  flex-shrink: 0;
+  width: var(--login-content-w);
+  height: clamp(52px, 7.5dvh, 60px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: var(--login-white);
+  border: none;
+  border-radius: clamp(14px, 2.2vw, 18px);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: clamp(16px, 3vw, 19px);
+  font-weight: 600;
+  color: var(--login-green);
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  transition: transform 0.2s ease, box-shadow 0.25s ease;
 }
 
-.login-main__btn-gap {
+.login-google-btn__icon {
+  width: clamp(22px, 3.5vw, 28px);
+  height: clamp(22px, 3.5vw, 28px);
   flex-shrink: 0;
-  height: clamp(16px, 2.5dvh, 28px);
+}
+
+.login-google-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+}
+
+.login-google-btn:active {
+  transform: scale(0.98);
+}
+
+.login-google-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* ==========================================================================
@@ -111,7 +234,7 @@
   width: var(--login-content-w);
   padding: clamp(10px, 1.8dvh, 14px) clamp(14px, 2.5vw, 20px);
   border: none;
-  border-radius: clamp(16px, 2.5vw, 20px);
+  border-radius: clamp(14px, 2.2vw, 18px);
   background: var(--login-white);
   cursor: pointer;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
@@ -136,15 +259,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid var(--login-green);
   border-radius: 50%;
-  color: var(--login-green);
-  transition: background 0.2s ease, color 0.2s ease;
-}
-
-.login-how-it-works:hover .login-how-it-works__icon {
   background: var(--login-green);
   color: var(--login-white);
+}
+
+.login-how-it-works__icon svg {
+  width: clamp(16px, 2.5vw, 18px);
+  height: clamp(16px, 2.5vw, 18px);
 }
 
 .login-how-it-works__text {
@@ -157,7 +279,7 @@
 .login-how-it-works__title {
   font-size: clamp(13px, 2.2vw, 15px);
   font-weight: 700;
-  color: var(--login-green);
+  color: var(--login-green-dark);
   line-height: 1.3;
 }
 
@@ -228,120 +350,26 @@
   background: #000;
 }
 
-/* ==========================================================================
-   GOOGLE BUTTON
-   ========================================================================== */
-.login-google-btn {
-  flex-shrink: 0;
-  width: var(--login-content-w);
-  height: clamp(54px, 8dvh, 62px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  background: var(--login-white);
-  border: none;
-  border-radius: clamp(16px, 2.5vw, 20px);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: clamp(15px, 2.5vw, 17px);
-  font-weight: 600;
-  color: var(--login-text-primary);
-  cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  transition: transform 0.2s ease, box-shadow 0.25s ease;
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.login-google-btn__icon {
-  width: clamp(18px, 2.5vw, 22px);
-  height: clamp(18px, 2.5vw, 22px);
-  flex-shrink: 0;
-}
-
-.login-google-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-}
-
-.login-google-btn:active {
-  transform: scale(0.98);
-}
-
-.login-google-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  transform: none;
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* ==========================================================================
-   TRUST GRID — 3 columns (Seguro | Privado | Transparente)
+   HOME INDICATOR
    ========================================================================== */
-.login-trust {
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  width: var(--login-content-w);
-  padding: clamp(16px, 2.5dvh, 28px) 0;
-}
-
-.login-trust__item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-
-.login-trust__icon {
-  width: clamp(20px, 3vw, 24px);
-  height: clamp(20px, 3vw, 24px);
-  color: var(--login-green-dark);
-  flex-shrink: 0;
-}
-
-.login-trust__label {
-  font-size: clamp(12px, 1.8vw, 14px);
-  font-weight: 500;
-  color: var(--login-text-secondary);
-  white-space: nowrap;
-}
-
-.login-trust__divider {
-  width: 1px;
-  height: clamp(36px, 5dvh, 48px);
-  background: var(--login-border);
-  flex-shrink: 0;
-}
-
-/* ==========================================================================
-   FOOTER
-   ========================================================================== */
-.login-footer {
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: clamp(16px, 2dvh, 24px);
-  padding: clamp(12px, 2dvh, 20px) 24px clamp(16px, 2dvh, 24px);
-  position: relative;
-  z-index: 2;
-}
-
-.login-security {
-  font-size: clamp(11px, 1.5vw, 13px);
-  color: var(--login-text-muted);
-  text-align: center;
-  line-height: 1.6;
-  margin: 0;
-}
-
 .login-home-indicator {
+  flex-shrink: 0;
   width: 134px;
   height: 5px;
-  background: var(--login-green);
+  background: rgba(255, 255, 255, 0.6);
   border-radius: 10px;
-  flex-shrink: 0;
+  margin: clamp(16px, 2.5dvh, 28px) 0 clamp(8px, 1.5dvh, 16px);
 }
 
 /* ==========================================================================
@@ -359,37 +387,31 @@
    LANDSCAPE (short viewports)
    ========================================================================== */
 @media (max-height: 640px) and (orientation: landscape) {
-  :root {
-    --login-gap: clamp(12px, 2.5dvh, 28px);
-  }
-
-  .login-wrapper {
-    overflow-y: auto;
-  }
-
-  .login-header {
+  .login-top {
+    flex: 0 0 50%;
     min-height: 40dvh;
-    padding-top: clamp(12px, 2dvh, 32px);
-  }
-
-  .login-header__wave {
-    height: clamp(30px, 5vw, 60px);
+    padding-top: clamp(12px, 2dvh, 24px);
   }
 
   .login-logo {
-    width: clamp(120px, 24vw, 180px);
+    width: clamp(120px, 26vw, 180px);
   }
 
-  .login-main {
-    padding: 0 16px;
+  .login-slogan {
+    font-size: clamp(16px, 3vw, 22px);
   }
 
-  .login-main__btn-gap {
-    height: clamp(10px, 1.5dvh, 18px);
+  .login-card {
+    padding-top: clamp(16px, 3dvh, 28px);
   }
 
-  .login-trust {
-    padding: clamp(10px, 1.5dvh, 18px) 0;
+  .login-card__content {
+    gap: clamp(12px, 2dvh, 20px);
+  }
+
+  .login-google-btn {
+    height: clamp(44px, 6dvh, 50px);
+    font-size: clamp(14px, 2.5vw, 16px);
   }
 
   .login-how-it-works {
@@ -419,32 +441,15 @@
     aspect-ratio: 16 / 9;
   }
 
-  .login-google-btn {
-    height: clamp(44px, 7dvh, 50px);
-    font-size: clamp(13px, 2vw, 14px);
+  .login-dot--1,
+  .login-dot--2,
+  .login-dot--3,
+  .login-dot--4 {
+    display: none;
   }
 
-  .login-trust {
-    margin-top: clamp(10px, 1.5dvh, 18px);
-    margin-bottom: var(--login-gap);
-  }
-
-  .login-trust__icon {
-    width: clamp(16px, 2.5vw, 20px);
-    height: clamp(16px, 2.5vw, 20px);
-  }
-
-  .login-trust__label {
-    font-size: clamp(10px, 1.5vw, 12px);
-  }
-
-  .login-trust__divider {
-    height: clamp(24px, 4dvh, 36px);
-  }
-
-  .login-footer {
-    padding: clamp(8px, 1.5dvh, 14px) 16px;
-    gap: clamp(8px, 1.5dvh, 14px);
+  .login-home-indicator {
+    margin: clamp(8px, 1.5dvh, 16px) 0 clamp(4px, 1dvh, 8px);
   }
 }
 
@@ -455,7 +460,6 @@
   .login-how-it-works,
   .login-how-it-works__icon,
   .login-google-btn,
-  .login-how-it-works__play,
   .login-video-overlay,
   .login-video-modal {
     transition: none !important;
@@ -467,8 +471,16 @@
    HIGH CONTRAST
    ========================================================================== */
 @media (prefers-contrast: high) {
-  .login-wrapper {
+  .login-top {
     background: #fff;
+  }
+
+  .login-slogan__main {
+    color: #000;
+  }
+
+  .login-slogan__accent {
+    color: #000;
   }
 
   .login-how-it-works,
@@ -486,12 +498,15 @@
 
   .login-how-it-works:hover .login-how-it-works__icon {
     background: #000;
-    border-color: #fff;
     color: #fff;
   }
 
   .login-how-it-works:hover .login-how-it-works__title,
   .login-how-it-works:hover .login-how-it-works__sub {
     color: #fff;
+  }
+
+  .login-home-indicator {
+    background: #fff;
   }
 }

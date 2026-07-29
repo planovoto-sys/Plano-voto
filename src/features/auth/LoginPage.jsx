@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { signInWithPopup } from 'firebase/auth';
-import { Play, Shield, Lock, Users } from 'lucide-react';
+import { Play } from 'lucide-react';
 
 import FlowToast from '@/shared/ui/feedback/FlowToast';
 import { useUser } from '@/shared/hooks/useUser';
@@ -13,10 +13,10 @@ import './Login.css';
 function GoogleIcon() {
   return (
     <svg viewBox="0 0 48 48" className="login-google-btn__icon" aria-hidden="true">
-      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
-      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
-      <path fill="#FBBC05" d="M10.32 28.09C9.53 26.4 9.05 24.54 9.05 22.61s.48-3.79 1.27-5.48L2.56 11.2C.92 14.7 0 18.75 0 22.61s.92 7.91 2.56 11.41l7.76-5.93z" />
-      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.15 15.89-5.82l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+      <path fill="#70C832" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+      <path fill="#00A859" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+      <path fill="#70C832" d="M10.32 28.09C9.53 26.4 9.05 24.54 9.05 22.61s.48-3.79 1.27-5.48L2.56 11.2C.92 14.7 0 18.75 0 22.61s.92 7.91 2.56 11.41l7.76-5.93z" />
+      <path fill="#0F4C2A" d="M24 48c6.48 0 11.93-2.15 15.89-5.82l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
       <path fill="none" d="M0 0h48v48H0z" />
     </svg>
   );
@@ -24,17 +24,19 @@ function GoogleIcon() {
 
 function LoginLogo() {
   return (
-    <svg viewBox="0 0 200 130" className="login-logo" aria-label="Bom de Voto">
+    <svg viewBox="0 0 200 135" className="login-logo" aria-label="Bom de Voto">
       <defs>
         <clipPath id="logo-intersect">
           <circle cx="122" cy="42" r="38" />
         </clipPath>
       </defs>
-      <circle cx="78" cy="42" r="38" fill="#16a34a" />
-      <circle cx="122" cy="42" r="38" fill="#8dc63f" />
-      <circle cx="78" cy="42" r="38" fill="#0b6b3a" clipPath="url(#logo-intersect)" />
-      <text x="100" y="105" textAnchor="middle" fontFamily="Inter, sans-serif" fontWeight="700" fontSize="24" fill="#ffffff" letterSpacing="-0.5">
-        bom de voto
+      <circle cx="78" cy="42" r="38" fill="#00A859" />
+      <circle cx="122" cy="42" r="38" fill="#70C832" />
+      <circle cx="78" cy="42" r="38" fill="#0F4C2A" clipPath="url(#logo-intersect)" />
+      <text x="100" y="110" textAnchor="middle" fontFamily="Inter, sans-serif" fontSize="28">
+        <tspan fontWeight="700" fill="#0F4C2A">bom</tspan>
+        <tspan fontWeight="400" fill="#00A859"> de </tspan>
+        <tspan fontWeight="700" fill="#0F4C2A">voto</tspan>
       </text>
     </svg>
   );
@@ -79,6 +81,17 @@ function VideoModal({ isOpen, onClose }) {
           preload="metadata"
         />
       </div>
+    </div>
+  );
+}
+
+function FloatingDots() {
+  return (
+    <div className="login-dots" aria-hidden="true">
+      <div className="login-dot login-dot--1" />
+      <div className="login-dot login-dot--2" />
+      <div className="login-dot login-dot--3" />
+      <div className="login-dot login-dot--4" />
     </div>
   );
 }
@@ -129,41 +142,24 @@ export default function LoginPage() {
     <div className="login-wrapper">
       <FlowToast message={toastMessage} />
 
-      <header className="login-header">
-        <div className="login-header__content">
+      <section className="login-top">
+        <div className="login-top__pattern" aria-hidden="true" />
+        <FloatingDots />
+
+        <div className="login-top__content">
           <LoginLogo />
+          <img src="/imagem-urna.png" alt="" className="login-urna" />
+          <p className="login-slogan">
+            <span className="login-slogan__main">Você é bom de voto</span>
+            <span className="login-slogan__accent">Tem certeza?</span>
+          </p>
         </div>
+      </section>
 
-        <svg
-          className="login-header__wave"
-          viewBox="0 0 1440 120"
-          preserveAspectRatio="none"
-          aria-hidden="true"
-        >
-          <path
-            fill="var(--login-bg)"
-            d="M0,0 Q720,100 1440,0 L1440,120 L0,120 Z"
-          />
-        </svg>
-      </header>
-
-      <main className="login-main">
+      <section className="login-card">
         <VideoModal isOpen={videoOpen} onClose={() => setVideoOpen(false)} />
 
-        <div className="login-main__center">
-          <div className="login-main__spacer" />
-          <button type="button" className="login-how-it-works" onClick={() => setVideoOpen(true)}>
-            <span className="login-how-it-works__icon" aria-hidden="true">
-              <Play size={18} />
-            </span>
-            <span className="login-how-it-works__text">
-              <strong className="login-how-it-works__title">Como funciona o app?</strong>
-              <span className="login-how-it-works__sub">Assista um vídeo rápido e conheça.</span>
-            </span>
-          </button>
-
-          <div className="login-main__btn-gap" />
-
+        <div className="login-card__content">
           <button
             type="button"
             className="login-google-btn"
@@ -173,39 +169,20 @@ export default function LoginPage() {
             <GoogleIcon />
             <span>{signingIn ? 'Entrando...' : 'Entrar com Google'}</span>
           </button>
-          <div className="login-main__spacer" />
+
+          <button type="button" className="login-how-it-works" onClick={() => setVideoOpen(true)}>
+            <span className="login-how-it-works__icon" aria-hidden="true">
+              <Play size={18} />
+            </span>
+            <span className="login-how-it-works__text">
+              <strong className="login-how-it-works__title">Como funciona o app?</strong>
+              <span className="login-how-it-works__sub">Assista um vídeo rápido e conheça.</span>
+            </span>
+          </button>
         </div>
-
-        <div className="login-trust">
-          <div className="login-trust__item">
-            <Shield className="login-trust__icon" size={20} strokeWidth={1.8} />
-            <span className="login-trust__label">Seguro</span>
-          </div>
-
-          <div className="login-trust__divider" />
-
-          <div className="login-trust__item">
-            <Lock className="login-trust__icon" size={20} strokeWidth={1.8} />
-            <span className="login-trust__label">Privado</span>
-          </div>
-
-          <div className="login-trust__divider" />
-
-          <div className="login-trust__item">
-            <Users className="login-trust__icon" size={20} strokeWidth={1.8} />
-            <span className="login-trust__label">Transparente</span>
-          </div>
-        </div>
-      </main>
-
-      <footer className="login-footer">
-        <p className="login-security">
-          Seus dados estão protegidos<br />
-          e nunca serão compartilhados.
-        </p>
 
         <div className="login-home-indicator" />
-      </footer>
+      </section>
     </div>
   );
 }
