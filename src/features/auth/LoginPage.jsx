@@ -174,10 +174,7 @@ export default function LoginPage() {
             <span className="login-how-it-works__icon" aria-hidden="true">
               <Play size={18} />
             </span>
-            <span className="login-how-it-works__text">
-              <strong className="login-how-it-works__title">Conheça o app</strong>
-              <span className="login-how-it-works__sub">Assistir Vídeo</span>
-            </span>
+            <span>Conheça o App</span>
           </button>
 
           <p className="login-tagline">
@@ -189,7 +186,6 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <div className="login-home-indicator" />
       </section>
     </div>
   );
