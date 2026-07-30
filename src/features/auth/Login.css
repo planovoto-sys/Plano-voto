@@ -1,4 +1,5 @@
 :root {
+  /* Paleta */
   --login-offwhite: #F8FAF8;
   --login-green: #00A859;
   --login-green-dark: #0F4C2A;
@@ -6,7 +7,40 @@
   --login-white: #FFFFFF;
   --login-text-muted: #6B7280;
   --login-text-dark: #1F2937;
+
+  /* Tipografia */
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --slogan-size: clamp(20px, 4.5vw, 36px);
+  --tagline-size: clamp(11px, 1.6vw, 13px);
+
+  /* Botões (compartilhados entre Google e Conheça o App) */
+  --button-height: clamp(44px, 7.5dvh, 60px);
+  --button-font-size: clamp(13px, 3vw, 19px);
+  --button-gap: clamp(8px, 1.5vw, 12px);
+  --button-radius: clamp(12px, 2.2vw, 18px);
+  --button-icon-size: clamp(18px, 3.5vw, 28px);
+  --play-icon-size: clamp(22px, 3.5vw, 28px);
+  --button-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  --button-shadow-hover: 0 8px 28px rgba(0, 0, 0, 0.18);
   --login-content-w: min(85%, 380px);
+
+  /* Card */
+  --card-min-height: clamp(170px, 26dvh, 300px);
+  --card-radius: 32px;
+  --card-padding-top: clamp(14px, 2.5dvh, 24px);
+  --card-padding-x: 20px;
+  --card-padding-bottom: clamp(16px, 2.5dvh, 24px);
+  --card-content-gap: clamp(10px, 1.5dvh, 16px);
+  --card-content-max-w: 480px;
+
+  /* Layout */
+  --logo-width: clamp(150px, 35vw, 280px);
+  --urna-max-height: min(50svh, 70vw);
+  --urna-max-width: 600px;
+  --tagline-margin-top: clamp(4px, 0.8dvh, 12px);
+  --tagline-gap: clamp(6px, 1vw, 10px);
+
+  /* Safe area */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
@@ -22,7 +56,7 @@
   justify-content: space-between;
   overflow: hidden;
   position: relative;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: var(--font-family);
   padding-top: var(--safe-top);
   padding-bottom: var(--safe-bottom);
 }
@@ -125,7 +159,7 @@
 }
 
 .login-logo {
-  width: clamp(150px, 35vw, 280px);
+  width: var(--logo-width);
   height: auto;
   flex-shrink: 0;
 }
@@ -135,8 +169,8 @@
    ========================================================================== */
 .login-urna {
   width: 100%;
-  max-width: 600px;
-  max-height: min(50svh, 70vw);
+  max-width: var(--urna-max-width);
+  max-height: var(--urna-max-height);
   object-fit: contain;
   flex-shrink: 1;
 }
@@ -149,7 +183,7 @@
   text-align: center;
   font-weight: 700;
   line-height: 1.2;
-  font-size: clamp(20px, 4.5vw, 28px);
+  font-size: var(--slogan-size);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -173,10 +207,10 @@
 .login-card {
   width: 100%;
   height: auto;
-  min-height: clamp(170px, 26dvh, 300px);
+  min-height: var(--card-min-height);
   background: var(--login-green);
-  border-radius: 32px 32px 0 0;
-  padding: clamp(14px, 2.5dvh, 24px) 20px clamp(16px, 2.5dvh, 24px);
+  border-radius: var(--card-radius) var(--card-radius) 0 0;
+  padding: var(--card-padding-top) var(--card-padding-x) var(--card-padding-bottom);
   box-sizing: border-box;
   position: relative;
   display: flex;
@@ -189,8 +223,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: clamp(10px, 1.5dvh, 16px);
-  max-width: 480px;
+  gap: var(--card-content-gap);
+  max-width: var(--card-content-max-w);
   margin: 0 auto;
   width: 100%;
 }
@@ -201,32 +235,32 @@
 .login-google-btn {
   flex-shrink: 0;
   width: var(--login-content-w);
-  height: clamp(44px, 7.5dvh, 60px);
+  height: var(--button-height);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: clamp(8px, 1.5vw, 12px);
+  gap: var(--button-gap);
   background: var(--login-white);
   border: none;
-  border-radius: clamp(12px, 2.2vw, 18px);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: clamp(13px, 3vw, 19px);
+  border-radius: var(--button-radius);
+  font-family: var(--font-family);
+  font-size: var(--button-font-size);
   font-weight: 600;
   color: var(--login-green);
   cursor: pointer;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--button-shadow);
   transition: transform 0.2s ease, box-shadow 0.25s ease;
 }
 
 .login-google-btn__icon {
-  width: clamp(18px, 3.5vw, 28px);
-  height: clamp(18px, 3.5vw, 28px);
+  width: var(--button-icon-size);
+  height: var(--button-icon-size);
   flex-shrink: 0;
 }
 
 .login-google-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+  box-shadow: var(--button-shadow-hover);
 }
 
 .login-google-btn:active {
@@ -245,27 +279,27 @@
 .login-how-it-works {
   flex-shrink: 0;
   width: var(--login-content-w);
-  height: clamp(44px, 7.5dvh, 60px);
+  height: var(--button-height);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: clamp(8px, 1.5vw, 12px);
+  gap: var(--button-gap);
   background: var(--login-white);
   border: none;
-  border-radius: clamp(12px, 2.2vw, 18px);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: clamp(13px, 3vw, 19px);
+  border-radius: var(--button-radius);
+  font-family: var(--font-family);
+  font-size: var(--button-font-size);
   font-weight: 600;
   color: var(--login-green);
   cursor: pointer;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--button-shadow);
   transition: transform 0.2s ease, box-shadow 0.25s ease;
   text-align: center;
 }
 
 .login-how-it-works:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+  box-shadow: var(--button-shadow-hover);
 }
 
 .login-how-it-works:active {
@@ -274,8 +308,8 @@
 
 .login-how-it-works__icon {
   flex-shrink: 0;
-  width: clamp(22px, 3.5vw, 28px);
-  height: clamp(22px, 3.5vw, 28px);
+  width: var(--play-icon-size);
+  height: var(--play-icon-size);
   color: var(--login-green);
 }
 
@@ -291,12 +325,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: clamp(6px, 1vw, 10px);
-  font-size: clamp(11px, 1.6vw, 13px);
+  gap: var(--tagline-gap);
+  font-size: var(--tagline-size);
   font-weight: 500;
   color: rgba(255, 255, 255, 0.7);
   text-align: center;
-  margin: clamp(4px, 0.8dvh, 12px) 0 0;
+  margin: var(--tagline-margin-top) 0 0;
   flex-shrink: 0;
 }
 
@@ -387,10 +421,10 @@
 }
 
 /* ==========================================================================
-   MATRIZ DE RESPONSIVIDADE — 12 FAIXAS
+   MATRIZ DE RESPONSIVIDADE — BREAKPOINTS REVISADOS
    ========================================================================== */
 
-/* 1. MUITO PEQUENO (< 360px) */
+/* B1. MUITO PEQUENO (< 360px) */
 @media (max-width: 359px) {
   .login-top {
     padding: 8px 12px;
@@ -411,65 +445,15 @@
   }
 }
 
-/* 2. ANDROID PEQUENO (360px - 389px) */
-@media (min-width: 360px) and (max-width: 389px) {
-  .login-slogan {
-    font-size: 20px;
-  }
-  .login-card {
-    padding: 16px 16px 12px;
-  }
-}
-
-/* 3. IPHONES MODERNOS (390px - 411px) */
-@media (min-width: 390px) and (max-width: 411px) {
-  .login-slogan {
-    font-size: 22px;
-  }
-}
-
-/* 4. ANDROID GRANDES (412px - 429px) */
-@media (min-width: 412px) and (max-width: 429px) {
-  .login-slogan {
-    font-size: 24px;
-  }
-}
-
-/* 5. IPHONE PLUS / PRO MAX (430px - 479px) */
-@media (min-width: 430px) and (max-width: 479px) {
-  .login-slogan {
-    font-size: 25px;
-  }
-}
-
-/* 6. FOLDABLES FECHADOS / LANDSCAPE PEQUENO (480px - 599px) */
-@media (min-width: 480px) and (max-width: 599px) {
-  .login-slogan {
-    font-size: 24px;
-  }
-}
-
-/* 7. TABLETS PEQUENOS (600px - 767px) */
+/* B2. TABLETS PEQUENOS (600px - 767px) */
 @media (min-width: 600px) and (max-width: 767px) {
-  .login-logo {
-    width: 220px;
-  }
-  .login-slogan {
-    font-size: 28px;
-  }
   .login-card__content {
     max-width: 420px;
   }
 }
 
-/* 8. IPAD PORTRAIT (768px - 819px) */
-@media (min-width: 768px) and (max-width: 819px) {
-  .login-logo {
-    width: 260px;
-  }
-  .login-slogan {
-    font-size: 30px;
-  }
+/* B3. TABLETS PORTRAIT (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
   .login-card {
     border-radius: 40px 40px 0 0;
     padding: 32px 24px 24px;
@@ -479,30 +463,13 @@
   }
 }
 
-/* 9. TABLETS MÉDIOS (820px - 833px) */
-@media (min-width: 820px) and (max-width: 833px) {
-  .login-slogan {
-    font-size: 32px;
-  }
-}
-
-/* 10. IPAD PRO PORTRAIT (834px - 1023px) */
 @media (min-width: 834px) and (max-width: 1023px) {
-  .login-top {
-    padding: 32px 24px;
-  }
-  .login-logo {
-    width: 280px;
-  }
-  .login-slogan {
-    font-size: 34px;
-  }
   .login-card__content {
     max-width: 500px;
   }
 }
 
-/* 11. TABLETS GRANDES / LAPTOPS COMPACTOS (1024px - 1279px) */
+/* B4. DESKTOP COMPACTO (1024px - 1279px) */
 @media (min-width: 1024px) and (max-width: 1279px) {
   .login-wrapper {
     flex-direction: row;
@@ -526,7 +493,7 @@
   }
 }
 
-/* 12. DESKTOP (>= 1280px) */
+/* B5. DESKTOP AMPLO (>= 1280px) */
 @media (min-width: 1280px) {
   .login-wrapper {
     flex-direction: row;
@@ -590,11 +557,6 @@
     gap: clamp(6px, 1dvh, 10px);
   }
 
-  .login-google-btn {
-    height: clamp(40px, 6dvh, 48px);
-    font-size: clamp(13px, 2vw, 15px);
-  }
-
   .login-google-btn,
   .login-how-it-works {
     height: clamp(40px, 6dvh, 48px);
@@ -604,10 +566,6 @@
   .login-how-it-works__icon {
     width: clamp(20px, 3vw, 24px);
     height: clamp(20px, 3vw, 24px);
-  }
-
-  .login-how-it-works__sub {
-    font-size: clamp(10px, 1.6vw, 12px);
   }
 
   .login-tagline {
@@ -714,7 +672,6 @@
   }
 
   .login-how-it-works:hover .login-how-it-works__icon {
-    background: #000;
     color: #fff;
   }
 
