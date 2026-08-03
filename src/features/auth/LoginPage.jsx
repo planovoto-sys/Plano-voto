@@ -13,10 +13,10 @@ import './Login.css';
 function GoogleIcon() {
   return (
     <svg viewBox="0 0 48 48" className="login-google-btn__icon" aria-hidden="true">
-      <path fill="#70C832" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
-      <path fill="#00A859" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
-      <path fill="#70C832" d="M10.32 28.09C9.53 26.4 9.05 24.54 9.05 22.61s.48-3.79 1.27-5.48L2.56 11.2C.92 14.7 0 18.75 0 22.61s.92 7.91 2.56 11.41l7.76-5.93z" />
-      <path fill="#0F4C2A" d="M24 48c6.48 0 11.93-2.15 15.89-5.82l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+      <path fill="currentColor" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+      <path fill="currentColor" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+      <path fill="currentColor" d="M10.32 28.09C9.53 26.4 9.05 24.54 9.05 22.61s.48-3.79 1.27-5.48L2.56 11.2C.92 14.7 0 18.75 0 22.61s.92 7.91 2.56 11.41l7.76-5.93z" />
+      <path fill="currentColor" d="M24 48c6.48 0 11.93-2.15 15.89-5.82l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
       <path fill="none" d="M0 0h48v48H0z" />
     </svg>
   );
@@ -150,7 +150,7 @@ export default function LoginPage() {
           <LoginLogo />
           <img src="/imagem-urna.png" alt="" className="login-urna" />
           <p className="login-slogan">
-            <span className="login-slogan__main">Você é bom de voto</span>
+            <span className="login-slogan__main">Você é bom de voto?</span>
             <span className="login-slogan__accent">Tem certeza?</span>
           </p>
         </div>
@@ -160,6 +160,13 @@ export default function LoginPage() {
         <VideoModal isOpen={videoOpen} onClose={() => setVideoOpen(false)} />
 
         <div className="login-card__content">
+          <button type="button" className="login-how-it-works" onClick={() => setVideoOpen(true)}>
+            <span className="login-how-it-works__icon" aria-hidden="true">
+              <Play size={18} />
+            </span>
+            <span>Veja como funciona</span>
+          </button>
+
           <button
             type="button"
             className="login-google-btn"
@@ -168,13 +175,6 @@ export default function LoginPage() {
           >
             <GoogleIcon />
             <span>{signingIn ? 'Entrando...' : 'Entrar com Google'}</span>
-          </button>
-
-          <button type="button" className="login-how-it-works" onClick={() => setVideoOpen(true)}>
-            <span className="login-how-it-works__icon" aria-hidden="true">
-              <Play size={18} />
-            </span>
-            <span>Conheça o App</span>
           </button>
         </div>
 

@@ -246,7 +246,7 @@
   font-family: var(--font-family);
   font-size: var(--button-font-size);
   font-weight: 600;
-  color: var(--login-green);
+  color: var(--login-green-dark);
   cursor: pointer;
   box-shadow: var(--button-shadow);
   transition: transform 0.2s ease, box-shadow 0.25s ease;
@@ -268,7 +268,8 @@
 }
 
 .login-google-btn:disabled {
-  opacity: 0.7;
+  background: var(--login-white);
+  color: var(--login-green-dark);
   cursor: not-allowed;
   transform: none;
 }
@@ -290,7 +291,7 @@
   font-family: var(--font-family);
   font-size: var(--button-font-size);
   font-weight: 600;
-  color: var(--login-green);
+  color: var(--login-green-dark);
   cursor: pointer;
   box-shadow: var(--button-shadow);
   transition: transform 0.2s ease, box-shadow 0.25s ease;
@@ -310,7 +311,7 @@
   flex-shrink: 0;
   width: var(--play-icon-size);
   height: var(--play-icon-size);
-  color: var(--login-green);
+  color: var(--login-green-dark);
 }
 
 .login-how-it-works__icon svg {
