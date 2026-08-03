@@ -58,8 +58,8 @@
   border-radius: 16px;
   background: #FFFFFF;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  padding: 6.6px;
-  gap: 12px;
+  padding: 8px;
+  gap: 8px;
   min-height: auto;
 }
 
