@@ -12,6 +12,8 @@
   --brand-muted: #737373;
   --brand-border: #E0E7DE;
   --bottom-nav-height: 52px;
+  --fab-height: 56px;
+  min-height: 100dvh;
 }
 
 @media (max-width: 1023px) {
@@ -25,7 +27,7 @@
    ======================================================== */
 .my-plan-scroll {
   overflow-x: hidden;
-  padding: 6px var(--screen-gutter) calc(var(--bottom-nav-height) + var(--app-safe-bottom) + 72px);
+  padding: 6px var(--screen-gutter) calc(var(--bottom-nav-height) + var(--fab-height, 56px) + var(--app-safe-bottom, 16px) + 24px);
   background: var(--brand-bg);
 }
 
@@ -45,7 +47,8 @@
 .my-plan-overview {
   background: var(--brand-surface);
   border-radius: 12px;
-  padding: 14px 12px;
+  padding: 6.6px 5.5px;
+  margin-top: 12px;
   box-shadow: 0 4px 12px rgba(17, 17, 17, 0.04);
   border: 1px solid var(--brand-border);
 }
@@ -69,10 +72,11 @@
   content: '';
   position: absolute;
   right: -4px;
-  top: 15%;
-  height: 70%;
+  top: 25%;
+  height: 50%;
+  align-self: center;
   width: 1px;
-  background: var(--brand-border);
+  background-color: #E5E7EB;
 }
 
 /* ========================================================
@@ -80,18 +84,20 @@
    ======================================================== */
 .my-plan-overview__metric--green .my-plan-overview__label,
 .my-plan-overview__metric--green .my-plan-overview__value,
-.my-plan-overview__metric--green .my-plan-overview__sub {
+.my-plan-overview__metric--green .my-plan-overview__sub,
+.my-plan-overview__metric--green .my-plan-stars-container {
   color: var(--brand-green-dark);
 }
 
 .my-plan-overview__metric--red .my-plan-overview__label,
 .my-plan-overview__metric--red .my-plan-overview__value,
-.my-plan-overview__metric--red .my-plan-overview__sub {
+.my-plan-overview__metric--red .my-plan-overview__sub,
+.my-plan-overview__metric--red .my-plan-stars-container {
   color: var(--brand-danger);
 }
 
 .my-plan-overview__label {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--brand-muted);
   text-transform: uppercase;
@@ -118,7 +124,9 @@
 
 .my-plan-stars-container {
   display: inline-flex;
-  gap: 1px;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
   margin-top: 4px;
 }
 
@@ -143,8 +151,8 @@
   overflow: hidden;
 }
 
-.star-fill-wrapper--default { color: var(--brand-accent); }
-.star-fill-wrapper--red { color: var(--brand-danger); }
+.star-fill-wrapper--default { color: currentColor; }
+.star-fill-wrapper--red { color: currentColor; }
 
 .star-fg {
   width: 12px;
@@ -156,9 +164,9 @@
 .my-plan-gauge {
   width: 100%;
   max-width: 60px;
-  height: 4px;
+  height: 8px;
   background: var(--brand-border);
-  border-radius: 4px;
+  border-radius: 99px;
   margin-top: 6px;
   overflow: hidden;
   position: relative;
@@ -166,7 +174,7 @@
 
 .my-plan-gauge__fill {
   height: 100%;
-  border-radius: 4px;
+  border-radius: 99px;
   transition: width 0.5s ease, background-color 0.3s ease;
 }
 
@@ -194,20 +202,6 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-
-.my-plan-choice-list .prototype-candidate-card {
-  background-color: var(--brand-surface) !important;
-  border: 1px solid var(--brand-border) !important;
-  border-radius: 12px !important;
-  box-shadow: 0 2px 8px rgba(17, 17, 17, 0.03) !important;
-  padding: 10px 12px !important;
-  min-height: auto !important;
-}
-
-.my-plan-choice-list .candidate-card__action-btn,
-.my-plan-choice-list .candidate-card__action-btn-icon {
-  display: none !important;
 }
 
 /* ========================================================
@@ -284,9 +278,9 @@
    MEDIA QUERIES DESKTOP
    ======================================================== */
 @media (min-width: 768px) {
-  .my-plan-scroll { padding: 34px var(--screen-gutter) calc(106px + env(safe-area-inset-bottom, 0px)); }
+  .my-plan-scroll { padding: 34px var(--screen-gutter) calc(var(--bottom-nav-height) + var(--fab-height, 56px) + env(safe-area-inset-bottom, 0px) + 24px); }
   .my-plan-shell { max-width: 800px; gap: 32px; }
-  .my-plan-overview { padding: 24px; border-radius: 16px; }
+  .my-plan-overview { padding: 11px; border-radius: 16px; }
   .my-plan-overview__label { font-size: 13px; }
   .my-plan-overview__value { font-size: 36px; }
   .my-plan-choice-list { grid-template-columns: 1fr 1fr; display: grid; }

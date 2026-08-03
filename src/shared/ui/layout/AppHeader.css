@@ -257,6 +257,14 @@
   box-shadow: none;
 }
 
+/* Variant: default (mobile shell flow) — barra fixa translúcida 56px */
+.app-header--default {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid #F3F4F6;
+}
+
 /* Variant: desktop */
 @media (min-width: 1024px) {
   .app-header--desktop {

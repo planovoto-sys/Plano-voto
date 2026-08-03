@@ -89,8 +89,8 @@ body.hide-bottom-nav nav {
 /* Botão Flutuante (FAB) */
 .share-trigger-fab {
   position: fixed;
-  right: 20px;
-  bottom: calc(var(--bottom-nav-height, 70px) + 52px);
+  right: 16px;
+  bottom: calc(var(--bottom-nav-height, 52px) + 16px);
   z-index: 40;
   width: 56px;
   height: 56px;
@@ -103,12 +103,12 @@ body.hide-bottom-nav nav {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: opacity 0.3s, transform 0.3s;
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
 }
 
 .share-trigger-fab.is-hidden {
   opacity: 0;
-  transform: translateY(20px) scale(0.9);
+  transform: translateY(calc(100% + var(--bottom-nav-height, 52px) + 32px));
   pointer-events: none;
 }
 

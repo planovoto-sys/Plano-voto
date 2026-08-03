@@ -23,8 +23,10 @@ export default function CandidateCard({
   lockPersonalizedFields = false,
   onLockedMetricClick,
   showNumberAbove = false,
-  numberFallback = ''
+  numberFallback = '',
+  variant = 'card'
 }) {
+  const isSummary = variant === 'summary';
   const name = getCandidateName(candidate);
   const party = getCandidateParty(candidate);
   const number = getCandidateNumber(candidate);
@@ -88,7 +90,7 @@ export default function CandidateCard({
 
   return (
     <article
-      className={`prototype-candidate-card ${selected ? 'is-selected' : ''} ${isBlocked ? 'is-blocked' : ''} ${toneClass} nv-touch`}
+      className={`prototype-candidate-card ${variant === 'summary' ? 'variant-summary' : ''} ${selected ? 'is-selected' : ''} ${isBlocked ? 'is-blocked' : ''} ${toneClass} nv-touch`}
       onClick={handleCardClick}
       role="button"
       tabIndex={0}
@@ -98,25 +100,31 @@ export default function CandidateCard({
       {/* 1. CABEÇALHO */}
       <header className="candidate-card__header">
         <div className="candidate-card__identity">
-          {showNumberAbove && displayNumber && (
+          {showNumberAbove && !isSummary && displayNumber && (
             <span className="candidate-card__number">{displayNumber}</span>
           )}
           <h3 className="candidate-card__name">{name}</h3>
           <span className="candidate-card__party">{party}</span>
         </div>
 
-        {/* BOTÃO DE SELEÇÃO: Microinteração */}
-        <button
-          className={`candidate-card__action-btn-icon ${selected ? 'selected' : 'unselected'} ${toneClass}`}
-          disabled={disabled || isBlocked}
-          aria-hidden="true"
-        >
-          <svg className="icon-morph-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line className="morph-h" x1="5" y1="12" x2="19" y2="12" />
-            <line className="morph-v" x1="12" y1="5" x2="12" y2="19" />
-            <path className="morph-check" d="M 18 8 L 11 16.5" />
-          </svg>
-        </button>
+        {isSummary ? (
+          displayNumber && (
+            <span className="candidate-card__number candidate-card__number--badge">{displayNumber}</span>
+          )
+        ) : (
+          /* BOTÃO DE SELEÇÃO: Microinteração */
+          <button
+            className={`candidate-card__action-btn-icon ${selected ? 'selected' : 'unselected'} ${toneClass}`}
+            disabled={disabled || isBlocked}
+            aria-hidden="true"
+          >
+            <svg className="icon-morph-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line className="morph-h" x1="5" y1="12" x2="19" y2="12" />
+              <line className="morph-v" x1="12" y1="5" x2="12" y2="19" />
+              <path className="morph-check" d="M 18 8 L 11 16.5" />
+            </svg>
+          </button>
+        )}
       </header>
 
       {/* 2. MEIO (Barra de Viabilidade) */}

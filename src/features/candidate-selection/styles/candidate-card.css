@@ -50,6 +50,70 @@
 }
 
 /* ==========================================================================
+   VARIANTE SUMMARY (TELA "SEU PLANO / RESULTADO")
+   Encapsulada via prop variant="summary", sem overrides externos.
+   ========================================================================== */
+.prototype-candidate-card.variant-summary {
+  border: 1px solid #E5E7EB !important;
+  border-radius: 16px;
+  background: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  padding: 6.6px;
+  gap: 12px;
+  min-height: auto;
+}
+
+.prototype-candidate-card.variant-summary .candidate-card__number--badge {
+  background: #F3F4F6;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  color: var(--brand-dark, #0B6B3A);
+  font-family: var(--font-family);
+  line-height: 1.4;
+  margin: 0;
+  align-self: flex-start;
+  flex-shrink: 0;
+}
+
+.prototype-candidate-card.variant-summary .candidate-card__bar-container {
+  height: 8px;
+  background: #E5E7EB;
+  border-radius: 99px;
+}
+
+.prototype-candidate-card.variant-summary .candidate-card__tags-row {
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 0;
+  margin-bottom: 6px;
+}
+
+.prototype-candidate-card.variant-summary .candidate-card__tag {
+  flex: 1 1 0;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.prototype-candidate-card.variant-summary .tag-score-title,
+.prototype-candidate-card.variant-summary .tag-score-value,
+.prototype-candidate-card.variant-summary .tag-eval-text {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.prototype-candidate-card.variant-summary .candidate-card__tag .tag-icon {
+  width: 12px;
+  height: 12px;
+}
+
+/* ==========================================================================
    1. CABEÇALHO 
    ========================================================================== */
 .candidate-card__header {

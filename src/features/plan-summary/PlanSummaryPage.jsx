@@ -355,7 +355,7 @@ export default function MeuPlano() {
                       <CandidateCard
                         key={candWithNumber.id}
                         candidate={candWithNumber}
-                        showNumberAbove={true} 
+                        variant="summary"
                         onSelect={() => handleEdit(BALLOT_ROUTES.deputadoFederal)}
                         onLockedMetricClick={() => setModalCampoBloqueado(true)}
                       />
@@ -380,7 +380,7 @@ export default function MeuPlano() {
                       <CandidateCard
                         key={candWithNumber.id}
                         candidate={candWithNumber}
-                        showNumberAbove={true}
+                        variant="summary"
                         onSelect={() => handleEdit(BALLOT_ROUTES.senadores)}
                         onLockedMetricClick={() => setModalCampoBloqueado(true)}
                       />
