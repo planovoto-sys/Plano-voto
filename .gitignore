@@ -13,6 +13,10 @@ build/
 .env.*.local
 *.local
 
+# firebase
+.firebase/
+.firebaserc
+
 # logs
 logs/
 *.log

@@ -269,13 +269,18 @@
 }
 
 .state-card {
+  --card-green: var(--brand-green);
+  --card-green-soft: rgba(141, 198, 63, 0.15);
+
   width: 100%;
   min-height: 98px;
   border: 2px solid transparent;
   border-radius: 14px;
   background: var(--surface);
   color: var(--text-main);
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   font-family: var(--font-family);
   padding: 16px 20px;
   text-align: left;
@@ -292,8 +297,8 @@
 }
 
 .state-card.is-selected {
-  border: 1px solid color-mix(in srgb, var(--surface) 68%, var(--text-main) 18%);
-  box-shadow: 0 10px 24px -20px rgba(17, 17, 17, 0.18);
+  border: 2px solid var(--card-green) !important;
+  box-shadow: 0 4px 16px rgba(11, 107, 58, 0.20) !important;
 }
 
 .state-card--current {
@@ -307,12 +312,17 @@
   transform: none;
 }
 
+.state-card__action-btn-icon {
+  flex-shrink: 0;
+}
+
 .state-card__content {
   display: grid;
   align-content: center;
   gap: 8px;
   min-width: 0;
   height: 100%;
+  flex: 1;
 }
 
 .state-card__name-row {

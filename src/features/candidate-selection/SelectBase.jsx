@@ -322,6 +322,16 @@ const candidateFilterItems = useMemo(() => (
                     disabled={salvandoSelecao}
                   >
                     {renderItem ? renderItem(item) : <span>{item.sigla || item.nome}</span>}
+                    <span
+                      className={`candidate-card__action-btn-icon state-card__action-btn-icon ${isSelected ? 'selected' : 'unselected'} tone-good`}
+                      aria-hidden="true"
+                    >
+                      <svg className="icon-morph-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <line className="morph-h" x1="5" y1="12" x2="19" y2="12" />
+                        <line className="morph-v" x1="12" y1="5" x2="12" y2="19" />
+                        <path className="morph-check" d="M 18 8 L 11 16.5" />
+                      </svg>
+                    </span>
                   </button>
                 );
               })

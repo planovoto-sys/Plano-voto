@@ -3,7 +3,9 @@
    ========================================================= */
 .share-panel-wrapper,
 .share-trigger-fab,
-.share-trigger-panel {
+.share-trigger-panel,
+.sp-payment-overlay,
+.sp-payment-sheet {
   --sp-primary: #8DC63F;       /* Verde Principal */
   --sp-primary-dark: #0B6B3A;  /* Verde Escuro */
   --sp-bg: #F4F8F2;            /* Fundo da Tela */
@@ -13,7 +15,11 @@
   --sp-border: #E0E7DE;        /* Bordas Suaves */
   --sp-overlay: rgba(0, 0, 0, 0.6);
   --sp-card-bg: #FAFAFA;
-  
+
+  --sp-support: #C2455C;       /* Rosa Avermelhado (Apoio) */
+  --sp-support-dark: #8E2C40;  /* Rosa Avermelhado Escuro */
+  --sp-support-soft: #FBEDF0;  /* Rosa Claro Suave */
+
   --sp-radius-lg: 28px;
   --sp-radius-md: 16px;
   --sp-radius-sm: 8px;
@@ -21,6 +27,7 @@
   --sp-shadow-card: 0 4px 16px rgba(17, 17, 17, 0.06);
   --sp-shadow-btn: 0 8px 20px rgba(11, 107, 58, 0.25);
 }
+
 /* =========================================================
    2. OCULTAR BOTTOM NAV E TRAVAR O FUNDO
    ========================================================= */
@@ -209,23 +216,6 @@ body.hide-bottom-nav nav {
   line-height: 1.4;
 }
 
-.share-legal-notice label {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--sp-text);
-  cursor: pointer;
-}
-
-.share-legal-notice input[type="checkbox"] {
-  margin-top: 2px;
-  width: 16px;
-  height: 16px;
-  accent-color: var(--sp-primary);
-}
-
 .share-legal-links {
   display: flex;
   gap: 12px;
@@ -239,263 +229,13 @@ body.hide-bottom-nav nav {
 }
 
 /* =========================================================
-   6. GALERIA DE MINIATURAS (CARDS PERFEITOS)
+   6. LISTA DE AÇÕES (CONVITE E APOIO)
    ========================================================= */
-.share-gallery-container {
+.sp-action-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-}
-
-.share-gallery-track {
-  --card-w: min(72vw, 280px);
-  --card-h: calc(var(--card-w) * 1.2);
-  
-  display: flex;
-  gap: 16px;
-  padding: 10px calc(50% - (var(--card-w) / 2));
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-  scroll-behavior: smooth;
-}
-
-.share-gallery-track::-webkit-scrollbar {
-  display: none;
-}
-
-.share-preview-card {
-  width: var(--card-w);
-  height: var(--card-h);
-  flex-shrink: 0;
-  scroll-snap-align: center;
-  background: var(--sp-surface);
-  border: 1px solid var(--sp-border);
-  border-radius: var(--sp-radius-lg);
-  box-shadow: var(--sp-shadow-card);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  transition: transform 0.2s, opacity 0.2s, border-color 0.2s;
-  opacity: 0.6;
-  transform: scale(0.92);
-  cursor: pointer;
-}
-
-.share-preview-card.is-active {
-  opacity: 1;
-  transform: scale(1);
-  border-color: var(--sp-primary);
-  box-shadow: 0 8px 24px rgba(11, 107, 58, 0.20);
-}
-
-/* =========================================================
-   7. ESTRUTURA INTERNA DO CARD DE PREVIEW
-   ========================================================= */
-.share-preview-card::before {
-  content: '';
-  height: 6px;
-  background: var(--sp-primary);
-  width: 100%;
-  display: block;
-}
-
-.sp-card-inner {
-  padding: 16px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.sp-card-brand {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: auto;
-}
-
-.sp-card-brand__logo {
-  display: flex;
-  flex-direction: column;
-}
-
-.sp-card-brand__logo strong {
-  font-size: 11px;
-  font-weight: 900;
-  color: var(--sp-primary-dark);
-  letter-spacing: 0.5px;
-}
-
-.sp-card-brand__logo span {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--sp-muted);
-}
-
-.sp-card-brand__year {
-  background: var(--sp-bg);
-  color: var(--sp-text);
-  font-size: 10px;
-  font-weight: 800;
-  padding: 4px 8px;
-  border-radius: var(--sp-radius-sm);
-}
-
-.sp-card-widget {
-  background: var(--sp-bg);
-  border-radius: var(--sp-radius-md);
-  padding: 12px;
-  margin: 16px 0;
-  border-left: 4px solid var(--sp-primary);
-}
-
-.sp-card-widget small {
-  display: block;
-  font-size: 9px;
-  font-weight: 800;
-  color: var(--sp-muted);
-  text-transform: uppercase;
-}
-
-.sp-card-widget strong {
-  display: block;
-  font-size: 18px;
-  font-weight: 900;
-  color: var(--sp-text);
-  margin-top: 2px;
-}
-
-.sp-card-widget--split {
-  border: none;
-  background: transparent;
-  padding: 0;
-  display: flex;
-  gap: 8px;
-}
-
-.sp-card-widget--split > div {
-  flex: 1;
-  background: var(--sp-bg);
-  border-radius: var(--sp-radius-sm);
-  padding: 10px;
-}
-
-.sp-progress-bar {
-  height: 4px;
-  background: var(--sp-border);
-  border-radius: 2px;
-  margin-top: 6px;
-  position: relative;
-  overflow: hidden;
-}
-
-.sp-progress-bar::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  width: var(--progress);
-  background: var(--sp-primary);
-}
-
-.sp-card-context h3 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 900;
-  color: var(--sp-text);
-  line-height: 1.1;
-}
-
-.sp-card-context p {
-  margin: 2px 0 12px;
-  font-size: 11px;
-  color: var(--sp-muted);
-}
-
-.sp-card-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.sp-card-list-item {
-  background: var(--sp-bg);
-  border-radius: var(--sp-radius-sm);
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-}
-
-.sp-card-list-item small {
-  font-size: 9px;
-  color: var(--sp-primary-dark);
-  font-weight: 800;
-}
-
-.sp-card-list-item strong {
-  font-size: 11px;
-  color: var(--sp-text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.sp-card-check-item {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--sp-text);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--sp-bg);
-  padding: 6px 8px;
-  border-radius: var(--sp-radius-sm);
-}
-
-.sp-card-check-item::before {
-  content: '✓';
-  color: var(--sp-primary-dark);
-  font-weight: 900;
-}
-
-/* =========================================================
-   8. DOTS PAGINATION (SCROLL SYNC)
-   ========================================================= */
-.share-gallery-dots {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 0;
-}
-
-.share-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--sp-border);
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.share-dot.is-active {
-  width: 24px;
-  border-radius: 4px;
-  background: var(--sp-primary);
-}
-
-/* =========================================================
-   9. AÇÕES FINAIS (COMPARTILHAR E SALVAR)
-   ========================================================= */
-.share-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 20px 24px;
+  gap: 14px;
+  padding: 0 24px 20px;
 }
 
 .share-actions-status {
@@ -503,12 +243,72 @@ body.hide-bottom-nav nav {
   font-size: 12px;
   font-weight: 700;
   color: var(--sp-primary-dark);
-  margin-bottom: -4px;
   animation: fadeIn 0.3s;
 }
 
-.share-btn-primary,
-.share-btn-secondary {
+/* =========================================================
+   7. CARD CONVIDAR ELEITORES / AMIGOS (VERDE ESCURO)
+   ========================================================= */
+.sp-invite-card {
+  background: linear-gradient(160deg, var(--sp-primary-dark) 0%, #0E7C44 60%, #12A055 100%);
+  border-radius: var(--sp-radius-lg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 10px 28px rgba(11, 107, 58, 0.28);
+}
+
+.sp-invite-card__head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.sp-invite-card__icon {
+  flex-shrink: 0;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sp-invite-card__text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.sp-invite-card__text strong {
+  font-size: 16px;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.sp-invite-card__text span {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.35;
+}
+
+.sp-invite-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sp-invite-card__actions .share-actions-status {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.sp-invite-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -516,33 +316,579 @@ body.hide-bottom-nav nav {
   width: 100%;
   padding: 14px;
   border-radius: var(--sp-radius-md);
-  font-size: 15px;
-  font-weight: 800;
-  cursor: pointer;
+  background: #ffffff;
+  color: var(--sp-primary-dark);
   border: none;
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
   transition: transform 0.1s, background 0.2s;
 }
 
-.share-btn-primary {
-  background: var(--sp-primary);
-  color: var(--sp-primary-dark);
-  box-shadow: var(--sp-shadow-btn);
-}
-
-.share-btn-primary:active {
-  background: var(--sp-primary-dark);
+.sp-invite-btn:active {
   transform: scale(0.98);
+  background: var(--sp-primary);
 }
 
-.share-btn-secondary {
+/* =========================================================
+   8. CARD APOIE O BOM DE VOTO (ROSA AVERMELHADO)
+   ========================================================= */
+.sp-support-card {
+  background: linear-gradient(160deg, var(--sp-support-dark) 0%, #A63450 55%, var(--sp-support) 100%);
+  border-radius: var(--sp-radius-lg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 10px 28px rgba(194, 69, 92, 0.25);
+}
+
+.sp-support-card__head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.sp-support-card__icon {
+  flex-shrink: 0;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sp-support-card__text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.sp-support-card__text strong {
+  font-size: 16px;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.sp-support-card__text span {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.35;
+}
+
+.sp-support-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sp-support-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px;
+  border-radius: var(--sp-radius-md);
+  background: #ffffff;
+  color: var(--sp-support-dark);
+  border: none;
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+  transition: transform 0.1s, background 0.2s;
+}
+
+.sp-support-btn:active {
+  transform: scale(0.98);
+  background: var(--sp-support-soft);
+}
+
+/* =========================================================
+   9. TELA DE PAGAMENTO DO APOIO
+   ========================================================= */
+.sp-payment-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100001;
+  background: var(--sp-overlay);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+.sp-payment-sheet {
+  width: 100%;
+  max-width: 500px;
+  max-height: 90dvh;
+  background: var(--sp-bg);
+  border-radius: var(--sp-radius-lg) var(--sp-radius-lg) 0 0;
+  box-shadow: var(--sp-shadow-modal);
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (min-width: 600px) {
+  .sp-payment-overlay { align-items: center; padding: 20px; }
+  .sp-payment-sheet { border-radius: var(--sp-radius-lg); max-height: 85vh; }
+}
+
+.sp-payment-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 16px 24px 10px;
+  background: var(--sp-bg);
+  border-radius: inherit;
+}
+
+.sp-payment-header h2 {
+  margin: 0;
+  flex: 1;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 900;
+  color: var(--sp-support-dark);
+}
+
+.sp-payment-back {
+  background: transparent;
+  border: none;
+  color: var(--sp-muted);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  margin-left: -8px;
+}
+
+.sp-payment-back:active {
+  background: var(--sp-border);
+  color: var(--sp-text);
+}
+
+.sp-payment-back-icon {
+  transform: rotate(180deg);
+}
+
+.sp-payment-body {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 8px 24px 28px;
+}
+
+.sp-payment-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sp-payment-label {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--sp-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.sp-amount-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.sp-amount-chip {
+  padding: 12px 4px;
+  border-radius: var(--sp-radius-sm);
+  border: 1.5px solid var(--sp-border);
   background: var(--sp-surface);
   color: var(--sp-text);
-  border: 1px solid var(--sp-border);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.2s, background 0.2s, color 0.2s, transform 0.1s;
 }
 
-.share-btn-secondary:active {
+.sp-amount-chip:active {
+  transform: scale(0.96);
+}
+
+.sp-amount-chip.is-active {
+  border-color: var(--sp-support);
+  background: var(--sp-support-soft);
+  color: var(--sp-support-dark);
+}
+
+.sp-amount-input {
+  width: 100%;
+  padding: 13px 16px;
+  border: 1.5px solid var(--sp-border);
+  border-radius: var(--sp-radius-md);
+  background: var(--sp-surface);
+  color: var(--sp-text);
+  font-family: var(--font-family);
+  font-size: 14px;
+  font-weight: 700;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.sp-amount-input:focus {
+  border-color: var(--sp-support);
+}
+
+.sp-payment-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sp-payment-method {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: var(--sp-radius-md);
+  border: 1.5px solid var(--sp-border);
+  background: var(--sp-surface);
+  color: var(--sp-text);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.sp-payment-method.is-active {
+  border-color: var(--sp-support);
+  background: var(--sp-support-soft);
+}
+
+.sp-payment-method__radio {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--sp-border);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.sp-payment-method.is-active .sp-payment-method__radio {
+  border-color: var(--sp-support);
+  background: var(--sp-support);
+  box-shadow: inset 0 0 0 3px #ffffff;
+}
+
+.sp-payment-method__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.sp-payment-method__text strong {
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.sp-payment-method__text small {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--sp-muted);
+}
+
+.sp-anonymous-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--sp-radius-md);
+  border: 1.5px solid var(--sp-border);
+  background: var(--sp-surface);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.sp-anonymous-toggle.is-active {
+  border-color: var(--sp-support);
+  background: var(--sp-support-soft);
+}
+
+.sp-anonymous-toggle input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sp-anonymous-toggle__icon {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
   background: var(--sp-bg);
+  color: var(--sp-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+}
+
+.sp-anonymous-toggle.is-active .sp-anonymous-toggle__icon {
+  background: var(--sp-support);
+  color: #ffffff;
+}
+
+.sp-anonymous-toggle__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sp-anonymous-toggle__text strong {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--sp-text);
+}
+
+.sp-anonymous-toggle__text small {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--sp-muted);
+}
+
+.sp-payment-pix {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px;
+  border-radius: var(--sp-radius-md);
+  background: var(--sp-support-soft);
+}
+
+.sp-donation-qr {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.sp-donation-qr canvas {
+  width: 168px;
+  height: 168px;
+  border-radius: var(--sp-radius-sm);
+  background: #ffffff;
+  padding: 6px;
+  box-shadow: 0 2px 8px rgba(194, 69, 92, 0.16);
+}
+
+.sp-donation-qr span {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--sp-support-dark);
+  text-transform: uppercase;
+}
+
+.sp-payment-pix__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sp-payment-pix__info span {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--sp-muted);
+  line-height: 1.4;
+}
+
+.sp-payment-pix__info strong {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--sp-support-dark);
+  word-break: break-all;
+}
+
+.sp-payment-pix__info small {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--sp-support-dark);
+  opacity: 0.8;
+}
+
+.sp-payment-paypal {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  border-radius: var(--sp-radius-md);
+  background: var(--sp-support-soft);
+  border: 1.5px dashed var(--sp-support);
+  text-decoration: none;
+  text-align: center;
+}
+
+.sp-payment-paypal strong {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--sp-support-dark);
+}
+
+.sp-payment-paypal span {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--sp-muted);
+}
+
+.sp-payment-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: var(--sp-radius-md);
+  background: var(--sp-support-soft);
+}
+
+.sp-card-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sp-card-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--sp-border);
+  border-radius: var(--sp-radius-sm);
+  background: var(--sp-surface);
+  color: var(--sp-text);
+  font-family: var(--font-family);
+  font-size: 13px;
+  font-weight: 700;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.sp-card-input:focus {
+  border-color: var(--sp-support);
+}
+
+.sp-card-row {
+  display: flex;
+  gap: 8px;
+}
+
+.sp-card-row .sp-card-input {
+  flex: 1;
+}
+
+.sp-payment-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 15px;
+  border-radius: var(--sp-radius-md);
+  background: linear-gradient(160deg, var(--sp-support-dark) 0%, var(--sp-support) 100%);
+  color: #ffffff;
+  border: none;
+  font-size: 16px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(194, 69, 92, 0.3);
+  transition: transform 0.1s, opacity 0.2s;
+}
+
+.sp-payment-submit:active {
   transform: scale(0.98);
+}
+
+.sp-payment-submit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.sp-payment-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 8px;
+  text-align: center;
+}
+
+.sp-payment-success__icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--sp-support);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: successPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.sp-payment-success strong {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--sp-text);
+}
+
+.sp-payment-success span {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sp-muted);
+  line-height: 1.5;
+  max-width: 320px;
+}
+
+.sp-payment-done {
+  margin-top: 8px;
+  padding: 13px 36px;
+  border-radius: 99px;
+  background: var(--sp-support-dark);
+  color: #ffffff;
+  border: none;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 0.1s, opacity 0.2s;
+}
+
+.sp-payment-done:active {
+  transform: scale(0.97);
+}
+
+@keyframes successPop {
+  0% { transform: scale(0.4); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 /* =========================================================

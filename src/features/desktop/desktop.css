@@ -581,9 +581,10 @@
 }
 
 .desktop-state-card.is-selected {
-  border-color: rgba(17, 17, 17, 0.18);
-  background: #fff;
-  box-shadow: 0 12px 28px rgba(17, 17, 17, 0.05);
+  --desktop-candidate-accent: var(--brand-green-mid);
+  border-color: color-mix(in srgb, var(--desktop-candidate-accent) 56%, var(--surface) 44%);
+  background: rgba(141, 198, 63, 0.15);
+  box-shadow: 0 14px 34px rgba(17, 17, 17, 0.045);
 }
 
 .desktop-state-card strong {

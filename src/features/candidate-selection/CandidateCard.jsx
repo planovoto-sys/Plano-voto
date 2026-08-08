@@ -109,7 +109,7 @@ export default function CandidateCard({
 
         {isSummary ? (
           displayNumber && (
-            <span className="candidate-card__number candidate-card__number--badge">{displayNumber}</span>
+            <span className="candidate-card__number candidate-card__number--badge">N° {displayNumber}</span>
           )
         ) : (
           /* BOTÃO DE SELEÇÃO: Microinteração */

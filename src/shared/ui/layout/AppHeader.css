@@ -287,5 +287,16 @@
 @media (max-width: 1023px) {
   .app-header--default .app-header__inner {
     --screen-gutter: 18px;
+    background: var(--app-bg, #F4F8F2);
+  }
+
+  .app-header--default .app-header__bottom {
+    background: var(--app-bg, #F4F8F2);
+    margin-top: 0;
+    padding: 0 var(--screen-gutter, 18px) 6px;
+  }
+
+  .app-header--default .app-header__bottom > .filter-chips {
+    padding: 4px 0 0;
   }
 }

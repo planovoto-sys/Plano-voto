@@ -8,6 +8,8 @@ import {
 const APP_SHARE_URL = import.meta.env.VITE_PUBLIC_APP_URL || 'https://bomdevoto.com.br';
 const SHARE_YEAR = '2026';
 
+export { APP_SHARE_URL };
+
 const SHARE_COLORS = {
   bg: '#F5F5F5',
   surface: '#ffffff',
