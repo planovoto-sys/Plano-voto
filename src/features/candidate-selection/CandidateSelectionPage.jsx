@@ -38,65 +38,6 @@ import SelectBase from '@/features/candidate-selection/SelectBase';
 import DesktopCandidateSelection from '@/features/desktop/DesktopCandidateSelection';
 import { useDesktopLayout } from '@/features/desktop/useDesktopLayout';
 
-const getCandidateElectionFilter = (candidate) => {
-  const values = [
-    candidate.filtro,
-    candidate.Filtro,
-    candidate.tipo,
-    candidate.Tipo,
-    candidate.categoria,
-    candidate.Categoria,
-    candidate.perfil,
-    candidate.Perfil,
-    candidate.situacao,
-    candidate.Situacao,
-    candidate['Situação'],
-    candidate.mandato,
-    candidate.Mandato,
-    candidate.reeleicao,
-    candidate.Reeleicao,
-    candidate['Reeleição'],
-    candidate['À reeleição'],
-    candidate.renovacao,
-    candidate.Renovacao,
-    candidate['Renovação'],
-    candidate['À renovação']
-  ];
-
-  for (const value of values) {
-    if (typeof value === 'boolean') {
-      return value ? 'reeleger' : 'renovar';
-    }
-
-    const normalizedValue = normalizeSearch(String(value ?? ''));
-    if (!normalizedValue) continue;
-    if (['true', 'sim', '1'].includes(normalizedValue)) return 'reeleger';
-    if (['false', 'nao', 'não', '0'].includes(normalizedValue)) return 'renovar';
-
-    if (
-      normalizedValue.includes('ingressante') ||
-      normalizedValue.includes('renov') ||
-      normalizedValue.includes('novo') ||
-      normalizedValue.includes('fora') ||
-      normalizedValue.includes('nao eleito') ||
-      normalizedValue.includes('sem mandato')
-    ) {
-      return 'renovar';
-    }
-
-    if (
-      normalizedValue.includes('reele') ||
-      normalizedValue.includes('mandato') ||
-      normalizedValue.includes('legislatura') ||
-      normalizedValue.includes('eleito')
-    ) {
-      return 'reeleger';
-    }
-  }
-
-  return candidate.temNotaCandidato ? 'reeleger' : 'renovar';
-};
-
 const getFeaturedSelectionCandidates = (candidates, limit) => {
   const groupWeight = (candidate) => {
     const score = getCandidateSystemScore(candidate);

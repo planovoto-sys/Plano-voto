@@ -52,7 +52,6 @@ export default function SelectBase({
   const notify = useNotify();
   const isHomeState = variant === 'home-state';
   const isCandidateOffice = variant === 'office-deputado' || variant === 'office-senado';
-  const isDeputyOffice = variant === 'office-deputado';
   const isSenateOffice = variant === 'office-senado';
   const candidateCardMode = isCandidateOffice ? 'detailed' : 'compact';
 

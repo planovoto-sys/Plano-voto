@@ -132,15 +132,12 @@ export default function LoginPage() {
     }
   }, [signingIn, userData]);
 
-  useEffect(() => {
-    if (!user && !loading && !firebaseReady && !signingIn) {
-      setToastMessage('App em modo de visualização — login disponível apenas com Firebase configurado.');
-    }
-  }, [loading, signingIn, user]);
+  const PREVIEW_MODE_MESSAGE = 'App em modo de visualização — login disponível apenas com Firebase configurado.';
+  const previewModeHint = !user && !loading && !firebaseReady && !signingIn ? PREVIEW_MODE_MESSAGE : '';
 
   return (
     <div className="login-wrapper">
-      <FlowToast message={toastMessage} />
+      <FlowToast message={toastMessage || previewModeHint} />
 
       <section className="login-top">
         <div className="login-top__pattern" aria-hidden="true" />

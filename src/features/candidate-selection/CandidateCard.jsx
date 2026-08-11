@@ -41,7 +41,6 @@ export default function CandidateCard({
   // Lógica de Fallback de Nota
   const hasValidCandidateScore = candidateScore > 0;
   const displayScoreValue = hasValidCandidateScore ? candidateScore : partyScore;
-  const displayScoreLabel = hasValidCandidateScore ? 'Nota do candidato' : 'Nota do partido';
   const formattedScore = displayScoreValue > 0 ? formatScore(displayScoreValue) : '--';
 
   // Lógica Universal de Avaliação

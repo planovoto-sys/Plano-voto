@@ -1,61 +1,48 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Link } from 'react-router-dom';
-import { Share2, X, Heart, Users, ChevronRight, Eye, EyeOff, Check, Rocket } from 'lucide-react';
+import { Copy, Heart, Link2, Rocket, Send, ShieldCheck, Users, X } from 'lucide-react';
 import QRCode from 'qrcode';
 import { useNotify } from '@/features/notifications/useNotify';
 import { APP_SHARE_URL } from '@/features/sharing/shareCardService';
 
 import './ShareChoicePanel.css';
 
-const INVITE_MESSAGE = 'Conheça o Bom de Voto! Monte seu plano de voto de forma simples, privada e segura. Bom de Voto';
-
-const DONATION_AMOUNTS = [5, 10, 20, 50, 100];
+const INVITE_MESSAGE = 'Você é bom de voto? Tem certeza?\nConheça o Bom de Voto!';
 
 const DONATION_DATA = {
-  pixKey: 'apoio@bomdevoto.com.br',
-  pixName: 'Bom de Voto',
-  paypalUrl: 'https://paypal.me/bomdevoto'
+  pixKey: 'pix.ficticio@bomdevoto.com.br',
+  pixName: 'Bom de Voto'
 };
 
-const PAYMENT_METHODS = [
-  { id: 'pix', label: 'PIX', description: 'Pagamento instantâneo' },
-  { id: 'paypal', label: 'PayPal', description: 'Conta PayPal' },
-  { id: 'card', label: 'Cartão', description: 'Crédito ou débito' }
-];
+const PIX_PAYLOAD = `00020126580014BR.GOV.BCB.PIX0136${DONATION_DATA.pixKey}5204000053039865802BR5911BOM DE VOTO6009SAO PAULO6304FFFF`;
 
-function DonationQRCode({ value, label }) {
-  const canvasRef = useRef(null);
-
-  useEffect(() => {
-    if (!canvasRef.current || !value) return undefined;
-    QRCode.toCanvas(canvasRef.current, value, {
-      width: 180,
-      margin: 1,
-      color: {
-        dark: '#1d1d1d',
-        light: '#ffffff'
-      }
-    });
-    return undefined;
-  }, [value]);
-
+function FacebookIcon({ size = 20 }) {
   return (
-    <div className="sp-donation-qr">
-      <canvas ref={canvasRef} aria-label={`QR Code ${label}`} />
-      <span>{label}</span>
-    </div>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+    </svg>
+  );
+}
+
+function InstagramIcon({ size = 20 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z" />
+    </svg>
+  );
+}
+
+function XSocialIcon({ size = 20 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
+    </svg>
   );
 }
 
 function DonationPaymentSheet({ isOpen, onClose }) {
   const notify = useNotify();
-  const [amount, setAmount] = useState(10);
-  const [customAmount, setCustomAmount] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('pix');
-  const [anonymous, setAnonymous] = useState(false);
-  const [processing, setProcessing] = useState(false);
-  const [cardPaid, setCardPaid] = useState(false);
+  const canvasRef = useRef(null);
 
   useEffect(() => {
     if (!isOpen || typeof document === 'undefined') return undefined;
@@ -68,180 +55,89 @@ function DonationPaymentSheet({ isOpen, onClose }) {
     };
   }, [isOpen]);
 
-  const selectedAmount = customAmount
-    ? Math.max(0, Number(customAmount.replace(',', '.')) || 0)
-    : amount;
+  useEffect(() => {
+    if (!isOpen || !canvasRef.current) return undefined;
+    QRCode.toCanvas(canvasRef.current, PIX_PAYLOAD, {
+      width: 220,
+      margin: 1,
+      color: {
+        dark: '#1d1d1d',
+        light: '#ffffff'
+      }
+    });
+    return undefined;
+  }, [isOpen]);
 
-  const formattedAmount = `R$ ${selectedAmount.toFixed(2).replace('.', ',')}`;
-
-  const handleConfirm = async () => {
-    if (selectedAmount <= 0) {
-      notify.error('Escolha um valor para doar.');
-      return;
+  const handleCopyPixKey = async () => {
+    try {
+      await navigator.clipboard.writeText(DONATION_DATA.pixKey);
+      notify.success('Chave Pix copiada!');
+    } catch {
+      notify.error('Não foi possível copiar a chave Pix.');
     }
-    setProcessing(true);
-    await new Promise((resolve) => setTimeout(resolve, 900));
-    setProcessing(false);
-    setCardPaid(true);
   };
 
   if (!isOpen) return null;
 
   return (
     <div className="sp-payment-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="sp-payment-sheet">
-        <div className="sp-payment-header">
-          <button className="sp-payment-back" type="button" onClick={onClose} aria-label="Voltar">
-            <ChevronRight size={22} className="sp-payment-back-icon" />
-          </button>
-          <h2>Apoie o Bom de Voto</h2>
-          <button className="share-modal-close" onClick={onClose} aria-label="Fechar">
-            <X size={24} />
-          </button>
+      <div className="sp-payment-sheet sp-payment-sheet--simple">
+        <button className="share-modal-close sp-payment-close" onClick={onClose} aria-label="Fechar">
+          <X size={24} />
+        </button>
+        <h2 className="sp-payment-title">Apoiar o Bom de Voto</h2>
+        <div className="sp-payment-qr">
+          <canvas ref={canvasRef} aria-label="QR Code Pix" />
         </div>
-
-        <div className="sp-payment-body nv-scroll">
-          {cardPaid ? (
-            <div className="sp-payment-success">
-              <div className="sp-payment-success__icon">
-                <Check size={34} strokeWidth={3} />
-              </div>
-              <strong>Obrigado pelo seu apoio!</strong>
-              <span>
-                Sua doação de {formattedAmount} foi registrada{anonymous ? ' de forma anônima' : ''} (simulação — os
-                dados de pagamento ainda são fictícios).
-              </span>
-              <button className="sp-payment-done" type="button" onClick={onClose}>
-                Concluir
-              </button>
-            </div>
-          ) : (
-            <>
-              <div className="sp-payment-section">
-                <span className="sp-payment-label">1. Escolha o valor</span>
-                <div className="sp-amount-grid">
-                  {DONATION_AMOUNTS.map((value) => (
-                    <button
-                      key={value}
-                      type="button"
-                      className={`sp-amount-chip ${!customAmount && amount === value ? 'is-active' : ''}`}
-                      onClick={() => {
-                        setAmount(value);
-                        setCustomAmount('');
-                      }}
-                    >
-                      R$ {value}
-                    </button>
-                  ))}
-                </div>
-                <input
-                  className="sp-amount-input"
-                  type="number"
-                  inputMode="decimal"
-                  min="1"
-                  step="0.01"
-                  placeholder="Outro valor"
-                  value={customAmount}
-                  onChange={(e) => setCustomAmount(e.target.value)}
-                />
-              </div>
-
-              <div className="sp-payment-section">
-                <span className="sp-payment-label">2. Forma de pagamento</span>
-                <div className="sp-payment-methods">
-                  {PAYMENT_METHODS.map((method) => (
-                    <button
-                      key={method.id}
-                      type="button"
-                      className={`sp-payment-method ${paymentMethod === method.id ? 'is-active' : ''}`}
-                      onClick={() => setPaymentMethod(method.id)}
-                    >
-                      <span className="sp-payment-method__radio" aria-hidden="true" />
-                      <span className="sp-payment-method__text">
-                        <strong>{method.label}</strong>
-                        <small>{method.description}</small>
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <label className={`sp-anonymous-toggle ${anonymous ? 'is-active' : ''}`}>
-                <input
-                  type="checkbox"
-                  checked={anonymous}
-                  onChange={(e) => setAnonymous(e.target.checked)}
-                />
-                <span className="sp-anonymous-toggle__icon" aria-hidden="true">
-                  {anonymous ? <EyeOff size={18} /> : <Eye size={18} />}
-                </span>
-                <span className="sp-anonymous-toggle__text">
-                  <strong>Doação anônima</strong>
-                  <small>Não exibir seu nome na lista de apoiadores</small>
-                </span>
-              </label>
-
-              {paymentMethod === 'pix' && selectedAmount > 0 && (
-                <div className="sp-payment-pix">
-                  <DonationQRCode
-                    value={`00020126580014BR.GOV.BCB.PIX0136${DONATION_DATA.pixKey}52040000530398654${selectedAmount.toFixed(2).replace('.', '').padStart(10, '0')}5802BR5911BOM DE VOTO6009SAO PAULO`}
-                    label={`QR Code PIX — ${formattedAmount}`}
-                  />
-                  <div className="sp-payment-pix__info">
-                    <span>Pague com qualquer banco usando o QR Code ou a chave:</span>
-                    <strong>{DONATION_DATA.pixKey}</strong>
-                    <small>Os dados exibidos são fictícios.</small>
-                  </div>
-                </div>
-              )}
-
-              {paymentMethod === 'paypal' && (
-                <a className="sp-payment-paypal" href={DONATION_DATA.paypalUrl} target="_blank" rel="noopener noreferrer">
-                  <strong>Doar {formattedAmount} com PayPal</strong>
-                  <span>Você será redirecionado para a página do PayPal (simulação).</span>
-                </a>
-              )}
-
-              {paymentMethod === 'card' && (
-                <div className="sp-payment-card">
-                  <span className="sp-payment-label">Dados do cartão (fictícios)</span>
-                  <div className="sp-card-fields">
-                    <input className="sp-card-input" type="text" inputMode="numeric" placeholder="Número do cartão" maxLength="19" />
-                    <input className="sp-card-input" type="text" placeholder="Nome impresso" />
-                    <div className="sp-card-row">
-                      <input className="sp-card-input" type="text" inputMode="numeric" placeholder="MM/AA" maxLength="5" />
-                      <input className="sp-card-input" type="text" inputMode="numeric" placeholder="CVV" maxLength="4" />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <button className="sp-payment-submit" type="button" disabled={processing || selectedAmount <= 0} onClick={handleConfirm}>
-                {processing ? 'Processando...' : `Doar ${formattedAmount}`}
-              </button>
-            </>
-          )}
-        </div>
+        <button className="sp-payment-copy-key" type="button" onClick={handleCopyPixKey}>
+          <Copy size={18} /> Copiar a chave Pix
+        </button>
       </div>
     </div>
   );
 }
 
-function DonationCard({ onOpenPayment }) {
+function InviteCard({ href }) {
   return (
-    <div className="sp-support-card">
-      <div className="sp-support-card__head">
-        <div className="sp-support-card__icon" aria-hidden="true">
-          <Heart size={22} strokeWidth={2.4} />
+    <div className="sp-action-card sp-action-card--invite">
+      <div className="sp-action-card__head">
+        <div className="sp-action-card__icon" aria-hidden="true">
+          <Users size={22} strokeWidth={2.4} />
         </div>
-        <div className="sp-support-card__text">
-          <strong>Apoie o Bom de Voto</strong>
-          <span>Doações e apoios mantêm o app gratuito para todos</span>
+        <div className="sp-action-card__text">
+          <strong>Convidar novos eleitores</strong>
+          <span>Convide pessoas e ajude a tornar o voto mais consciente.</span>
         </div>
       </div>
-      <div className="sp-support-card__actions">
-        <button className="sp-support-btn" type="button" onClick={onOpenPayment}>
-          <Heart size={18} /> Apoiar agora
+      <div className="sp-action-card__actions">
+        <a
+          className="sp-action-card__btn sp-action-card__btn--invite"
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Send size={17} /> Enviar convite
+        </a>
+      </div>
+    </div>
+  );
+}
+
+function SupportCard({ onOpenPayment }) {
+  return (
+    <div className="sp-action-card sp-action-card--support">
+      <div className="sp-action-card__head">
+        <div className="sp-action-card__icon" aria-hidden="true">
+          <Heart size={22} strokeWidth={2.4} />
+        </div>
+        <div className="sp-action-card__text">
+          <strong>Apoie o Bom de Voto</strong>
+          <span>Contribua para manter o app gratuito e o projeto no ar.</span>
+        </div>
+      </div>
+      <div className="sp-action-card__actions">
+        <button className="sp-action-card__btn sp-action-card__btn--support" type="button" onClick={onOpenPayment}>
+          <Heart size={17} /> Apoiar o projeto
         </button>
       </div>
     </div>
@@ -258,7 +154,6 @@ export default function ShareChoicePanel({
   const notify = useNotify();
   const [isInternalOpen, setIsInternalOpen] = useState(false);
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
-  const [status, setStatus] = useState('');
 
   const isFab = appearance === 'fab';
   const isOpen = isOpenControlled !== undefined ? isOpenControlled : isInternalOpen;
@@ -281,30 +176,45 @@ export default function ShareChoicePanel({
     setIsInternalOpen(false);
   };
 
-  const handleInvite = async () => {
-    setStatus('');
+  if (!shareData) return null;
+
+  const shareLink = shareData?.url || APP_SHARE_URL;
+  const shareText = `${INVITE_MESSAGE}\n${shareLink}`;
+  const whatsappHref = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+
+  const shareChannels = [
+    {
+      id: 'facebook',
+      label: 'Facebook',
+      icon: FacebookIcon,
+      bg: '#EAF1FB',
+      fg: '#1877F2',
+      href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareLink)}`
+    },
+    {
+      id: 'x',
+      label: 'X (Twitter)',
+      icon: XSocialIcon,
+      bg: '#F2F2F2',
+      fg: '#111111',
+      href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`
+    },
+    {
+      id: 'instagram',
+      label: 'Instagram',
+      icon: InstagramIcon,
+      bg: '#F9EFF6',
+      fg: '#C13584',
+      href: `https://www.instagram.com/`
+    }
+  ];
+
+  const handleCopyLink = async () => {
     try {
-      const text = `${INVITE_MESSAGE} ${shareData?.url || APP_SHARE_URL}`;
-
-      if (navigator.share) {
-        await navigator.share({
-          title: 'Bom de Voto',
-          text,
-          url: shareData?.url || APP_SHARE_URL
-        });
-        setStatus('Convite enviado com sucesso.');
-        notify.success('Convite enviado com sucesso.');
-        return;
-      }
-
-      await navigator.clipboard.writeText(text);
-      setStatus('Mensagem de convite copiada!');
-      notify.success('Mensagem de convite copiada!');
-    } catch (error) {
-      if (error?.name === 'AbortError') return;
-      const errorMsg = error?.message || 'Não foi possível enviar o convite.';
-      setStatus(errorMsg);
-      notify.error(errorMsg);
+      await navigator.clipboard.writeText(shareLink);
+      notify.success('Link copiado!');
+    } catch {
+      notify.error('Não foi possível copiar o link.');
     }
   };
 
@@ -313,42 +223,58 @@ export default function ShareChoicePanel({
   const modalRender = isOpen ? (
     <div className="share-modal-overlay share-panel-wrapper" onMouseDown={(e) => e.target === e.currentTarget && handleClose()}>
       <div className="share-modal-sheet">
+        <div className="share-modal-handle" aria-hidden="true" />
         <div className="share-modal-header">
-          <h2>Compartilhar</h2>
+          <div className="share-modal-header__text">
+            <h2>Ajude o Bom de Voto</h2>
+            <span>Duas formas simples de fortalecer o projeto</span>
+          </div>
           <button className="share-modal-close" onClick={handleClose} aria-label="Fechar">
             <X size={24} />
           </button>
         </div>
 
         <div className="share-modal-body nv-scroll">
-          <div className="share-legal-notice">
-            <p>O conteúdo compartilhado circula fora do Bom de Voto, sujeito às redes sociais onde for postado.</p>
-            <div className="share-legal-links">
-              <Link to="/aviso-eleitoral">Aviso Eleitoral</Link>
-              <Link to="/politica-de-privacidade">Privacidade</Link>
-            </div>
+          <div className="sp-action-list">
+            <InviteCard href={whatsappHref} />
+            <SupportCard onOpenPayment={() => setIsPaymentOpen(true)} />
           </div>
 
-          <div className="sp-action-list">
-            <div className="sp-invite-card">
-              <div className="sp-invite-card__head">
-                <div className="sp-invite-card__icon" aria-hidden="true">
-                  <Users size={22} strokeWidth={2.4} />
-                </div>
-                <div className="sp-invite-card__text">
-                  <strong>Convidar novos eleitores ou amigos</strong>
-                  <span>Ajude mais pessoas a montar seu plano de voto</span>
-                </div>
-              </div>
-              <div className="sp-invite-card__actions">
-                {status && <span className="share-actions-status">{status}</span>}
-                <button className="sp-invite-btn" onClick={handleInvite}>
-                  <Rocket size={18} /> Convidar
+          {!import.meta.env.DEV && (
+            <div className="sp-share-section">
+              <span className="sp-share-section__label">Outras formas de compartilhar</span>
+              <div className="sp-share-list">
+                {shareChannels.map((channel) => (
+                  <a
+                    key={channel.id}
+                    className="sp-share-item"
+                    href={channel.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <span
+                      className="sp-share-item__circle"
+                      aria-hidden="true"
+                      style={{ backgroundColor: channel.bg, color: channel.fg }}
+                    >
+                      <channel.icon size={20} />
+                    </span>
+                    <span className="sp-share-item__label">{channel.label}</span>
+                  </a>
+                ))}
+                <button className="sp-share-item sp-share-item--copy" type="button" onClick={handleCopyLink}>
+                  <span className="sp-share-item__circle" aria-hidden="true">
+                    <Link2 size={20} />
+                  </span>
+                  <span className="sp-share-item__label">Copiar link</span>
                 </button>
               </div>
             </div>
+          )}
 
-            <DonationCard onOpenPayment={() => setIsPaymentOpen(true)} />
+          <div className="sp-privacy-note">
+            <ShieldCheck size={18} />
+            <span>Seus dados estão protegidos e não são compartilhados indevidamente.</span>
           </div>
         </div>
       </div>

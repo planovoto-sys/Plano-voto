@@ -5,7 +5,7 @@
 .share-trigger-fab,
 .share-trigger-panel,
 .sp-payment-overlay,
-.sp-payment-sheet {
+.sp-payment-sheet--simple {
   --sp-primary: #8DC63F;       /* Verde Principal */
   --sp-primary-dark: #0B6B3A;  /* Verde Escuro */
   --sp-bg: #F4F8F2;            /* Fundo da Tela */
@@ -19,6 +19,13 @@
   --sp-support: #C2455C;       /* Rosa Avermelhado (Apoio) */
   --sp-support-dark: #8E2C40;  /* Rosa Avermelhado Escuro */
   --sp-support-soft: #FBEDF0;  /* Rosa Claro Suave */
+
+  --sp-invite-bg: #F3FAEC;     /* Fundo Verde Suave (Convite) */
+  --sp-invite-border: #D9EDC6; /* Borda Verde Claro */
+  --sp-invite-soft: #E4F5D3;   /* Verde Claro (Ícone) */
+
+  --sp-support-bg: #FDF0F3;    /* Fundo Rosa Suave (Apoio) */
+  --sp-support-border: #F4D4DC; /* Borda Rosa Claro */
 
   --sp-radius-lg: 28px;
   --sp-radius-md: 16px;
@@ -148,27 +155,51 @@ body.hide-bottom-nav nav {
 }
 
 @media (min-width: 600px) {
-  .share-modal-overlay { align-items: center; padding: 20px; }
-  .share-modal-sheet { border-radius: var(--sp-radius-lg); max-height: 85vh; }
+  .share-modal-overlay { align-items: center; padding: 24px; }
+  .share-modal-sheet { border-radius: var(--sp-radius-lg); max-height: 85vh; max-width: 520px; }
 }
 
 /* =========================================================
-   5. CABEÇALHO DO MODAL E AVISO LEGAL
+   5. CABEÇALHO DO MODAL
    ========================================================= */
+.share-modal-handle {
+  width: 44px;
+  height: 5px;
+  border-radius: 99px;
+  background: var(--sp-border);
+  margin: 10px auto 0;
+  flex-shrink: 0;
+}
+
 .share-modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 24px 10px;
+  gap: 12px;
+  padding: 14px 20px 12px 24px;
   background: var(--sp-bg);
   border-radius: inherit;
 }
 
-.share-modal-header h2 {
+.share-modal-header__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.share-modal-header__text h2 {
   margin: 0;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 900;
   color: var(--sp-text);
+  line-height: 1.2;
+}
+
+.share-modal-header__text span {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sp-muted);
 }
 
 .share-modal-close {
@@ -198,223 +229,227 @@ body.hide-bottom-nav nav {
   padding-bottom: env(safe-area-inset-bottom, 24px);
 }
 
-.share-legal-notice {
-  margin: 0 24px 16px;
-  background: var(--sp-surface);
-  border: 1px solid var(--sp-border);
-  border-radius: var(--sp-radius-md);
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.share-legal-notice p {
-  margin: 0;
-  font-size: 12px;
-  color: var(--sp-muted);
-  line-height: 1.4;
-}
-
-.share-legal-links {
-  display: flex;
-  gap: 12px;
-}
-
-.share-legal-links a {
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--sp-primary-dark);
-  text-decoration: none;
-}
-
 /* =========================================================
-   6. LISTA DE AÇÕES (CONVITE E APOIO)
+   6. LISTA DE AÇÕES (CONVIDAR E APOIAR)
    ========================================================= */
 .sp-action-list {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  padding: 0 24px 20px;
-}
-
-.share-actions-status {
-  text-align: center;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--sp-primary-dark);
-  animation: fadeIn 0.3s;
+  padding: 10px 20px 0 24px;
 }
 
 /* =========================================================
-   7. CARD CONVIDAR ELEITORES / AMIGOS (VERDE ESCURO)
+   7. CARDS DE AÇÃO PRINCIPAL
    ========================================================= */
-.sp-invite-card {
-  background: linear-gradient(160deg, var(--sp-primary-dark) 0%, #0E7C44 60%, #12A055 100%);
-  border-radius: var(--sp-radius-lg);
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  box-shadow: 0 10px 28px rgba(11, 107, 58, 0.28);
-}
-
-.sp-invite-card__head {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.sp-invite-card__icon {
-  flex-shrink: 0;
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.16);
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.sp-invite-card__text {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-}
-
-.sp-invite-card__text strong {
-  font-size: 16px;
-  font-weight: 900;
-  color: #ffffff;
-  line-height: 1.2;
-}
-
-.sp-invite-card__text span {
-  font-size: 12.5px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.78);
-  line-height: 1.35;
-}
-
-.sp-invite-card__actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.sp-invite-card__actions .share-actions-status {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.sp-invite-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  width: 100%;
-  padding: 14px;
+.sp-action-card {
   border-radius: var(--sp-radius-md);
-  background: #ffffff;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border: 1.5px solid;
+  transition: transform 0.1s;
+}
+
+.sp-action-card:active {
+  transform: scale(0.99);
+}
+
+.sp-action-card--invite {
+  background: var(--sp-invite-bg);
+  border-color: var(--sp-invite-border);
+}
+
+.sp-action-card--support {
+  background: var(--sp-support-bg);
+  border-color: var(--sp-support-border);
+}
+
+.sp-action-card__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.sp-action-card__icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sp-action-card--invite .sp-action-card__icon {
+  background: var(--sp-invite-soft);
   color: var(--sp-primary-dark);
-  border: none;
-  font-size: 15px;
-  font-weight: 900;
-  cursor: pointer;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
-  transition: transform 0.1s, background 0.2s;
 }
 
-.sp-invite-btn:active {
-  transform: scale(0.98);
-  background: var(--sp-primary);
-}
-
-/* =========================================================
-   8. CARD APOIE O BOM DE VOTO (ROSA AVERMELHADO)
-   ========================================================= */
-.sp-support-card {
-  background: linear-gradient(160deg, var(--sp-support-dark) 0%, #A63450 55%, var(--sp-support) 100%);
-  border-radius: var(--sp-radius-lg);
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  box-shadow: 0 10px 28px rgba(194, 69, 92, 0.25);
-}
-
-.sp-support-card__head {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.sp-support-card__icon {
-  flex-shrink: 0;
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.16);
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.sp-support-card__text {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  flex: 1;
-  min-width: 0;
-}
-
-.sp-support-card__text strong {
-  font-size: 16px;
-  font-weight: 900;
-  color: #ffffff;
-  line-height: 1.2;
-}
-
-.sp-support-card__text span {
-  font-size: 12.5px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.78);
-  line-height: 1.35;
-}
-
-.sp-support-card__actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.sp-support-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  width: 100%;
-  padding: 14px;
-  border-radius: var(--sp-radius-md);
-  background: #ffffff;
-  color: var(--sp-support-dark);
-  border: none;
-  font-size: 15px;
-  font-weight: 900;
-  cursor: pointer;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
-  transition: transform 0.1s, background 0.2s;
-}
-
-.sp-support-btn:active {
-  transform: scale(0.98);
+.sp-action-card--support .sp-action-card__icon {
   background: var(--sp-support-soft);
+  color: var(--sp-support-dark);
+}
+
+.sp-action-card__text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.sp-action-card__text strong {
+  font-size: 15.5px;
+  font-weight: 900;
+  color: var(--sp-text);
+  line-height: 1.25;
+}
+
+.sp-action-card__text span {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--sp-muted);
+  line-height: 1.4;
+}
+
+.sp-action-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sp-action-card__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  padding: 13px;
+  border-radius: var(--sp-radius-sm);
+  border: none;
+  font-size: 14.5px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 0.1s, filter 0.2s;
+}
+
+.sp-action-card__btn:active {
+  transform: scale(0.98);
+}
+
+.sp-action-card__btn--invite {
+  background: var(--sp-primary-dark);
+  color: #ffffff;
+}
+
+.sp-action-card__btn--invite:active {
+  filter: brightness(1.15);
+}
+
+.sp-action-card__btn--support {
+  background: var(--sp-support);
+  color: #ffffff;
+}
+
+.sp-action-card__btn--support:active {
+  filter: brightness(0.94);
 }
 
 /* =========================================================
-   9. TELA DE PAGAMENTO DO APOIO
+   8. OUTRAS FORMAS DE COMPARTILHAR
+   ========================================================= */
+.sp-share-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 20px 0 24px;
+}
+
+.sp-share-section__label {
+  font-size: 11.5px;
+  font-weight: 900;
+  color: var(--sp-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.sp-share-list {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.sp-share-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  text-decoration: none;
+  cursor: pointer;
+  text-align: center;
+}
+
+.sp-share-item__circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s, filter 0.15s;
+}
+
+.sp-share-item:active .sp-share-item__circle {
+  transform: scale(0.9);
+  filter: brightness(0.96);
+}
+
+.sp-share-item--copy .sp-share-item__circle {
+  background: var(--sp-card-bg);
+  color: var(--sp-muted);
+}
+
+.sp-share-item__label {
+  min-width: 0;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--sp-text);
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* =========================================================
+   9. NOTA DE PRIVACIDADE
+   ========================================================= */
+.sp-privacy-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 18px 24px 0;
+  padding: 12px 14px;
+  border-radius: var(--sp-radius-sm);
+  background: var(--sp-card-bg);
+  color: var(--sp-muted);
+}
+
+.sp-privacy-note svg {
+  flex-shrink: 0;
+  color: var(--sp-primary-dark);
+}
+
+.sp-privacy-note span {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* =========================================================
+   10. TELA DE PAGAMENTO DO APOIO (QR CODE CENTRALIZADO)
    ========================================================= */
 .sp-payment-overlay {
   position: fixed;
@@ -424,394 +459,61 @@ body.hide-bottom-nav nav {
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
+  padding: 20px;
   animation: fadeIn 0.2s ease-out forwards;
 }
 
-.sp-payment-sheet {
+.sp-payment-sheet--simple {
   width: 100%;
-  max-width: 500px;
-  max-height: 90dvh;
+  max-width: 360px;
   background: var(--sp-bg);
-  border-radius: var(--sp-radius-lg) var(--sp-radius-lg) 0 0;
+  border-radius: var(--sp-radius-lg);
   box-shadow: var(--sp-shadow-modal);
+  position: relative;
   display: flex;
   flex-direction: column;
-  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@media (min-width: 600px) {
-  .sp-payment-overlay { align-items: center; padding: 20px; }
-  .sp-payment-sheet { border-radius: var(--sp-radius-lg); max-height: 85vh; }
-}
-
-.sp-payment-header {
-  display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 16px 24px 10px;
-  background: var(--sp-bg);
-  border-radius: inherit;
+  gap: 24px;
+  padding: 44px 24px 28px;
+  animation: fadeIn 0.25s ease-out forwards;
 }
 
-.sp-payment-header h2 {
-  margin: 0;
-  flex: 1;
-  text-align: center;
-  font-size: 17px;
-  font-weight: 900;
-  color: var(--sp-support-dark);
-}
-
-.sp-payment-back {
-  background: transparent;
-  border: none;
-  color: var(--sp-muted);
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-  margin-left: -8px;
-}
-
-.sp-payment-back:active {
-  background: var(--sp-border);
-  color: var(--sp-text);
-}
-
-.sp-payment-back-icon {
-  transform: rotate(180deg);
-}
-
-.sp-payment-body {
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  padding: 8px 24px 28px;
-}
-
-.sp-payment-section {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.sp-payment-label {
-  font-size: 12px;
-  font-weight: 900;
-  color: var(--sp-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-}
-
-.sp-amount-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
-}
-
-.sp-amount-chip {
-  padding: 12px 4px;
-  border-radius: var(--sp-radius-sm);
-  border: 1.5px solid var(--sp-border);
-  background: var(--sp-surface);
-  color: var(--sp-text);
-  font-size: 13px;
-  font-weight: 800;
-  cursor: pointer;
-  text-align: center;
-  transition: border-color 0.2s, background 0.2s, color 0.2s, transform 0.1s;
-}
-
-.sp-amount-chip:active {
-  transform: scale(0.96);
-}
-
-.sp-amount-chip.is-active {
-  border-color: var(--sp-support);
-  background: var(--sp-support-soft);
-  color: var(--sp-support-dark);
-}
-
-.sp-amount-input {
-  width: 100%;
-  padding: 13px 16px;
-  border: 1.5px solid var(--sp-border);
-  border-radius: var(--sp-radius-md);
-  background: var(--sp-surface);
-  color: var(--sp-text);
-  font-family: var(--font-family);
-  font-size: 14px;
-  font-weight: 700;
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-.sp-amount-input:focus {
-  border-color: var(--sp-support);
-}
-
-.sp-payment-methods {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.sp-payment-method {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 14px 16px;
-  border-radius: var(--sp-radius-md);
-  border: 1.5px solid var(--sp-border);
-  background: var(--sp-surface);
-  color: var(--sp-text);
-  cursor: pointer;
-  text-align: left;
-  transition: border-color 0.2s, background 0.2s;
-}
-
-.sp-payment-method.is-active {
-  border-color: var(--sp-support);
-  background: var(--sp-support-soft);
-}
-
-.sp-payment-method__radio {
-  flex-shrink: 0;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  border: 2px solid var(--sp-border);
-  background: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: border-color 0.2s, background 0.2s;
-}
-
-.sp-payment-method.is-active .sp-payment-method__radio {
-  border-color: var(--sp-support);
-  background: var(--sp-support);
-  box-shadow: inset 0 0 0 3px #ffffff;
-}
-
-.sp-payment-method__text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.sp-payment-method__text strong {
-  font-size: 14px;
-  font-weight: 900;
-}
-
-.sp-payment-method__text small {
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--sp-muted);
-}
-
-.sp-anonymous-toggle {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  border-radius: var(--sp-radius-md);
-  border: 1.5px solid var(--sp-border);
-  background: var(--sp-surface);
-  cursor: pointer;
-  transition: border-color 0.2s, background 0.2s;
-}
-
-.sp-anonymous-toggle.is-active {
-  border-color: var(--sp-support);
-  background: var(--sp-support-soft);
-}
-
-.sp-anonymous-toggle input {
+.sp-payment-close {
   position: absolute;
-  opacity: 0;
-  pointer-events: none;
+  top: 12px;
+  right: 12px;
 }
 
-.sp-anonymous-toggle__icon {
-  flex-shrink: 0;
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: var(--sp-bg);
-  color: var(--sp-muted);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s, color 0.2s;
-}
-
-.sp-anonymous-toggle.is-active .sp-anonymous-toggle__icon {
-  background: var(--sp-support);
-  color: #ffffff;
-}
-
-.sp-anonymous-toggle__text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.sp-anonymous-toggle__text strong {
-  font-size: 14px;
-  font-weight: 900;
-  color: var(--sp-text);
-}
-
-.sp-anonymous-toggle__text small {
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--sp-muted);
-}
-
-.sp-payment-pix {
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  padding: 14px;
-  border-radius: var(--sp-radius-md);
-  background: var(--sp-support-soft);
-}
-
-.sp-donation-qr {
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
-
-.sp-donation-qr canvas {
-  width: 168px;
-  height: 168px;
-  border-radius: var(--sp-radius-sm);
-  background: #ffffff;
-  padding: 6px;
-  box-shadow: 0 2px 8px rgba(194, 69, 92, 0.16);
-}
-
-.sp-donation-qr span {
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--sp-support-dark);
-  text-transform: uppercase;
-}
-
-.sp-payment-pix__info {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.sp-payment-pix__info span {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--sp-muted);
-  line-height: 1.4;
-}
-
-.sp-payment-pix__info strong {
-  font-size: 13px;
+.sp-payment-title {
+  margin: 0;
+  font-size: 18px;
   font-weight: 900;
   color: var(--sp-support-dark);
-  word-break: break-all;
-}
-
-.sp-payment-pix__info small {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--sp-support-dark);
-  opacity: 0.8;
-}
-
-.sp-payment-paypal {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 16px;
-  border-radius: var(--sp-radius-md);
-  background: var(--sp-support-soft);
-  border: 1.5px dashed var(--sp-support);
-  text-decoration: none;
   text-align: center;
 }
 
-.sp-payment-paypal strong {
-  font-size: 14px;
-  font-weight: 900;
-  color: var(--sp-support-dark);
-}
-
-.sp-payment-paypal span {
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--sp-muted);
-}
-
-.sp-payment-card {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 14px;
-  border-radius: var(--sp-radius-md);
-  background: var(--sp-support-soft);
-}
-
-.sp-card-fields {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.sp-card-input {
-  width: 100%;
-  padding: 12px 14px;
-  border: 1.5px solid var(--sp-border);
-  border-radius: var(--sp-radius-sm);
-  background: var(--sp-surface);
-  color: var(--sp-text);
-  font-family: var(--font-family);
-  font-size: 13px;
-  font-weight: 700;
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-.sp-card-input:focus {
-  border-color: var(--sp-support);
-}
-
-.sp-card-row {
-  display: flex;
-  gap: 8px;
-}
-
-.sp-card-row .sp-card-input {
-  flex: 1;
-}
-
-.sp-payment-submit {
+.sp-payment-qr {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.sp-payment-qr canvas {
+  width: 200px;
+  height: 200px;
+  border-radius: var(--sp-radius-md);
+  background: #ffffff;
+  padding: 8px;
+  box-shadow: 0 4px 16px rgba(194, 69, 92, 0.16);
+}
+
+.sp-payment-copy-key {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   width: 100%;
   padding: 15px;
   border-radius: var(--sp-radius-md);
@@ -825,74 +527,183 @@ body.hide-bottom-nav nav {
   transition: transform 0.1s, opacity 0.2s;
 }
 
-.sp-payment-submit:active {
+.sp-payment-copy-key:active {
   transform: scale(0.98);
 }
 
-.sp-payment-submit:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
+/* =========================================================
+   11. RESPONSIVIDADE
+   ========================================================= */
+/* Telas pequenas (até 390px) */
+@media (max-width: 390px) {
+  .share-trigger-panel {
+    padding: 12px;
+  }
+
+  .share-trigger-panel__info strong {
+    font-size: 14px;
+  }
+
+  .share-trigger-panel__info span {
+    font-size: 12px;
+  }
+
+  .share-trigger-btn {
+    padding: 10px 18px;
+    font-size: 14px;
+  }
+
+  .share-modal-header {
+    padding: 12px 14px 10px 18px;
+  }
+
+  .share-modal-header__text h2 {
+    font-size: 18px;
+  }
+
+  .share-modal-header__text span {
+    font-size: 12px;
+  }
+
+  .sp-action-list,
+  .sp-share-section {
+    padding-left: 18px;
+    padding-right: 14px;
+  }
+
+  .sp-action-card {
+    padding: 15px;
+    gap: 12px;
+  }
+
+  .sp-action-card__icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .sp-action-card__text strong {
+    font-size: 14.5px;
+  }
+
+  .sp-action-card__text span {
+    font-size: 12px;
+  }
+
+  .sp-action-card__btn {
+    padding: 12px;
+    font-size: 13.5px;
+  }
+
+  .sp-share-list {
+    gap: 8px;
+  }
+
+  .sp-share-item__circle {
+    width: 44px;
+    height: 44px;
+  }
+
+  .sp-share-item__label {
+    font-size: 9.5px;
+  }
+
+  .sp-privacy-note {
+    margin: 14px 18px 0;
+    padding: 10px 12px;
+  }
+
+  .sp-privacy-note span {
+    font-size: 11.5px;
+  }
+
+  .sp-payment-sheet--simple {
+    padding: 38px 18px 24px;
+    gap: 20px;
+  }
 }
 
-.sp-payment-success {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  padding: 32px 8px;
-  text-align: center;
+/* Telas muito pequenas (até 340px) */
+@media (max-width: 340px) {
+  .share-modal-sheet {
+    max-height: 92dvh;
+  }
+
+  .sp-share-list {
+    gap: 6px;
+  }
+
+  .sp-share-item__circle {
+    width: 40px;
+    height: 40px;
+  }
+
+  .sp-share-item__label {
+    font-size: 9px;
+  }
+
+  .share-modal-handle {
+    margin-top: 8px;
+  }
+
+  .sp-payment-qr canvas {
+    width: 180px;
+    height: 180px;
+  }
 }
 
-.sp-payment-success__icon {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  background: var(--sp-support);
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: successPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+/* Paisagem mobile / janelas baixas */
+@media (max-height: 620px) and (orientation: landscape) {
+  .share-modal-overlay {
+    align-items: center;
+    padding: 10px;
+  }
+
+  .share-modal-sheet {
+    max-height: 96dvh;
+  }
+
+  .sp-action-list {
+    gap: 10px;
+    padding-top: 6px;
+  }
+
+  .sp-action-card {
+    padding: 14px;
+    gap: 10px;
+  }
+
+  .sp-share-section {
+    padding-top: 12px;
+  }
+
+  .sp-privacy-note {
+    margin-top: 12px;
+    padding: 8px 12px;
+  }
+
+  .share-modal-body {
+    padding-bottom: 12px;
+  }
 }
 
-.sp-payment-success strong {
-  font-size: 18px;
-  font-weight: 900;
-  color: var(--sp-text);
-}
+/* Telas grandes */
+@media (min-width: 1200px) {
+  .sp-share-item {
+    gap: 8px;
+  }
 
-.sp-payment-success span {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--sp-muted);
-  line-height: 1.5;
-  max-width: 320px;
-}
+  .sp-share-item__circle {
+    width: 52px;
+    height: 52px;
+  }
 
-.sp-payment-done {
-  margin-top: 8px;
-  padding: 13px 36px;
-  border-radius: 99px;
-  background: var(--sp-support-dark);
-  color: #ffffff;
-  border: none;
-  font-size: 14px;
-  font-weight: 900;
-  cursor: pointer;
-  transition: transform 0.1s, opacity 0.2s;
-}
-
-.sp-payment-done:active {
-  transform: scale(0.97);
-}
-
-@keyframes successPop {
-  0% { transform: scale(0.4); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
+  .sp-share-item__label {
+    font-size: 11px;
+  }
 }
 
 /* =========================================================
-   10. ANIMAÇÕES
+   12. ANIMAÇÕES
    ========================================================= */
 @keyframes fadeIn { 
   from { opacity: 0; } 
