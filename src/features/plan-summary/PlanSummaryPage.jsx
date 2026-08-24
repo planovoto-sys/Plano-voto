@@ -23,6 +23,8 @@ import {
 // IMPORTAÇÕES ATUALIZADAS
 import ConvexBottomNavigation from '@/app/shell/BottomNavigation';
 import ShareChoicePanel from '@/features/sharing/ShareChoicePanel';
+import { useNotify } from '@/features/notifications/useNotify';
+import { STEP_GUIDANCE_MESSAGES } from '@/features/notifications/notificationMessages';
 
 import AppFooter from '@/shared/ui/layout/AppFooter';
 import '@/shared/ui/layout/AppHeader.css';
@@ -127,6 +129,7 @@ function ScoreStars({ score, isBad }) {
 
 export default function MeuPlano() {
   const { user, userData, loading: userLoading } = useUser();
+  const notify = useNotify();
   const navigate = useNavigate();
   const location = useLocation();
   const isGuestMode = !user?.uid;
@@ -431,12 +434,16 @@ export default function MeuPlano() {
         currentStep="resultado" 
         isFinalStep={true} 
         onShareClick={() => {
-          if (canSharePlan) {
+          if (!estadoSigla) {
+            notify.warning(STEP_GUIDANCE_MESSAGES.estado);
+          } else if (deputadosFederais.length < 1) {
+            notify.warning(STEP_GUIDANCE_MESSAGES.deputado);
+          } else if (senadores.length < 2) {
+            notify.warning(STEP_GUIDANCE_MESSAGES.senador);
+          } else if (canSharePlan) {
             setIsShareModalOpen(true);
-          } else {
-            if (isGuestMode) {
-              setModalCampoBloqueado(true);
-            }
+          } else if (isGuestMode) {
+            setModalCampoBloqueado(true);
           }
         }} 
       />

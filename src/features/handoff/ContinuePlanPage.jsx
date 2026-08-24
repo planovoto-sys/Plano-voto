@@ -68,7 +68,7 @@ export default function ContinuarPlano() {
         });
       })
       .catch(() => {
-        notify.error('Não foi possível carregar este rascunho.', { dedupeKey: 'local-handoff-error' });
+        notify.error('Não foi possível carregar este rascunho. Gere um novo QR Code no desktop.', { dedupeKey: 'local-handoff-error' });
         setStatus({
           type: 'error',
           message: 'Não foi possível carregar este rascunho. Gere um novo QR Code no desktop.'
@@ -96,7 +96,7 @@ export default function ContinuarPlano() {
         });
       })
       .catch(() => {
-        notify.error('QR Code expirado ou já usado.', { dedupeKey: 'handoff-expired' });
+        notify.error('Este QR Code expirou ou já foi usado. Gere um novo QR Code no desktop.', { dedupeKey: 'handoff-expired' });
         setStatus({
           type: 'error',
           message: 'Este QR Code expirou ou já foi usado. Gere um novo QR Code no desktop.'

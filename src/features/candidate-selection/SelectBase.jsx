@@ -189,7 +189,7 @@ const candidateFilterItems = useMemo(() => (
       return true;
     } catch (error) {
       setSelecionados(previousSelecionados);
-      notify.error('Não foi possível salvar sua escolha. Seleção revertida.', {
+      notify.error('Sua escolha não foi salva. Verifique sua conexão e selecione novamente.', {
         dedupeKey: `selection-save-error-${variant}`,
         duration: 5200
       });
@@ -351,7 +351,7 @@ const candidateFilterItems = useMemo(() => (
         <section className="candidate-list-section">
           <div className="prototype-section-heading">
             <h2>{headingTitle}</h2>
-            <p>Selecione seus candidatos — todos que aceite votar</p>
+            <p>Selecione todos os candidatos em quem você aceitaria votar</p>
           </div>
 
           {dados.length > 0 ? (

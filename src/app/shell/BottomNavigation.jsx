@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { BALLOT_ROUTES } from '@/shared/constants/ballot';
 import { useUser } from '@/shared/hooks/useUser';
 import { useNotify } from '@/features/notifications/useNotify';
+import { getIncompleteStepMessage } from '@/features/notifications/notificationMessages';
 import {
   getBallotEstado,
   getBallotProgress,
@@ -215,7 +216,10 @@ export default function ConvexBottomNavigation({
 
   const handleNavigate = (step, isClickable) => {
     if (!isClickable) {
-      notify.warning('Complete a etapa atual para continuar.', { duration: 4200 });
+      notify.warning(getIncompleteStepMessage(completedSteps), {
+        dedupeKey: `incomplete-step-${activeStep}`,
+        duration: 4200
+      });
       return;
     }
     navigate(step.path, { state: { bypassVoteRedirect: true } });
@@ -243,7 +247,7 @@ export default function ConvexBottomNavigation({
           key={step.id}
           className={`convex-nav__step is-${state} ${isClickable ? 'is-clickable' : ''} ${isActive ? 'is-active' : ''}`}
           onClick={() => handleNavigate(step, isClickable)}
-          disabled={!isClickable}
+          aria-disabled={!isClickable}
           aria-current={isActive ? 'step' : undefined}
         >
           <span className="convex-nav__icon-wrap">

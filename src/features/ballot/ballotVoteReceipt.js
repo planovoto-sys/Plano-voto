@@ -72,7 +72,7 @@ export const castAnonymousVote = async ({ user, estado, draft }) => {
 
   const validation = validateCompleteBallot(draft);
   if (!validation.ok) {
-    throw new VotingError(validation.code, 'Complete todos os cargos antes de confirmar o voto.');
+    throw new VotingError(validation.code, 'Selecione pelo menos 1 deputado federal e 2 senadores antes de confirmar o voto.');
   }
 
   const { normalizedDraft, candidateIds } = validation;

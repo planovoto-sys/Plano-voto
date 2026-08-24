@@ -6,7 +6,7 @@ export const CANDIDATE_ROUTES = {
     chaveBanco: 'deputado_federal',
     chaveGrupo: 'deputado_federal',
     titulo: 'Deputado Federal',
-    subtitulo: 'Selecione todos os candidatos que aceita votar',
+    subtitulo: 'Selecione todos os candidatos em quem você aceitaria votar',
     rotaAnterior: BALLOT_ROUTES.estado,
     proximaRota: BALLOT_ROUTES.senadores
   },
@@ -16,7 +16,7 @@ export const CANDIDATE_ROUTES = {
     chaveGrupo: 'senadores_1',
     chaveGrupos: ['senadores_1', 'senadores_2'],
     titulo: 'Senadores',
-    subtitulo: 'Selecione todos os candidatos que aceita votar',
+    subtitulo: 'Selecione todos os candidatos em quem você aceitaria votar',
     rotaAnterior: BALLOT_ROUTES.deputadoFederal,
     proximaRota: BALLOT_ROUTES.meuPlano
   }

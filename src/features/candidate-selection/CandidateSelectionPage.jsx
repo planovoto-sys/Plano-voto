@@ -33,6 +33,7 @@ import { normalizeSearch } from '@/shared/utils/search';
 import { getCandidateStateCode, normalizeStateCode } from '@/shared/utils/state';
 import ConfirmModal from '@/shared/ui/feedback/ConfirmModal';
 import FlowToast from '@/shared/ui/feedback/FlowToast';
+import { STEP_GUIDANCE_MESSAGES } from '@/features/notifications/notificationMessages';
 import TourModal from '@/shared/ui/feedback/TourModal';
 import SelectBase from '@/features/candidate-selection/SelectBase';
 import DesktopCandidateSelection from '@/features/desktop/DesktopCandidateSelection';
@@ -271,7 +272,7 @@ export default function EscolherCandidatos({
         flowError('candidates.fetch.error', error, { cargo, chaveGrupo });
 
         if (!cancelled && !cachedCandidates?.value?.length) {
-          setErroCarregamento('Nao foi possivel carregar os candidatos. Verifique sua conexao e tente novamente.');
+          setErroCarregamento('Não foi possível carregar os candidatos. Verifique sua conexão e tente novamente.');
           setTodosCandidatos([]);
           setLoading(false);
         }
@@ -699,8 +700,8 @@ export default function EscolherCandidatos({
       setModalAviso({
         aberto: true,
         mensagem: isSenadoresUnificados
-          ? 'Escolha 2 senadores para continuar.'
-          : 'Escolha 1 deputado federal para continuar.'
+          ? STEP_GUIDANCE_MESSAGES.senador
+          : STEP_GUIDANCE_MESSAGES.deputado
       });
       return;
     }

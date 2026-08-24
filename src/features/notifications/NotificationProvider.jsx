@@ -83,7 +83,7 @@ export default function NotificationProvider({ children }) {
     if (typeof window === 'undefined') return undefined;
 
     const handleOffline = () => {
-      notify.warning('Você está offline. Algumas informações podem estar desatualizadas.', {
+      notify.warning('Você está sem conexão. Algumas informações podem estar desatualizadas.', {
         dedupeKey: 'network-offline',
         duration: 5200
       });
@@ -95,7 +95,7 @@ export default function NotificationProvider({ children }) {
       });
     };
     const handlePwaUpdate = () => {
-      notify.info('Nova versão disponível. Reabra o app para atualizar.', {
+      notify.info('Nova versão disponível. Feche e abra o app para atualizar.', {
         dedupeKey: 'pwa-update',
         duration: 7000
       });
@@ -108,7 +108,7 @@ export default function NotificationProvider({ children }) {
     return () => {
       window.removeEventListener('offline', handleOffline);
       window.removeEventListener('online', handleOnline);
-      window.removeEventListener('nossovoto:pwa-update-available', handlePwaUpdate);
+      window.removeEventListener('bomdevoto:pwa-update-available', handlePwaUpdate);
     };
   }, [notify]);
 

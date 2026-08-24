@@ -73,7 +73,7 @@ function DonationPaymentSheet({ isOpen, onClose }) {
       await navigator.clipboard.writeText(DONATION_DATA.pixKey);
       notify.success('Chave Pix copiada!');
     } catch {
-      notify.error('Não foi possível copiar a chave Pix.');
+      notify.error('Não foi possível copiar a chave Pix. Tente novamente.');
     }
   };
 
@@ -214,7 +214,7 @@ export default function ShareChoicePanel({
       await navigator.clipboard.writeText(shareLink);
       notify.success('Link copiado!');
     } catch {
-      notify.error('Não foi possível copiar o link.');
+      notify.error('Não foi possível copiar o link. Tente novamente.');
     }
   };
 

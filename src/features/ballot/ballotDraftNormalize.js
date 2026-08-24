@@ -175,7 +175,7 @@ export class BallotDraftModel {
       .filter(Boolean);
 
     if (allCandidateIds.length > MAX_ACTIVE_CANDIDATES) {
-      throw new VotingError('TOO_MANY_SELECTIONS', 'Voce atingiu o limite tecnico de candidatos salvos neste rascunho.');
+      throw new VotingError('TOO_MANY_SELECTIONS', 'Você atingiu o limite técnico de candidatos salvos neste rascunho.');
     }
 
     if (new Set(allCandidateIds).size !== allCandidateIds.length) {

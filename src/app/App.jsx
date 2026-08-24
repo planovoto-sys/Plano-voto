@@ -7,6 +7,7 @@ import { useUser } from '@/shared/hooks/useUser';
 import LoadingScreen from '@/shared/ui/feedback/LoadingScreen';
 import PrivacyConsent from '@/features/privacy/PrivacyConsent';
 import PageTransition from '@/features/motion/PageTransition';
+import { STEP_GUIDANCE_MESSAGES } from '@/features/notifications/notificationMessages';
 import {
   fetchRemoteBallotDraft,
   getBallotProgress,
@@ -44,8 +45,8 @@ const renderCandidateRoute = (config) => (
 
 const getResumeNotice = (progress) => {
   if (!progress?.hasEstado) return '';
-  if (!progress.hasDeputadoFederal) return 'Você ainda não selecionou seu deputado federal';
-  if (!progress.hasSenadores) return 'Você ainda não selecionou seus senadores';
+  if (!progress.hasDeputadoFederal) return STEP_GUIDANCE_MESSAGES.deputado;
+  if (!progress.hasSenadores) return STEP_GUIDANCE_MESSAGES.senador;
   return '';
 };
 
