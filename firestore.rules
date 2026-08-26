@@ -14,129 +14,17 @@ service cloud.firestore {
       return signedIn() && request.auth.token.admin == true;
     }
 
-    function validEstado(estado) {
-      return estado == null || estado in [
-        'AC',
-        'AL',
-        'AM',
-        'AP',
-        'BA',
-        'CE',
-        'DF',
-        'ES',
-        'GO',
-        'MA',
-        'MG',
-        'MS',
-        'MT',
-        'PA',
-        'PB',
-        'PE',
-        'PI',
-        'PR',
-        'RJ',
-        'RN',
-        'RO',
-        'RR',
-        'RS',
-        'SC',
-        'SE',
-        'SP',
-        'TO'
-      ];
-    }
-
-    function validVoterProfile() {
-      return request.resource.data.role == 'voter'
-        && validEstado(request.resource.data.estado)
-        && request.resource.data.email == request.auth.token.email;
-    }
-
-    function choiceConfigPath(userId) {
-      return /databases/$(database)/documents/users/$(userId)/private/choiceConfig;
-    }
-
-    function validChoiceConfigCreate() {
-      return request.resource.data.keys().hasOnly([
-          'choiceDocId',
-          'createdAt'
-        ])
-        && request.resource.data.choiceDocId is string
-        && request.resource.data.choiceDocId.size() >= 20
-        && request.resource.data.createdAt == request.time;
-    }
-
-    function ownsChoiceDoc(choiceDocId) {
-      return signedIn()
-        && (
-          (
-            exists(choiceConfigPath(request.auth.uid))
-            && get(choiceConfigPath(request.auth.uid)).data.choiceDocId == choiceDocId
-          )
-          || getAfter(choiceConfigPath(request.auth.uid)).data.choiceDocId == choiceDocId
-        );
-    }
-
-    function validPublicCandidateChoice(choiceDocId) {
-      return request.resource.data.keys().hasOnly([
-          'schemaVersion',
-          'electionId',
-          'state',
-          'candidateIds',
-          'updatedAt'
-        ])
-        && request.resource.data.schemaVersion == 1
-        && request.resource.data.electionId is string
-        && request.resource.data.state is string
-        && validEstado(request.resource.data.state)
-        && request.resource.data.candidateIds is list
-        && request.resource.data.candidateIds.size() <= 100
-        && request.resource.data.updatedAt == request.time
-        && ownsChoiceDoc(choiceDocId);
+    function isActiveElection(electionId) {
+      return electionId == 'congresso-2026';
     }
 
     match /users/{userId} {
       allow get: if isOwner(userId) || isAdmin();
       allow list: if isAdmin();
-
-      allow create: if isOwner(userId)
-        && request.resource.data.keys().hasOnly([
-          'name',
-          'email',
-          'profile_image',
-          'estado',
-          'role',
-          'schema_version',
-          'created_at'
-        ])
-        && validVoterProfile();
-
-      allow update: if isAdmin()
-        || (
-          isOwner(userId)
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          'name',
-          'email',
-          'profile_image',
-          'estado',
-          'role',
-          'schema_version',
-          'last_login_at',
-          'updated_at',
-          'candidatos_escolhidos'
-          ])
-          && !('candidatos_escolhidos' in request.resource.data)
-          && validVoterProfile()
-        );
-
-      allow delete: if isAdmin();
+      allow create, update, delete: if isAdmin();
 
       match /private/{privateDocId} {
-        allow read: if privateDocId == 'choiceConfig' && isOwner(userId);
-        allow create: if privateDocId == 'choiceConfig'
-          && isOwner(userId)
-          && validChoiceConfigCreate();
-        allow update, delete: if false;
+        allow read, write: if false;
       }
     }
 
@@ -151,13 +39,12 @@ service cloud.firestore {
     }
 
     match /publicCandidateChoices/{choiceDocId} {
-      allow read: if true;
-      allow create, update: if validPublicCandidateChoice(choiceDocId);
-      allow delete: if false;
+      allow read, write: if false;
     }
 
     match /elections/{electionId} {
-      allow read: if true;
+      allow get: if isActiveElection(electionId);
+      allow list: if false;
       allow create, update, delete: if isAdmin();
 
       match /eligibility/{userId} {
@@ -179,7 +66,17 @@ service cloud.firestore {
       }
 
       match /candidate_tallies/{candidateId} {
-        allow read: if true;
+        allow read: if isActiveElection(electionId);
+        allow create, update, delete: if isAdmin();
+      }
+
+      match /selection_tallies/{tallyId} {
+        allow read: if isActiveElection(electionId);
+        allow create, update, delete: if isAdmin();
+      }
+
+      match /state_choice_metrics/{stateId} {
+        allow read: if isActiveElection(electionId);
         allow create, update, delete: if isAdmin();
       }
 

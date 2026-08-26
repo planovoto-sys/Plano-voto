@@ -6,10 +6,7 @@ import {
 export const STORAGE_PREFIX = `meuvoto:${ACTIVE_ELECTION_ID}`;
 export const DRAFT_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 export const VISITOR_DRAFT_STORAGE_ID = `${VISITOR_DRAFT_ID}:local`;
-export const PUBLIC_CANDIDATE_CHOICES_COLLECTION = 'publicCandidateChoices';
-export const USER_PRIVATE_COLLECTION = 'private';
-export const USER_CHOICE_CONFIG_DOC_ID = 'choiceConfig';
-export const MAX_ACTIVE_CANDIDATES = 100;
+export const MAX_ACTIVE_CANDIDATES = 3;
 
 let storageAvailability = null;
 
@@ -22,8 +19,8 @@ export const canUseStorage = () => {
 
   try {
     const testKey = `${STORAGE_PREFIX}:storage-test`;
-    window.localStorage.setItem(testKey, '1');
-    window.localStorage.removeItem(testKey);
+    window.sessionStorage.setItem(testKey, '1');
+    window.sessionStorage.removeItem(testKey);
     storageAvailability = true;
   } catch {
     storageAvailability = false;

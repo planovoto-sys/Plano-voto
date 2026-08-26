@@ -2,6 +2,16 @@
 
 Todas as mudanças relevantes deste projeto serão documentadas aqui.
 
+## [1.11.0] - 2026-08-26
+
+### Segurança
+
+- Move perfil e rascunhos para mutações server-side autenticadas, protegidas por App Check e rate limit.
+- Substitui escolhas individuais públicas por rascunhos privados e métricas agregadas.
+- Criptografa o conteúdo dos votos com AES-256-GCM usando chave do Secret Manager.
+- Restringe regras do Firestore e Storage, limita payloads e respostas e adiciona headers de segurança/HTTPS.
+- Adiciona auditoria de segredos e dependências ao CI; atualiza dependências até zerar achados do `npm audit`.
+
 ## [1.7.0] - 2026-07-20
 
 ### Adicionado

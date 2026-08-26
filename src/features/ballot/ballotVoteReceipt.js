@@ -20,7 +20,9 @@ import { VotingError } from './ballotErrors';
 export const clearVoteReceipt = (userId) => {
   if (!userId || !canUseStorage()) return;
   try {
-    window.localStorage.removeItem(receiptKey(userId));
+    const storageKey = receiptKey(userId);
+    window.sessionStorage.removeItem(storageKey);
+    window.localStorage.removeItem(storageKey);
   } catch {
     // O recibo local pode ser recriado apos nova confirmacao bem-sucedida.
   }
@@ -40,7 +42,9 @@ export const saveLastVoteReceipt = (userId, receipt, draft) => {
   };
 
   try {
-    window.localStorage.setItem(receiptKey(userId), JSON.stringify(storedReceipt));
+    const storageKey = receiptKey(userId);
+    window.sessionStorage.setItem(storageKey, JSON.stringify(storedReceipt));
+    window.localStorage.removeItem(storageKey);
   } catch {
     return storedReceipt;
   }
@@ -52,12 +56,20 @@ export const readLastVoteReceipt = (userId) => {
   if (!userId || !canUseStorage()) return null;
 
   try {
-    const raw = window.localStorage.getItem(receiptKey(userId));
+    const storageKey = receiptKey(userId);
+    let raw = window.sessionStorage.getItem(storageKey);
+    if (!raw) {
+      raw = window.localStorage.getItem(storageKey);
+      if (raw) window.sessionStorage.setItem(storageKey, raw);
+    }
+    window.localStorage.removeItem(storageKey);
     return raw ? JSON.parse(raw) : null;
   } catch (error) {
     console.warn('Recibo local inválido. Ignorando recibo salvo.', error);
     try {
-      window.localStorage.removeItem(receiptKey(userId));
+      const storageKey = receiptKey(userId);
+      window.sessionStorage.removeItem(storageKey);
+      window.localStorage.removeItem(storageKey);
     } catch {
       // Sem acao: falha ao limpar recibo invalido.
     }

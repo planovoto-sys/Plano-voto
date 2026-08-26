@@ -4,7 +4,7 @@ import { Play } from 'lucide-react';
 
 import FlowToast from '@/shared/ui/feedback/FlowToast';
 import { useUser } from '@/shared/hooks/useUser';
-import { auth, firebaseReady, googleProvider } from '@/shared/firebase/firebase';
+import { auth, authPersistenceReady, firebaseReady, googleProvider } from '@/shared/firebase/firebase';
 import { mergeVisitorBallotDraftIntoAccount } from '@/features/ballot';
 import { flowError, flowLog } from '@/shared/utils/debugFlow';
 
@@ -108,6 +108,7 @@ export default function LoginPage() {
 
     try {
       flowLog('LoginPage', 'Iniciando login com Google');
+      await authPersistenceReady;
       const result = await signInWithPopup(auth, googleProvider);
       flowLog('LoginPage', 'Login bem-sucedido', result.user.uid);
 

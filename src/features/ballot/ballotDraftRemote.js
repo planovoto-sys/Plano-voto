@@ -5,8 +5,6 @@ import {
   getDoc,
   getDocs,
   query,
-  runTransaction,
-  serverTimestamp,
   where
 } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
@@ -15,29 +13,26 @@ import {
   BALLOT_FLOW_STEP_IDS,
   BALLOT_SCHEMA_VERSION,
   DELETE_USER_ELECTION_DATA_FUNCTION_NAME,
-  OFFICE_MINIMUM_SELECTIONS
+  OFFICE_MINIMUM_SELECTIONS,
+  SAVE_BALLOT_STATE_FUNCTION_NAME,
+  SAVE_BALLOT_STEP_FUNCTION_NAME
 } from '@/shared/constants/ballot';
 import { db, functions } from '@/shared/firebase/firebase';
 import { flowLog } from '@/shared/utils/debugFlow';
 import { normalizeStateCode } from '@/shared/utils/state';
 import { enrichCandidatesWithPartyScores } from '@/features/candidate-selection/candidateService';
 import {
-  PUBLIC_CANDIDATE_CHOICES_COLLECTION,
-  USER_CHOICE_CONFIG_DOC_ID,
-  USER_PRIVATE_COLLECTION,
   asArray,
   normalizeRemoteTimestamp,
   shouldKeepLocalDraftOverRemote
 } from './ballotInternals';
 import {
-  BallotDraftModel,
   createEmptyBallotDraft,
   draftHasBallotSelections,
   normalizeDraft,
   normalizeStoredCandidate
 } from './ballotDraftNormalize';
 import {
-  assertCandidateMatchesStep,
   clearBallotDraft,
   clearVisitorBallotDraft,
   persistBallotDraft,
@@ -56,176 +51,60 @@ const normalizeRemoteDraftData = (data) => {
   };
 };
 
-class FirestoreCandidateChoiceRepository {
-  choiceConfigRef(userId) {
-    return doc(db, 'users', userId, USER_PRIVATE_COLLECTION, USER_CHOICE_CONFIG_DOC_ID);
-  }
-
-  publicChoiceRef(choiceDocId) {
-    return doc(db, PUBLIC_CANDIDATE_CHOICES_COLLECTION, choiceDocId);
-  }
-
-  legacyDraftRef(userId) {
+class FirestoreBallotDraftRepository {
+  draftRef(userId) {
     return doc(db, 'elections', ACTIVE_ELECTION_ID, 'ballot_drafts', userId);
   }
 
-  userRef(userId) {
-    return doc(db, 'users', userId);
-  }
-
-  createChoiceDocId() {
-    return doc(collection(db, PUBLIC_CANDIDATE_CHOICES_COLLECTION)).id;
-  }
-
-  async resolveChoiceDocId(userId) {
-    const configSnap = await getDoc(this.choiceConfigRef(userId));
-    return configSnap.exists() ? configSnap.data()?.choiceDocId || null : null;
-  }
-
-  async ensureChoiceDocId(transaction, userId, updatedAt) {
-    const configRef = this.choiceConfigRef(userId);
-    const configSnap = await transaction.get(configRef);
-
-    if (configSnap.exists()) {
-      const existingChoiceDocId = configSnap.data()?.choiceDocId;
-      if (existingChoiceDocId) return existingChoiceDocId;
-    }
-
-    const choiceDocId = this.createChoiceDocId();
-    transaction.set(configRef, {
-      choiceDocId,
-      createdAt: updatedAt
-    });
-    return choiceDocId;
-  }
-
-  buildPublicChoicePayload(draft, updatedAt) {
-    const normalizedDraft = BallotDraftModel.assertSelectable(draft);
-    return {
-      schemaVersion: BALLOT_SCHEMA_VERSION,
-      electionId: ACTIVE_ELECTION_ID,
-      state: normalizedDraft.estado,
-      candidateIds: BallotDraftModel.activeCandidateIds(normalizedDraft),
-      updatedAt
-    };
-  }
-
-  async readLegacyDraft(userId, estado = null) {
-    const draftSnap = await getDoc(this.legacyDraftRef(userId));
+  async readDraft(userId, estado = null) {
+    const draftSnap = await getDoc(this.draftRef(userId));
     return draftSnap.exists()
       ? normalizeDraft(normalizeRemoteDraftData(draftSnap.data()), estado)
-      : null;
-  }
-
-  async readDraft(userId, estado = null) {
-    const choiceDocId = await this.resolveChoiceDocId(userId);
-
-    if (!choiceDocId) {
-      const legacyDraft = await this.readLegacyDraft(userId, estado);
-      return legacyDraft || createEmptyBallotDraft(estado);
-    }
-
-    const choiceSnap = await getDoc(this.publicChoiceRef(choiceDocId));
-    if (!choiceSnap.exists()) return createEmptyBallotDraft(estado);
-
-    const choiceData = choiceSnap.data();
-    if (choiceData.electionId && choiceData.electionId !== ACTIVE_ELECTION_ID) {
-      return createEmptyBallotDraft(estado);
-    }
-
-    const candidateIds = [...new Set(asArray(choiceData.candidateIds).filter(Boolean))];
-    const candidates = await fetchCandidatesByIds(candidateIds);
-    return BallotDraftModel.fromPublicChoice(choiceData, candidates, estado);
-  }
-
-  async saveDraft(userId, draft) {
-    const normalizedDraft = BallotDraftModel.assertSelectable(draft);
-    const responseDraft = {
-      ...normalizedDraft,
-      updated_at: new Date().toISOString()
-    };
-
-    await runTransaction(db, async (transaction) => {
-      const updatedAt = serverTimestamp();
-      const choiceDocId = await this.ensureChoiceDocId(transaction, userId, updatedAt);
-      transaction.set(
-        this.publicChoiceRef(choiceDocId),
-        this.buildPublicChoicePayload(normalizedDraft, updatedAt),
-        { merge: false }
-      );
-      transaction.set(this.userRef(userId), {
-        estado: normalizedDraft.estado,
-        role: 'voter',
-        schema_version: 1,
-        updated_at: updatedAt
-      }, { merge: true });
-    });
-
-    return persistBallotDraft(userId, responseDraft);
+      : createEmptyBallotDraft(estado);
   }
 }
 
-const candidateChoiceRepository = new FirestoreCandidateChoiceRepository();
+const ballotDraftRepository = new FirestoreBallotDraftRepository();
 
-const saveBallotStateDirectly = async (userId, estado) => {
+const saveBallotStateServerSide = async (userId, estado) => {
   const activeEstado = normalizeStateCode(estado);
   if (!activeEstado) throw new VotingError('STATE_REQUIRED', 'Escolha um estado antes de continuar.');
 
-  const previousDraft = readBallotDraft(userId);
-  const nextDraft = previousDraft.estado === activeEstado
-    ? normalizeDraft({ ...previousDraft, estado: activeEstado, updated_at: new Date().toISOString() }, activeEstado)
-    : createEmptyBallotDraft(activeEstado);
-
-  return candidateChoiceRepository.saveDraft(userId, {
-    ...nextDraft,
-    estado: activeEstado,
-    updated_at: new Date().toISOString()
+  const saveState = httpsCallable(functions, SAVE_BALLOT_STATE_FUNCTION_NAME);
+  const result = await saveState({
+    schema_version: BALLOT_SCHEMA_VERSION,
+    election_id: ACTIVE_ELECTION_ID,
+    estado: activeEstado
   });
+  return persistBallotDraft(userId, normalizeDraft(result.data?.draft, activeEstado));
 };
 
-const saveBallotStepSelectionDirectly = async (userId, stepKey, candidates, estado = null) => {
+const saveBallotStepSelectionServerSide = async (userId, stepKey, candidates, estado = null) => {
   const normalizedCandidates = asArray(candidates)
     .map(normalizeStoredCandidate)
     .filter(Boolean);
-  const currentDraft = readBallotDraft(userId, estado);
-  const activeEstado = normalizeStateCode(estado ?? currentDraft.estado);
+  const activeEstado = normalizeStateCode(estado ?? readBallotDraft(userId, estado).estado);
 
   if (!activeEstado) {
     throw new VotingError('STATE_REQUIRED', 'Escolha um estado antes de selecionar candidatos.');
   }
 
-  const candidateIds = normalizedCandidates.map((candidate) => candidate.id);
-  const fetchedCandidates = await fetchCandidatesByIds(candidateIds);
-  const fetchedById = new Map(fetchedCandidates.map((candidate) => [candidate.id, candidate]));
-  const candidateSnapshots = normalizedCandidates.map((candidate) => {
-    const storedCandidate = fetchedById.get(candidate.id) || candidate;
-    assertCandidateMatchesStep(storedCandidate, stepKey, activeEstado);
-    return normalizeStoredCandidate(storedCandidate);
-  }).filter(Boolean);
-
-  if (currentDraft.estado && currentDraft.estado !== activeEstado) {
-    throw new VotingError('STATE_MISMATCH', 'Estado ativo diferente do estado informado.');
-  }
-
-  const nextDraft = normalizeDraft({
-    ...currentDraft,
+  const saveStep = httpsCallable(functions, SAVE_BALLOT_STEP_FUNCTION_NAME);
+  const result = await saveStep({
+    schema_version: BALLOT_SCHEMA_VERSION,
+    election_id: ACTIVE_ELECTION_ID,
     estado: activeEstado,
-    candidate_groups: {
-      ...currentDraft.candidate_groups,
-      [stepKey]: candidateSnapshots,
-      ...(stepKey.startsWith('senadores') ? { senadores_2: [] } : {})
-    },
-    updated_at: new Date().toISOString()
-  }, activeEstado);
-
-  return candidateChoiceRepository.saveDraft(userId, nextDraft);
+    step_key: stepKey,
+    candidate_ids: normalizedCandidates.map((candidate) => candidate.id)
+  });
+  return persistBallotDraft(userId, normalizeDraft(result.data?.draft, activeEstado));
 };
 
 export const fetchRemoteBallotDraft = async (userId, estado = null) => {
   if (!userId) return createEmptyBallotDraft(estado);
 
   const requestStartedAtMs = Date.now();
-  const draft = await candidateChoiceRepository.readDraft(userId, estado);
+  const draft = await ballotDraftRepository.readDraft(userId, estado);
   const localDraft = readBallotDraft(userId, estado);
 
   if (shouldKeepLocalDraftOverRemote(localDraft, draft, requestStartedAtMs)) {
@@ -244,8 +123,8 @@ export const fetchRemoteBallotDraft = async (userId, estado = null) => {
 export const saveBallotState = async (userId, estado) => {
   if (!userId) throw new VotingError('AUTH_REQUIRED', 'Faça login para continuar.');
 
-  flowLog('draft.save-state.firestore-direct', { userId, estado });
-  return saveBallotStateDirectly(userId, estado);
+  flowLog('draft.save-state.server-side', { userId, estado });
+  return saveBallotStateServerSide(userId, estado);
 };
 
 export const resetBallotForState = (userId, estado) => saveBallotState(userId, estado);
@@ -283,14 +162,14 @@ export const saveBallotStepSelection = async (userId, stepKey, candidates, estad
     throw new VotingError('STATE_REQUIRED', 'Escolha um estado antes de selecionar candidatos.');
   }
 
-  flowLog('draft.save-step.firestore-direct', {
+  flowLog('draft.save-step.server-side', {
     userId,
     estado: activeEstado,
     stepKey,
     total: normalizedCandidates.length,
     markCompleted: options.markCompleted === true
   });
-  return saveBallotStepSelectionDirectly(userId, stepKey, normalizedCandidates, activeEstado);
+  return saveBallotStepSelectionServerSide(userId, stepKey, normalizedCandidates, activeEstado);
 };
 
 export const saveBallotDraftToAccount = async (userId, draft) => {

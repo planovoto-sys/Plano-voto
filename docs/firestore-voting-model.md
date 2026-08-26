@@ -1,103 +1,50 @@
 # Modelo Firestore para escolhas e viabilidade
 
-Este projeto usa Firestore sem Cloud Functions para salvar escolhas ativas e calcular viabilidade. A regra principal é: cada usuário autenticado tem apenas um documento público de escolhas, identificado por um ID aleatório que não é o UID.
-
-## Coleções
-
-```mermaid
-erDiagram
-  USERS ||--o| CHOICE_CONFIG : "subcollection privada"
-  CHOICE_CONFIG ||--|| PUBLIC_CANDIDATE_CHOICES : "choiceDocId aleatorio"
-  CANDIDATES ||--o{ PUBLIC_CANDIDATE_CHOICES : "candidateIds array-contains"
-
-  USERS {
-    string docId_uid
-    string name
-    string email
-    string profile_image
-    string estado
-    string role
-    timestamp created_at
-    timestamp updated_at
-  }
-
-  CHOICE_CONFIG {
-    string choiceDocId
-    timestamp createdAt
-  }
-
-  PUBLIC_CANDIDATE_CHOICES {
-    string docId_random
-    number schemaVersion
-    string electionId
-    string state
-    array candidateIds
-    timestamp updatedAt
-  }
-
-  CANDIDATES {
-    string docId_candidate
-    string Nome
-    string Partido
-    string Cargo
-    string Estado
-  }
-```
+As escolhas individuais são privadas. O cliente lê seu rascunho pelo UID, mas qualquer criação ou alteração passa por Cloud Functions autenticadas e protegidas por App Check. O público acessa somente dados de candidatos e métricas agregadas.
 
 ## Caminhos Firestore
 
-- `users/{uid}`: identidade minima do eleitor. Nao recebe lista de candidatos.
-- `users/{uid}/private/choiceConfig`: documento privado com `choiceDocId` aleatorio.
-- `publicCandidateChoices/{choiceDocId}`: escolha publica ativa, com `state` e `candidateIds`.
-- `candidatos/{candidateId}`: dados publicos dos candidatos.
-- `elections/{electionId}/ballot_drafts/{uid}`: legado, somente leitura do dono para migracao suave.
-- `elections/{electionId}/candidate_tallies/{candidateId}`: legado/admin; o app novo calcula viabilidade com `count()`.
+- `users/{uid}`: perfil mínimo, legível pelo proprietário e por administradores; mutações somente no backend.
+- `candidatos/{candidateId}` e `partidos_politicos/{partyId}`: informações públicas necessárias à aplicação; mutações somente por administrador.
+- `elections/{electionId}/ballot_drafts/{uid}`: rascunho privado, legível pelo proprietário e gravado somente pelas Functions.
+- `elections/{electionId}/selection_tallies/{state}__{candidateId}`: total público agregado de rascunhos que contêm o candidato naquele estado.
+- `elections/{electionId}/state_choice_metrics/{state}`: total público agregado de usuários com rascunho no estado.
+- `elections/{electionId}/votes/{voteId}`: voto com conteúdo criptografado em AES-256-GCM, acessível somente por administradores no backend.
+- `elections/{electionId}/candidate_tallies/{candidateId}`: total agregado de votos computado no backend.
+- `elections/{electionId}/eligibility/{uid}`: elegibilidade privada do eleitor.
+- `elections/{electionId}/plan_handoff_tokens/{tokenHash}`: rascunho temporário; o token original nunca é persistido.
+- `security_rate_limits/{principalHash}`: janela de rate limit sem UID ou IP em texto puro; sem acesso do cliente.
 
-## Fluxo implementado
+`publicCandidateChoices` e `users/{uid}/private/choiceConfig` são legados. As regras negam todo acesso, e a função de exclusão remove os documentos associados ao usuário quando possível.
 
-1. Login com Firebase Auth identifica o usuario.
-2. Ao salvar pela primeira vez, o app cria `users/{uid}/private/choiceConfig` com um `choiceDocId` aleatorio.
-3. O app grava as escolhas em `publicCandidateChoices/{choiceDocId}`.
-4. O rascunho completo com snapshots dos candidatos continua em `localStorage` para navegação rapida.
-5. Ao mudar de estado, o app sobrescreve o documento publico com o novo `state` e `candidateIds: []`.
-6. Ao escolher/remover candidato, o app sobrescreve o mesmo documento com os IDs ativos.
+## Fluxo
+
+1. Firebase Auth identifica o usuário e `syncUserProfile` cria ou atualiza somente campos derivados do token verificado.
+2. `saveBallotState` e `saveBallotStepSelection` validam estado, etapa, IDs, cargo e estado de cada candidato usando dados autoritativos.
+3. Na mesma transação do rascunho, a Function aplica os deltas aos contadores agregados. Nenhum documento público contém a lista de escolhas de uma pessoa.
+4. O frontend consulta os documentos agregados para calcular viabilidade.
+5. `castAnonymousVote` verifica elegibilidade e unicidade, atualiza totais e grava o conteúdo do voto criptografado.
 
 ## Regras de contagem
 
-A viabilidade usa agregacao de leitura do Firestore:
-
-```js
-count(
-  publicCandidateChoices
-    .where('electionId', '==', ACTIVE_ELECTION_ID)
-    .where('state', '==', candidateState)
-    .where('candidateIds', 'array-contains', candidateId)
-)
-```
-
-Formula:
-
 ```txt
-viabilidadePercent = min((usuariosQueSelecionaram / mediaVotosEleitos) * 100, 100)
+viabilidadePercent = min((selecoesAgregadas / mediaVotosEleitos) * 100, 100)
 ```
 
-No teste atual, `mediaVotosEleitos = 4`.
+Contadores negativos são tratados como zero no cliente. Migrações administrativas devem reconciliar os contadores com os rascunhos privados antes de remover definitivamente os dados legados.
 
-## Garantias
+## Garantias e limites
 
-- Um usuario nao cria dois documentos publicos, porque o `choiceDocId` fica fixo no documento privado.
-- O mesmo candidato nao aparece duplicado no app, porque o servico normaliza IDs unicos antes de salvar.
-- O fluxo exige pelo menos 1 deputado federal e 2 senadores para avançar, mas a seleção pode ter mais candidatos.
-- Mudanca de estado zera a lista publica, entao escolhas antigas deixam de contar automaticamente.
+- O proprietário pode obter apenas o próprio perfil, rascunho e elegibilidade; não pode listar a coleção.
+- O cliente não possui permissão direta de escrita em perfis, rascunhos, votos, métricas ou tokens.
+- A seleção aceita no máximo 1 deputado federal e 2 senadores, sem duplicatas.
+- Métricas públicas revelam apenas totais agregados. Para grupos pequenos, considere limiar mínimo de publicação se houver risco de reidentificação contextual.
+- A chave Web do Firebase é pública por natureza; restrições de domínio/API, App Check e Rules são obrigatórias.
 
-## Limite de privacidade
+## Deploy necessário
 
-O ID publico aleatorio reduz o vinculo direto com o UID, mas nao e anonimato forte. Como o frontend usa `count()` direto no Firestore, as regras precisam permitir leitura de `publicCandidateChoices`. Para sigilo forte no futuro, a contagem agregada deve voltar para um backend confiavel ou outro mecanismo que nao exponha documentos de escolha.
-
-## Deploy necessario
-
-Depois da alteracao, publique regras e indices:
+Configure App Check e `BALLOT_ENCRYPTION_KEY` conforme `docs/security.md`, teste no Emulator Suite e publique funções e regras em conjunto:
 
 ```bash
-firebase deploy --only firestore:rules,firestore:indexes
+firebase deploy --only functions,firestore:rules,firestore:indexes,storage,hosting
 ```

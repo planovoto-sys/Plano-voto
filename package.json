@@ -1,7 +1,7 @@
 {
   "name": "plano-mvp",
   "private": true,
-  "version": "1.10.0",
+  "version": "1.11.0",
   "type": "module",
   "engines": {
     "node": ">=20.19.0"
@@ -10,6 +10,9 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
+    "security:secrets": "node scripts/security-audit.mjs",
+    "security:dependencies": "npm audit --audit-level=high && npm audit --prefix functions --audit-level=high",
+    "security:audit": "npm run security:secrets && npm run security:dependencies",
     "preview": "vite preview",
     "candidates:cleanup-placeholders": "node scripts/delete-placeholder-candidates.mjs",
     "candidates:import": "node scripts/import-candidates-2026.mjs",

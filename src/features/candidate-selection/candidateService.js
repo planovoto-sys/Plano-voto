@@ -1,6 +1,7 @@
 import {
   collection,
-  getCountFromServer,
+  doc,
+  getDoc,
   getDocs,
   query,
   where
@@ -22,7 +23,6 @@ const STATE_CHOICE_CACHE_MAX_AGE_MS = 2 * 60 * 1000;
 const STATE_CHOICE_CACHE_MAX_STALE_MS = 30 * 60 * 1000;
 const CANDIDATES_COLLECTION = 'candidatos';
 const PARTY_COLLECTION = 'partidos_politicos';
-const PUBLIC_CANDIDATE_CHOICES_COLLECTION = 'publicCandidateChoices';
 const memoryCache = new Map();
 let storageAvailability = null;
 
@@ -383,13 +383,14 @@ export const fetchStateChoiceCounts = async (states = [], { forceRefresh = false
   });
 
   await Promise.all(statesToFetch.map(async (stateCode) => {
-    const choicesQuery = query(
-      collection(db, PUBLIC_CANDIDATE_CHOICES_COLLECTION),
-      where('electionId', '==', ACTIVE_ELECTION_ID),
-      where('state', '==', stateCode)
-    );
-    const countSnap = await getCountFromServer(choicesQuery);
-    const activeVoters = Math.max(0, Number(countSnap.data().count) || 0);
+    const metricSnap = await getDoc(doc(
+      db,
+      'elections',
+      ACTIVE_ELECTION_ID,
+      'state_choice_metrics',
+      stateCode
+    ));
+    const activeVoters = Math.max(0, Number(metricSnap.data()?.active_voters) || 0);
     const data = {
       schema_version: 1,
       election_id: ACTIVE_ELECTION_ID,
@@ -475,21 +476,27 @@ export const fetchCandidateTallies = async (candidateTargets, { forceRefresh = f
   });
 
   for (const target of targetsToFetch) {
-    const constraints = [
-      where('electionId', '==', ACTIVE_ELECTION_ID),
-      where('candidateIds', 'array-contains', target.id)
-    ];
-
+    let activeSelections = 0;
     if (target.estado) {
-      constraints.push(where('state', '==', target.estado));
+      const tallySnap = await getDoc(doc(
+        db,
+        'elections',
+        ACTIVE_ELECTION_ID,
+        'selection_tallies',
+        `${target.estado}__${target.id}`
+      ));
+      activeSelections = Math.max(0, Number(tallySnap.data()?.active_selections) || 0);
+    } else {
+      const tallyQuery = query(
+        collection(db, 'elections', ACTIVE_ELECTION_ID, 'selection_tallies'),
+        where('candidate_id', '==', target.id)
+      );
+      const tallySnapshot = await getDocs(tallyQuery);
+      activeSelections = tallySnapshot.docs.reduce(
+        (total, tallyDoc) => total + Math.max(0, Number(tallyDoc.data()?.active_selections) || 0),
+        0
+      );
     }
-
-    const choicesQuery = query(
-      collection(db, PUBLIC_CANDIDATE_CHOICES_COLLECTION),
-      ...constraints
-    );
-    const countSnap = await getCountFromServer(choicesQuery);
-    const activeSelections = Math.max(0, Number(countSnap.data().count) || 0);
     const data = {
       schema_version: 1,
       election_id: ACTIVE_ELECTION_ID,

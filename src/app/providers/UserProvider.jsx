@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth, db } from '@/shared/firebase/firebase';
-import { deleteField, doc, getDoc, onSnapshot, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
-import { ACTIVE_ELECTION_ID } from '@/shared/constants/ballot';
+import { auth, db, functions } from '@/shared/firebase/firebase';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
+import { ACTIVE_ELECTION_ID, SYNC_USER_PROFILE_FUNCTION_NAME } from '@/shared/constants/ballot';
 import { UserContext } from '@/app/providers/UserContext';
 import { flowError, flowLog, flowWarn } from '@/shared/utils/debugFlow';
 
@@ -58,43 +59,12 @@ export const UserProvider = ({ children }) => {
       const userRef = doc(db, "users", user.uid);
       const eligibilityRef = doc(db, "elections", ACTIVE_ELECTION_ID, "eligibility", user.uid);
 
-      const checkAndCreateUser = async () => {
+      const syncUserProfile = async () => {
         try {
-          const docSnap = await getDoc(userRef);
-          if (!docSnap.exists()) {
-            flowLog('user.create.start', { userId: user.uid });
-            await setDoc(userRef, {
-              name: user.displayName,
-              email: user.email,
-              profile_image: user.photoURL,
-              estado: null,
-              role: 'voter',
-              schema_version: 1,
-              created_at: serverTimestamp()
-            });
-            flowLog('user.create.success', { userId: user.uid });
-          } else {
-            flowLog('user.migrate.start', {
-              userId: user.uid,
-              hasLegacyChoices: docSnap.data().candidatos_escolhidos !== undefined
-            });
-            const userPatch = {
-              name: user.displayName,
-              email: user.email,
-              profile_image: user.photoURL,
-              role: docSnap.data().role || 'voter',
-              schema_version: 1,
-              last_login_at: serverTimestamp(),
-              updated_at: serverTimestamp()
-            };
-
-            if (docSnap.data().candidatos_escolhidos !== undefined) {
-              userPatch.candidatos_escolhidos = deleteField();
-            }
-
-            await updateDoc(userRef, userPatch);
-            flowLog('user.migrate.success', { userId: user.uid });
-          }
+          flowLog('user.sync.start', { userId: user.uid });
+          const syncProfile = httpsCallable(functions, SYNC_USER_PROFILE_FUNCTION_NAME);
+          await syncProfile({});
+          flowLog('user.sync.success', { userId: user.uid });
         } catch (error) {
           flowError('user.ensure.error', error, { userId: user.uid });
           if (import.meta.env.DEV) {
@@ -103,7 +73,7 @@ export const UserProvider = ({ children }) => {
         }
       };
 
-      checkAndCreateUser();
+      syncUserProfile();
 
       const unsubUser = onSnapshot(userRef, (doc) => {
         if (doc.exists()) {

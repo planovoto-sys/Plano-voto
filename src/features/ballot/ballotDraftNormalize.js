@@ -133,7 +133,6 @@ export const normalizeDraft = (rawDraft, estado = null) => {
 
   return {
     ...baseDraft,
-    ...rawDraft,
     schema_version: BALLOT_SCHEMA_VERSION,
     election_id: ACTIVE_ELECTION_ID,
     estado: normalizeStateCode(rawDraft.estado ?? estado) || null,

@@ -1,7 +1,8 @@
-import { createHash, randomBytes } from 'node:crypto';
+import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:crypto';
 import { initializeApp } from 'firebase-admin/app';
 import { FieldValue, getFirestore } from 'firebase-admin/firestore';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
+import { defineSecret } from 'firebase-functions/params';
 
 initializeApp();
 
@@ -16,6 +17,39 @@ const OFFICE_MINIMUM_SELECTIONS = {
 const BALLOT_FLOW_STEP_IDS = ['deputado_federal', 'senadores_1', 'senadores_2'];
 const PLAN_HANDOFF_TTL_MS = 10 * 60 * 1000;
 const PLAN_HANDOFF_TOKEN_BYTES = 32;
+const MAX_REQUEST_BYTES = 32 * 1024;
+const BALLOT_ENCRYPTION_KEY = defineSecret('BALLOT_ENCRYPTION_KEY');
+const firebaseProjectId = process.env.GCLOUD_PROJECT || process.env.GCP_PROJECT || '';
+const DEFAULT_ALLOWED_ORIGINS = [
+  'https://bomdevoto.org',
+  'https://www.bomdevoto.org',
+  'https://bomdevoto.com.br',
+  'https://www.bomdevoto.com.br',
+  'https://planovoto-sys.github.io',
+  ...(firebaseProjectId ? [
+    `https://${firebaseProjectId}.web.app`,
+    `https://${firebaseProjectId}.firebaseapp.com`,
+  ] : []),
+  /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/,
+];
+const configuredOrigins = (process.env.ALLOWED_ORIGINS || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+const CALLABLE_OPTIONS = {
+  region: FUNCTIONS_REGION,
+  cors: configuredOrigins.length > 0 ? configuredOrigins : DEFAULT_ALLOWED_ORIGINS,
+  enforceAppCheck: true,
+};
+const RATE_LIMITS = {
+  syncUserProfile: { limit: 12, windowMs: 60 * 1000 },
+  saveBallotState: { limit: 60, windowMs: 60 * 1000 },
+  saveBallotStepSelection: { limit: 90, windowMs: 60 * 1000 },
+  deleteUserElectionData: { limit: 3, windowMs: 60 * 60 * 1000 },
+  createPlanHandoffToken: { limit: 20, windowMs: 10 * 60 * 1000 },
+  redeemPlanHandoffToken: { limit: 30, windowMs: 10 * 60 * 1000 },
+  castAnonymousVote: { limit: 5, windowMs: 60 * 60 * 1000 },
+};
 const VALID_STATES = new Set([
   'AC',
   'AL',
@@ -97,17 +131,147 @@ const hashPlanHandoffToken = (electionId, token) => (
 
 const asString = (value) => (typeof value === 'string' ? value.trim() : '');
 
+const asBoundedString = (value, maxLength = 160) => asString(value).slice(0, maxLength);
+
+const assertRequestPayload = (request, allowedKeys) => {
+  const payload = request.data;
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    throw new HttpsError('invalid-argument', 'Payload invalido.');
+  }
+
+  let payloadSize = 0;
+  try {
+    payloadSize = Buffer.byteLength(JSON.stringify(payload), 'utf8');
+  } catch {
+    throw new HttpsError('invalid-argument', 'Payload invalido.');
+  }
+
+  if (payloadSize > MAX_REQUEST_BYTES) {
+    throw new HttpsError('invalid-argument', 'Payload excede o limite permitido.');
+  }
+
+  const unexpectedKeys = Object.keys(payload).filter((key) => !allowedKeys.includes(key));
+  if (unexpectedKeys.length > 0) {
+    throw new HttpsError('invalid-argument', 'Payload contem campos nao permitidos.');
+  }
+
+  return payload;
+};
+
+const assertObjectKeys = (value, allowedKeys, label) => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new HttpsError('invalid-argument', `${label} invalido.`);
+  }
+
+  if (Object.keys(value).some((key) => !allowedKeys.includes(key))) {
+    throw new HttpsError('invalid-argument', `${label} contem campos nao permitidos.`);
+  }
+
+  return value;
+};
+
+const getRequestPrincipal = (request) => {
+  if (request.auth?.uid) return `uid:${request.auth.uid}`;
+  const ip = request.rawRequest?.ip || request.rawRequest?.socket?.remoteAddress || 'unknown';
+  const appId = request.app?.appId || 'unknown-app';
+  return `anonymous:${appId}:${ip}`;
+};
+
+const enforceRateLimit = async (request, action) => {
+  const config = RATE_LIMITS[action];
+  if (!config) throw new HttpsError('internal', 'Limite de seguranca nao configurado.');
+
+  const principalHash = createHash('sha256')
+    .update(`${action}:${getRequestPrincipal(request)}`)
+    .digest('hex');
+  const rateRef = db.doc(`security_rate_limits/${principalHash}`);
+  const nowMs = Date.now();
+
+  await db.runTransaction(async (transaction) => {
+    const snapshot = await transaction.get(rateRef);
+    const current = snapshot.exists ? snapshot.data() : null;
+    const windowStartedAtMs = Number(current?.window_started_at_ms || 0);
+    const windowExpired = nowMs - windowStartedAtMs >= config.windowMs;
+    const nextCount = windowExpired ? 1 : Number(current?.count || 0) + 1;
+
+    if (!windowExpired && nextCount > config.limit) {
+      throw new HttpsError('resource-exhausted', 'Muitas tentativas. Aguarde e tente novamente.');
+    }
+
+    transaction.set(rateRef, {
+      action,
+      count: nextCount,
+      window_started_at_ms: windowExpired ? nowMs : windowStartedAtMs,
+      expires_at_ms: (windowExpired ? nowMs : windowStartedAtMs) + config.windowMs,
+      updated_at: FieldValue.serverTimestamp(),
+    }, { merge: false });
+  });
+};
+
+const getBallotEncryptionKey = () => {
+  const encodedKey = BALLOT_ENCRYPTION_KEY.value();
+  const key = Buffer.from(encodedKey || '', 'base64');
+  if (key.length !== 32) {
+    throw new HttpsError('failed-precondition', 'Criptografia de votos nao configurada.');
+  }
+  return key;
+};
+
+const encryptBallot = (ballot) => {
+  const iv = randomBytes(12);
+  const cipher = createCipheriv('aes-256-gcm', getBallotEncryptionKey(), iv);
+  const ciphertext = Buffer.concat([
+    cipher.update(JSON.stringify(ballot), 'utf8'),
+    cipher.final(),
+  ]);
+
+  return {
+    algorithm: 'A256GCM',
+    key_version: 1,
+    iv: iv.toString('base64'),
+    authentication_tag: cipher.getAuthTag().toString('base64'),
+    ciphertext: ciphertext.toString('base64'),
+  };
+};
+
+const decryptBallot = (encryptedBallot) => {
+  if (encryptedBallot?.algorithm !== 'A256GCM') {
+    throw new HttpsError('data-loss', 'Formato de voto criptografado invalido.');
+  }
+
+  try {
+    const decipher = createDecipheriv(
+      'aes-256-gcm',
+      getBallotEncryptionKey(),
+      Buffer.from(encryptedBallot.iv, 'base64')
+    );
+    decipher.setAuthTag(Buffer.from(encryptedBallot.authentication_tag, 'base64'));
+    const plaintext = Buffer.concat([
+      decipher.update(Buffer.from(encryptedBallot.ciphertext, 'base64')),
+      decipher.final(),
+    ]).toString('utf8');
+    return JSON.parse(plaintext);
+  } catch (error) {
+    if (error instanceof HttpsError) throw error;
+    throw new HttpsError('data-loss', 'Nao foi possivel descriptografar o voto.');
+  }
+};
+
 const assertValidId = (value, label) => {
   const id = asString(value);
-  if (!id || id.includes('/') || id.length > 160) {
+  if (!id || id.length > 160 || !/^[\p{L}\p{N}._~:-]+$/u.test(id)) {
     throw new HttpsError('invalid-argument', `${label} invalido.`);
   }
   return id;
 };
 
-const assertStringList = (value, { min = 1, exact = null } = {}, label) => {
+const assertStringList = (value, { min = 1, max = 100, exact = null } = {}, label) => {
   const rawList = Array.isArray(value) ? value : asString(value) ? [value] : [];
-  if ((exact !== null && rawList.length !== exact) || rawList.length < min) {
+  if (
+    (exact !== null && rawList.length !== exact) ||
+    rawList.length < min ||
+    rawList.length > max
+  ) {
     throw new HttpsError('invalid-argument', `${label} invalido.`);
   }
 
@@ -137,15 +301,14 @@ const isEligibleStatus = (eligibility) => {
 
 const buildCandidateSnapshot = (candidateId, data) => ({
   id: candidateId,
-  nome: data.Nome || data.nome || '',
-  nome_civil: data.nome_civil || data.nomeCivil || data.NomeCivil || null,
-  partido: data.Partido || data.partido || data.sigla_partido || '',
-  sigla_partido: data.sigla_partido || data.siglaPartido || data.SiglaPartido || null,
-  tipo: data.tipo || data.Tipo || null,
-  cargo: data.Cargo || data.cargo || '',
-  numero: data.Numero || data.numero || null,
+  nome: asBoundedString(data.Nome || data.nome, 160),
+  partido: asBoundedString(data.Partido || data.partido || data.sigla_partido, 40),
+  sigla_partido: asBoundedString(data.sigla_partido || data.siglaPartido || data.SiglaPartido, 20) || null,
+  tipo: asBoundedString(data.tipo || data.Tipo, 40) || null,
+  cargo: asBoundedString(data.Cargo || data.cargo, 80),
+  numero: asBoundedString(data.Numero || data.numero, 12) || null,
   estado: getCandidateStateCode(data) || null,
-  classificacao: data['Classificação'] || data.Classificacao || data.classificacao || null,
+  classificacao: asBoundedString(data['Classificação'] || data.Classificacao || data.classificacao, 80) || null,
   nota_candidato: readNumericValue(data.nota_candidato, data.notaCandidato, data['Nota candidato']),
   nota_partido: readNumericValue(data.nota_partido, data.notaPartido, data['Nota partido']),
   nota_final: readNumericValue(data.nota_final, data.notaFinal, data.nota_candidato, data.notaCandidato, data['Nota candidato'], data.nota_partido, data.notaPartido, data['Nota partido']),
@@ -201,21 +364,21 @@ const getCandidateStateCode = (candidateData = {}) => {
   return '';
 };
 
-const assertCandidateOffice = (candidateId, candidateData, expectedOffice) => {
+const assertCandidateOffice = (candidateData, expectedOffice) => {
   const actualOffice = candidateData.Cargo || candidateData.cargo;
   if (normalizeOfficeName(actualOffice) !== normalizeOfficeName(expectedOffice)) {
-    throw new HttpsError('invalid-argument', `Candidato ${candidateId} nao pertence ao cargo ${expectedOffice}.`);
+    throw new HttpsError('invalid-argument', `Candidato nao pertence ao cargo ${expectedOffice}.`);
   }
 };
 
-const assertCandidateState = (candidateId, candidateData, expectedState, { requireState = false } = {}) => {
+const assertCandidateState = (candidateData, expectedState, { requireState = false } = {}) => {
   const actualState = getCandidateStateCode(candidateData);
   if (requireState && !actualState) {
-    throw new HttpsError('invalid-argument', `Candidato ${candidateId} nao possui estado definido.`);
+    throw new HttpsError('invalid-argument', 'Candidato nao possui estado definido.');
   }
 
   if (actualState && actualState !== 'TODOS' && actualState !== expectedState) {
-    throw new HttpsError('invalid-argument', `Candidato ${candidateId} nao pertence ao estado informado.`);
+    throw new HttpsError('invalid-argument', 'Candidato nao pertence ao estado informado.');
   }
 };
 
@@ -244,27 +407,7 @@ const emptyCompletedSteps = () => ({
 const normalizeStoredCandidate = (candidate) => {
   if (!candidate?.id) return null;
 
-  return {
-    id: candidate.id,
-    nome: candidate.nome || candidate.Nome || '',
-    nome_civil: candidate.nome_civil || candidate.nomeCivil || candidate.NomeCivil || null,
-    partido: candidate.partido || candidate.Partido || candidate.sigla_partido || '',
-    sigla_partido: candidate.sigla_partido || candidate.siglaPartido || candidate.SiglaPartido || null,
-    tipo: candidate.tipo || candidate.Tipo || null,
-    cargo: candidate.cargo || candidate.Cargo || '',
-    numero: candidate.numero || candidate.Numero || null,
-    estado: getCandidateStateCode(candidate) || null,
-    classificacao: candidate.classificacao || candidate.ClassificacaoOficial || candidate['Classificação'] || candidate.Classificacao || null,
-    nota_candidato: readNumericValue(candidate.nota_candidato, candidate.notaCandidato, candidate['Nota candidato']),
-    nota_partido: readNumericValue(candidate.nota_partido, candidate.notaPartido, candidate['Nota partido']),
-    nota_final: readNumericValue(candidate.nota_final, candidate.notaFinal, candidate.nota_candidato, candidate.notaCandidato, candidate['Nota candidato'], candidate.nota_partido, candidate.notaPartido, candidate['Nota partido']),
-    chance: Number(candidate.chance ?? candidate.Chance ?? 0) || 0,
-    selected_by_users: Number(candidate.selected_by_users ?? candidate.selectedByUsers ?? 0) || 0,
-    average_elected_votes: Number(candidate.average_elected_votes ?? candidate.averageElectedVotes ?? 0) || 0,
-    ranking_total: Number(candidate.ranking_total ?? candidate.rankingTotal ?? 0) || 0,
-    temNotaCandidato: candidate.temNotaCandidato ?? candidate.tem_nota_candidato ?? null,
-    tem_nota_candidato: candidate.temNotaCandidato ?? candidate.tem_nota_candidato ?? null,
-  };
+  return buildCandidateSnapshot(assertValidId(candidate.id, 'Candidato'), candidate);
 };
 
 const uniqueCandidatesById = (candidates) => {
@@ -276,10 +419,10 @@ const uniqueCandidatesById = (candidates) => {
   });
 };
 
-const createEmptyBallotDraft = (userId, estado) => ({
+const createEmptyBallotDraft = (estado) => ({
   schema_version: BALLOT_SCHEMA_VERSION,
+  metrics_version: 1,
   election_id: ACTIVE_ELECTION_ID,
-  user_id: userId,
   estado,
   selections: emptySelections(),
   candidate_groups: emptyCandidateGroups(),
@@ -290,7 +433,7 @@ const createEmptyBallotDraft = (userId, estado) => ({
 
 const normalizeDraft = (rawDraft, userId, estado = null) => {
   const normalizedState = normalizeStateCode(rawDraft?.estado ?? estado);
-  const baseDraft = createEmptyBallotDraft(userId, normalizedState || null);
+  const baseDraft = createEmptyBallotDraft(normalizedState || null);
   if (!rawDraft || typeof rawDraft !== 'object') return baseDraft;
 
   const rawSelections = emptySelections();
@@ -340,16 +483,67 @@ const normalizeDraft = (rawDraft, userId, estado = null) => {
 
   return {
     ...baseDraft,
-    ...rawDraft,
     schema_version: BALLOT_SCHEMA_VERSION,
     election_id: ACTIVE_ELECTION_ID,
-    user_id: userId,
     estado: normalizedState || null,
     selections,
     candidate_groups: candidateGroups,
     completed_steps: completedSteps,
     active_candidate_ids: activeCandidateIds,
   };
+};
+
+const updateDraftMetrics = (transaction, electionId, previousDraft, nextDraft, updatedAt) => {
+  const previousState = normalizeStateCode(previousDraft?.estado);
+  const nextState = normalizeStateCode(nextDraft?.estado);
+  const previousCandidateIds = new Set(previousDraft?.active_candidate_ids || []);
+  const nextCandidateIds = new Set(nextDraft?.active_candidate_ids || []);
+
+  if (previousState && previousState !== nextState) {
+    transaction.set(db.doc(`elections/${electionId}/state_choice_metrics/${previousState}`), {
+      schema_version: BALLOT_SCHEMA_VERSION,
+      election_id: electionId,
+      state: previousState,
+      active_voters: FieldValue.increment(-1),
+      updated_at: updatedAt,
+    }, { merge: true });
+  }
+
+  if (nextState && previousState !== nextState) {
+    transaction.set(db.doc(`elections/${electionId}/state_choice_metrics/${nextState}`), {
+      schema_version: BALLOT_SCHEMA_VERSION,
+      election_id: electionId,
+      state: nextState,
+      active_voters: FieldValue.increment(1),
+      updated_at: updatedAt,
+    }, { merge: true });
+  }
+
+  previousCandidateIds.forEach((candidateId) => {
+    if (previousState && (previousState !== nextState || !nextCandidateIds.has(candidateId))) {
+      transaction.set(db.doc(`elections/${electionId}/selection_tallies/${previousState}__${candidateId}`), {
+        schema_version: BALLOT_SCHEMA_VERSION,
+        election_id: electionId,
+        state: previousState,
+        candidate_id: candidateId,
+        active_selections: FieldValue.increment(-1),
+        updated_at: updatedAt,
+      }, { merge: true });
+    }
+  });
+
+  nextCandidateIds.forEach((candidateId) => {
+    if (nextState && (previousState !== nextState || !previousCandidateIds.has(candidateId))) {
+      transaction.set(db.doc(`elections/${electionId}/selection_tallies/${nextState}__${candidateId}`), {
+        schema_version: BALLOT_SCHEMA_VERSION,
+        election_id: electionId,
+        state: nextState,
+        candidate_id: candidateId,
+        active_selections: FieldValue.increment(1),
+        updated_at: updatedAt,
+      }, { merge: true });
+    }
+  });
 };
 
 const assertElectionPayload = (payload) => {
@@ -378,22 +572,109 @@ const getStepOffice = (stepKey) => (
   stepKey === 'deputado_federal' ? 'Deputado Federal' : 'Senador'
 );
 
+const buildAuthoritativeHandoffDraft = async (rawDraft, estado) => {
+  const normalizedDraft = normalizeDraft(rawDraft, 'handoff', estado);
+  const deputadoIds = normalizedDraft.candidate_groups.deputado_federal
+    .map((candidate) => assertValidId(candidate.id, 'Candidato'));
+  const senadorIds = normalizedDraft.candidate_groups.senadores_1
+    .map((candidate) => assertValidId(candidate.id, 'Candidato'));
+  const candidateIds = [...deputadoIds, ...senadorIds];
+
+  if (deputadoIds.length > 1 || senadorIds.length > 2 || new Set(candidateIds).size !== candidateIds.length) {
+    throw new HttpsError('invalid-argument', 'Selecoes do rascunho invalidas.');
+  }
+
+  const candidateRefs = candidateIds.map((candidateId) => db.doc(`candidatos/${candidateId}`));
+  const candidateSnaps = candidateRefs.length > 0 ? await db.getAll(...candidateRefs) : [];
+  const candidatesById = new Map();
+
+  candidateSnaps.forEach((candidateSnap, index) => {
+    if (!candidateSnap.exists) {
+      throw new HttpsError('invalid-argument', 'Candidato nao encontrado.');
+    }
+    const candidateId = candidateIds[index];
+    const candidateData = candidateSnap.data();
+    assertCandidateState(candidateData, estado);
+    candidatesById.set(candidateId, normalizeStoredCandidate(buildCandidateSnapshot(candidateId, candidateData)));
+  });
+
+  deputadoIds.forEach((candidateId) => {
+    assertCandidateOffice(candidateSnaps[candidateIds.indexOf(candidateId)].data(), 'Deputado Federal');
+  });
+  senadorIds.forEach((candidateId) => {
+    assertCandidateOffice(candidateSnaps[candidateIds.indexOf(candidateId)].data(), 'Senador');
+  });
+
+  return normalizeDraft({
+    estado,
+    candidate_groups: {
+      deputado_federal: deputadoIds.map((candidateId) => candidatesById.get(candidateId)),
+      senadores_1: senadorIds.map((candidateId) => candidatesById.get(candidateId)),
+      senadores_2: [],
+    },
+  }, 'handoff', estado);
+};
+
 const buildDraftResponse = (draft) => ({
   draft: {
-    ...draft,
+    schema_version: BALLOT_SCHEMA_VERSION,
+    election_id: ACTIVE_ELECTION_ID,
+    estado: draft.estado || null,
+    selections: draft.selections,
+    candidate_groups: draft.candidate_groups,
+    completed_steps: draft.completed_steps,
     updated_at: new Date().toISOString(),
   },
 });
 
-export const saveBallotState = onCall({
-  region: FUNCTIONS_REGION,
-  cors: true,
-}, async (request) => {
+export const syncUserProfile = onCall(CALLABLE_OPTIONS, async (request) => {
   if (!request.auth?.uid) {
     throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
   }
 
-  const payload = request.data || {};
+  assertRequestPayload(request, []);
+  await enforceRateLimit(request, 'syncUserProfile');
+
+  const token = request.auth.token || {};
+  const email = asBoundedString(token.email, 254);
+  if (!email || token.email_verified === false) {
+    throw new HttpsError('failed-precondition', 'Conta autenticada sem email verificado.');
+  }
+
+  const profileImage = asBoundedString(token.picture, 2048);
+  if (profileImage && !/^https:\/\//i.test(profileImage)) {
+    throw new HttpsError('invalid-argument', 'Imagem de perfil invalida.');
+  }
+
+  const userRef = db.doc(`users/${request.auth.uid}`);
+  const snapshot = await userRef.get();
+  const now = FieldValue.serverTimestamp();
+  const profile = {
+    name: asBoundedString(token.name, 120) || null,
+    email,
+    profile_image: profileImage || null,
+    schema_version: 1,
+    last_login_at: now,
+    updated_at: now,
+    candidatos_escolhidos: FieldValue.delete(),
+  };
+
+  if (!snapshot.exists) {
+    profile.created_at = now;
+    profile.role = 'voter';
+    profile.estado = null;
+  }
+  await userRef.set(profile, { merge: true });
+  return { ok: true };
+});
+
+export const saveBallotState = onCall(CALLABLE_OPTIONS, async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
+  }
+
+  const payload = assertRequestPayload(request, ['election_id', 'schema_version', 'estado']);
+  await enforceRateLimit(request, 'saveBallotState');
   const electionId = assertElectionPayload(payload);
   const estado = normalizeStateCode(payload.estado);
   if (!VALID_STATES.has(estado)) {
@@ -416,14 +697,15 @@ export const saveBallotState = onCall({
         updated_at: updatedAt,
       }, userId, estado)
       : {
-        ...createEmptyBallotDraft(userId, estado),
+        ...createEmptyBallotDraft(estado),
         updated_at: updatedAt,
       };
 
+    const previousMetricsDraft = draftSnap.data()?.metrics_version === 1 ? previousDraft : null;
+    updateDraftMetrics(transaction, electionId, previousMetricsDraft, nextDraft, updatedAt);
     transaction.set(draftRef, nextDraft, { merge: false });
     transaction.set(userRef, {
       estado,
-      role: 'voter',
       schema_version: 1,
       updated_at: updatedAt,
       candidatos_escolhidos: FieldValue.delete(),
@@ -435,15 +717,19 @@ export const saveBallotState = onCall({
   return buildDraftResponse(responseDraft);
 });
 
-export const saveBallotStepSelection = onCall({
-  region: FUNCTIONS_REGION,
-  cors: true,
-}, async (request) => {
+export const saveBallotStepSelection = onCall(CALLABLE_OPTIONS, async (request) => {
   if (!request.auth?.uid) {
     throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
   }
 
-  const payload = request.data || {};
+  const payload = assertRequestPayload(request, [
+    'election_id',
+    'schema_version',
+    'step_key',
+    'estado',
+    'candidate_ids',
+  ]);
+  await enforceRateLimit(request, 'saveBallotStepSelection');
   const electionId = assertElectionPayload(payload);
   const stepKey = assertStepKey(payload.step_key);
   const estado = normalizeStateCode(payload.estado);
@@ -451,9 +737,12 @@ export const saveBallotStepSelection = onCall({
     throw new HttpsError('invalid-argument', 'Estado invalido.');
   }
 
-  const candidateIds = asArray(payload.candidate_ids)
-    .map((candidateId) => assertValidId(candidateId, 'Candidato'))
-    .filter(Boolean);
+  const maximumCandidates = stepKey === 'deputado_federal' ? 1 : 2;
+  const candidateIds = assertStringList(
+    payload.candidate_ids,
+    { min: 0, max: maximumCandidates },
+    'Candidatos'
+  );
   const userId = request.auth.uid;
   const updatedAt = FieldValue.serverTimestamp();
   const draftRef = db.doc(`elections/${electionId}/ballot_drafts/${userId}`);
@@ -475,12 +764,12 @@ export const saveBallotStepSelection = onCall({
 
     const candidateSnapshots = candidateSnaps.map((candidateSnap, index) => {
       if (!candidateSnap.exists) {
-        throw new HttpsError('invalid-argument', `Candidato ${candidateIds[index]} nao encontrado.`);
+        throw new HttpsError('invalid-argument', 'Candidato nao encontrado.');
       }
 
       const data = candidateSnap.data();
-      assertCandidateOffice(candidateIds[index], data, getStepOffice(stepKey));
-      assertCandidateState(candidateIds[index], data, estado, { requireState: stepKey !== 'deputado_federal' });
+      assertCandidateOffice(data, getStepOffice(stepKey));
+      assertCandidateState(data, estado, { requireState: stepKey !== 'deputado_federal' });
       return normalizeStoredCandidate(buildCandidateSnapshot(candidateIds[index], data));
     });
 
@@ -500,6 +789,8 @@ export const saveBallotStepSelection = onCall({
       throw new HttpsError('invalid-argument', 'O mesmo senador nao pode ser escolhido mais de uma vez.');
     }
 
+    const previousMetricsDraft = draftSnap.data()?.metrics_version === 1 ? previousDraft : null;
+    updateDraftMetrics(transaction, electionId, previousMetricsDraft, nextDraft, updatedAt);
     transaction.set(draftRef, {
       ...nextDraft,
       updated_at: updatedAt,
@@ -512,14 +803,15 @@ export const saveBallotStepSelection = onCall({
 });
 
 export const deleteUserElectionData = onCall({
-  region: FUNCTIONS_REGION,
-  cors: true,
+  ...CALLABLE_OPTIONS,
+  secrets: [BALLOT_ENCRYPTION_KEY],
 }, async (request) => {
   if (!request.auth?.uid) {
     throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
   }
 
-  const payload = request.data || {};
+  const payload = assertRequestPayload(request, ['election_id', 'schema_version']);
+  await enforceRateLimit(request, 'deleteUserElectionData');
   const electionId = assertElectionPayload(payload);
   const userId = request.auth.uid;
   const updatedAt = FieldValue.serverTimestamp();
@@ -527,13 +819,25 @@ export const deleteUserElectionData = onCall({
   const userRef = db.doc(`users/${userId}`);
   const voteRef = db.doc(`elections/${electionId}/votes/${makeVoteId(electionId, userId)}`);
   const eligibilityRef = db.doc(`elections/${electionId}/eligibility/${userId}`);
+  const choiceConfigRef = db.doc(`users/${userId}/private/choiceConfig`);
 
   await db.runTransaction(async (transaction) => {
+    const draftSnap = await transaction.get(draftRef);
     const voteSnap = await transaction.get(voteRef);
     const eligibilitySnap = await transaction.get(eligibilityRef);
+    const choiceConfigSnap = await transaction.get(choiceConfigRef);
+    const voteData = voteSnap.exists ? voteSnap.data() : null;
+    const decryptedVote = voteData?.encrypted_ballot
+      ? decryptBallot(voteData.encrypted_ballot)
+      : voteData;
     const legacyVoteCandidateIds = voteSnap.exists
-      ? asArray(voteSnap.data().candidate_ids).map(asString).filter(Boolean)
+      ? asArray(decryptedVote?.candidate_ids).map(asString).filter(Boolean)
       : [];
+
+    if (draftSnap.exists && draftSnap.data()?.metrics_version === 1) {
+      const previousDraft = normalizeDraft(draftSnap.data(), userId, draftSnap.data()?.estado);
+      updateDraftMetrics(transaction, electionId, previousDraft, null, updatedAt);
+    }
 
     legacyVoteCandidateIds.forEach((candidateId) => {
       transaction.set(db.doc(`elections/${electionId}/candidate_tallies/${candidateId}`), {
@@ -546,6 +850,11 @@ export const deleteUserElectionData = onCall({
     });
 
     transaction.delete(draftRef);
+    transaction.delete(choiceConfigRef);
+    const legacyChoiceDocId = asString(choiceConfigSnap.data()?.choiceDocId);
+    if (legacyChoiceDocId && /^[\p{L}\p{N}._~:-]+$/u.test(legacyChoiceDocId)) {
+      transaction.delete(db.doc(`publicCandidateChoices/${legacyChoiceDocId}`));
+    }
     if (voteSnap.exists) transaction.delete(voteRef);
     if (eligibilitySnap.exists) {
       transaction.update(eligibilityRef, {
@@ -567,13 +876,25 @@ export const deleteUserElectionData = onCall({
   return { ok: true };
 });
 
-export const createPlanHandoffToken = onCall({
-  region: FUNCTIONS_REGION,
-  cors: true,
-}, async (request) => {
-  const payload = request.data || {};
+export const createPlanHandoffToken = onCall(CALLABLE_OPTIONS, async (request) => {
+  const payload = assertRequestPayload(request, [
+    'election_id',
+    'schema_version',
+    'estado',
+    'draft',
+  ]);
+  await enforceRateLimit(request, 'createPlanHandoffToken');
   const electionId = assertElectionPayload(payload);
-  const rawDraft = payload.draft || {};
+  const rawDraft = assertObjectKeys(payload.draft || {}, [
+    'schema_version',
+    'election_id',
+    'estado',
+    'selections',
+    'candidate_groups',
+    'completed_steps',
+    'active_candidate_ids',
+    'updated_at',
+  ], 'Rascunho');
   const estado = normalizeStateCode(rawDraft.estado || payload.estado);
 
   if (!VALID_STATES.has(estado)) {
@@ -583,11 +904,7 @@ export const createPlanHandoffToken = onCall({
   const token = makePlanHandoffToken();
   const tokenHash = hashPlanHandoffToken(electionId, token);
   const expiresAtMs = Date.now() + PLAN_HANDOFF_TTL_MS;
-  const draft = normalizeDraft(rawDraft, request.auth?.uid || 'handoff', estado);
-
-  draft.active_candidate_ids.forEach((candidateId) => {
-    assertValidId(candidateId, 'Candidato');
-  });
+  const draft = await buildAuthoritativeHandoffDraft(rawDraft, estado);
 
   await db.doc(`elections/${electionId}/plan_handoff_tokens/${tokenHash}`).set({
     schema_version: BALLOT_SCHEMA_VERSION,
@@ -608,11 +925,9 @@ export const createPlanHandoffToken = onCall({
   };
 });
 
-export const redeemPlanHandoffToken = onCall({
-  region: FUNCTIONS_REGION,
-  cors: true,
-}, async (request) => {
-  const payload = request.data || {};
+export const redeemPlanHandoffToken = onCall(CALLABLE_OPTIONS, async (request) => {
+  const payload = assertRequestPayload(request, ['election_id', 'schema_version', 'token']);
+  await enforceRateLimit(request, 'redeemPlanHandoffToken');
   const electionId = assertElectionPayload(payload);
   const token = assertValidId(payload.token, 'Token');
   const tokenHash = hashPlanHandoffToken(electionId, token);
@@ -645,16 +960,24 @@ export const redeemPlanHandoffToken = onCall({
 });
 
 export const castAnonymousVote = onCall({
-  region: FUNCTIONS_REGION,
-  cors: true,
+  ...CALLABLE_OPTIONS,
+  secrets: [BALLOT_ENCRYPTION_KEY],
 }, async (request) => {
   if (!request.auth?.uid) {
     throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
   }
 
-  const payload = request.data || {};
+  const payload = assertRequestPayload(request, [
+    'election_id',
+    'schema_version',
+    'estado',
+    'offices',
+    'candidate_ids',
+  ]);
+  await enforceRateLimit(request, 'castAnonymousVote');
   const electionId = asString(payload.election_id) || ACTIVE_ELECTION_ID;
   const estado = normalizeStateCode(payload.estado);
+  const offices = assertObjectKeys(payload.offices, ['deputado_federal', 'senadores'], 'Cargos');
 
   if (electionId !== ACTIVE_ELECTION_ID) {
     throw new HttpsError('invalid-argument', 'Eleicao invalida.');
@@ -669,18 +992,18 @@ export const castAnonymousVote = onCall({
   }
 
   const deputadosFederais = assertStringList(
-    payload.offices?.deputado_federal,
-    { min: OFFICE_MINIMUM_SELECTIONS.deputado_federal },
+    offices.deputado_federal,
+    { exact: OFFICE_MINIMUM_SELECTIONS.deputado_federal },
     'Deputado federal'
   );
   const senadores = assertStringList(
-    payload.offices?.senadores,
-    { min: OFFICE_MINIMUM_SELECTIONS.senadores },
+    offices.senadores,
+    { exact: OFFICE_MINIMUM_SELECTIONS.senadores },
     'Senadores'
   );
   const candidateIds = assertStringList(
     payload.candidate_ids,
-    { min: OFFICE_MINIMUM_SELECTIONS.deputado_federal + OFFICE_MINIMUM_SELECTIONS.senadores },
+    { exact: OFFICE_MINIMUM_SELECTIONS.deputado_federal + OFFICE_MINIMUM_SELECTIONS.senadores },
     'Candidatos'
   );
   const expectedCandidateIds = [...deputadosFederais, ...senadores];
@@ -726,28 +1049,26 @@ export const castAnonymousVote = onCall({
       candidateSnaps.push(await transaction.get(candidateRef));
     }
 
-    candidateSnaps.forEach((candidateSnap, index) => {
+    candidateSnaps.forEach((candidateSnap) => {
       if (!candidateSnap.exists) {
-        throw new HttpsError('invalid-argument', `Candidato ${candidateIds[index]} nao encontrado.`);
+        throw new HttpsError('invalid-argument', 'Candidato nao encontrado.');
       }
     });
 
     const candidateData = candidateSnaps.map((candidateSnap) => candidateSnap.data());
     deputadosFederais.forEach((candidateId) => {
       const index = candidateIds.indexOf(candidateId);
-      assertCandidateOffice(candidateId, candidateData[index], 'Deputado Federal');
+      assertCandidateOffice(candidateData[index], 'Deputado Federal');
     });
     senadores.forEach((candidateId) => {
       const index = candidateIds.indexOf(candidateId);
-      assertCandidateOffice(candidateId, candidateData[index], 'Senador');
+      assertCandidateOffice(candidateData[index], 'Senador');
     });
-    candidateData.forEach((candidate, index) => {
-      assertCandidateState(candidateIds[index], candidate, estado);
+    candidateData.forEach((candidate) => {
+      assertCandidateState(candidate, estado);
     });
 
-    transaction.set(voteRef, {
-      schema_version: BALLOT_SCHEMA_VERSION,
-      election_id: electionId,
+    const encryptedBallot = encryptBallot({
       estado,
       offices: {
         deputado_federal: deputadosFederais,
@@ -757,6 +1078,12 @@ export const castAnonymousVote = onCall({
       candidate_snapshots: candidateIds.map((candidateId, index) => (
         buildCandidateSnapshot(candidateId, candidateData[index])
       )),
+    });
+
+    transaction.set(voteRef, {
+      schema_version: BALLOT_SCHEMA_VERSION,
+      election_id: electionId,
+      encrypted_ballot: encryptedBallot,
       submitted_at: submittedAt,
       source: 'cloud-function-callable',
     });

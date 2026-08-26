@@ -88,6 +88,8 @@ src/
 
 ## 🚀 Como Executar
 
+Os controles de segurança, requisitos de App Check/Secret Manager e a rotina de auditoria estão documentados em [`docs/security.md`](docs/security.md).
+
 Pré-requisito: Node.js v20.19+
 
 👨‍💻 Autor

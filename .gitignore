@@ -8,10 +8,16 @@ dist-ssr/
 build/
 
 # env
-.env
-.env.local
-.env.*.local
+.env*
+!.env.example
 *.local
+*.pem
+*.p12
+*.pfx
+*.key
+*service-account*.json
+*service_account*.json
+credentials*.json
 
 # firebase
 .firebase/

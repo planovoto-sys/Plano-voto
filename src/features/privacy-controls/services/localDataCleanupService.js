@@ -5,32 +5,45 @@ const LOCAL_BALLOT_PREFIX = `meuvoto:${ACTIVE_ELECTION_ID}:`;
 const PUBLIC_CACHE_PREFIX = 'meuvoto:public-cache:';
 const FILTER_STORAGE_KEY = 'plano-voto:filtro-ativo';
 
-const getLocalStorageKeys = () => {
-  if (typeof window === 'undefined' || !window.localStorage) return [];
+const getStorageKeys = (storage) => {
+  if (!storage) return [];
 
   try {
-    return Array.from({ length: window.localStorage.length }, (_, index) => window.localStorage.key(index))
+    return Array.from({ length: storage.length }, (_, index) => storage.key(index))
       .filter(Boolean);
   } catch {
     return [];
   }
 };
 
-const removeLocalStorageKeys = (predicate) => {
-  if (typeof window === 'undefined' || !window.localStorage) return 0;
+const removeStorageKeys = (storage, predicate) => {
+  if (!storage) return 0;
 
   let removed = 0;
-  getLocalStorageKeys().forEach((key) => {
+  getStorageKeys(storage).forEach((key) => {
     if (!predicate(key)) return;
 
     try {
-      window.localStorage.removeItem(key);
+      storage.removeItem(key);
       removed += 1;
     } catch {
       // Se o navegador bloquear a escrita, apenas seguimos com o restante da limpeza.
     }
   });
 
+  return removed;
+};
+
+const removeBrowserStorageKeys = (predicate) => {
+  if (typeof window === 'undefined') return 0;
+  let removed = 0;
+  for (const storageName of ['localStorage', 'sessionStorage']) {
+    try {
+      removed += removeStorageKeys(window[storageName], predicate);
+    } catch {
+      // O navegador pode bloquear completamente um dos armazenamentos.
+    }
+  }
   return removed;
 };
 
@@ -47,7 +60,7 @@ const deleteIndexedDb = (name) => new Promise((resolve) => {
 });
 
 export function clearLocalBallotDraft() {
-  const removed = removeLocalStorageKeys((key) => (
+  const removed = removeBrowserStorageKeys((key) => (
     key.startsWith(`${LOCAL_BALLOT_PREFIX}ballotDraft:`) ||
     key.startsWith(`${LOCAL_BALLOT_PREFIX}lastReceipt:`) ||
     key === FILTER_STORAGE_KEY ||
@@ -58,7 +71,7 @@ export function clearLocalBallotDraft() {
 }
 
 export async function clearOfflineData() {
-  const removedLocal = removeLocalStorageKeys((key) => (
+  const removedLocal = removeBrowserStorageKeys((key) => (
     key.includes('offline') ||
     key.includes('sync_queue') ||
     key.includes('plan_snapshot')
@@ -103,7 +116,7 @@ export async function clearOfflineData() {
 }
 
 export async function clearCandidateCache() {
-  const removed = removeLocalStorageKeys((key) => key.startsWith(PUBLIC_CACHE_PREFIX));
+  const removed = removeBrowserStorageKeys((key) => key.startsWith(PUBLIC_CACHE_PREFIX));
 
   return { ok: true, removed };
 }

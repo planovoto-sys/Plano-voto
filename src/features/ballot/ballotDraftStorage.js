@@ -24,12 +24,18 @@ class LocalBallotDraftRepository {
     if (!userId || !canUseStorage()) return createEmptyBallotDraft(estado);
 
     try {
-      const raw = window.localStorage.getItem(draftKey(userId));
+      const storageKey = draftKey(userId);
+      let raw = window.sessionStorage.getItem(storageKey);
+      if (!raw) {
+        raw = window.localStorage.getItem(storageKey);
+        if (raw) window.sessionStorage.setItem(storageKey, raw);
+      }
+      window.localStorage.removeItem(storageKey);
       const parsedDraft = raw ? JSON.parse(raw) : null;
       const updatedAt = Date.parse(parsedDraft?.updated_at || '');
 
       if (Number.isFinite(updatedAt) && Date.now() - updatedAt > DRAFT_MAX_AGE_MS) {
-        window.localStorage.removeItem(draftKey(userId));
+        window.sessionStorage.removeItem(storageKey);
         return createEmptyBallotDraft(estado);
       }
 
@@ -43,7 +49,9 @@ class LocalBallotDraftRepository {
   persist(userId, draft) {
     if (!userId || !canUseStorage()) return draft;
     try {
-      window.localStorage.setItem(draftKey(userId), JSON.stringify(draft));
+      const storageKey = draftKey(userId);
+      window.sessionStorage.setItem(storageKey, JSON.stringify(draft));
+      window.localStorage.removeItem(storageKey);
     } catch {
       return draft;
     }
@@ -63,7 +71,9 @@ class LocalBallotDraftRepository {
   clear(userId) {
     if (!userId || !canUseStorage()) return;
     try {
-      window.localStorage.removeItem(draftKey(userId));
+      const storageKey = draftKey(userId);
+      window.sessionStorage.removeItem(storageKey);
+      window.localStorage.removeItem(storageKey);
     } catch {
       // O rascunho local e apenas um apoio de navegacao.
     }
