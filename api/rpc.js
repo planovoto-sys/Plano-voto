@@ -14,6 +14,11 @@ const ACTION_NAMES = new Set([
 let actionsPromise;
 let adminModulesPromise;
 
+const adminConfigurationError = (diagnosticCode) => Object.assign(
+  new Error('Servico temporariamente indisponivel.'),
+  { code: 'unavailable', diagnosticCode }
+);
+
 const loadAdminModules = () => {
   adminModulesPromise ||= import('firebase-admin/app').then((appModule) => ({ appModule }));
   return adminModulesPromise;
@@ -24,8 +29,11 @@ const initializeApiAdmin = async () => {
   const { cert, getApps, initializeApp } = appModule;
   if (getApps().length > 0) return;
 
-  const encodedServiceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
+  const encodedServiceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64?.trim();
   if (!encodedServiceAccount) {
+    if (process.env.VERCEL === '1') {
+      throw adminConfigurationError('firebase-admin-credentials-missing');
+    }
     initializeApp();
     return;
   }
@@ -34,7 +42,7 @@ const initializeApiAdmin = async () => {
   try {
     serviceAccount = JSON.parse(Buffer.from(encodedServiceAccount, 'base64').toString('utf8'));
   } catch {
-    throw new Error('FIREBASE_SERVICE_ACCOUNT_BASE64 invalida.');
+    throw adminConfigurationError('firebase-admin-credentials-malformed');
   }
 
   if (
@@ -43,13 +51,17 @@ const initializeApiAdmin = async () => {
     || !serviceAccount?.private_key
     || !serviceAccount?.client_email
   ) {
-    throw new Error('Credencial Firebase Admin invalida ou de outro projeto.');
+    throw adminConfigurationError('firebase-admin-credentials-invalid');
   }
 
-  initializeApp({
-    credential: cert(serviceAccount),
-    projectId: serviceAccount.project_id,
-  });
+  try {
+    initializeApp({
+      credential: cert(serviceAccount),
+      projectId: serviceAccount.project_id,
+    });
+  } catch {
+    throw adminConfigurationError('firebase-admin-credentials-initialization-failed');
+  }
 };
 
 const loadActions = async () => {
@@ -77,6 +89,55 @@ const STATUS_BY_CODE = Object.freeze({
   'deadline-exceeded': 408,
   unavailable: 503,
 });
+
+const GRPC_CODE_NAMES = Object.freeze({
+  1: 'cancelled',
+  2: 'unknown',
+  3: 'invalid-argument',
+  4: 'deadline-exceeded',
+  5: 'not-found',
+  6: 'already-exists',
+  7: 'permission-denied',
+  8: 'resource-exhausted',
+  9: 'failed-precondition',
+  10: 'aborted',
+  11: 'out-of-range',
+  12: 'unimplemented',
+  13: 'internal',
+  14: 'unavailable',
+  15: 'data-loss',
+  16: 'unauthenticated',
+});
+
+const INFRASTRUCTURE_MESSAGE_BY_CODE = Object.freeze({
+  'resource-exhausted': 'O limite temporario do banco foi atingido. Aguarde e tente novamente.',
+  'deadline-exceeded': 'O banco demorou demais para responder. Tente novamente.',
+  unavailable: 'Servico temporariamente indisponivel.',
+});
+
+const GRPC_RESPONSE_BY_CODE = Object.freeze({
+  'deadline-exceeded': { code: 'deadline-exceeded', status: 504 },
+  'permission-denied': { code: 'unavailable', status: 503 },
+  'resource-exhausted': { code: 'resource-exhausted', status: 429 },
+  'failed-precondition': { code: 'unavailable', status: 503 },
+  aborted: { code: 'unavailable', status: 503 },
+  internal: { code: 'internal', status: 500 },
+  unavailable: { code: 'unavailable', status: 503 },
+  unauthenticated: { code: 'unavailable', status: 503 },
+});
+
+export const normalizeErrorCode = (rawCode) => {
+  if (typeof rawCode === 'number') return GRPC_CODE_NAMES[rawCode] || 'internal';
+
+  const candidate = String(rawCode || 'internal')
+    .replace(/^functions\//i, '')
+    .trim()
+    .toLowerCase()
+    .replaceAll('_', '-');
+  const numericPrefix = candidate.match(/^(\d+)(?:\s|$)/);
+  if (numericPrefix) return GRPC_CODE_NAMES[Number(numericPrefix[1])] || 'internal';
+  return candidate || 'internal';
+};
 
 const readHeader = (request, name) => {
   return String(request.headers.get(name) || '');
@@ -187,12 +248,31 @@ const jsonResponse = (payload, status = 200, extraHeaders = {}) => new Response(
   }
 );
 
-const makeErrorResponse = (error) => {
-  const code = String(error?.code || 'internal').replace(/^functions\//, '');
-  const status = STATUS_BY_CODE[code] || 500;
+export const makeErrorResponse = (error) => {
+  const rawCode = error?.code;
+  const normalizedCode = normalizeErrorCode(rawCode);
+  const isGrpcInfrastructureError = (
+    typeof rawCode === 'number'
+    || /^\d+(?:\s|$)/.test(String(rawCode || '').trim())
+  );
+  const grpcResponse = isGrpcInfrastructureError
+    ? GRPC_RESPONSE_BY_CODE[normalizedCode]
+    : undefined;
+  const code = grpcResponse?.code || normalizedCode;
+  const status = grpcResponse?.status || STATUS_BY_CODE[code] || 500;
+  if (status >= 500) {
+    console.error('[api/rpc] request failed', {
+      code,
+      diagnosticCode: error?.diagnosticCode
+        || (isGrpcInfrastructureError ? `firestore-${normalizedCode}` : 'unhandled-server-error'),
+      name: error?.name || 'Error',
+    });
+  }
   const message = status === 500
     ? 'Falha interna ao processar a solicitacao.'
-    : String(error?.message || 'Falha ao processar a solicitacao.');
+    : isGrpcInfrastructureError
+      ? INFRASTRUCTURE_MESSAGE_BY_CODE[code] || 'Falha ao acessar o banco.'
+      : String(error?.message || 'Falha ao processar a solicitacao.');
 
   return jsonResponse({ error: { code, message } }, status);
 };
@@ -203,7 +283,7 @@ export default {
       return jsonResponse({
         ok: true,
         service: 'plano-voto-api',
-        version: '1.11.3',
+        version: '1.11.4',
         app_check: false,
         runtime_adapter: 'native-no-cloud-functions',
       });

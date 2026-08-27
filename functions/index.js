@@ -1,5 +1,5 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:crypto';
-import { cert, getApps, initializeApp } from 'firebase-admin/app';
+import { cert, getApp, getApps, initializeApp } from 'firebase-admin/app';
 import { FieldValue, getFirestore } from 'firebase-admin/firestore';
 
 class HttpsError extends Error {
@@ -19,11 +19,19 @@ const onCall = (optionsOrHandler, maybeHandler) => {
 
 const defineSecret = (name) => ({ value: () => process.env[name] || '' });
 
+const adminConfigurationError = (diagnosticCode) => Object.assign(
+  new Error('Servico temporariamente indisponivel.'),
+  { code: 'unavailable', diagnosticCode }
+);
+
 const initializeAdminApp = () => {
   if (getApps().length > 0) return;
 
-  const encodedServiceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
+  const encodedServiceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64?.trim();
   if (!encodedServiceAccount) {
+    if (process.env.VERCEL === '1') {
+      throw adminConfigurationError('firebase-admin-credentials-missing');
+    }
     initializeApp();
     return;
   }
@@ -32,7 +40,7 @@ const initializeAdminApp = () => {
   try {
     serviceAccount = JSON.parse(Buffer.from(encodedServiceAccount, 'base64').toString('utf8'));
   } catch {
-    throw new Error('FIREBASE_SERVICE_ACCOUNT_BASE64 invalida.');
+    throw adminConfigurationError('firebase-admin-credentials-malformed');
   }
 
   if (
@@ -41,13 +49,17 @@ const initializeAdminApp = () => {
     || !serviceAccount?.private_key
     || !serviceAccount?.client_email
   ) {
-    throw new Error('Credencial Firebase Admin invalida ou de outro projeto.');
+    throw adminConfigurationError('firebase-admin-credentials-invalid');
   }
 
-  initializeApp({
-    credential: cert(serviceAccount),
-    projectId: serviceAccount.project_id,
-  });
+  try {
+    initializeApp({
+      credential: cert(serviceAccount),
+      projectId: serviceAccount.project_id,
+    });
+  } catch {
+    throw adminConfigurationError('firebase-admin-credentials-initialization-failed');
+  }
 };
 
 initializeAdminApp();
@@ -671,6 +683,66 @@ const buildDraftResponse = (draft) => ({
     updated_at: new Date().toISOString(),
   },
 });
+
+export const verifyBackendReadiness = async () => {
+  const app = getApp();
+  const credential = app.options.credential;
+  if (!credential || typeof credential.getAccessToken !== 'function') {
+    throw Object.assign(new Error('Credencial administrativa indisponivel.'), {
+      code: 'unavailable',
+      diagnosticCode: 'firebase-admin-credential-unavailable',
+    });
+  }
+
+  const accessToken = await credential.getAccessToken();
+  if (!accessToken?.access_token) {
+    throw Object.assign(new Error('Credencial administrativa indisponivel.'), {
+      code: 'unavailable',
+      diagnosticCode: 'firebase-admin-token-unavailable',
+    });
+  }
+
+  const projectId = app.options.projectId || process.env.GCLOUD_PROJECT || process.env.GCP_PROJECT;
+  if (!projectId) {
+    throw Object.assign(new Error('Projeto Firebase indisponivel.'), {
+      code: 'failed-precondition',
+      diagnosticCode: 'firebase-project-id-unavailable',
+    });
+  }
+
+  let databaseResponse;
+  try {
+    databaseResponse = await fetch(
+      `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(projectId)}/databases/(default)`,
+      {
+        headers: { Authorization: `Bearer ${accessToken.access_token}` },
+      }
+    );
+  } catch {
+    throw Object.assign(new Error('Firestore indisponivel.'), {
+      code: 'unavailable',
+      diagnosticCode: 'firestore-metadata-unreachable',
+    });
+  }
+
+  if (!databaseResponse.ok) {
+    const code = databaseResponse.status === 401
+      ? 'unauthenticated'
+      : databaseResponse.status === 403
+        ? 'permission-denied'
+        : databaseResponse.status === 429
+          ? 'resource-exhausted'
+          : databaseResponse.status >= 500
+            ? 'unavailable'
+            : 'failed-precondition';
+    throw Object.assign(new Error('Firestore indisponivel.'), {
+      code,
+      diagnosticCode: `firestore-metadata-http-${databaseResponse.status}`,
+    });
+  }
+
+  return { ok: true, database: 'reachable' };
+};
 
 export const syncUserProfile = onCall(CALLABLE_OPTIONS, async (request) => {
   if (!request.auth?.uid) {

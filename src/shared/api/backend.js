@@ -28,6 +28,13 @@ export const callBackend = async (action, data = {}) => {
     throw new BackendError('response-too-large', 'Resposta do servidor excedeu o limite permitido.');
   }
 
+  if (response.status === 404 && !rawResponse.trim()) {
+    throw new BackendError(
+      'backend-unavailable',
+      'A API do aplicativo nao esta disponivel neste ambiente.'
+    );
+  }
+
   let payload;
   try {
     payload = rawResponse ? JSON.parse(rawResponse) : {};

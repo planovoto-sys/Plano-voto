@@ -92,6 +92,29 @@ Os controles de segurança, segredos do backend e a rotina de auditoria estão d
 
 Pré-requisito: Node.js v20.19+
 
+```sh
+npm ci
+npm run dev
+```
+
+Antes de iniciar o Vite, defina `PLANO_VOTO_DEV_API_ORIGIN` no `.env.local`. O Vite
+atende a interface em `http://localhost:5173` e encaminha `/api` para essa origem,
+preservando o mesmo backend seguro. A configuracao e obrigatoria porque gravacoes feitas
+no desenvolvimento alteram dados reais no backend indicado. Para testar contra producao:
+
+```sh
+PLANO_VOTO_DEV_API_ORIGIN=https://bomdevoto.com.br
+```
+
+Antes de publicar, execute:
+
+```sh
+npm test
+npm run lint
+npm run build
+npm run security:audit
+```
+
 👨‍💻 Autor
 Alexandre Hackbardt Bolsoni
 🎓 Tecnologia em Sistemas para Internet — IFES

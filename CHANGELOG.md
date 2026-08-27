@@ -2,6 +2,21 @@
 
 Todas as mudanças relevantes deste projeto serão documentadas aqui.
 
+## [1.11.4] - 2026-08-27
+
+### Corrigido
+
+- Encaminha `/api` no Vite para o backend publicado, eliminando o `404` que bloqueava perfil, estado e candidatos em `localhost:5173`.
+- Retorna indisponibilidade explícita quando a credencial Firebase Admin não está configurada na Vercel, em vez de um erro 500 genérico.
+- Faz o health check profundo validar a credencial administrativa sem consumir leituras do Firestore.
+- Exige que o backend usado pelo Vite seja escolhido explicitamente, evitando gravacoes acidentais em producao.
+- Mapeia erros numericos do Firestore para quota, indisponibilidade e configuracao sem expor detalhes internos.
+- Valida credencial e metadados do Firestore no health profundo, sem consumir leituras de documentos.
+
+### Testes
+
+- Adiciona regressões automatizadas para o proxy local, preservação do token de autenticação, validação da origem e configuração ausente do servidor, executadas também no CI.
+
 ## [1.11.3] - 2026-08-27
 
 ### Corrigido
