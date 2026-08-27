@@ -2,29 +2,22 @@ import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:
 import { cert, getApps, initializeApp } from 'firebase-admin/app';
 import { FieldValue, getFirestore } from 'firebase-admin/firestore';
 
-let HttpsError;
-let onCall;
-let defineSecret;
-
-if (process.env.VERCEL) {
-  HttpsError = class extends Error {
-    constructor(code, message, details = undefined) {
-      super(message);
-      this.name = 'HttpsError';
-      this.code = code;
-      this.details = details;
-    }
-  };
-  onCall = (optionsOrHandler, maybeHandler) => {
-    const handler = typeof optionsOrHandler === 'function' ? optionsOrHandler : maybeHandler;
-    handler.run = handler;
-    return handler;
-  };
-  defineSecret = (name) => ({ value: () => process.env[name] || '' });
-} else {
-  ({ HttpsError, onCall } = await import('firebase-functions/v2/https'));
-  ({ defineSecret } = await import('firebase-functions/params'));
+class HttpsError extends Error {
+  constructor(code, message, details = undefined) {
+    super(message);
+    this.name = 'HttpsError';
+    this.code = code;
+    this.details = details;
+  }
 }
+
+const onCall = (optionsOrHandler, maybeHandler) => {
+  const handler = typeof optionsOrHandler === 'function' ? optionsOrHandler : maybeHandler;
+  handler.run = handler;
+  return handler;
+};
+
+const defineSecret = (name) => ({ value: () => process.env[name] || '' });
 
 const initializeAdminApp = () => {
   if (getApps().length > 0) return;
