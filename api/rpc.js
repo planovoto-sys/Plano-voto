@@ -1,7 +1,5 @@
 import { Buffer } from 'node:buffer';
 import process from 'node:process';
-import { cert, getApps, initializeApp } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
 
 const MAX_BODY_BYTES = 36 * 1024;
 const ACTION_NAMES = new Set([
@@ -14,8 +12,19 @@ const ACTION_NAMES = new Set([
   'syncUserProfile',
 ]);
 let actionsPromise;
+let adminModulesPromise;
 
-const initializeApiAdmin = () => {
+const loadAdminModules = () => {
+  adminModulesPromise ||= Promise.all([
+    import('firebase-admin/app'),
+    import('firebase-admin/auth'),
+  ]).then(([appModule, authModule]) => ({ appModule, authModule }));
+  return adminModulesPromise;
+};
+
+const initializeApiAdmin = async () => {
+  const { appModule } = await loadAdminModules();
+  const { cert, getApps, initializeApp } = appModule;
   if (getApps().length > 0) return;
 
   const encodedServiceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
@@ -47,7 +56,7 @@ const initializeApiAdmin = () => {
 };
 
 const loadActions = async () => {
-  initializeApiAdmin();
+  await initializeApiAdmin();
   actionsPromise ||= import('../functions/index.js').then((module) => Object.freeze({
     castAnonymousVote: module.castAnonymousVote,
     createPlanHandoffToken: module.createPlanHandoffToken,
@@ -125,8 +134,9 @@ const readAuthContext = async (request) => {
     throw Object.assign(new Error('Token de autenticacao invalido.'), { code: 'unauthenticated' });
   }
 
-  initializeApiAdmin();
-  const decodedToken = await getAuth().verifyIdToken(authorization.slice(7), true);
+  await initializeApiAdmin();
+  const { authModule } = await loadAdminModules();
+  const decodedToken = await authModule.getAuth().verifyIdToken(authorization.slice(7), true);
   return {
     uid: decodedToken.uid,
     token: decodedToken,
@@ -168,7 +178,7 @@ export default {
       return jsonResponse({
         ok: true,
         service: 'plano-voto-api',
-        version: '1.11.2',
+        version: '1.11.3',
         app_check: false,
       });
     }

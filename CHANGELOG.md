@@ -2,6 +2,12 @@
 
 Todas as mudanças relevantes deste projeto serão documentadas aqui.
 
+## [1.11.3] - 2026-08-27
+
+### Corrigido
+
+- Carrega os módulos Firebase Admin somente durante requisições que realmente precisam do banco, evitando falha de inicialização da função RPC na Vercel.
+
 ## [1.11.2] - 2026-08-27
 
 ### Corrigido
