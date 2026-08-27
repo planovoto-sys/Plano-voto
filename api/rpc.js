@@ -15,10 +15,7 @@ let actionsPromise;
 let adminModulesPromise;
 
 const loadAdminModules = () => {
-  adminModulesPromise ||= Promise.all([
-    import('firebase-admin/app'),
-    import('firebase-admin/auth'),
-  ]).then(([appModule, authModule]) => ({ appModule, authModule }));
+  adminModulesPromise ||= import('firebase-admin/app').then((appModule) => ({ appModule }));
   return adminModulesPromise;
 };
 
@@ -134,17 +131,40 @@ const readAuthContext = async (request) => {
     throw Object.assign(new Error('Token de autenticacao invalido.'), { code: 'unauthenticated' });
   }
 
-  await initializeApiAdmin();
-  const { authModule } = await loadAdminModules();
-  let decodedToken;
+  const firebaseApiKey = process.env.VITE_API_KEY;
+  if (!firebaseApiKey) {
+    throw Object.assign(new Error('Firebase Auth nao configurado no servidor.'), { code: 'failed-precondition' });
+  }
+
+  let lookupResponse;
   try {
-    decodedToken = await authModule.getAuth().verifyIdToken(authorization.slice(7), true);
+    lookupResponse = await fetch(
+      `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${encodeURIComponent(firebaseApiKey)}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken: authorization.slice(7) }),
+      }
+    );
   } catch {
     throw Object.assign(new Error('Token de autenticacao invalido ou expirado.'), { code: 'unauthenticated' });
   }
+
+  const lookupPayload = await lookupResponse.json().catch(() => ({}));
+  const firebaseUser = lookupPayload?.users?.[0];
+  if (!lookupResponse.ok || !firebaseUser?.localId) {
+    throw Object.assign(new Error('Token de autenticacao invalido ou expirado.'), { code: 'unauthenticated' });
+  }
+
   return {
-    uid: decodedToken.uid,
-    token: decodedToken,
+    uid: firebaseUser.localId,
+    token: {
+      uid: firebaseUser.localId,
+      email: firebaseUser.email || '',
+      email_verified: firebaseUser.emailVerified !== false,
+      name: firebaseUser.displayName || '',
+      picture: firebaseUser.photoUrl || '',
+    },
   };
 };
 
