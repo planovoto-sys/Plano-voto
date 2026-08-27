@@ -185,6 +185,7 @@ export default {
         service: 'plano-voto-api',
         version: '1.11.3',
         app_check: false,
+        runtime_adapter: 'native-no-cloud-functions',
       });
     }
 
