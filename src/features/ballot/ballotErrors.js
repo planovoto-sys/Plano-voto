@@ -19,24 +19,19 @@ export const getVotingErrorMessage = (error) => {
     VOTER_NOT_ELIGIBLE: 'Seu cadastro não está habilitado para votar nesta eleição.',
     VOTER_NOT_ENROLLED: 'Não encontramos sua habilitação para esta eleição.',
     RECEIPT_NOT_RETURNED: 'O voto não retornou um recibo válido. Tente novamente.',
-    FUNCTION_UNREACHABLE: 'Não foi possível conectar ao servidor de votação. Verifique a implantação da Cloud Function e tente novamente.',
-    'functions/not-found': 'Servidor de votação indisponível. Configure a Cloud Function de registro de voto.',
-    not_found: 'Servidor de votação indisponível. Configure a Cloud Function de registro de voto.',
-    'functions/internal': 'Servidor de votação indisponível ou sem configuração de acesso. Verifique região e deploy.',
-    internal: 'Servidor de votação indisponível ou sem configuração de acesso. Verifique região e deploy.',
-    'functions/unavailable': 'Servidor de votação temporariamente indisponível. Tente novamente em instantes.',
+    FUNCTION_UNREACHABLE: 'Não foi possível conectar ao servidor de votação. Verifique a implantação da API e tente novamente.',
+    not_found: 'Servidor de votação indisponível. Verifique a implantação da API.',
+    internal: 'Servidor de votação indisponível ou sem configuração de acesso.',
     unavailable: 'Servidor de votação temporariamente indisponível. Tente novamente em instantes.',
-    'functions/unauthenticated': 'Faça login novamente para continuar.',
     unauthenticated: 'Faça login novamente para continuar.',
-    'functions/already-exists': 'Seu voto já foi registrado. Por segurança, ele não pode ser alterado.',
     already_exists: 'Seu voto já foi registrado. Por segurança, ele não pode ser alterado.',
-    'functions/permission-denied': 'Você não tem permissão para votar nesta eleição.',
     permission_denied: 'Você não tem permissão para votar nesta eleição.',
-    'functions/failed-precondition': 'Não foi possível confirmar sua habilitação para votar.',
     failed_precondition: 'Não foi possível confirmar sua habilitação para votar.',
-    'functions/invalid-argument': 'Os dados do voto são inválidos. Revise suas escolhas.',
     invalid_argument: 'Os dados do voto são inválidos. Revise suas escolhas.'
   };
 
-  return messages[error?.code] || messages[error?.message] || 'Não foi possível registrar o voto. Tente novamente.';
+  const normalizedCode = String(error?.code || '')
+    .replace(/^functions\//, '')
+    .replace(/-/g, '_');
+  return messages[normalizedCode] || messages[error?.message] || 'Não foi possível registrar o voto. Tente novamente.';
 };

@@ -248,7 +248,7 @@ export default function EscolherCandidatos({
           .filter(Boolean);
       };
 
-      const cachedCandidates = readCachedCandidatesByOffice(cargo);
+      const cachedCandidates = readCachedCandidatesByOffice(cargo, estadoDoFluxo);
       if (cachedCandidates?.value?.length) {
         const cachedTallies = readCachedTallies(getTallyTargets(cachedCandidates.value), { estado: estadoDoFluxo });
         buildCandidateList(cachedCandidates.value, cachedTallies, cachedCandidates.isFresh ? 'cache' : 'stale-cache');
@@ -257,7 +257,7 @@ export default function EscolherCandidatos({
       try {
         const candidateDocs = cachedCandidates?.isFresh
           ? cachedCandidates.value
-          : await fetchCandidatesByOffice(cargo);
+          : await fetchCandidatesByOffice(cargo, estadoDoFluxo);
         const tallyTargets = getTallyTargets(candidateDocs);
         let tallies = readCachedTallies(tallyTargets, { estado: estadoDoFluxo });
 

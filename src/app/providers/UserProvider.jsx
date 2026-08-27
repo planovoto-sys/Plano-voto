@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth, db, functions } from '@/shared/firebase/firebase';
+import { auth, db } from '@/shared/firebase/firebase';
 import { doc, onSnapshot } from 'firebase/firestore';
-import { httpsCallable } from 'firebase/functions';
+import { callBackend } from '@/shared/api/backend';
 import { ACTIVE_ELECTION_ID, SYNC_USER_PROFILE_FUNCTION_NAME } from '@/shared/constants/ballot';
 import { UserContext } from '@/app/providers/UserContext';
 import { flowError, flowLog, flowWarn } from '@/shared/utils/debugFlow';
@@ -62,8 +62,7 @@ export const UserProvider = ({ children }) => {
       const syncUserProfile = async () => {
         try {
           flowLog('user.sync.start', { userId: user.uid });
-          const syncProfile = httpsCallable(functions, SYNC_USER_PROFILE_FUNCTION_NAME);
-          await syncProfile({});
+          await callBackend(SYNC_USER_PROFILE_FUNCTION_NAME, {});
           flowLog('user.sync.success', { userId: user.uid });
         } catch (error) {
           flowError('user.ensure.error', error, { userId: user.uid });

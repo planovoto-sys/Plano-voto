@@ -1,10 +1,41 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:crypto';
-import { initializeApp } from 'firebase-admin/app';
+import { cert, getApps, initializeApp } from 'firebase-admin/app';
 import { FieldValue, getFirestore } from 'firebase-admin/firestore';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
 import { defineSecret } from 'firebase-functions/params';
 
-initializeApp();
+const initializeAdminApp = () => {
+  if (getApps().length > 0) return;
+
+  const encodedServiceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
+  if (!encodedServiceAccount) {
+    initializeApp();
+    return;
+  }
+
+  let serviceAccount;
+  try {
+    serviceAccount = JSON.parse(Buffer.from(encodedServiceAccount, 'base64').toString('utf8'));
+  } catch {
+    throw new Error('FIREBASE_SERVICE_ACCOUNT_BASE64 invalida.');
+  }
+
+  if (
+    serviceAccount?.type !== 'service_account'
+    || serviceAccount?.project_id !== 'plano-mvp-9a0b4'
+    || !serviceAccount?.private_key
+    || !serviceAccount?.client_email
+  ) {
+    throw new Error('Credencial Firebase Admin invalida ou de outro projeto.');
+  }
+
+  initializeApp({
+    credential: cert(serviceAccount),
+    projectId: serviceAccount.project_id,
+  });
+};
+
+initializeAdminApp();
 
 const db = getFirestore();
 const ACTIVE_ELECTION_ID = 'congresso-2026';
@@ -39,7 +70,6 @@ const configuredOrigins = (process.env.ALLOWED_ORIGINS || '')
 const CALLABLE_OPTIONS = {
   region: FUNCTIONS_REGION,
   cors: configuredOrigins.length > 0 ? configuredOrigins : DEFAULT_ALLOWED_ORIGINS,
-  enforceAppCheck: true,
 };
 const RATE_LIMITS = {
   syncUserProfile: { limit: 12, windowMs: 60 * 1000 },

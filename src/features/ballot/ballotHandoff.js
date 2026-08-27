@@ -1,4 +1,3 @@
-import { httpsCallable } from 'firebase/functions';
 import {
   ACTIVE_ELECTION_ID,
   BALLOT_ROUTES,
@@ -6,7 +5,7 @@ import {
   CREATE_PLAN_HANDOFF_TOKEN_FUNCTION_NAME,
   REDEEM_PLAN_HANDOFF_TOKEN_FUNCTION_NAME
 } from '@/shared/constants/ballot';
-import { functions } from '@/shared/firebase/firebase';
+import { callBackend } from '@/shared/api/backend';
 import { normalizeDraft } from './ballotDraftNormalize';
 import { VotingError } from './ballotErrors';
 
@@ -177,8 +176,7 @@ export const createPlanHandoffToken = async (draft) => {
     throw new VotingError('STATE_REQUIRED', 'Escolha um estado antes de gerar o QR Code.');
   }
 
-  const createToken = httpsCallable(functions, CREATE_PLAN_HANDOFF_TOKEN_FUNCTION_NAME);
-  const response = await createToken({
+  const response = await callBackend(CREATE_PLAN_HANDOFF_TOKEN_FUNCTION_NAME, {
     schema_version: BALLOT_SCHEMA_VERSION,
     election_id: ACTIVE_ELECTION_ID,
     draft: normalizedDraft
@@ -188,8 +186,7 @@ export const createPlanHandoffToken = async (draft) => {
 };
 
 export const redeemPlanHandoffToken = async (token) => {
-  const redeemToken = httpsCallable(functions, REDEEM_PLAN_HANDOFF_TOKEN_FUNCTION_NAME);
-  const response = await redeemToken({
+  const response = await callBackend(REDEEM_PLAN_HANDOFF_TOKEN_FUNCTION_NAME, {
     schema_version: BALLOT_SCHEMA_VERSION,
     election_id: ACTIVE_ELECTION_ID,
     token

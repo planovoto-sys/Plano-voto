@@ -2,6 +2,21 @@
 
 Todas as mudanças relevantes deste projeto serão documentadas aqui.
 
+## [1.11.1] - 2026-08-27
+
+### Corrigido
+
+- Substitui as Cloud Functions por uma API autenticada da Vercel, mantendo o projeto no plano Spark.
+- Restaura sincronização de perfil, alteração de estado, salvamento do rascunho, handoff, exclusão e confirmação do voto.
+- Filtra candidatos por cargo e estado no Firestore, evitando baixar milhares de documentos a cada carregamento.
+
+### Segurança
+
+- Valida Firebase Auth, origem, tamanho e campos do payload na API antes de acessar o Firestore.
+- Mantém rate limit persistente, validação autoritativa de candidatos e criptografia AES-256-GCM no servidor.
+- Remove App Check e reCAPTCHA do cliente e da política de conteúdo conforme decisão operacional do projeto.
+- Mantém as credenciais Firebase Admin e a chave de criptografia somente nas variáveis sensíveis da Vercel.
+
 ## [1.11.0] - 2026-08-26
 
 ### Segurança

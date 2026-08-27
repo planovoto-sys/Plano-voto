@@ -1,11 +1,11 @@
 export const ACTIVE_ELECTION_ID = import.meta.env.VITE_ACTIVE_ELECTION_ID || 'congresso-2026';
-export const CAST_VOTE_FUNCTION_NAME = import.meta.env.VITE_CAST_VOTE_FUNCTION || 'castAnonymousVote';
-export const DELETE_USER_ELECTION_DATA_FUNCTION_NAME = import.meta.env.VITE_DELETE_USER_ELECTION_DATA_FUNCTION || 'deleteUserElectionData';
-export const CREATE_PLAN_HANDOFF_TOKEN_FUNCTION_NAME = import.meta.env.VITE_CREATE_PLAN_HANDOFF_TOKEN_FUNCTION || 'createPlanHandoffToken';
-export const REDEEM_PLAN_HANDOFF_TOKEN_FUNCTION_NAME = import.meta.env.VITE_REDEEM_PLAN_HANDOFF_TOKEN_FUNCTION || 'redeemPlanHandoffToken';
-export const SAVE_BALLOT_STATE_FUNCTION_NAME = import.meta.env.VITE_SAVE_BALLOT_STATE_FUNCTION || 'saveBallotState';
-export const SAVE_BALLOT_STEP_FUNCTION_NAME = import.meta.env.VITE_SAVE_BALLOT_STEP_FUNCTION || 'saveBallotStepSelection';
-export const SYNC_USER_PROFILE_FUNCTION_NAME = import.meta.env.VITE_SYNC_USER_PROFILE_FUNCTION || 'syncUserProfile';
+export const CAST_VOTE_FUNCTION_NAME = 'castAnonymousVote';
+export const DELETE_USER_ELECTION_DATA_FUNCTION_NAME = 'deleteUserElectionData';
+export const CREATE_PLAN_HANDOFF_TOKEN_FUNCTION_NAME = 'createPlanHandoffToken';
+export const REDEEM_PLAN_HANDOFF_TOKEN_FUNCTION_NAME = 'redeemPlanHandoffToken';
+export const SAVE_BALLOT_STATE_FUNCTION_NAME = 'saveBallotState';
+export const SAVE_BALLOT_STEP_FUNCTION_NAME = 'saveBallotStepSelection';
+export const SYNC_USER_PROFILE_FUNCTION_NAME = 'syncUserProfile';
 
 export const BALLOT_SCHEMA_VERSION = 1;
 export const VISITOR_DRAFT_ID = 'visitor';

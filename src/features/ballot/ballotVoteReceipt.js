@@ -1,10 +1,9 @@
-import { httpsCallable } from 'firebase/functions';
 import {
   ACTIVE_ELECTION_ID,
   BALLOT_SCHEMA_VERSION,
   CAST_VOTE_FUNCTION_NAME
 } from '@/shared/constants/ballot';
-import { functions, functionsRegion } from '@/shared/firebase/firebase';
+import { callBackend } from '@/shared/api/backend';
 import { flowLog } from '@/shared/utils/debugFlow';
 import {
   canUseStorage,
@@ -93,12 +92,11 @@ export const castAnonymousVote = async ({ user, estado, draft }) => {
     electionId: ACTIVE_ELECTION_ID,
     estado: estado ?? normalizedDraft.estado ?? null,
     functionName: CAST_VOTE_FUNCTION_NAME,
-    functionsRegion,
+    backend: 'vercel-api',
     candidateIds
   });
 
-  const castVote = httpsCallable(functions, CAST_VOTE_FUNCTION_NAME);
-  const response = await castVote({
+  const response = await callBackend(CAST_VOTE_FUNCTION_NAME, {
     schema_version: BALLOT_SCHEMA_VERSION,
     election_id: ACTIVE_ELECTION_ID,
     estado: estado ?? normalizedDraft.estado ?? null,

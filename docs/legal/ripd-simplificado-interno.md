@@ -42,7 +42,7 @@ LocalStorage, IndexedDB, Cache API e service worker podem guardar rascunho, cach
 
 ## 10. Armazenamento remoto
 
-Firestore e Cloud Functions podem processar rascunho da conta, token de continuidade, exclusão e logs técnicos.
+Firestore e a API serverless da Vercel podem processar rascunho da conta, token de continuidade, exclusão e logs técnicos.
 
 ## 11. Compartilhamentos
 

@@ -7,6 +7,7 @@ import {
   where
 } from 'firebase/firestore';
 import { ACTIVE_ELECTION_ID } from '@/shared/constants/ballot';
+import { STATE_NAMES } from '@/shared/constants/states';
 import { db } from '@/shared/firebase/firebase';
 import { normalizeSearch } from '@/shared/utils/search';
 import { normalizeStateCode } from '@/shared/utils/state';
@@ -119,7 +120,9 @@ const removeCacheEntry = (key) => {
   }
 };
 
-const candidateCacheKey = (officeName) => `candidates:${officeName}`;
+const candidateCacheKey = (officeName, estado = null) => (
+  `candidates:${officeName}:${normalizeStateCode(estado) || 'all'}`
+);
 const partyCacheKey = () => 'party-scores';
 const tallyCacheKey = (candidateId, estado = null) => `choice-counts:${ACTIVE_ELECTION_ID}:${normalizeStateCode(estado) || 'all'}:${candidateId}`;
 const stateChoiceCacheKey = (estado) => `state-choice-counts:${ACTIVE_ELECTION_ID}:${normalizeStateCode(estado) || 'all'}`;
@@ -306,32 +309,61 @@ const normalizeTallyTarget = (target, fallbackEstado = null) => {
   };
 };
 
-export const readCachedCandidatesByOffice = (officeName) => (
-  readCacheEntry(candidateCacheKey(officeName), {
+export const readCachedCandidatesByOffice = (officeName, estado = null) => (
+  readCacheEntry(candidateCacheKey(officeName, estado), {
     maxAgeMs: CANDIDATE_CACHE_MAX_AGE_MS,
     maxStaleMs: CANDIDATE_CACHE_MAX_STALE_MS
   })
 );
 
-export const fetchCandidatesByOffice = async (officeName) => {
+export const fetchCandidatesByOffice = async (officeName, estado = null) => {
   const partyLookupPromise = fetchPartyLookup();
-  const candidatesQuery = query(collection(db, CANDIDATES_COLLECTION), where('cargo', '==', officeName));
-  let snapshot = await getDocs(candidatesQuery);
+  const activeState = normalizeStateCode(estado);
+  const storedState = STATE_NAMES[activeState]?.toUpperCase() || activeState;
+  let candidateDocs = [];
 
-  if (snapshot.empty) {
-    const legacyCandidatesQuery = query(collection(db, CANDIDATES_COLLECTION), where('Cargo', '==', officeName));
-    snapshot = await getDocs(legacyCandidatesQuery);
+  if (activeState) {
+    const stateQueries = [
+      query(
+        collection(db, CANDIDATES_COLLECTION),
+        where('cargo', '==', officeName),
+        where('estado', '==', storedState)
+      ),
+      query(
+        collection(db, CANDIDATES_COLLECTION),
+        where('Cargo', '==', officeName),
+        where('Estado', '==', storedState)
+      )
+    ];
+
+    const stateSnapshots = await Promise.all(stateQueries.map((candidateQuery) => getDocs(candidateQuery)));
+    const uniqueDocs = new Map();
+    stateSnapshots.forEach((snapshot) => {
+      snapshot.docs.forEach((candidateDoc) => uniqueDocs.set(candidateDoc.id, candidateDoc));
+    });
+    candidateDocs = [...uniqueDocs.values()];
+  }
+
+  if (candidateDocs.length === 0) {
+    const candidatesQuery = query(collection(db, CANDIDATES_COLLECTION), where('cargo', '==', officeName));
+    let snapshot = await getDocs(candidatesQuery);
+
+    if (snapshot.empty) {
+      const legacyCandidatesQuery = query(collection(db, CANDIDATES_COLLECTION), where('Cargo', '==', officeName));
+      snapshot = await getDocs(legacyCandidatesQuery);
+    }
+    candidateDocs = snapshot.docs;
   }
 
   const partyLookup = await partyLookupPromise;
-  const candidates = snapshot.docs
+  const candidates = candidateDocs
     .map((candidateDoc) => ({
       id: candidateDoc.id,
       ...candidateDoc.data()
     }))
     .map((candidate) => enrichCandidateWithPartyScore(candidate, partyLookup));
 
-  writeCacheEntry(candidateCacheKey(officeName), candidates);
+  writeCacheEntry(candidateCacheKey(officeName, activeState), candidates);
   return candidates;
 };
 

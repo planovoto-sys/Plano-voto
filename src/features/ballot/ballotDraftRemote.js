@@ -7,7 +7,6 @@ import {
   query,
   where
 } from 'firebase/firestore';
-import { httpsCallable } from 'firebase/functions';
 import {
   ACTIVE_ELECTION_ID,
   BALLOT_FLOW_STEP_IDS,
@@ -17,7 +16,8 @@ import {
   SAVE_BALLOT_STATE_FUNCTION_NAME,
   SAVE_BALLOT_STEP_FUNCTION_NAME
 } from '@/shared/constants/ballot';
-import { db, functions } from '@/shared/firebase/firebase';
+import { callBackend } from '@/shared/api/backend';
+import { db } from '@/shared/firebase/firebase';
 import { flowLog } from '@/shared/utils/debugFlow';
 import { normalizeStateCode } from '@/shared/utils/state';
 import { enrichCandidatesWithPartyScores } from '@/features/candidate-selection/candidateService';
@@ -70,8 +70,7 @@ const saveBallotStateServerSide = async (userId, estado) => {
   const activeEstado = normalizeStateCode(estado);
   if (!activeEstado) throw new VotingError('STATE_REQUIRED', 'Escolha um estado antes de continuar.');
 
-  const saveState = httpsCallable(functions, SAVE_BALLOT_STATE_FUNCTION_NAME);
-  const result = await saveState({
+  const result = await callBackend(SAVE_BALLOT_STATE_FUNCTION_NAME, {
     schema_version: BALLOT_SCHEMA_VERSION,
     election_id: ACTIVE_ELECTION_ID,
     estado: activeEstado
@@ -89,8 +88,7 @@ const saveBallotStepSelectionServerSide = async (userId, stepKey, candidates, es
     throw new VotingError('STATE_REQUIRED', 'Escolha um estado antes de selecionar candidatos.');
   }
 
-  const saveStep = httpsCallable(functions, SAVE_BALLOT_STEP_FUNCTION_NAME);
-  const result = await saveStep({
+  const result = await callBackend(SAVE_BALLOT_STEP_FUNCTION_NAME, {
     schema_version: BALLOT_SCHEMA_VERSION,
     election_id: ACTIVE_ELECTION_ID,
     estado: activeEstado,
@@ -208,8 +206,7 @@ export const mergeVisitorBallotDraftIntoAccount = async (userId) => {
 export const deleteUserElectionData = async (userId) => {
   if (!userId) throw new VotingError('AUTH_REQUIRED', 'Faça login para continuar.');
 
-  const deleteData = httpsCallable(functions, DELETE_USER_ELECTION_DATA_FUNCTION_NAME);
-  await deleteData({
+  await callBackend(DELETE_USER_ELECTION_DATA_FUNCTION_NAME, {
     schema_version: BALLOT_SCHEMA_VERSION,
     election_id: ACTIVE_ELECTION_ID
   });

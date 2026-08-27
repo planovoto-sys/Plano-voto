@@ -135,7 +135,7 @@ export const PROVIDER_ROWS = [
     categoria: 'Funções serverless',
     finalidade: 'Executar operações seguras, QR Code de continuidade e exclusão de dados.',
     dados: 'UID, rascunho mínimo, tokens temporários e logs técnicos.',
-    exemplo: 'Firebase Cloud Functions / Google Cloud'
+    exemplo: 'Vercel Functions'
   },
   {
     categoria: 'Hospedagem e PWA',

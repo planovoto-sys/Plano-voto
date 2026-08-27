@@ -1,8 +1,6 @@
 import { initializeApp } from "firebase/app";
-import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
 import { getFirestore } from "firebase/firestore";
 import { browserSessionPersistence, getAuth, GoogleAuthProvider, setPersistence } from "firebase/auth";
-import { getFunctions } from "firebase/functions";
 
 // Configuração segura via variáveis de ambiente.
 const firebaseConfig = {
@@ -36,24 +34,8 @@ if (!firebaseReady) {
 }
 
 const app = initializeApp(firebaseReady ? firebaseConfig : localPreviewConfig);
-export const functionsRegion = import.meta.env.VITE_FIREBASE_FUNCTIONS_REGION || 'southamerica-east1';
-
-const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_V3_SITE_KEY;
-if (firebaseReady && recaptchaSiteKey) {
-  if (import.meta.env.DEV && import.meta.env.VITE_APPCHECK_DEBUG_TOKEN === 'true') {
-    self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
-  }
-
-  initializeAppCheck(app, {
-    provider: new ReCaptchaV3Provider(recaptchaSiteKey),
-    isTokenAutoRefreshEnabled: true
-  });
-} else if (import.meta.env.PROD && firebaseReady) {
-  console.error('App Check nao configurado. Defina VITE_RECAPTCHA_V3_SITE_KEY antes do deploy.');
-}
 
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 export const authPersistenceReady = setPersistence(auth, browserSessionPersistence);
-export const functions = getFunctions(app, functionsRegion);
 export const googleProvider = new GoogleAuthProvider();
