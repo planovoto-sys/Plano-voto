@@ -2,17 +2,18 @@ import { Buffer } from 'node:buffer';
 import process from 'node:process';
 import { cert, getApps, initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
-import {
-  castAnonymousVote,
-  createPlanHandoffToken,
-  deleteUserElectionData,
-  redeemPlanHandoffToken,
-  saveBallotState,
-  saveBallotStepSelection,
-  syncUserProfile,
-} from '../functions/index.js';
 
 const MAX_BODY_BYTES = 36 * 1024;
+const ACTION_NAMES = new Set([
+  'castAnonymousVote',
+  'createPlanHandoffToken',
+  'deleteUserElectionData',
+  'redeemPlanHandoffToken',
+  'saveBallotState',
+  'saveBallotStepSelection',
+  'syncUserProfile',
+]);
+let actionsPromise;
 
 const initializeApiAdmin = () => {
   if (getApps().length > 0) return;
@@ -45,17 +46,19 @@ const initializeApiAdmin = () => {
   });
 };
 
-initializeApiAdmin();
-
-const ACTIONS = Object.freeze({
-  castAnonymousVote,
-  createPlanHandoffToken,
-  deleteUserElectionData,
-  redeemPlanHandoffToken,
-  saveBallotState,
-  saveBallotStepSelection,
-  syncUserProfile,
-});
+const loadActions = async () => {
+  initializeApiAdmin();
+  actionsPromise ||= import('../functions/index.js').then((module) => Object.freeze({
+    castAnonymousVote: module.castAnonymousVote,
+    createPlanHandoffToken: module.createPlanHandoffToken,
+    deleteUserElectionData: module.deleteUserElectionData,
+    redeemPlanHandoffToken: module.redeemPlanHandoffToken,
+    saveBallotState: module.saveBallotState,
+    saveBallotStepSelection: module.saveBallotStepSelection,
+    syncUserProfile: module.syncUserProfile,
+  }));
+  return actionsPromise;
+};
 
 const STATUS_BY_CODE = Object.freeze({
   'invalid-argument': 400,
@@ -122,6 +125,7 @@ const readAuthContext = async (request) => {
     throw Object.assign(new Error('Token de autenticacao invalido.'), { code: 'unauthenticated' });
   }
 
+  initializeApiAdmin();
   const decodedToken = await getAuth().verifyIdToken(authorization.slice(7), true);
   return {
     uid: decodedToken.uid,
@@ -160,6 +164,15 @@ const makeErrorResponse = (error) => {
 
 export default {
   async fetch(request) {
+    if (request.method === 'GET') {
+      return jsonResponse({
+        ok: true,
+        service: 'plano-voto-api',
+        version: '1.11.2',
+        app_check: false,
+      });
+    }
+
     if (request.method === 'OPTIONS') {
       return new Response(null, {
         status: 204,
@@ -182,7 +195,12 @@ export default {
       assertSameOrigin(request);
       const body = await parseBody(request);
       const action = typeof body.action === 'string' ? body.action : '';
-      const callable = ACTIONS[action];
+      if (!ACTION_NAMES.has(action)) {
+        throw Object.assign(new Error('Acao invalida.'), { code: 'invalid-argument' });
+      }
+
+      const actions = await loadActions();
+      const callable = actions[action];
       if (!callable || typeof callable.run !== 'function') {
         throw Object.assign(new Error('Acao invalida.'), { code: 'invalid-argument' });
       }

@@ -2,6 +2,13 @@
 
 Todas as mudanças relevantes deste projeto serão documentadas aqui.
 
+## [1.11.2] - 2026-08-27
+
+### Corrigido
+
+- Torna a inicialização do Firebase Admin tardia para que falhas de configuração não derrubem o endpoint antes do diagnóstico.
+- Adiciona endpoints de saúde da API para validação objetiva do runtime da Vercel.
+
 ## [1.11.1] - 2026-08-27
 
 ### Corrigido
