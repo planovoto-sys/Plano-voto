@@ -12,6 +12,7 @@ Todas as mudanças relevantes deste projeto serão documentadas aqui.
 - Exige que o backend usado pelo Vite seja escolhido explicitamente, evitando gravacoes acidentais em producao.
 - Mapeia erros numericos do Firestore para quota, indisponibilidade e configuracao sem expor detalhes internos.
 - Valida credencial e metadados do Firestore no health profundo, sem consumir leituras de documentos.
+- Reverte tanto os agregados quanto o contador legado dos candidatos ao excluir um voto.
 
 ### Testes
 

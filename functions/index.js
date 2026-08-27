@@ -603,6 +603,21 @@ const updateDraftMetrics = (transaction, electionId, previousDraft, nextDraft, u
   });
 };
 
+const updateVoteTallies = (transaction, electionId, candidateIds, delta, updatedAt) => {
+  candidateIds.forEach((candidateId) => {
+    transaction.update(db.doc(`candidatos/${candidateId}`), {
+      votos_recebidos: FieldValue.increment(delta),
+    });
+    transaction.set(db.doc(`elections/${electionId}/candidate_tallies/${candidateId}`), {
+      schema_version: BALLOT_SCHEMA_VERSION,
+      election_id: electionId,
+      candidate_id: candidateId,
+      total_votes: FieldValue.increment(delta),
+      updated_at: updatedAt,
+    }, { merge: true });
+  });
+};
+
 const assertElectionPayload = (payload) => {
   const electionId = asString(payload.election_id) || ACTIVE_ELECTION_ID;
   if (electionId !== ACTIVE_ELECTION_ID) {
@@ -956,15 +971,7 @@ export const deleteUserElectionData = onCall({
       updateDraftMetrics(transaction, electionId, previousDraft, null, updatedAt);
     }
 
-    legacyVoteCandidateIds.forEach((candidateId) => {
-      transaction.set(db.doc(`elections/${electionId}/candidate_tallies/${candidateId}`), {
-        schema_version: BALLOT_SCHEMA_VERSION,
-        election_id: electionId,
-        candidate_id: candidateId,
-        total_votes: FieldValue.increment(-1),
-        updated_at: updatedAt,
-      }, { merge: true });
-    });
+    updateVoteTallies(transaction, electionId, legacyVoteCandidateIds, -1, updatedAt);
 
     transaction.delete(draftRef);
     transaction.delete(choiceConfigRef);
@@ -1215,20 +1222,7 @@ export const castAnonymousVote = onCall({
       updated_at: submittedAt,
     });
 
-    candidateRefs.forEach((candidateRef, index) => {
-      const candidateId = candidateIds[index];
-      transaction.update(candidateRef, {
-        votos_recebidos: FieldValue.increment(1),
-      });
-
-      transaction.set(db.doc(`elections/${electionId}/candidate_tallies/${candidateId}`), {
-        schema_version: BALLOT_SCHEMA_VERSION,
-        election_id: electionId,
-        candidate_id: candidateId,
-        total_votes: FieldValue.increment(1),
-        updated_at: submittedAt,
-      }, { merge: true });
-    });
+    updateVoteTallies(transaction, electionId, candidateIds, 1, submittedAt);
 
     transaction.set(auditRef, {
       schema_version: BALLOT_SCHEMA_VERSION,
