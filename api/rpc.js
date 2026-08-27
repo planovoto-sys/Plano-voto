@@ -136,7 +136,12 @@ const readAuthContext = async (request) => {
 
   await initializeApiAdmin();
   const { authModule } = await loadAdminModules();
-  const decodedToken = await authModule.getAuth().verifyIdToken(authorization.slice(7), true);
+  let decodedToken;
+  try {
+    decodedToken = await authModule.getAuth().verifyIdToken(authorization.slice(7), true);
+  } catch {
+    throw Object.assign(new Error('Token de autenticacao invalido ou expirado.'), { code: 'unauthenticated' });
+  }
   return {
     uid: decodedToken.uid,
     token: decodedToken,
