@@ -10,7 +10,7 @@ O titular pode solicitar confirmação de tratamento, acesso, correção, anonim
 
 ## Como exercer direitos no nossovoto.org
 
-1. Enviar email para plano.voto@gmail.com.
+1. Enviar email para contato.bomdevoto@gmail.com.
 2. Informar o email usado no login, se houver.
 3. Descrever o pedido: acesso, correção, exclusão, revogação, oposição ou outro direito.
 4. Aguardar eventual confirmação de titularidade.

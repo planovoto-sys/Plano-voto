@@ -9,7 +9,7 @@ export class VotingError extends Error {
 export const getVotingErrorMessage = (error) => {
   const messages = {
     AUTH_REQUIRED: 'Faça login novamente para confirmar seu voto.',
-    INCOMPLETE_BALLOT: 'Selecione pelo menos 1 deputado federal e 2 senadores antes de finalizar.',
+    INCOMPLETE_BALLOT: 'Selecione pelo menos 1 presidente, 1 deputado federal e 2 senadores antes de finalizar.',
     DUPLICATED_CANDIDATE: 'O mesmo candidato não pode ser usado mais de uma vez no mesmo voto.',
     TOO_MANY_SELECTIONS: 'Você atingiu o limite técnico de candidatos salvos neste rascunho.',
     INVALID_CANDIDATE_OFFICE: 'Um dos candidatos não pertence ao cargo desta etapa.',

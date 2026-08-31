@@ -1,5 +1,5 @@
+import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useState, useEffect, useRef } from 'react';
 import { BALLOT_ROUTES } from '@/shared/constants/ballot';
 import { useUser } from '@/shared/hooks/useUser';
 import { useNotify } from '@/features/notifications/useNotify';
@@ -13,18 +13,20 @@ import {
 } from '@/features/ballot';
 import './BottomNavigation.css';
 
-// Ícones Dinâmicos: Linha fina inativo -> Linha média ativo
 function StateIcon({ className = '', isActive }) {
   return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={isActive ? 2.2 : 1.2}><path d="M12 21s-6-5.2-6-11a6 6 0 1 1 12 0c0 5.8-6 11-6 11Z"/><circle cx="12" cy="10" r="2.4"/></svg>;
 }
-function DeputyIcon({ className = '', isActive }) {
-  return <svg className={className} viewBox="0 0 30 18" fill="none" stroke="currentColor" strokeWidth={isActive ? 2.4 : 1.2}><path d="M4.1 4.4h21.8a10.9 10.9 0 0 1-21.8 0Z"/></svg>;
+
+function PresidentIcon({ className = '', isActive }) {
+  return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={isActive ? 2.2 : 1.2}><path d="M4 10h16M6 10v7m4-7v7m4-7v7m4-7v7M3 20h18M12 3l9 5H3l9-5Z"/></svg>;
 }
+
 function SenatorIcon({ className = '', isActive }) {
   return <svg className={className} viewBox="0 0 30 18" fill="none" stroke="currentColor" strokeWidth={isActive ? 2.4 : 1.2}><path d="M4.1 13.6h21.8a10.9 10.9 0 0 0-21.8 0Z"/></svg>;
 }
-function SummaryIcon({ className = '', isActive }) {
-  return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={isActive ? 2.2 : 1.2}><circle cx="8.5" cy="12" r="6.5"/><circle cx="15.5" cy="12" r="6.5"/></svg>;
+
+function DeputyIcon({ className = '', isActive }) {
+  return <svg className={className} viewBox="0 0 30 18" fill="none" stroke="currentColor" strokeWidth={isActive ? 2.4 : 1.2}><path d="M4.1 4.4h21.8a10.9 10.9 0 0 1-21.8 0Z"/></svg>;
 }
 
 function ContinueIcon({ className = '' }) {
@@ -48,36 +50,34 @@ function ShareIcon({ className = '' }) {
 
 const LEFT_STEPS = [
   { id: 'estado', label: 'Estado', path: BALLOT_ROUTES.estado, Icon: StateIcon },
-  { id: 'deputado', label: 'Deputados', path: BALLOT_ROUTES.deputadoFederal, Icon: DeputyIcon },
+  { id: 'presidente', label: 'Presidente', path: BALLOT_ROUTES.presidente, Icon: PresidentIcon }
 ];
 
 const RIGHT_STEPS = [
-  { id: 'senador', label: 'Senadores', path: BALLOT_ROUTES.senadores, Icon: SenatorIcon },
-  { id: 'resultado', label: 'Resumo', path: BALLOT_ROUTES.meuPlano, Icon: SummaryIcon }
+  { id: 'senador', label: 'Senador', path: BALLOT_ROUTES.senadores, Icon: SenatorIcon },
+  { id: 'deputado', label: 'Deputado', path: BALLOT_ROUTES.deputadoFederal, Icon: DeputyIcon }
 ];
 
 const ALL_STEPS = [...LEFT_STEPS, ...RIGHT_STEPS];
 
-// Lógica de Rota à prova de falhas: Lê qualquer parte da URL para ativar o botão
 function getActiveStep(currentStep, pathname) {
   if (currentStep) return currentStep;
-  const path = (pathname || '').toLowerCase();
-  
-  if (path.includes('resultado') || path.includes('plano') || path.includes('resumo')) return 'resultado';
+  const path = String(pathname || '').toLowerCase();
+  if (path.includes('resumo') || path.includes('plano')) return 'resultado';
+  if (path.includes('presidente')) return 'presidente';
   if (path.includes('senador')) return 'senador';
   if (path.includes('deputado')) return 'deputado';
-  
-  return 'estado'; 
+  return 'estado';
 }
 
-function getStepLogicState(stepId, activeStep, completedSteps) {
+function getStepState(stepId, activeStep, completedSteps) {
   if (stepId === activeStep) return 'active';
   if (completedSteps[stepId]) return 'complete';
   return 'pending';
 }
 
-export default function ConvexBottomNavigation({ 
-  currentStep, 
+export default function ConvexBottomNavigation({
+  currentStep,
   onContinueClick,
   isFinalStep = false,
   onShareClick
@@ -86,8 +86,6 @@ export default function ConvexBottomNavigation({
   const notify = useNotify();
   const navigate = useNavigate();
   const location = useLocation();
-
-  // Estados possíveis: 'expanded', 'shrunk', 'hidden'
   const [navState, setNavState] = useState('expanded');
   const navStateRef = useRef('expanded');
 
@@ -98,38 +96,31 @@ export default function ConvexBottomNavigation({
     let lastTime = Date.now();
 
     const changeState = (newState) => {
-      if (navStateRef.current !== newState) {
-        navStateRef.current = newState;
-        setNavState(newState);
-      }
+      if (navStateRef.current === newState) return;
+      navStateRef.current = newState;
+      setNavState(newState);
     };
 
-    const handleScroll = (e) => {
-      const target = e.target;
+    const handleScroll = (event) => {
+      const target = event.target;
       let currentY = 0;
       let isMainContainer = false;
 
       if (target === window || target === document) {
         currentY = window.scrollY || document.documentElement.scrollTop;
         isMainContainer = true;
-      } else if (target.scrollTop !== undefined) {
+      } else if (target?.scrollTop !== undefined) {
         currentY = target.scrollTop;
-        if (target.clientHeight > window.innerHeight * 0.4) {
-          isMainContainer = true;
-        }
+        isMainContainer = target.clientHeight > window.innerHeight * 0.4;
       }
-
       if (!isMainContainer) return;
 
       const deltaY = currentY - lastScrollY;
       const currentTime = Date.now();
-      const timeDelta = currentTime - lastTime || 1;
-      const velocity = Math.abs(deltaY / timeDelta);
-
+      const velocity = Math.abs(deltaY / (currentTime - lastTime || 1));
       lastScrollY = currentY;
       lastTime = currentTime;
 
-      // Se voltar ao topo absoluto, mostra a barra completa
       if (currentY <= 10) {
         downScrollDistance = 0;
         upScrollDistance = 0;
@@ -137,47 +128,30 @@ export default function ConvexBottomNavigation({
         return;
       }
 
-      // Se está nos últimos 50px do fim da página, ignora o scroll
-      // para evitar flicker causado por overscroll/rubber-banding
-      const totalScrollHeight = (target === window || target === document)
+      const totalScrollHeight = target === window || target === document
         ? document.documentElement.scrollHeight
         : target.scrollHeight;
-      const viewportHeight = (target === window || target === document)
+      const viewportHeight = target === window || target === document
         ? window.innerHeight
         : target.clientHeight;
-      if (totalScrollHeight - viewportHeight - currentY <= 50) {
-        lastScrollY = currentY;
-        lastTime = currentTime;
-        return;
-      }
+      if (totalScrollHeight - viewportHeight - currentY <= 50) return;
 
-      // Rolando para BAIXO
       if (deltaY > 0) {
         upScrollDistance = 0;
         downScrollDistance += deltaY;
-
-        // Scroll muito rápido ou puxão muito longo: Esconde direto
         if (velocity > 1.2 || deltaY > 40) {
           changeState('hidden');
           downScrollDistance = 0;
-        } 
-        // Scroll normal: Vai por etapas
-        else {
-          if (navStateRef.current === 'expanded' && downScrollDistance > 25) {
-            changeState('shrunk');
-            downScrollDistance = 0; // Exige novo movimento para esconder
-          } else if (navStateRef.current === 'shrunk' && downScrollDistance > 60) {
-            changeState('hidden');
-            downScrollDistance = 0;
-          }
+        } else if (navStateRef.current === 'expanded' && downScrollDistance > 25) {
+          changeState('shrunk');
+          downScrollDistance = 0;
+        } else if (navStateRef.current === 'shrunk' && downScrollDistance > 60) {
+          changeState('hidden');
+          downScrollDistance = 0;
         }
-      } 
-      // Rolando para CIMA
-      else if (deltaY < -2) {
+      } else if (deltaY < -2) {
         downScrollDistance = 0;
         upScrollDistance += Math.abs(deltaY);
-
-        // Exige rolar 20px para cima para evitar que ela fique piscando com vibrações do dedo
         if (upScrollDistance > 20) {
           changeState('expanded');
           upScrollDistance = 0;
@@ -186,35 +160,24 @@ export default function ConvexBottomNavigation({
     };
 
     window.addEventListener('scroll', handleScroll, true);
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll, true);
-    };
+    return () => window.removeEventListener('scroll', handleScroll, true);
   }, []);
 
   const draft = user?.uid ? readBallotDraft(user.uid, userData?.estado) : readVisitorBallotDraft();
-  const estadoSelecionado = user?.uid ? getBallotEstado(user.uid, userData?.estado) : getVisitorBallotEstado();
-  const progress = draft ? getBallotProgress(draft) : null;
-  
+  const estado = user?.uid ? getBallotEstado(user.uid, userData?.estado) : getVisitorBallotEstado();
+  const progress = getBallotProgress(draft);
   const activeStep = getActiveStep(currentStep, location.pathname);
-  
   const completedSteps = {
-    estado: Boolean(estadoSelecionado || progress?.hasEstado),
-    deputado: Boolean(progress?.hasDeputadoFederal),
-    senador: Boolean(progress?.hasSenadores),
-    resultado: Boolean(progress?.isComplete)
+    estado: Boolean(estado || progress.hasEstado),
+    presidente: Boolean(progress.hasPresidente),
+    senador: Boolean(progress.hasSenadores),
+    deputado: Boolean(progress.hasDeputadoFederal)
   };
+  const firstPendingIndex = ALL_STEPS.findIndex((step) => !completedSteps[step.id]);
+  const activeIndex = ALL_STEPS.findIndex((step) => step.id === activeStep);
 
-  const activeIndex = Math.max(0, ALL_STEPS.findIndex(s => s.id === activeStep));
-  const isCurrentStepComplete = completedSteps[activeStep];
-  
-  const firstPendingIndex = isCurrentStepComplete 
-    ? Math.min(activeIndex + 1, ALL_STEPS.length - 1) 
-    : activeIndex;
-    
-  const nextStep = ALL_STEPS[firstPendingIndex];
-
-  const handleNavigate = (step, isClickable) => {
+  const handleNavigate = (step, index) => {
+    const isClickable = completedSteps[step.id] || index === firstPendingIndex;
     if (!isClickable) {
       notify.warning(getIncompleteStepMessage(completedSteps), {
         dedupeKey: `incomplete-step-${activeStep}`,
@@ -226,69 +189,67 @@ export default function ConvexBottomNavigation({
   };
 
   const handleCentralContinue = () => {
-    if (isFinalStep && onShareClick) {
-      onShareClick();
-    } else if (onContinueClick) {
-      onContinueClick();
-    } else {
-      handleNavigate(nextStep, isCurrentStepComplete);
+    if (isFinalStep) {
+      if (onShareClick) onShareClick();
+      return;
     }
-  };
+    if (onContinueClick) {
+      onContinueClick();
+      return;
+    }
 
-  const renderNavItems = (stepsArray) => {
-    return stepsArray.map((step) => {
-      const globalIndex = ALL_STEPS.findIndex(s => s.id === step.id);
-      const state = getStepLogicState(step.id, activeStep, completedSteps);
-      const isActive = state === 'active';
-      const isClickable = state === 'complete' || globalIndex === firstPendingIndex;
-
-      return (
-        <button
-          key={step.id}
-          className={`convex-nav__step is-${state} ${isClickable ? 'is-clickable' : ''} ${isActive ? 'is-active' : ''}`}
-          onClick={() => handleNavigate(step, isClickable)}
-          aria-disabled={!isClickable}
-          aria-current={isActive ? 'step' : undefined}
-        >
-          <span className="convex-nav__icon-wrap">
-            <step.Icon className="convex-nav__icon" isActive={isActive} />
-          </span>
-          <span className="convex-nav__copy">
-            <span className="convex-nav__label">{step.label}</span>
-          </span>
-        </button>
-      );
+    const nextStep = ALL_STEPS[activeIndex + 1];
+    if (nextStep && activeIndex >= 0 && completedSteps[activeStep]) {
+      navigate(nextStep.path, { state: { bypassVoteRedirect: true } });
+      return;
+    }
+    notify.warning(getIncompleteStepMessage(completedSteps), {
+      dedupeKey: `incomplete-step-${activeStep}`,
+      duration: 4200
     });
   };
 
+  const renderNavItems = (steps) => steps.map((step) => {
+    const index = ALL_STEPS.findIndex((item) => item.id === step.id);
+    const state = getStepState(step.id, activeStep, completedSteps);
+    const isActive = state === 'active';
+    const isClickable = completedSteps[step.id] || index === firstPendingIndex;
+
+    return (
+      <button
+        key={step.id}
+        type="button"
+        className={`convex-nav__step is-${state}${isClickable ? ' is-clickable' : ''}${isActive ? ' is-active' : ''}`}
+        onClick={() => handleNavigate(step, index)}
+        aria-disabled={!isClickable}
+        aria-current={isActive ? 'step' : undefined}
+      >
+        <span className="convex-nav__icon-wrap">
+          <step.Icon className="convex-nav__icon" isActive={isActive} />
+        </span>
+        <span className="convex-nav__copy">
+          <span className="convex-nav__label">{step.label}</span>
+        </span>
+      </button>
+    );
+  });
+
   return (
     <div className={`app-page-footer convex-nav-shell is-${navState}`}>
-      
-      {/* Camada Visual de Fundo Liquid Glass */}
-      <div className="convex-nav__bg-wrapper">
-        <div className="glass-highlight"></div>
-      </div>
-
-      <nav className="convex-nav">
-        
-        <div className="convex-nav__side">
-          {renderNavItems(LEFT_STEPS)}
-        </div>
-
+      <div className="convex-nav__bg-wrapper" aria-hidden="true" />
+      <nav className="convex-nav" aria-label="Etapas do plano de voto">
+        <div className="convex-nav__side">{renderNavItems(LEFT_STEPS)}</div>
         <div className="convex-nav__center">
-          <button 
+          <button
+            type="button"
             className="convex-nav__continue-btn"
             onClick={handleCentralContinue}
-            aria-label={isFinalStep ? "Compartilhar Plano" : "Continuar para a próxima etapa"}
+            aria-label={isFinalStep ? 'Compartilhar plano' : 'Avançar para a próxima etapa'}
           >
             {isFinalStep ? <ShareIcon className="continue-icon" /> : <ContinueIcon className="continue-icon" />}
           </button>
         </div>
-
-        <div className="convex-nav__side">
-          {renderNavItems(RIGHT_STEPS)}
-        </div>
-
+        <div className="convex-nav__side">{renderNavItems(RIGHT_STEPS)}</div>
       </nav>
     </div>
   );

@@ -141,7 +141,7 @@ export default function Home() {
       }
 
       flowLog('home.change-state.saved', { novoEstado });
-      navigate(BALLOT_ROUTES.deputadoFederal, { state: { bypassVoteRedirect: true } });
+      navigate(BALLOT_ROUTES.presidente, { state: { bypassVoteRedirect: true } });
     } catch (e) {
       flowError('home.change-state.error', e, { novoEstado });
       if (import.meta.env.DEV) {

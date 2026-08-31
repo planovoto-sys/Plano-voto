@@ -30,6 +30,6 @@ O tratamento de dados segue as páginas legais e de transparência do app. Cooki
 
 ## Contato
 
-Solicitações podem ser enviadas para plano.voto@gmail.com.
+Solicitações podem ser enviadas para contato.bomdevoto@gmail.com.
 
 > Documento preparado para revisão jurídica antes de publicação definitiva.

@@ -11,6 +11,11 @@ import { STATE_NAMES } from '@/shared/constants/states';
 import { db } from '@/shared/firebase/firebase';
 import { normalizeSearch } from '@/shared/utils/search';
 import { normalizeStateCode } from '@/shared/utils/state';
+import {
+  getPartyIdentityKeys,
+  getPartyNumberKey,
+  normalizePartyIdentity
+} from '@/shared/utils/partyIdentity';
 
 const PUBLIC_CACHE_VERSION = 'v7';
 const CACHE_PREFIX = `meuvoto:public-cache:${PUBLIC_CACHE_VERSION}`;
@@ -121,15 +126,13 @@ const removeCacheEntry = (key) => {
 };
 
 const candidateCacheKey = (officeName, estado = null) => (
-  `candidates:${officeName}:${normalizeStateCode(estado) || 'all'}`
+  `candidates-v2:${officeName}:${normalizeStateCode(estado) || 'all'}`
 );
 const partyCacheKey = () => 'party-scores';
 const tallyCacheKey = (candidateId, estado = null) => `choice-counts:${ACTIVE_ELECTION_ID}:${normalizeStateCode(estado) || 'all'}:${candidateId}`;
 const stateChoiceCacheKey = (estado) => `state-choice-counts:${ACTIVE_ELECTION_ID}:${normalizeStateCode(estado) || 'all'}`;
 
-const normalizeLookupKey = (value) => (
-  normalizeSearch(value).replace(/[^a-z0-9]+/g, '')
-);
+const normalizeLookupKey = normalizePartyIdentity;
 
 const readNumericValue = (...values) => {
   for (const value of values) {
@@ -151,8 +154,8 @@ const getPartyScore = (party = {}) => readNumericValue(
   party.score
 );
 
-const addPartyLookupEntry = (lookup, key, party) => {
-  const normalizedKey = normalizeLookupKey(key);
+const addPartyLookupEntry = (lookup, key, party, { normalized = false } = {}) => {
+  const normalizedKey = normalized ? key : normalizeLookupKey(key);
   if (!normalizedKey || lookup.has(normalizedKey)) return;
   lookup.set(normalizedKey, party);
 };
@@ -166,7 +169,7 @@ const buildPartyLookup = (parties) => {
       nota: getPartyScore(party)
     };
 
-    [
+    const identityValues = [
       party.id,
       party.sigla,
       party.Sigla,
@@ -177,7 +180,26 @@ const buildPartyLookup = (parties) => {
       party.Nome,
       party.partido,
       party.Partido
-    ].forEach((key) => addPartyLookupEntry(lookup, key, normalizedParty));
+    ];
+
+    identityValues.forEach((value) => {
+      getPartyIdentityKeys(value).forEach((key) => (
+        addPartyLookupEntry(lookup, key, normalizedParty, { normalized: true })
+      ));
+    });
+
+    [
+      party.id,
+      party.numero,
+      party.Numero,
+      party.numero_partido,
+      party.numeroPartido,
+      party['Numero partido'],
+      party['Número partido']
+    ].forEach((value) => {
+      const numberKey = getPartyNumberKey(value);
+      if (numberKey) addPartyLookupEntry(lookup, numberKey, normalizedParty, { normalized: true });
+    });
   });
 
   return lookup;
@@ -237,8 +259,19 @@ const getCandidatePartyScoreFromLookup = (candidate, partyLookup) => {
     candidate.Party
   ];
 
-  for (const key of candidateKeys) {
-    const party = partyLookup.get(normalizeLookupKey(key));
+  for (const value of candidateKeys) {
+    for (const key of getPartyIdentityKeys(value)) {
+      const party = partyLookup.get(key);
+      if (party?.nota !== null && party?.nota !== undefined) return party.nota;
+    }
+  }
+
+  const office = normalizeSearch(candidate.cargo ?? candidate.Cargo ?? candidate.office ?? '');
+  if (office.includes('presidente')) {
+    const numberKey = getPartyNumberKey(
+      candidate.numero ?? candidate.Numero ?? candidate.numero_candidato ?? candidate.number
+    );
+    const party = numberKey ? partyLookup.get(numberKey) : null;
     if (party?.nota !== null && party?.nota !== undefined) return party.nota;
   }
 
@@ -300,6 +333,13 @@ const normalizeTallyTarget = (target, fallbackEstado = null) => {
     return {
       id: target,
       estado: normalizeStateCode(fallbackEstado)
+    };
+  }
+
+  if (target.national === true || target.scope === 'national') {
+    return {
+      id: target.id,
+      estado: null
     };
   }
 

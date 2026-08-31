@@ -6,7 +6,7 @@ import {
 export const STORAGE_PREFIX = `meuvoto:${ACTIVE_ELECTION_ID}`;
 export const DRAFT_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 export const VISITOR_DRAFT_STORAGE_ID = `${VISITOR_DRAFT_ID}:local`;
-export const MAX_ACTIVE_CANDIDATES = 3;
+export const MAX_ACTIVE_CANDIDATES = 100;
 
 let storageAvailability = null;
 

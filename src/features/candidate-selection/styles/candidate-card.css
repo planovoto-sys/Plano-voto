@@ -9,6 +9,8 @@
   --card-gray-track: #EBF1EA;
   --card-red: var(--brand-danger);
   --card-red-soft: #FEF2F2;
+  --card-neutral: #64748B;
+  --card-neutral-soft: #F1F5F9;
 
   position: relative;
   width: 100%;
@@ -47,6 +49,11 @@
 .prototype-candidate-card.is-selected.tone-bad {
   border: 2px solid var(--card-red) !important;
   box-shadow: 0 4px 16px rgba(239, 68, 68, 0.12) !important;
+}
+
+.prototype-candidate-card.is-selected.tone-neutral {
+  border: 2px solid var(--card-neutral) !important;
+  box-shadow: 0 4px 16px rgba(100, 116, 139, 0.12) !important;
 }
 
 /* ==========================================================================
@@ -167,6 +174,12 @@
   color: var(--card-red);             
 }
 
+.candidate-card__action-btn-icon.selected.tone-neutral {
+  background: var(--card-neutral-soft);
+  border-color: var(--card-neutral);
+  color: var(--card-neutral);
+}
+
 .icon-morph-svg {
   width: 14px; 
   height: 14px; 
@@ -249,6 +262,7 @@
 
 .tone-good .candidate-card__bar-fill { background: var(--card-green); }
 .tone-bad .candidate-card__bar-fill { background: var(--card-red); }
+.tone-neutral .candidate-card__bar-fill { background: var(--card-neutral); }
 
 .candidate-card__viability-percent {
   font-family: var(--font-family);
@@ -302,6 +316,7 @@
 
 .candidate-card__tag.tone-good { background: var(--card-green-soft); color: var(--brand-green-dark); }
 .candidate-card__tag.tone-bad { background: var(--card-red-soft); color: var(--card-red); }
+.candidate-card__tag.tone-neutral { background: var(--card-neutral-soft); color: var(--card-neutral); }
 
 .tag-icon {
   flex-shrink: 0;

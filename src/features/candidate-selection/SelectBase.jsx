@@ -24,8 +24,10 @@ import './SelectBase.css';
 
 export default function SelectBase({
   titulo,
+  subtitulo,
   dados,
   limiteSelecao,
+  minimoSelecao = 1,
   selecaoInicial = [],
   carregando,
   onConfirmar,
@@ -51,7 +53,7 @@ export default function SelectBase({
   const location = useLocation();
   const notify = useNotify();
   const isHomeState = variant === 'home-state';
-  const isCandidateOffice = variant === 'office-deputado' || variant === 'office-senado';
+  const isCandidateOffice = variant === 'office-presidente' || variant === 'office-deputado' || variant === 'office-senado';
   const isSenateOffice = variant === 'office-senado';
   const candidateCardMode = isCandidateOffice ? 'detailed' : 'compact';
 
@@ -273,6 +275,31 @@ const candidateFilterItems = useMemo(() => (
     }
   };
 
+  const handleAdvance = async () => {
+    if (!onConfirmar || salvandoSelecao) return;
+    if (selecionados.length < minimoSelecao) {
+      const message = currentStep === 'presidente'
+        ? 'Selecione pelo menos 1 candidato a presidente para continuar.'
+        : currentStep === 'senador'
+          ? 'Selecione pelo menos 2 candidatos para continuar.'
+          : 'Selecione pelo menos 1 candidato para continuar.';
+      notify.warning(message);
+      return;
+    }
+
+    try {
+      setSalvandoSelecao(true);
+      await onConfirmar(selecionados, { alreadySaved: Boolean(onSelectionChange) });
+    } catch (error) {
+      setModalErroSalvar({
+        aberto: true,
+        mensagem: error?.message || 'Não foi possível avançar. Tente novamente.'
+      });
+    } finally {
+      setSalvandoSelecao(false);
+    }
+  };
+
   const handleReplaceSenator = async (indexToReplace) => {
     const itemToSelect = modalSubstituirSenador.item;
     if (!itemToSelect) return;
@@ -344,14 +371,15 @@ const candidateFilterItems = useMemo(() => (
   };
 
   const renderCandidateList = () => {
-    const headingTitle = isSenateOffice ? 'Senadores' : 'Deputados Federais';
+    const headingTitle = titulo || (isSenateOffice ? 'Senadores' : 'Deputados Federais');
+    const headingSubtitle = subtitulo || 'Selecione todos os candidatos em quem você aceitaria votar';
 
     return (
       <div className={`candidate-flow nv-container ${isSenateOffice ? 'candidate-flow--senate' : 'candidate-flow--single'}`} id="tour-lista">
         <section className="candidate-list-section">
           <div className="prototype-section-heading">
             <h2>{headingTitle}</h2>
-            <p>Selecione todos os candidatos em quem você aceitaria votar</p>
+            <p>{headingSubtitle}</p>
           </div>
 
           {dados.length > 0 ? (
@@ -446,7 +474,10 @@ const candidateFilterItems = useMemo(() => (
         <AppFooter className="app-footer--scroll-content" />
       </main>
 
-      <BottomNavigation currentStep={currentStep} placement="footer" />
+      <BottomNavigation
+        currentStep={currentStep}
+        onContinueClick={isCandidateOffice ? handleAdvance : undefined}
+      />
 
       <ConfirmModal
         isOpen={modalMalAvaliado.aberto}

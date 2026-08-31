@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Star, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { CircleHelp, Star, ThumbsUp, ThumbsDown } from 'lucide-react';
 import {
   formatScore,
   getCandidateChance,
@@ -40,12 +40,14 @@ export default function CandidateCard({
 
   // Lógica de Fallback de Nota
   const hasValidCandidateScore = candidateScore > 0;
+  const hasValidPartyScore = partyScore > 0;
   const displayScoreValue = hasValidCandidateScore ? candidateScore : partyScore;
-  const formattedScore = displayScoreValue > 0 ? formatScore(displayScoreValue) : '--';
+  const formattedScore = displayScoreValue > 0 ? formatScore(displayScoreValue) : null;
 
   // Lógica Universal de Avaliação
+  const hasSystemScore = systemScore > 0;
   const isWellEvaluated = systemScore >= 7;
-  const toneClass = isWellEvaluated ? 'tone-good' : 'tone-bad';
+  const toneClass = !hasSystemScore ? 'tone-neutral' : isWellEvaluated ? 'tone-good' : 'tone-bad';
 
   // Controle do Balão de Tooltip
   const [showTooltip, setShowTooltip] = useState(false);
@@ -132,7 +134,7 @@ export default function CandidateCard({
           <div className="candidate-card__bar-fill" style={{ width: `${chance}%` }}></div>
           {/* Ticks removidos para uma barra contínua e mais limpa */}
         </div>
-        <span className={`candidate-card__viability-percent ${selected ? (isWellEvaluated ? 'is-green' : 'is-red') : ''}`}>
+        <span className={`candidate-card__viability-percent ${selected && hasSystemScore ? (isWellEvaluated ? 'is-green' : 'is-red') : ''}`}>
           {lockPersonalizedFields ? '--' : Math.round(chance)}%
         </span>
       </div>
@@ -148,33 +150,41 @@ export default function CandidateCard({
             <div className="tag-score-text-group">
 
               <span className="tag-score-title">
-                {hasValidCandidateScore ? 'Candidato nota' : 'Partido nota'}
+                {hasValidCandidateScore ? 'Candidato nota' : hasValidPartyScore ? 'Partido nota' : 'Partido sem nota'}
               </span>
 
-              <span className="tag-score-value">
-                {formattedScore}
-              </span>
+              {formattedScore && (
+                <span className="tag-score-value">
+                  {formattedScore}
+                </span>
+              )}
 
             </div>
 
             {showTooltip && (
               <div className={`candidate-tooltip ${isFading ? 'is-fading' : ''}`}>
-                {hasValidCandidateScore ? (
+                {hasValidCandidateScore && hasValidPartyScore ? (
                   <>Nota do candidato: <strong>{formatScore(candidateScore)}</strong><br />Nota do partido: <strong>{formatScore(partyScore)}</strong></>
-                ) : (
+                ) : hasValidCandidateScore ? (
+                  <>Nota do candidato: <strong>{formatScore(candidateScore)}</strong><br />O partido ainda não possui nota.</>
+                ) : hasValidPartyScore ? (
                   <>Este candidato ainda não tem nota própria.<br />Nota do partido: <strong>{formatScore(partyScore)}</strong></>
+                ) : (
+                  <>Este candidato e seu partido ainda não possuem nota.</>
                 )}
               </div>
             )}
           </div>
 
           <div className={`candidate-card__tag candidate-card__tag--eval ${toneClass}`}>
-            {isWellEvaluated ? (
+            {!hasSystemScore ? (
+              <CircleHelp className="tag-icon" size={14} strokeWidth={2.2} />
+            ) : isWellEvaluated ? (
               <ThumbsUp className="tag-icon" size={14} strokeWidth={2.2} />
             ) : (
               <ThumbsDown className="tag-icon" size={14} strokeWidth={2.2} />
             )}
-            <span className="tag-eval-text">{isWellEvaluated ? 'Bem avaliado' : 'Mal avaliado'}</span>
+            <span className="tag-eval-text">{!hasSystemScore ? 'Sem avaliação' : isWellEvaluated ? 'Bem avaliado' : 'Mal avaliado'}</span>
           </div>
 
         </footer>

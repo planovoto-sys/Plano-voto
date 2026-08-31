@@ -37,7 +37,7 @@ Contadores negativos são tratados como zero no cliente. Migrações administrat
 
 - O proprietário pode obter apenas o próprio perfil, rascunho e elegibilidade; não pode listar a coleção.
 - O cliente não possui permissão direta de escrita em perfis, rascunhos, votos, métricas ou tokens.
-- A seleção aceita no máximo 1 deputado federal e 2 senadores, sem duplicatas.
+- O fluxo exige pelo menos 1 presidente, 1 deputado federal e 2 senadores para avançar, sem candidatos duplicados.
 - Métricas públicas revelam apenas totais agregados. Para grupos pequenos, considere limiar mínimo de publicação se houver risco de reidentificação contextual.
 - A chave Web do Firebase é pública por natureza; restrições de domínio/API, Auth e Rules são obrigatórias.
 

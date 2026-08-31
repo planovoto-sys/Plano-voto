@@ -1,3 +1,5 @@
+import { getViabilityTarget } from '@/shared/constants/candidates';
+
 export const parseNumeric = (...values) => {
   for (const value of values) {
     const numericValue = Number(value);
@@ -7,9 +9,9 @@ export const parseNumeric = (...values) => {
   return 0;
 };
 
-export const calculateCandidateChance = (selectedByUsers, averageElectedVotes) => {
-  if (!Number.isFinite(averageElectedVotes) || averageElectedVotes <= 0) return 0;
-  return Math.max(0, Math.min(100, Math.round((selectedByUsers / averageElectedVotes) * 100)));
+export const calculateCandidateChance = (selectedByUsers, viabilityTarget) => {
+  if (!Number.isFinite(viabilityTarget) || viabilityTarget <= 0) return 0;
+  return Math.max(0, Math.min(100, Math.round((selectedByUsers / viabilityTarget) * 100)));
 };
 
 export const formatScore = (value) => {
@@ -67,24 +69,34 @@ export const getCandidateScore = (candidate = {}) => {
 };
 
 export const getCandidateChance = (candidate = {}) => {
+  const rawSelectedByUsers = (
+    candidate.active_selections ??
+    candidate.total_active_selections ??
+    candidate.selected_by_users ??
+    candidate.selectedByUsers
+  );
+  const selectedByUsers = Number(rawSelectedByUsers);
+  const configuredTarget = getViabilityTarget(
+    candidate.cargo ?? candidate.Cargo ?? candidate.office,
+    candidate.estado ?? candidate.Estado ?? candidate.UF ?? candidate.uf ?? candidate.state
+  );
+
+  if (rawSelectedByUsers !== undefined && rawSelectedByUsers !== null && Number.isFinite(selectedByUsers) && configuredTarget) {
+    return calculateCandidateChance(selectedByUsers, configuredTarget);
+  }
+
   const directValue = candidate.chance ?? candidate.Chance ?? candidate['Chance eleição'] ?? candidate['Chance de eleição'];
   const directNumeric = Number(directValue);
-
   if (Number.isFinite(directNumeric)) {
     return Math.max(0, Math.min(100, Math.round(directNumeric)));
   }
 
-  const selectedByUsers = Number(
-    candidate.active_selections ??
-    candidate.total_active_selections ??
-    candidate.selected_by_users ??
-    candidate.selectedByUsers ??
-    0
+  const storedTarget = Number(
+    candidate.viability_target ?? candidate.viabilityTarget ??
+    candidate.average_elected_votes ?? candidate.averageElectedVotes
   );
-  const averageElectedVotes = Number(candidate.average_elected_votes ?? candidate.averageElectedVotes ?? 3);
-  if (!Number.isFinite(selectedByUsers) || !Number.isFinite(averageElectedVotes) || averageElectedVotes <= 0) return 0;
-
-  return calculateCandidateChance(selectedByUsers, averageElectedVotes);
+  if (!Number.isFinite(selectedByUsers) || !Number.isFinite(storedTarget) || storedTarget <= 0) return 0;
+  return calculateCandidateChance(selectedByUsers, storedTarget);
 };
 
 export const getCandidateTone = (candidate, fallback = 'neutral') => {

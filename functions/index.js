@@ -69,10 +69,12 @@ const ACTIVE_ELECTION_ID = 'congresso-2026';
 const BALLOT_SCHEMA_VERSION = 1;
 const FUNCTIONS_REGION = 'southamerica-east1';
 const OFFICE_MINIMUM_SELECTIONS = {
+  presidente: 1,
   deputado_federal: 1,
   senadores: 2,
 };
-const BALLOT_FLOW_STEP_IDS = ['deputado_federal', 'senadores_1', 'senadores_2'];
+const BALLOT_FLOW_STEP_IDS = ['presidente', 'deputado_federal', 'senadores_1', 'senadores_2'];
+const MAX_ACTIVE_CANDIDATES = 100;
 const PLAN_HANDOFF_TTL_MS = 10 * 60 * 1000;
 const PLAN_HANDOFF_TOKEN_BYTES = 32;
 const MAX_REQUEST_BYTES = 32 * 1024;
@@ -369,6 +371,8 @@ const buildCandidateSnapshot = (candidateId, data) => ({
   nota_candidato: readNumericValue(data.nota_candidato, data.notaCandidato, data['Nota candidato']),
   nota_partido: readNumericValue(data.nota_partido, data.notaPartido, data['Nota partido']),
   nota_final: readNumericValue(data.nota_final, data.notaFinal, data.nota_candidato, data.notaCandidato, data['Nota candidato'], data.nota_partido, data.notaPartido, data['Nota partido']),
+  viability_target: readNumericValue(data.viability_target, data.viabilityTarget, data.average_elected_votes, data.averageElectedVotes),
+  average_elected_votes: readNumericValue(data.viability_target, data.viabilityTarget, data.average_elected_votes, data.averageElectedVotes),
   temNotaCandidato: data.temNotaCandidato ?? data.tem_nota_candidato ?? null,
   tem_nota_candidato: data.temNotaCandidato ?? data.tem_nota_candidato ?? null,
 });
@@ -445,17 +449,20 @@ const asArray = (value) => {
 };
 
 const emptySelections = () => ({
+  presidente: [],
   deputado_federal: [],
   senadores: [],
 });
 
 const emptyCandidateGroups = () => ({
+  presidente: [],
   deputado_federal: [],
   senadores_1: [],
   senadores_2: [],
 });
 
 const emptyCompletedSteps = () => ({
+  presidente: false,
   deputado_federal: false,
   senadores_1: false,
   senadores_2: false,
@@ -512,6 +519,7 @@ const normalizeDraft = (rawDraft, userId, estado = null) => {
     Object.keys(rawDraft.candidate_groups).length > 0;
   const hasGroupedCandidates = Object.values(candidateGroups).some((items) => items.length > 0);
   if (hasCandidateGroupsObject || hasGroupedCandidates) {
+    candidateGroups.presidente = uniqueCandidatesById(candidateGroups.presidente);
     candidateGroups.deputado_federal = uniqueCandidatesById(candidateGroups.deputado_federal);
     candidateGroups.senadores_1 = uniqueCandidatesById([
       ...candidateGroups.senadores_1,
@@ -519,21 +527,25 @@ const normalizeDraft = (rawDraft, userId, estado = null) => {
     ]);
     candidateGroups.senadores_2 = [];
   } else {
+    candidateGroups.presidente = rawSelections.presidente;
     candidateGroups.deputado_federal = rawSelections.deputado_federal;
     candidateGroups.senadores_1 = rawSelections.senadores;
     candidateGroups.senadores_2 = [];
   }
 
   const selections = {
+    presidente: candidateGroups.presidente,
     deputado_federal: candidateGroups.deputado_federal,
     senadores: candidateGroups.senadores_1,
   };
   const completedSteps = {
+    presidente: candidateGroups.presidente.length >= OFFICE_MINIMUM_SELECTIONS.presidente,
     deputado_federal: candidateGroups.deputado_federal.length >= OFFICE_MINIMUM_SELECTIONS.deputado_federal,
     senadores_1: candidateGroups.senadores_1.length >= 1,
     senadores_2: candidateGroups.senadores_1.length >= OFFICE_MINIMUM_SELECTIONS.senadores,
   };
   const activeCandidateIds = [...new Set([
+    ...selections.presidente,
     ...selections.deputado_federal,
     ...selections.senadores,
   ].map((candidate) => candidate.id).filter(Boolean))];
@@ -640,19 +652,23 @@ const assertStepKey = (value) => {
   return stepKey;
 };
 
-const getStepOffice = (stepKey) => (
-  stepKey === 'deputado_federal' ? 'Deputado Federal' : 'Senador'
-);
+const getStepOffice = (stepKey) => {
+  if (stepKey === 'presidente') return 'Presidente';
+  if (stepKey === 'deputado_federal') return 'Deputado Federal';
+  return 'Senador';
+};
 
 const buildAuthoritativeHandoffDraft = async (rawDraft, estado) => {
   const normalizedDraft = normalizeDraft(rawDraft, 'handoff', estado);
+  const presidenteIds = normalizedDraft.candidate_groups.presidente
+    .map((candidate) => assertValidId(candidate.id, 'Candidato'));
   const deputadoIds = normalizedDraft.candidate_groups.deputado_federal
     .map((candidate) => assertValidId(candidate.id, 'Candidato'));
   const senadorIds = normalizedDraft.candidate_groups.senadores_1
     .map((candidate) => assertValidId(candidate.id, 'Candidato'));
-  const candidateIds = [...deputadoIds, ...senadorIds];
+  const candidateIds = [...presidenteIds, ...deputadoIds, ...senadorIds];
 
-  if (deputadoIds.length > 1 || senadorIds.length > 2 || new Set(candidateIds).size !== candidateIds.length) {
+  if (candidateIds.length > MAX_ACTIVE_CANDIDATES || new Set(candidateIds).size !== candidateIds.length) {
     throw new HttpsError('invalid-argument', 'Selecoes do rascunho invalidas.');
   }
 
@@ -673,6 +689,9 @@ const buildAuthoritativeHandoffDraft = async (rawDraft, estado) => {
   deputadoIds.forEach((candidateId) => {
     assertCandidateOffice(candidateSnaps[candidateIds.indexOf(candidateId)].data(), 'Deputado Federal');
   });
+  presidenteIds.forEach((candidateId) => {
+    assertCandidateOffice(candidateSnaps[candidateIds.indexOf(candidateId)].data(), 'Presidente');
+  });
   senadorIds.forEach((candidateId) => {
     assertCandidateOffice(candidateSnaps[candidateIds.indexOf(candidateId)].data(), 'Senador');
   });
@@ -680,6 +699,7 @@ const buildAuthoritativeHandoffDraft = async (rawDraft, estado) => {
   return normalizeDraft({
     estado,
     candidate_groups: {
+      presidente: presidenteIds.map((candidateId) => candidatesById.get(candidateId)),
       deputado_federal: deputadoIds.map((candidateId) => candidatesById.get(candidateId)),
       senadores_1: senadorIds.map((candidateId) => candidatesById.get(candidateId)),
       senadores_2: [],
@@ -869,10 +889,9 @@ export const saveBallotStepSelection = onCall(CALLABLE_OPTIONS, async (request) 
     throw new HttpsError('invalid-argument', 'Estado invalido.');
   }
 
-  const maximumCandidates = stepKey === 'deputado_federal' ? 1 : 2;
   const candidateIds = assertStringList(
     payload.candidate_ids,
-    { min: 0, max: maximumCandidates },
+    { min: 0, max: MAX_ACTIVE_CANDIDATES },
     'Candidatos'
   );
   const userId = request.auth.uid;
@@ -901,7 +920,7 @@ export const saveBallotStepSelection = onCall(CALLABLE_OPTIONS, async (request) 
 
       const data = candidateSnap.data();
       assertCandidateOffice(data, getStepOffice(stepKey));
-      assertCandidateState(data, estado, { requireState: stepKey !== 'deputado_federal' });
+      assertCandidateState(data, estado, { requireState: stepKey.startsWith('senadores') });
       return normalizeStoredCandidate(buildCandidateSnapshot(candidateIds[index], data));
     });
 
@@ -915,6 +934,10 @@ export const saveBallotStepSelection = onCall(CALLABLE_OPTIONS, async (request) 
       },
       updated_at: updatedAt,
     }, userId, estado);
+
+    if (nextDraft.active_candidate_ids.length > MAX_ACTIVE_CANDIDATES) {
+      throw new HttpsError('invalid-argument', 'Limite tecnico de candidatos excedido.');
+    }
 
     const senatorIds = nextDraft.candidate_groups.senadores_1.map((candidate) => candidate.id).filter(Boolean);
     if (new Set(senatorIds).size !== senatorIds.length) {
@@ -1101,7 +1124,7 @@ export const castAnonymousVote = onCall({
   await enforceRateLimit(request, 'castAnonymousVote');
   const electionId = asString(payload.election_id) || ACTIVE_ELECTION_ID;
   const estado = normalizeStateCode(payload.estado);
-  const offices = assertObjectKeys(payload.offices, ['deputado_federal', 'senadores'], 'Cargos');
+  const offices = assertObjectKeys(payload.offices, ['presidente', 'deputado_federal', 'senadores'], 'Cargos');
 
   if (electionId !== ACTIVE_ELECTION_ID) {
     throw new HttpsError('invalid-argument', 'Eleicao invalida.');
@@ -1115,22 +1138,30 @@ export const castAnonymousVote = onCall({
     throw new HttpsError('invalid-argument', 'Versao do voto invalida.');
   }
 
+  const presidentes = assertStringList(
+    offices.presidente,
+    { min: OFFICE_MINIMUM_SELECTIONS.presidente, max: MAX_ACTIVE_CANDIDATES },
+    'Presidente'
+  );
   const deputadosFederais = assertStringList(
     offices.deputado_federal,
-    { exact: OFFICE_MINIMUM_SELECTIONS.deputado_federal },
+    { min: OFFICE_MINIMUM_SELECTIONS.deputado_federal, max: MAX_ACTIVE_CANDIDATES },
     'Deputado federal'
   );
   const senadores = assertStringList(
     offices.senadores,
-    { exact: OFFICE_MINIMUM_SELECTIONS.senadores },
+    { min: OFFICE_MINIMUM_SELECTIONS.senadores, max: MAX_ACTIVE_CANDIDATES },
     'Senadores'
   );
   const candidateIds = assertStringList(
     payload.candidate_ids,
-    { exact: OFFICE_MINIMUM_SELECTIONS.deputado_federal + OFFICE_MINIMUM_SELECTIONS.senadores },
+    {
+      min: OFFICE_MINIMUM_SELECTIONS.presidente + OFFICE_MINIMUM_SELECTIONS.deputado_federal + OFFICE_MINIMUM_SELECTIONS.senadores,
+      max: MAX_ACTIVE_CANDIDATES,
+    },
     'Candidatos'
   );
-  const expectedCandidateIds = [...deputadosFederais, ...senadores];
+  const expectedCandidateIds = [...presidentes, ...deputadosFederais, ...senadores];
 
   if (
     candidateIds.some((candidateId) => !expectedCandidateIds.includes(candidateId)) ||
@@ -1180,6 +1211,10 @@ export const castAnonymousVote = onCall({
     });
 
     const candidateData = candidateSnaps.map((candidateSnap) => candidateSnap.data());
+    presidentes.forEach((candidateId) => {
+      const index = candidateIds.indexOf(candidateId);
+      assertCandidateOffice(candidateData[index], 'Presidente');
+    });
     deputadosFederais.forEach((candidateId) => {
       const index = candidateIds.indexOf(candidateId);
       assertCandidateOffice(candidateData[index], 'Deputado Federal');
@@ -1195,6 +1230,7 @@ export const castAnonymousVote = onCall({
     const encryptedBallot = encryptBallot({
       estado,
       offices: {
+        presidente: presidentes,
         deputado_federal: deputadosFederais,
         senadores,
       },

@@ -20,7 +20,7 @@ export default function AppFooter({ className = '' }) {
         </div>
 
         <div className="app-footer__contact">
-          <a href="mailto:plano.voto@gmail.com">plano.voto@gmail.com</a>
+          <a href="mailto:contato.bomdevoto@gmail.com">contato.bomdevoto@gmail.com</a>
         </div>
 
         <div className="app-footer__copyright">

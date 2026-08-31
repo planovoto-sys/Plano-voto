@@ -51,7 +51,7 @@ export default function AccountDeletionPanel() {
           <strong>Você não está logado</strong>
           <p>
             Para excluir dados da conta, entre com o mesmo login usado no app ou envie solicitação para
-            plano.voto@gmail.com. Mesmo sem login, você pode apagar dados deste dispositivo abaixo.
+            contato.bomdevoto@gmail.com. Mesmo sem login, você pode apagar dados deste dispositivo abaixo.
           </p>
           <LocalDataActions compact />
         </div>

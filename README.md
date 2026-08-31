@@ -123,6 +123,6 @@ GitHub: https://github.com/AlexandreBolsoni
 
 LinkedIn: https://www.linkedin.com/in/alexandre-hackbardt-bolsoni/
 
-Email: plano.voto@gmail.com
+Email: contato.bomdevoto@gmail.com
 
 © 2026 Alexandre Hackbardt Bolsoni. Todos os direitos reservados.

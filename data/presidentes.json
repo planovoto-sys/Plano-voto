@@ -1,0 +1,15 @@
+[
+  { "candidato": "RENAN SANTOS", "partido": "PARTIDO MISSÃO", "nota": 8.68, "numero": 14 },
+  { "candidato": "ZEMA", "partido": "PARTIDO NOVO", "nota": 8.55, "numero": 30 },
+  { "candidato": "FLAVIO BOLSONARO", "partido": "PARTIDO LIBERAL", "nota": 7.3, "numero": 22 },
+  { "candidato": "RONALDO CAIADO", "partido": "PARTIDO SOCIAL DEMOCRATA", "nota": 6.26, "numero": 55 },
+  { "candidato": "ESCRITOR AUGUSTO CURY", "partido": "PARTIDO AVANTE", "nota": 5.97, "numero": 70 },
+  { "candidato": "LULA", "partido": "PARTIDO DOS TRABALHADORES", "nota": 4.11, "numero": 13 },
+  { "candidato": "EDMILSON COSTA", "partido": "PARTIDO COMUNISTA DO BRASIL", "nota": 3.97, "numero": 21 },
+  { "candidato": "CLARIANA BARAO", "partido": "DEMOCRACIA CRISTÃ", "nota": null, "numero": 27 },
+  { "candidato": "HERTZ DIAS", "partido": "PARTIDO SOCIALISTA DOS TRABALHADORES UNIFICADO", "nota": null, "numero": 16 },
+  { "candidato": "PABLO MARÇAL", "partido": "PARTIDO RENOVADOR TRABALHISTA BRASILEIRO", "nota": null, "numero": 28 },
+  { "candidato": "RUI COSTA PIMENTA", "partido": "PARTIDO DA CAUSA OPERÁRIA", "nota": null, "numero": 29 },
+  { "candidato": "SAMARA", "partido": "UNIDADE POPULAR", "nota": null, "numero": 80 },
+  { "candidato": "VETERINÁRIO WILSON GRASSI", "partido": "DEMOCRATA", "nota": null, "numero": 35 }
+]

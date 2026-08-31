@@ -136,6 +136,10 @@ export const saveBallotOfficeSelection = async (userId, officeKey, candidates, e
     .map(normalizeStoredCandidate)
     .filter(Boolean);
 
+  if (officeKey === 'presidente') {
+    return saveBallotStepSelection(userId, 'presidente', normalizedCandidates, estado, { markCompleted: true });
+  }
+
   if (officeKey === 'deputado_federal') {
     return saveBallotStepSelection(userId, 'deputado_federal', normalizedCandidates, estado, { markCompleted: true });
   }
@@ -178,8 +182,13 @@ export const saveBallotDraftToAccount = async (userId, draft) => {
   if (!activeEstado) return createEmptyBallotDraft();
 
   let savedDraft = await saveBallotState(userId, activeEstado);
+  const presidente = normalizedDraft.candidate_groups.presidente;
   const deputadoFederal = normalizedDraft.candidate_groups.deputado_federal;
   const senadores = normalizedDraft.candidate_groups.senadores_1;
+
+  if (presidente.length > 0) {
+    savedDraft = await saveBallotStepSelection(userId, 'presidente', presidente, activeEstado, { markCompleted: true });
+  }
 
   if (deputadoFederal.length > 0) {
     savedDraft = await saveBallotStepSelection(userId, 'deputado_federal', deputadoFederal, activeEstado, { markCompleted: true });

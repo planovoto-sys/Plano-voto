@@ -1,0 +1,29 @@
+.desktop-only-notice {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 32px;
+  background: #f5f7f5;
+  color: #143d2a;
+  text-align: center;
+}
+
+.desktop-only-notice__content {
+  width: min(100%, 520px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+}
+
+.desktop-only-notice__logo {
+  width: min(320px, 72vw);
+  height: auto;
+}
+
+.desktop-only-notice p {
+  margin: 0;
+  font-size: clamp(20px, 2.4vw, 30px);
+  font-weight: 700;
+  line-height: 1.4;
+}

@@ -20,6 +20,6 @@ O usuário pode apagar rascunho local, cache offline, cache de candidatos, permi
 
 ## Canal de atendimento
 
-Pedidos de acesso, correção, exclusão, revogação, oposição ou dúvidas podem ser enviados para plano.voto@gmail.com.
+Pedidos de acesso, correção, exclusão, revogação, oposição ou dúvidas podem ser enviados para contato.bomdevoto@gmail.com.
 
 > Documento preparado para revisão jurídica antes de publicação definitiva.

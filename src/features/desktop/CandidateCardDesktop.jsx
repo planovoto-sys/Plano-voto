@@ -31,7 +31,7 @@ const getBadge = ({ featured, score, chance, locked }) => {
 };
 
 function ScoreChip({ label, value }) {
-  const display = Number(value) > 0 ? formatScore(value) : '--';
+  const display = Number(value) > 0 ? formatScore(value) : 'Sem nota';
   return (
     <span className="desktop-candidate-card__score" aria-label={`${label}: ${display}`}>
       {display}

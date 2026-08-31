@@ -16,6 +16,7 @@ import {
 import { VotingError } from './ballotErrors';
 
 const emptySelections = () => ({
+  presidente: [],
   deputado_federal: [],
   senadores: []
 });
@@ -63,7 +64,8 @@ export const normalizeStoredCandidate = (candidate) => {
     nota_final: Number(candidate.nota_final ?? candidate.notaFinal ?? candidate.nota_candidato ?? candidate['Nota candidato'] ?? candidate.nota_partido ?? candidate['Nota partido'] ?? 0) || 0,
     chance: Number(candidate.chance ?? candidate.Chance ?? 0) || 0,
     selected_by_users: Number(candidate.selected_by_users ?? candidate.selectedByUsers ?? 0) || 0,
-    average_elected_votes: Number(candidate.average_elected_votes ?? candidate.averageElectedVotes ?? 0) || 0,
+    viability_target: Number(candidate.viability_target ?? candidate.viabilityTarget ?? candidate.average_elected_votes ?? candidate.averageElectedVotes ?? 0) || 0,
+    average_elected_votes: Number(candidate.viability_target ?? candidate.viabilityTarget ?? candidate.average_elected_votes ?? candidate.averageElectedVotes ?? 0) || 0,
     ranking_total: Number(candidate.ranking_total ?? candidate.rankingTotal ?? 0) || 0,
     temNotaCandidato: candidate.temNotaCandidato ?? candidate.tem_nota_candidato ?? null,
     tem_nota_candidato: candidate.temNotaCandidato ?? candidate.tem_nota_candidato ?? null
@@ -110,10 +112,12 @@ export const normalizeDraft = (rawDraft, estado = null) => {
     Object.keys(rawDraft.candidate_groups).length > 0;
   const hasGroupedCandidates = Object.values(candidateGroups).some((items) => items.length > 0);
   if (!hasCandidateGroupsObject && !hasGroupedCandidates) {
+    candidateGroups.presidente = rawSelections.presidente;
     candidateGroups.deputado_federal = rawSelections.deputado_federal;
     candidateGroups.senadores_1 = rawSelections.senadores;
     candidateGroups.senadores_2 = [];
   } else {
+    candidateGroups.presidente = uniqueCandidatesById(candidateGroups.presidente);
     candidateGroups.deputado_federal = uniqueCandidatesById(candidateGroups.deputado_federal);
     candidateGroups.senadores_1 = uniqueCandidatesById([
       ...candidateGroups.senadores_1,
@@ -123,10 +127,12 @@ export const normalizeDraft = (rawDraft, estado = null) => {
   }
 
   const selections = {
+    presidente: candidateGroups.presidente,
     deputado_federal: candidateGroups.deputado_federal,
     senadores: candidateGroups.senadores_1
   };
 
+  completedSteps.presidente = candidateGroups.presidente.length >= OFFICE_MINIMUM_SELECTIONS.presidente;
   completedSteps.deputado_federal = candidateGroups.deputado_federal.length >= OFFICE_MINIMUM_SELECTIONS.deputado_federal;
   completedSteps.senadores_1 = candidateGroups.senadores_1.length >= 1;
   completedSteps.senadores_2 = candidateGroups.senadores_1.length >= OFFICE_MINIMUM_SELECTIONS.senadores;
@@ -145,6 +151,7 @@ export const normalizeDraft = (rawDraft, estado = null) => {
 export const getDraftCandidateList = (draft) => {
   const normalizedDraft = normalizeDraft(draft);
   return [
+    ...normalizedDraft.candidate_groups.presidente,
     ...normalizedDraft.candidate_groups.deputado_federal,
     ...normalizedDraft.candidate_groups.senadores_1
   ].filter(Boolean);
@@ -191,12 +198,15 @@ export class BallotDraftModel {
     const candidateSnapshots = candidateIds
       .map((candidateId) => normalizeStoredCandidate(fetchedById.get(candidateId) || { id: candidateId }))
       .filter(Boolean);
+    const presidentes = [];
     const deputadoFederal = [];
     const senadores = [];
 
     candidateSnapshots.forEach((candidate) => {
       const office = normalizeOfficeName(candidate.cargo || candidate.Cargo || candidate.id);
-      if (office.includes('senador')) {
+      if (office.includes('presidente')) {
+        presidentes.push(candidate);
+      } else if (office.includes('senador')) {
         senadores.push(candidate);
       } else {
         deputadoFederal.push(candidate);
@@ -207,6 +217,7 @@ export class BallotDraftModel {
       estado,
       candidate_groups: {
         ...emptyCandidateGroups(),
+        presidente: presidentes,
         deputado_federal: deputadoFederal,
         senadores_1: senadores,
         senadores_2: []
@@ -218,11 +229,13 @@ export class BallotDraftModel {
 
 export const getBallotSelectionCounts = (draft) => {
   const normalizedDraft = normalizeDraft(draft);
+  const presidente = normalizedDraft.candidate_groups.presidente.length;
   const deputadoFederal = normalizedDraft.candidate_groups.deputado_federal.length;
   const senadores = normalizedDraft.candidate_groups.senadores_1.length;
-  const total = deputadoFederal + senadores;
+  const total = presidente + deputadoFederal + senadores;
 
   return {
+    presidente,
     deputadoFederal,
     senadores,
     deputadoFederalReeleger: deputadoFederal,
@@ -240,8 +253,10 @@ export const draftHasBallotSelections = (draft) => getBallotSelectionCounts(draf
 export const getBallotProgress = (draft) => {
   const normalizedDraft = normalizeDraft(draft);
   const hasEstado = Boolean(normalizedDraft.estado);
+  const presidenteCount = normalizedDraft.candidate_groups?.presidente?.length || 0;
   const deputadoCount = normalizedDraft.candidate_groups?.deputado_federal?.length || 0;
   const senatorCount = normalizedDraft.candidate_groups?.senadores_1?.length || 0;
+  const hasPresidente = presidenteCount >= OFFICE_MINIMUM_SELECTIONS.presidente;
   const hasDeputadoFederal = deputadoCount >= OFFICE_MINIMUM_SELECTIONS.deputado_federal;
   const hasSenador1 = senatorCount >= 1;
   const hasSenador2 = senatorCount >= OFFICE_MINIMUM_SELECTIONS.senadores;
@@ -249,6 +264,7 @@ export const getBallotProgress = (draft) => {
 
   return {
     hasEstado,
+    hasPresidente,
     hasDeputadoFederalReeleger: hasDeputadoFederal,
     hasDeputadoFederalRenovar: false,
     hasDeputadoFederal,
@@ -257,16 +273,18 @@ export const getBallotProgress = (draft) => {
     hasSenadoresReeleger: hasSenador1,
     hasSenadoresRenovar: hasSenador2,
     hasSenadores,
-    isComplete: hasEstado && hasDeputadoFederal && hasSenadores,
+    isComplete: hasEstado && hasPresidente && hasDeputadoFederal && hasSenadores,
     nextRoute: !hasEstado
       ? BALLOT_ROUTES.estado
-      : !hasDeputadoFederal
-        ? BALLOT_ROUTES.deputadoFederal
+      : !hasPresidente
+        ? BALLOT_ROUTES.presidente
         : !hasSenador1
             ? BALLOT_ROUTES.senadores
           : !hasSenador2
               ? BALLOT_ROUTES.senadores
-              : BALLOT_ROUTES.senadores
+            : !hasDeputadoFederal
+              ? BALLOT_ROUTES.deputadoFederal
+              : BALLOT_ROUTES.meuPlano
   };
 };
 
@@ -276,6 +294,7 @@ export const getCandidateIdsFromDraft = (draft) => {
   const candidates = groupedCandidates.length > 0
     ? groupedCandidates
     : [
+      ...normalizedDraft.selections.presidente,
       ...normalizedDraft.selections.deputado_federal,
       ...normalizedDraft.selections.senadores
     ];
@@ -300,6 +319,7 @@ export const validateCompleteBallot = (draft) => {
   }
 
   const candidateIds = [
+    ...normalizedDraft.selections.presidente,
     ...normalizedDraft.selections.deputado_federal,
     ...normalizedDraft.selections.senadores
   ].map((candidate) => candidate.id);

@@ -153,7 +153,7 @@ export const PROVIDER_ROWS = [
     categoria: 'Email e suporte',
     finalidade: 'Responder solicitações de privacidade, exclusão e atendimento.',
     dados: 'Email, conteúdo enviado pelo usuário e dados necessários para titularidade.',
-    exemplo: 'Conta de email de contato: plano.voto@gmail.com'
+    exemplo: 'Conta de email de contato: contato.bomdevoto@gmail.com'
   }
 ];
 
@@ -226,7 +226,7 @@ export const LEGAL_PAGE_CONTENT = {
         heading: 'Quem somos e escopo',
         body: [
           'O nossovoto.org é uma ferramenta de organização pessoal de escolhas eleitorais. O app não realiza votação oficial, não substitui a urna eletrônica, não representa tribunal eleitoral, partido, candidato, coligação, campanha ou órgão público.',
-          'Esta política se aplica ao uso do site, da PWA, das páginas legais, das telas de compartilhamento e dos recursos de autenticação, seleção, revisão, QR Code e armazenamento de preferências. Solicitações sobre privacidade podem ser enviadas para plano.voto@gmail.com.'
+          'Esta política se aplica ao uso do site, da PWA, das páginas legais, das telas de compartilhamento e dos recursos de autenticação, seleção, revisão, QR Code e armazenamento de preferências. Solicitações sobre privacidade podem ser enviadas para contato.bomdevoto@gmail.com.'
         ]
       },
       {
@@ -320,7 +320,7 @@ export const LEGAL_PAGE_CONTENT = {
       },
       {
         heading: 'Canal de atendimento',
-        body: 'Solicitações relacionadas a privacidade, proteção de dados, exclusão de conta, revogação de consentimento ou exercício de direitos podem ser enviadas para plano.voto@gmail.com. Recomenda-se informar o email usado no login e descrever o pedido de forma objetiva para facilitar a validação da titularidade.'
+        body: 'Solicitações relacionadas a privacidade, proteção de dados, exclusão de conta, revogação de consentimento ou exercício de direitos podem ser enviadas para contato.bomdevoto@gmail.com. Recomenda-se informar o email usado no login e descrever o pedido de forma objetiva para facilitar a validação da titularidade.'
       },
       {
         heading: 'Atualizações',
@@ -382,7 +382,7 @@ export const LEGAL_PAGE_CONTENT = {
       {
         heading: 'Como exercer seus direitos no nossovoto.org',
         body: [
-          '1. Envie um email para plano.voto@gmail.com.',
+          '1. Envie um email para contato.bomdevoto@gmail.com.',
           '2. Informe o email usado no login, se houver.',
           '3. Descreva o pedido: acesso, correção, exclusão, revogação, oposição ou outro direito.',
           '4. O app poderá solicitar informações adicionais para confirmar titularidade.'
@@ -410,7 +410,7 @@ export const LEGAL_PAGE_CONTENT = {
       },
       {
         heading: 'Canal de atendimento e ANPD',
-        body: 'Solicitações relacionadas à privacidade e proteção de dados podem ser enviadas para plano.voto@gmail.com. O titular também pode buscar orientação ou peticionar perante a Autoridade Nacional de Proteção de Dados quando entender que seus direitos não foram atendidos.'
+        body: 'Solicitações relacionadas à privacidade e proteção de dados podem ser enviadas para contato.bomdevoto@gmail.com. O titular também pode buscar orientação ou peticionar perante a Autoridade Nacional de Proteção de Dados quando entender que seus direitos não foram atendidos.'
       },
       {
         heading: 'Última atualização',
@@ -489,7 +489,7 @@ export const LEGAL_PAGE_CONTENT = {
       },
       {
         heading: 'Contato',
-        body: 'Dúvidas, solicitações ou pedidos relacionados a privacidade, dados e uso do serviço podem ser enviados para plano.voto@gmail.com.'
+        body: 'Dúvidas, solicitações ou pedidos relacionados a privacidade, dados e uso do serviço podem ser enviados para contato.bomdevoto@gmail.com.'
       },
       {
         heading: 'Última atualização',
@@ -616,7 +616,7 @@ export const LEGAL_PAGE_CONTENT = {
       },
       {
         heading: 'Como solicitar exclusão',
-        body: 'Entre com o mesmo login usado no app e use o painel abaixo, ou envie solicitação para plano.voto@gmail.com informando o email usado no login e descrevendo o pedido.'
+        body: 'Entre com o mesmo login usado no app e use o painel abaixo, ou envie solicitação para contato.bomdevoto@gmail.com informando o email usado no login e descrevendo o pedido.'
       },
       {
         heading: 'Prazo estimado e titularidade',
@@ -648,7 +648,7 @@ export const LEGAL_PAGE_CONTENT = {
       },
       {
         heading: 'Contato',
-        body: 'Solicitações relacionadas a privacidade e proteção de dados podem ser enviadas para plano.voto@gmail.com.'
+        body: 'Solicitações relacionadas a privacidade e proteção de dados podem ser enviadas para contato.bomdevoto@gmail.com.'
       }
     ]
   },
@@ -705,7 +705,7 @@ export const LEGAL_PAGE_CONTENT = {
       },
       {
         heading: 'Canal oficial',
-        body: 'O único canal de contato exibido pelo sistema é o email plano.voto@gmail.com.'
+        body: 'O único canal de contato exibido pelo sistema é o email contato.bomdevoto@gmail.com.'
       }
     ]
   }

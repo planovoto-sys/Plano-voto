@@ -7,6 +7,7 @@ import { useUser } from '@/shared/hooks/useUser';
 import LoadingScreen from '@/shared/ui/feedback/LoadingScreen';
 import PrivacyConsent from '@/features/privacy/PrivacyConsent';
 import PageTransition from '@/features/motion/PageTransition';
+import DesktopOnlyNotice from '@/features/desktop/DesktopOnlyNotice';
 import { STEP_GUIDANCE_MESSAGES } from '@/features/notifications/notificationMessages';
 import {
   fetchRemoteBallotDraft,
@@ -45,8 +46,9 @@ const renderCandidateRoute = (config) => (
 
 const getResumeNotice = (progress) => {
   if (!progress?.hasEstado) return '';
-  if (!progress.hasDeputadoFederal) return STEP_GUIDANCE_MESSAGES.deputado;
+  if (!progress.hasPresidente) return STEP_GUIDANCE_MESSAGES.presidente;
   if (!progress.hasSenadores) return STEP_GUIDANCE_MESSAGES.senador;
+  if (!progress.hasDeputadoFederal) return STEP_GUIDANCE_MESSAGES.deputado;
   return '';
 };
 
@@ -110,6 +112,8 @@ function AppRoutes({ rootElement, publicExplorationRoute, privateRedirect }) {
           <Route path="/" element={rootElement} />
           <Route path="/login" element={<Login />} />
           <Route path="/home" element={publicExplorationRoute(<Home />)} />
+
+          <Route path={BALLOT_ROUTES.presidente} element={publicExplorationRoute(renderCandidateRoute(CANDIDATE_ROUTES.presidente))} />
 
           <Route path="/escolher-deputado-federal" element={publicExplorationRoute(renderCandidateRoute(CANDIDATE_ROUTES.deputadoFederal))} />
 
@@ -188,9 +192,11 @@ function App() {
     return () => window.clearTimeout(timeoutId);
   }, [isDesktopExperience, loading, user]);
 
-  const rootElement = isDesktopExperience
-    ? <LegalPage type="sobre" />
-    : (!user ? <Login /> : <AuthenticatedEntryRedirect user={user} estado={userData?.estado} />);
+  const rootElement = !user ? <Login /> : <AuthenticatedEntryRedirect user={user} estado={userData?.estado} />;
+
+  if (isDesktopExperience) {
+    return <DesktopOnlyNotice />;
+  }
 
   return (
     <BrowserRouter>
