@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ChevronDown, LogIn, LogOut, Star } from 'lucide-react';
 import { BALLOT_ROUTES } from '@/shared/constants/ballot';
+import { AVERAGE_ELECTED_VOTES_BY_OFFICE } from '@/shared/constants/candidates';
 import { STATE_NAMES } from '@/shared/constants/states';
 import { useUser } from '@/shared/hooks/useUser';
 import { useDesktopLayout } from '@/features/desktop/useDesktopLayout';
@@ -13,6 +14,10 @@ import {
   readBallotDraft,
   readVisitorBallotDraft
 } from '@/features/ballot';
+import {
+  fetchCandidateTallies,
+  readCachedTallies
+} from '@/features/candidate-selection/candidateService';
 
 // IMPORTAÇÕES ATUALIZADAS
 import ConvexBottomNavigation from '@/app/shell/BottomNavigation';
@@ -28,6 +33,7 @@ import CandidateCard from '@/features/candidate-selection/CandidateCard';
 import DesktopPlanSummary from '@/features/desktop/DesktopPlanSummary';
 import LogoCompleta from '@/shared/ui/brand/LogoCompleta';
 import {
+  calculateCandidateChance,
   formatScore,
   getCandidateSystemScore
 } from '@/shared/utils/candidateMetrics';
@@ -44,6 +50,12 @@ const average = (values) => {
 const getAverageScore = (candidates) => (
   average(candidates.map((candidate) => getCandidateSystemScore(candidate)).filter((score) => score > 0))
 );
+
+const getCandidateOfficeKey = (candidate = {}) => {
+  const officeName = String(candidate.Cargo || candidate.cargo || '').toLowerCase();
+  if (officeName.includes('presidente')) return 'presidente';
+  return officeName.includes('senador') ? 'senadores' : 'deputado_federal';
+};
 
 const getPlanUrl = () => {
   if (typeof window === 'undefined') return 'https://bomdevoto.com.br/resumo';
@@ -67,10 +79,32 @@ const getDraftOfficeCandidates = (draft, officeKey) => {
     : draft.selections?.senadores || [];
 };
 
-const mergeCandidateDetails = (storedCandidate, fetchedCandidate) => ({
-  ...storedCandidate,
-  ...fetchedCandidate
-});
+const mergeCandidateDetails = (storedCandidate, fetchedCandidate, tally) => {
+  const mergedCandidate = { ...storedCandidate, ...fetchedCandidate };
+  const selectedByUsers = Number(
+    tally?.active_selections ?? fetchedCandidate?.active_selections ?? fetchedCandidate?.selected_by_users ??
+    storedCandidate?.selected_by_users ?? storedCandidate?.selectedByUsers ?? 0
+  );
+  const averageElectedVotes = Number(
+    fetchedCandidate?.average_elected_votes ?? fetchedCandidate?.averageElectedVotes ??
+    storedCandidate?.average_elected_votes ?? storedCandidate?.averageElectedVotes ?? 0
+  );
+  const safeSelectedByUsers = Number.isFinite(selectedByUsers) ? selectedByUsers : 0;
+  const fallbackAverageElectedVotes = AVERAGE_ELECTED_VOTES_BY_OFFICE[getCandidateOfficeKey(mergedCandidate)] || 3;
+  const safeAverageElectedVotes = Number.isFinite(averageElectedVotes) && averageElectedVotes > 0
+    ? averageElectedVotes
+    : fallbackAverageElectedVotes;
+
+  return {
+    ...mergedCandidate,
+    selected_by_users: safeSelectedByUsers,
+    selectedByUsers: safeSelectedByUsers,
+    active_selections: safeSelectedByUsers,
+    average_elected_votes: safeAverageElectedVotes,
+    averageElectedVotes: safeAverageElectedVotes,
+    chance: calculateCandidateChance(safeSelectedByUsers, safeAverageElectedVotes)
+  };
+};
 
 const getScoreStarFills = (score) => {
   const normalizedScore = Math.max(0, Math.min(10, Number(score) || 0)) / 2;
@@ -166,6 +200,7 @@ export default function MeuPlano() {
   const selectedCandidateIds = [...rawPresidentes, ...rawSenadores, ...rawDeputadosFederais].map((c) => c.id).filter(Boolean);
   const selectedCandidateSignature = selectedCandidateIds.join('|');
   const storedCandidatesSnapshot = JSON.stringify([...rawPresidentes, ...rawSenadores, ...rawDeputadosFederais]);
+  const selectedDraftEstado = currentDraft?.estado || userData?.estado || null;
 
   useEffect(() => {
     if (!selectedCandidateSignature) {
@@ -190,12 +225,17 @@ export default function MeuPlano() {
       }
     });
 
-    fetchCandidatesByIds(candidateIds).then((fetchedCandidates) => {
+    const cachedTallies = readCachedTallies(candidateIds, { estado: selectedDraftEstado });
+
+    Promise.all([
+      fetchCandidatesByIds(candidateIds),
+      fetchCandidateTallies(candidateIds, { forceRefresh: true, estado: selectedDraftEstado }).catch(() => cachedTallies)
+    ]).then(([fetchedCandidates, tallies]) => {
       if (cancelled) return;
       const fetchedById = new Map(fetchedCandidates.map((c) => [c.id, c]));
       const storedById = new Map(storedCandidates.map((c) => [c.id, c]));
       const candidatesById = new Map(candidateIds.map((id) => [
-        id, mergeCandidateDetails(storedById.get(id), fetchedById.get(id))
+        id, mergeCandidateDetails(storedById.get(id), fetchedById.get(id), tallies.get(id))
       ]));
 
       setCandidateDetailsState({ signature: selectedCandidateSignature, candidatesById, loading: false });
@@ -204,7 +244,7 @@ export default function MeuPlano() {
     });
 
     return () => { cancelled = true; };
-  }, [selectedCandidateSignature, storedCandidatesSnapshot]);
+  }, [selectedCandidateSignature, selectedDraftEstado, storedCandidatesSnapshot]);
 
   const candidatesById = candidateDetailsState.signature === selectedCandidateSignature ? candidateDetailsState.candidatesById : new Map();
   const presidentes = rawPresidentes.map((c) => candidatesById.get(c.id) || c);

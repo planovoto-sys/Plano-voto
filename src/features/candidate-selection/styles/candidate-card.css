@@ -17,11 +17,11 @@
   border: 2px solid transparent !important; 
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); 
   
-  border-radius: 16px; 
-  padding: 16px 18px; 
+  border-radius: 18px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  gap: 16px; 
+  gap: 12px;
   transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
   text-align: left;
   cursor: pointer;
@@ -41,11 +41,13 @@
 /* BORDA DE SELEÇÃO DINÂMICA */
 .prototype-candidate-card.is-selected.tone-good {
   border: 2px solid var(--card-green) !important;
+  background: linear-gradient(145deg, #ffffff 0%, rgba(141, 198, 63, 0.08) 100%);
   box-shadow: 0 4px 16px rgba(11, 107, 58, 0.20) !important;
 }
 
 .prototype-candidate-card.is-selected.tone-bad {
   border: 2px solid var(--card-red) !important;
+  background: linear-gradient(145deg, #ffffff 0%, rgba(239, 68, 68, 0.05) 100%);
   box-shadow: 0 4px 16px rgba(239, 68, 68, 0.12) !important;
 }
 
@@ -58,14 +60,12 @@
   border-radius: 16px;
   background: #FFFFFF;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  padding: 8px;
-  gap: 8px;
+  padding: 12px 14px;
+  gap: 10px;
   min-height: auto;
 }
 
-.prototype-candidate-card.variant-summary .candidate-card__tags-row {
-  margin-bottom: 6px;
-}
+.prototype-candidate-card.variant-summary .candidate-card__tags-row { margin: 0; }
 
 .prototype-candidate-card.variant-summary .candidate-card__number--badge {
   background: #F3F4F6;
@@ -111,12 +111,12 @@
 
 .candidate-card__name {
   font-family: var(--font-display);
-  font-size: 18px; 
+  font-size: 17px;
   font-weight: 900;
   color: #000000;
   text-transform: uppercase;
   margin: 0;
-  line-height: 1.05;
+  line-height: 1.15;
   word-break: break-word;
 }
 
@@ -127,7 +127,7 @@
   color: var(--card-gray-text);
   text-transform: uppercase;
   margin: 0;
-  line-height: 1;
+  line-height: 1.2;
 }
 
 /* ==========================================================================
@@ -139,8 +139,8 @@
   align-self: center; /* Trava no centro vertical da div __header */
   margin: 0; /* Remove margens indesejadas */
   
-  width: 24px; /* Ajuste milimétrico para harmonizar com a tipografia */
-  height: 24px; 
+  width: 30px;
+  height: 30px;
   border-radius: 50%; 
   border: 1.5px solid var(--card-gray-border);
   background: transparent;
@@ -226,11 +226,10 @@
    2. TAGS INFERIORES RESPONSIVAS E ACHATADAS
    ========================================================================== */
 .candidate-card__tags-row {
-  display: flex;
-  flex-direction: row; 
-  gap: 10px; 
-  flex-wrap: nowrap; 
-  margin-top: 4px; 
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 0;
 }
 
 .prototype-candidate-card .candidate-card__tag {
@@ -240,15 +239,16 @@
   justify-content: center;
   gap: 6px; 
   
-  height: 26px;
-  min-height: 26px;
-  max-height: 26px;
-  padding: 0 10px;
+  height: 32px;
+  min-height: 32px;
+  max-height: 32px;
+  padding: 0 9px;
   box-sizing: border-box;
   
-  border-radius: 6px; 
+  border-radius: 10px;
   position: relative;
   min-width: 0; 
+  overflow: hidden;
   white-space: nowrap; 
   transition: background-color 0.3s ease, color 0.3s ease;
   cursor: pointer; 
@@ -368,26 +368,26 @@
    ========================================================================== */
 @media (max-width: 420px) {
   .prototype-candidate-card {
-    padding: 12px 10px; 
-    gap: 10px;
+    padding: 13px 14px;
+    gap: 11px;
   }
   
-  .candidate-card__name { font-size: 14px; } /* Ajuste fino */
+  .candidate-card__name { font-size: 15px; }
   .candidate-card__party { font-size: 12px; }
 
   .candidate-card__action-btn-icon {
-    width: 20px; 
-    height: 20px;
+    width: 28px;
+    height: 28px;
   }
-  .icon-morph-svg { width: 12px; height: 12px; }
+  .icon-morph-svg { width: 14px; height: 14px; }
 
   .candidate-card__tags-row { gap: 8px; }
   
   .prototype-candidate-card .candidate-card__tag {
-    height: 24px;
-    min-height: 24px;
-    max-height: 24px;
-    padding: 0 8px;
+    height: 30px;
+    min-height: 30px;
+    max-height: 30px;
+    padding: 0 7px;
     gap: 4px;
   }
 

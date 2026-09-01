@@ -1,5 +1,6 @@
 import {
   formatScore,
+  getCandidateChance,
   getCandidateName,
   getCandidateSystemScore
 } from '@/shared/utils/candidateMetrics';
@@ -92,6 +93,15 @@ export const getShareScoreBand = (value) => {
   return 'Sem nota';
 };
 
+export const getShareChanceBand = (value) => {
+  const chance = typeof value === 'number' ? value : getCandidateChance(value);
+
+  if (chance >= 70) return 'Alta';
+  if (chance >= 35) return 'Média';
+  if (chance > 0) return 'Baixa';
+  return 'Baixa';
+};
+
 const getProfile = ({ averageScore, renovationRatio, mandateRatio }) => {
   if (renovationRatio >= 0.67) {
     return {
@@ -145,7 +155,9 @@ export const createShareAnalysis = (shareData) => {
   const senadores = shareData?.senadores || [];
   const selectedCandidates = [deputado, ...senadores].filter(Boolean);
   const scores = selectedCandidates.map((candidate) => getCandidateSystemScore(candidate)).filter((score) => score > 0);
+  const chances = selectedCandidates.map((candidate) => getCandidateChance(candidate));
   const averageScore = average(scores);
+  const averageChance = average(chances);
   const renovationRatio = selectedCandidates.length
     ? selectedCandidates.filter((candidate) => !hasCandidateScore(candidate)).length / selectedCandidates.length
     : 0;
@@ -169,10 +181,14 @@ export const createShareAnalysis = (shareData) => {
     selectedCandidates,
     completedCount: selectedCandidates.length,
     averageScore,
+    averageChance,
     averageScoreLabel: averageScore > 0 ? formatScore(averageScore) : '--',
+    averageChanceLabel: `${Math.round(clamp(averageChance))}%`,
     scoreBand: getShareScoreBand(averageScore),
+    chanceBand: getShareChanceBand(averageChance),
     profile,
     termometer: {
+      security: Math.round(clamp(averageChance)),
       technical: Math.round(clamp(averageScore * 10)),
       completion: Math.round(clamp((selectedCandidates.length / 3) * 100)),
       privacy: 100
