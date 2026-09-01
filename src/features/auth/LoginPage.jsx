@@ -132,7 +132,7 @@ function GoogleIdentityButton({ disabled, onCredential, onError }) {
           context: 'signin',
           auto_select: false,
           itp_support: true,
-          use_fedcm_for_prompt: true,
+          use_fedcm_for_button: true,
         });
 
         const buttonWidth = Math.max(200, Math.round(containerRef.current.getBoundingClientRect().width));

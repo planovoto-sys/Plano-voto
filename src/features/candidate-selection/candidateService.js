@@ -24,9 +24,10 @@ const configuredCandidateProvider = String(import.meta.env.VITE_CANDIDATE_PROVID
   .toLowerCase();
 const usesSupabaseCandidates = configuredCandidateProvider === 'supabase';
 const SUPABASE_PAGE_SIZE = 1000;
-// Invalida listas salvas antes da carga de notas individuais no Supabase.
-const PUBLIC_CACHE_VERSION = 'v10';
-const CACHE_PREFIX = `meuvoto:public-cache:${PUBLIC_CACHE_VERSION}`;
+// O provedor e a eleicao fazem parte do namespace para impedir que IDs legados
+// do Firebase sejam reaproveitados depois da migracao para o Supabase.
+const PUBLIC_CACHE_VERSION = 'v11';
+const CACHE_PREFIX = `meuvoto:public-cache:${configuredCandidateProvider}:${ACTIVE_ELECTION_ID}:${PUBLIC_CACHE_VERSION}`;
 const CANDIDATE_CACHE_MAX_AGE_MS = 12 * 60 * 60 * 1000;
 const CANDIDATE_CACHE_MAX_STALE_MS = 7 * 24 * 60 * 60 * 1000;
 const PARTY_CACHE_MAX_AGE_MS = 12 * 60 * 60 * 1000;

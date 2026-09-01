@@ -31,6 +31,8 @@ import {
 import {
   createEmptyBallotDraft,
   draftHasBallotSelections,
+  filterDraftCandidatesByIds,
+  getDraftActiveCandidateIds,
   normalizeDraft,
   normalizeStoredCandidate
 } from './ballotDraftNormalize';
@@ -74,8 +76,27 @@ const deserializeSupabaseDraft = (row, estado = null) => normalizeDraft({
   updated_at: row?.updated_at || null,
 }, estado);
 
-const saveSupabaseDraft = async (userId, draft) => {
+const removeLegacyCandidateIds = async (draft) => {
   const normalizedDraft = normalizeDraft(draft);
+  const candidateIds = getDraftActiveCandidateIds(normalizedDraft);
+  if (candidateIds.length === 0) return normalizedDraft;
+
+  const validIds = [];
+  for (let offset = 0; offset < candidateIds.length; offset += 100) {
+    const { data, error } = await getSupabaseClient()
+      .from('candidates')
+      .select('id')
+      .eq('election_id', ACTIVE_ELECTION_ID)
+      .in('id', candidateIds.slice(offset, offset + 100));
+    if (error) throw error;
+    validIds.push(...(data || []).map((candidate) => candidate.id));
+  }
+
+  return filterDraftCandidatesByIds(normalizedDraft, validIds);
+};
+
+const saveSupabaseDraft = async (userId, draft) => {
+  const normalizedDraft = await removeLegacyCandidateIds(draft);
   const { data, error } = await getSupabaseClient()
     .from('ballot_drafts')
     .upsert({

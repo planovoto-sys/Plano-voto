@@ -160,6 +160,22 @@ export const getDraftActiveCandidateIds = (draft) => (
   [...new Set(getDraftCandidateList(draft).map((candidate) => candidate.id).filter(Boolean))]
 );
 
+export const filterDraftCandidatesByIds = (draft, allowedCandidateIds = []) => {
+  const normalizedDraft = normalizeDraft(draft, draft?.estado);
+  const allowedIds = new Set(allowedCandidateIds);
+  const candidateGroups = Object.fromEntries(
+    BALLOT_FLOW_STEP_IDS.map((stepId) => [
+      stepId,
+      normalizedDraft.candidate_groups[stepId].filter((candidate) => allowedIds.has(candidate.id))
+    ])
+  );
+
+  return normalizeDraft({
+    ...normalizedDraft,
+    candidate_groups: candidateGroups
+  }, normalizedDraft.estado);
+};
+
 export class BallotDraftModel {
   static empty(estado = null) {
     return createEmptyBallotDraft(estado);
