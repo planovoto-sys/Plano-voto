@@ -175,6 +175,7 @@ function GoogleIdentityButton({ disabled, onCredential, onError }) {
 export default function LoginPage() {
   const { user, userData, loading } = useUser();
   const [signingIn, setSigningIn] = useState(false);
+  const [showGoogleAccounts, setShowGoogleAccounts] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [videoOpen, setVideoOpen] = useState(false);
   const signingInRef = useRef(false);
@@ -265,21 +266,24 @@ export default function LoginPage() {
             <span>Veja como funciona</span>
           </button>
 
-          {usesGoogleIdentity ? (
-            <GoogleIdentityButton
-              disabled={signingIn || !authReady}
-              onCredential={handleGoogleCredential}
-              onError={handleGoogleIdentityError}
-            />
+          {usesGoogleIdentity && showGoogleAccounts ? (
+            <div className="login-google-account-choice">
+              <span className="login-google-account-choice__label">Escolha sua conta Google</span>
+              <GoogleIdentityButton
+                disabled={signingIn || !authReady}
+                onCredential={handleGoogleCredential}
+                onError={handleGoogleIdentityError}
+              />
+            </div>
           ) : (
             <button
               type="button"
               className="login-google-btn"
-              onClick={handleGoogleSignIn}
+              onClick={usesGoogleIdentity ? () => setShowGoogleAccounts(true) : handleGoogleSignIn}
               disabled={signingIn || !authReady}
             >
               <GoogleIcon />
-              <span>{signingIn ? 'Entrando...' : 'Entrar com Google'}</span>
+              <span>{signingIn ? 'Entrando...' : 'Entrar'}</span>
             </button>
           )}
         </div>

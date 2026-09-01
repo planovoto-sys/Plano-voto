@@ -26,7 +26,7 @@ const usesSupabaseCandidates = configuredCandidateProvider === 'supabase';
 const SUPABASE_PAGE_SIZE = 1000;
 // O provedor e a eleicao fazem parte do namespace para impedir que IDs legados
 // do Firebase sejam reaproveitados depois da migracao para o Supabase.
-const PUBLIC_CACHE_VERSION = 'v11';
+const PUBLIC_CACHE_VERSION = 'v12';
 const CACHE_PREFIX = `meuvoto:public-cache:${configuredCandidateProvider}:${ACTIVE_ELECTION_ID}:${PUBLIC_CACHE_VERSION}`;
 const CANDIDATE_CACHE_MAX_AGE_MS = 12 * 60 * 60 * 1000;
 const CANDIDATE_CACHE_MAX_STALE_MS = 7 * 24 * 60 * 60 * 1000;
@@ -307,7 +307,7 @@ const enrichCandidateWithPartyScore = (candidate, partyLookup) => {
 
 const mapSupabaseCandidateRow = (row) => {
   const legacyData = row.legacy_data || {};
-  const candidateScore = readNumericValue(row.scores?.candidate, legacyData.nota);
+  const candidateScore = readNumericValue(row.scores?.candidate);
   const partyAcronym = row.party_id || legacyData.partido_sigla || '';
 
   return {

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ChevronDown, LogIn, LogOut, Star } from 'lucide-react';
+import { LogIn, LogOut, Star } from 'lucide-react';
 import { BALLOT_ROUTES } from '@/shared/constants/ballot';
 import { AVERAGE_ELECTED_VOTES_BY_OFFICE } from '@/shared/constants/candidates';
 import { STATE_NAMES } from '@/shared/constants/states';
@@ -138,24 +138,6 @@ function ChoiceSectionHeading({ title }) {
   );
 }
 
-function ChoiceSectionToggle({ total, limit, expanded, onToggle }) {
-  const canToggle = total > limit;
-
-  if (!canToggle) return null;
-
-  return (
-    <button
-      className={`my-plan-choice-toggle${expanded ? ' is-expanded' : ''}`}
-      type="button"
-      onClick={onToggle}
-      aria-expanded={expanded}
-    >
-      {expanded ? 'Ver menos' : 'Ver mais'}
-      <ChevronDown size={17} />
-    </button>
-  );
-}
-
 export default function MeuPlano() {
   const { user, userData, loading: userLoading } = useUser();
   const notify = useNotify();
@@ -169,7 +151,6 @@ export default function MeuPlano() {
   const [candidateDetailsState, setCandidateDetailsState] = useState({ signature: '', candidatesById: new Map(), loading: false });
   const [modalCampoBloqueado, setModalCampoBloqueado] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [expandedSections, setExpandedSections] = useState({ presidente: false, senadores: false, deputado: false });
   
   const [planUrl] = useState(() => getPlanUrl());
 
@@ -251,10 +232,10 @@ export default function MeuPlano() {
   const deputadosFederais = rawDeputadosFederais.map((c) => candidatesById.get(c.id) || c);
   const senadores = rawSenadores.map((c) => candidatesById.get(c.id) || c);
   
-  const featuredPresidentes = expandedSections.presidente ? presidentes : presidentes.slice(0, 1);
+  const featuredPresidentes = presidentes;
   const featuredDeputadosFederais = deputadosFederais.slice(0, 1);
-  const displayedDeputadosFederais = expandedSections.deputado ? deputadosFederais : featuredDeputadosFederais;
-  const featuredSenadores = expandedSections.senadores ? senadores : senadores.slice(0, 2);
+  const displayedDeputadosFederais = deputadosFederais;
+  const featuredSenadores = senadores;
   const estadoSigla = currentDraft?.estado || userData?.estado || '';
   const estadoNome = estadoSigla ? STATE_NAMES[estadoSigla] || estadoSigla : 'Nenhum';
   const deputadoFederal = featuredDeputadosFederais[0] || null;
@@ -370,7 +351,7 @@ export default function MeuPlano() {
               <ChoiceSectionHeading
                 title="Presidente"
               />
-              <div className={`my-plan-choice-list${expandedSections.presidente ? ' is-expanded' : ''}`}>
+              <div className="my-plan-choice-list">
                 {featuredPresidentes.length > 0 ? (
                   featuredPresidentes.map((candidate, index) => {
                     const candWithNumber = { ...candidate, numero: candidate.numero || `${index + 1}` };
@@ -391,19 +372,13 @@ export default function MeuPlano() {
                   </div>
                 )}
               </div>
-              <ChoiceSectionToggle
-                total={presidentes.length}
-                limit={1}
-                expanded={expandedSections.presidente}
-                onToggle={() => setExpandedSections((state) => ({ ...state, presidente: !state.presidente }))}
-              />
             </div>
 
             <div className="my-plan-choice-section">
               <ChoiceSectionHeading
                 title="Senadores"
               />
-              <div className={`my-plan-choice-list${expandedSections.senadores ? ' is-expanded' : ''}`}>
+              <div className="my-plan-choice-list">
                 {featuredSenadores.length > 0 ? (
                   featuredSenadores.map((candidate, index) => {
                     const candWithNumber = { ...candidate, numero: candidate.numero || `12${index + 1}` };
@@ -424,19 +399,13 @@ export default function MeuPlano() {
                   </div>
                 )}
               </div>
-              <ChoiceSectionToggle
-                total={senadores.length}
-                limit={2}
-                expanded={expandedSections.senadores}
-                onToggle={() => setExpandedSections((state) => ({ ...state, senadores: !state.senadores }))}
-              />
             </div>
 
             <div className="my-plan-choice-section">
               <ChoiceSectionHeading
                 title="Deputado Federal"
               />
-              <div className={`my-plan-choice-list${expandedSections.deputado ? ' is-expanded' : ''}`}>
+              <div className="my-plan-choice-list">
                 {displayedDeputadosFederais.length > 0 ? (
                   displayedDeputadosFederais.map((candidate, index) => {
                     const candWithNumber = { ...candidate, numero: candidate.numero || `123${index + 1}` };
@@ -457,12 +426,6 @@ export default function MeuPlano() {
                   </div>
                 )}
               </div>
-              <ChoiceSectionToggle
-                total={deputadosFederais.length}
-                limit={1}
-                expanded={expandedSections.deputado}
-                onToggle={() => setExpandedSections((state) => ({ ...state, deputado: !state.deputado }))}
-              />
             </div>
           </section>
 

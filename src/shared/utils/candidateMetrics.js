@@ -29,41 +29,43 @@ export const getCandidateParty = (candidate = {}) => (
   ''
 );
 
-export const getCandidateSystemScore = (candidate = {}) => {
-  const value = candidate.notaFinal ?? candidate.nota_final ?? candidate.notaCandidato ?? candidate.nota_candidato ?? candidate['Nota candidato'] ?? candidate.notaPartido ?? candidate.nota_partido ?? candidate['Nota partido'] ?? 0;
-  const numericValue = Number(value);
-  return Number.isFinite(numericValue) ? numericValue : 0;
-};
-
 export const getCandidateDisplayScore = (candidate = {}) => {
-  if (candidate.temNotaCandidato === false) return 0;
+  if (candidate.temNotaCandidato === false || candidate.tem_nota_candidato === false) return 0;
 
-  const value = candidate['Nota candidato'] ?? candidate.notaCandidato ?? candidate.nota_candidato ?? candidate.notaFinal ?? candidate.nota_final ?? 0;
+  const value = candidate['Nota candidato'] ?? candidate.notaCandidato ?? candidate.nota_candidato ?? 0;
   const numericValue = Number(value);
   return Number.isFinite(numericValue) ? numericValue : 0;
 };
 
 export const getCandidatePartyScore = (candidate = {}) => {
   const value = candidate.notaPartido ?? candidate.nota_partido ?? candidate['Nota partido'] ?? candidate.partyScore ?? candidate.party_score ?? candidate.scorePartido ?? candidate.score_partido ?? (
-    candidate.temNotaCandidato === false ? candidate.notaFinal ?? candidate.nota_final : 0
+    candidate.temNotaCandidato === false || candidate.tem_nota_candidato === false
+      ? candidate.notaFinal ?? candidate.nota_final
+      : 0
   );
   const numericValue = Number(value);
   return Number.isFinite(numericValue) ? numericValue : 0;
 };
 
+export const hasCandidateOwnScore = (candidate = {}) => getCandidateDisplayScore(candidate) > 0;
+
+export const getCandidateSystemScore = (candidate = {}) => {
+  const candidateScore = getCandidateDisplayScore(candidate);
+  return candidateScore > 0 ? candidateScore : getCandidatePartyScore(candidate);
+};
+
+export const compareCandidatesByScorePriority = (a, b) => {
+  const scoreDiff = getCandidateSystemScore(b) - getCandidateSystemScore(a);
+  if (scoreDiff !== 0) return scoreDiff;
+
+  const ownScoreDiff = Number(hasCandidateOwnScore(b)) - Number(hasCandidateOwnScore(a));
+  if (ownScoreDiff !== 0) return ownScoreDiff;
+
+  return getCandidateName(a).localeCompare(getCandidateName(b));
+};
+
 export const getCandidateScore = (candidate = {}) => {
-  if (!candidate) return 0;
-
-  if (candidate.temNotaCandidato !== false) {
-    const candidateScore = candidate.nota_final ?? candidate.notaFinal ?? candidate.notaCandidato ?? candidate.nota_candidato ?? candidate['Nota candidato'];
-    const numericCandidateScore = Number(candidateScore);
-
-    if (Number.isFinite(numericCandidateScore) && numericCandidateScore !== 0) {
-      return numericCandidateScore;
-    }
-  }
-
-  return getCandidatePartyScore(candidate);
+  return candidate ? getCandidateSystemScore(candidate) : 0;
 };
 
 export const getCandidateChance = (candidate = {}) => {

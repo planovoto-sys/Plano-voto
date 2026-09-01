@@ -11,6 +11,7 @@ import LoadingScreen from '@/shared/ui/feedback/LoadingScreen';
 import { flowLog, flowWarn } from '@/shared/utils/debugFlow';
 import { useHideOnScroll } from '@/shared/hooks/useHideOnScroll';
 import {
+  compareCandidatesByScorePriority,
   getCandidateChance,
   getCandidateName,
   getCandidateSystemScore
@@ -129,13 +130,7 @@ export default function SelectBase({
       getCandidateChance(candidate) > 0 &&
       getCandidateChance(candidate) < 100
     ));
-    return markedFeaturedCandidate || [...eligibleCandidates].sort((a, b) => {
-      const chanceDiff = getCandidateChance(b) - getCandidateChance(a);
-      if (chanceDiff !== 0) return chanceDiff;
-      const scoreDiff = getCandidateSystemScore(b) - getCandidateSystemScore(a);
-      if (scoreDiff !== 0) return scoreDiff;
-      return getCandidateName(a).localeCompare(getCandidateName(b));
-    })[0];
+    return markedFeaturedCandidate || [...eligibleCandidates].sort(compareCandidatesByScorePriority)[0];
   }, [dados, featuredCandidateId, isCandidateOffice]);
 
   const featuredMetricsByCandidateId = useMemo(() => {
@@ -386,7 +381,7 @@ const candidateFilterItems = useMemo(() => (
         ? 'Senadores'
         : 'Deputados Federais';
     const headingSubtitle = isPresidentOffice
-      ? subtitulo || 'Selecione todos os candidatos à Presidência em quem você aceitaria votar.'
+      ? subtitulo || 'Selecione todos os candidatos em quem você aceitaria votar'
       : 'Selecione todos os candidatos em quem você aceitaria votar';
 
     return (

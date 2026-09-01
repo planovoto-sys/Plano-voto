@@ -47,6 +47,12 @@ export const candidateScoreLooseKey = (candidate) => [
   normalizeMatchText(candidate?.uf),
 ].join('|');
 
+export const candidateScoreIdentityKey = (candidate) => [
+  normalizeMatchText(candidate?.nome),
+  normalizeMatchText(candidate?.uf),
+  normalizePartyAcronym(candidate?.partido_sigla),
+].join('|');
+
 const numericOrNull = (value) => {
   if (value === null || value === undefined || value === '') return null;
   const numeric = Number(value);
@@ -60,6 +66,7 @@ export const applyCandidateScore = (baseRow, scoreRecord) => ({
     candidate: numericOrNull(scoreRecord.nota),
     displayed: numericOrNull(scoreRecord.nota),
     status: scoreRecord.status_avaliacao || null,
+    source: numericOrNull(scoreRecord.nota) === null ? null : 'candidate',
     source_urls: scoreRecord.fonte_urls || [],
   },
   legacy_data: {
@@ -86,6 +93,7 @@ export const buildScoreUpdateRows = (baseDataset, scoreDataset) => {
   const baseRows = buildImportRows(baseDataset);
   const candidateIndex = new Map();
   const looseCandidateIndex = new Map();
+  const identityCandidateIndex = new Map();
   const addIndexEntry = (index, key, row) => {
     const rows = index.get(key) || [];
     if (!rows.some((existing) => existing.id === row.id)) index.set(key, [...rows, row]);
@@ -96,28 +104,41 @@ export const buildScoreUpdateRows = (baseDataset, scoreDataset) => {
       const variant = { ...row.legacy_data, nome: name };
       addIndexEntry(candidateIndex, candidateScoreKey(variant), row);
       addIndexEntry(looseCandidateIndex, candidateScoreLooseKey(variant), row);
+      addIndexEntry(identityCandidateIndex, candidateScoreIdentityKey(variant), row);
     });
   });
 
   const unmatchedCandidates = [];
   const ambiguousCandidates = [];
-  const candidateUpdates = scoreDataset.politicos.map((scoreRecord) => {
+  const candidateUpdatesById = new Map();
+  scoreDataset.politicos.forEach((scoreRecord) => {
     const key = candidateScoreKey(scoreRecord);
     const hasParty = Boolean(normalizePartyAcronym(scoreRecord.partido_sigla));
-    const matches = hasParty
+    let matches = hasParty
       ? candidateIndex.get(key) || []
       : looseCandidateIndex.get(candidateScoreLooseKey(scoreRecord)) || [];
+    let matchPriority = 0;
+    if (matches.length === 0 && hasParty) {
+      matches = identityCandidateIndex.get(candidateScoreIdentityKey(scoreRecord)) || [];
+      matchPriority = 1;
+    }
     if (matches.length === 0) {
       unmatchedCandidates.push(scoreRecord);
-      return null;
+      return;
     }
     if (matches.length > 1) {
       ambiguousCandidates.push({ scoreRecord, matches: matches.length });
-      return null;
+      return;
     }
     const [baseRow] = matches;
-    return applyCandidateScore(baseRow, scoreRecord);
-  }).filter(Boolean);
+    const existing = candidateUpdatesById.get(baseRow.id);
+    if (existing && existing.matchPriority <= matchPriority) return;
+    candidateUpdatesById.set(baseRow.id, {
+      matchPriority,
+      row: applyCandidateScore(baseRow, scoreRecord),
+    });
+  });
+  const candidateUpdates = [...candidateUpdatesById.values()].map(({ row }) => row);
 
   const partyIndex = new Map(baseRows.parties.map((row) => [normalizePartyAcronym(row.acronym), row]));
   const partyUpdates = scoreDataset.partidos.map((scoreRecord) => {
@@ -127,9 +148,6 @@ export const buildScoreUpdateRows = (baseDataset, scoreDataset) => {
     return applyPartyScore(baseRow, scoreRecord);
   });
 
-  if (new Set(candidateUpdates.map((row) => row.id)).size !== candidateUpdates.length) {
-    throw new Error('O arquivo de notas contem candidatos duplicados.');
-  }
   if (new Set(partyUpdates.map((row) => row.id)).size !== partyUpdates.length) {
     throw new Error('O arquivo de notas contem partidos duplicados.');
   }

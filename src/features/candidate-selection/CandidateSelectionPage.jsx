@@ -24,8 +24,8 @@ import {
 import { flowError, flowLog, flowWarn } from '@/shared/utils/debugFlow';
 import {
   calculateCandidateChance,
+  compareCandidatesByScorePriority,
   getCandidateChance,
-  getCandidateName,
   getCandidateSystemScore,
   parseNumeric
 } from '@/shared/utils/candidateMetrics';
@@ -40,41 +40,13 @@ import DesktopCandidateSelection from '@/features/desktop/DesktopCandidateSelect
 import { useDesktopLayout } from '@/features/desktop/useDesktopLayout';
 
 const getFeaturedSelectionCandidates = (candidates, limit) => {
-  const groupWeight = (candidate) => {
-    const score = getCandidateSystemScore(candidate);
-    const chance = getCandidateChance(candidate);
-
-    if (score > 7 && chance > 0 && chance < 100) return 0;
-    if (score >= 7 && chance < 100) return 1;
-    if (score >= 7 && chance >= 100) return 2;
-    if (score > 0 && score < 7) return 3;
-    return 4;
-  };
-
   return [...candidates]
-    .sort((a, b) => {
-      const groupDiff = groupWeight(a) - groupWeight(b);
-      if (groupDiff !== 0) return groupDiff;
-
-      const chanceDiff = getCandidateChance(b) - getCandidateChance(a);
-      if (chanceDiff !== 0) return chanceDiff;
-
-      const scoreDiff = getCandidateSystemScore(b) - getCandidateSystemScore(a);
-      if (scoreDiff !== 0) return scoreDiff;
-
-      return getCandidateName(a).localeCompare(getCandidateName(b));
-    })
+    .sort(compareCandidatesByScorePriority)
     .slice(0, limit);
 };
 
-const compareByViabilityScoreAndName = (a, b) => {
-  const chanceDiff = getCandidateChance(b) - getCandidateChance(a);
-  if (chanceDiff !== 0) return chanceDiff;
-
-  const scoreDiff = getCandidateSystemScore(b) - getCandidateSystemScore(a);
-  if (scoreDiff !== 0) return scoreDiff;
-
-  return getCandidateName(a).localeCompare(getCandidateName(b));
+const compareByScoreAndName = (a, b) => {
+  return compareCandidatesByScorePriority(a, b);
 };
 
 const getFeaturedCandidateId = (candidates) => {
@@ -85,7 +57,7 @@ const getFeaturedCandidateId = (candidates) => {
       getCandidateChance(candidate) > 0 &&
       getCandidateChance(candidate) < 100
     ))
-    .sort(compareByViabilityScoreAndName)[0];
+    .sort(compareByScoreAndName)[0];
 
   return featuredCandidate?.id || null;
 };
@@ -393,68 +365,12 @@ export default function EscolherCandidatos({
       isAlreadyChosen: selectedCandidateIdsInOtherSteps.has(candidate.id)
     }));
 
-    const desempatarPorNome = (a, b) => getCandidateName(a).localeCompare(getCandidateName(b));
-
-    const aplicarOrdenacao = (lista) => {
-      if (filtroLista === 'avaliacao') {
-        return [...lista].sort((a, b) => {
-          const scoreA = getCandidateSystemScore(a);
-          const scoreB = getCandidateSystemScore(b);
-          if (scoreB !== scoreA) return scoreB - scoreA;
-          return desempatarPorNome(a, b);
-        });
-      }
-      return lista;
-    };
-
-    if (isGuestMode) {
-      return aplicarOrdenacao(
-        listaComEstado
-          .map((candidate) => ({
-            ...candidate,
-            isChanceFeatured: false
-          }))
-          .sort((a, b) => {
-            const blockedDiff = Number(a.isAlreadyChosen) - Number(b.isAlreadyChosen);
-            if (blockedDiff !== 0) return blockedDiff;
-            return desempatarPorNome(a, b);
-          })
-      );
-    }
-
-    const grupoVisual = (candidate) => {
-      const score = getCandidateSystemScore(candidate);
-      const chance = getCandidateChance(candidate);
-
-      if (candidate.id === featuredCandidateId) return 0;
-      if (score >= 7 && chance < 100) return 1;
-      if (score >= 7 && chance >= 100) return 2;
-      if (score > 0 && score < 7) return 3;
-      return 4;
-    };
-
-    return aplicarOrdenacao(
-      listaComEstado
-        .map((candidate) => ({
-          ...candidate,
-          isChanceFeatured: candidate.id === featuredCandidateId
-        }))
-        .sort((a, b) => {
-          const blockedDiff = Number(a.isAlreadyChosen) - Number(b.isAlreadyChosen);
-          if (blockedDiff !== 0) return blockedDiff;
-
-          const groupDiff = grupoVisual(a) - grupoVisual(b);
-          if (groupDiff !== 0) return groupDiff;
-
-          const chanceDiff = getCandidateChance(b) - getCandidateChance(a);
-          if (chanceDiff !== 0) return chanceDiff;
-
-          const scoreDiff = getCandidateSystemScore(b) - getCandidateSystemScore(a);
-          if (scoreDiff !== 0) return scoreDiff;
-
-          return desempatarPorNome(a, b);
-        })
-    );
+    return listaComEstado
+      .map((candidate) => ({
+        ...candidate,
+        isChanceFeatured: !isGuestMode && candidate.id === featuredCandidateId
+      }))
+      .sort(compareCandidatesByScorePriority);
   }, [candidatosDoEstado, featuredCandidateId, filtroLista, buscaDiferida, isGuestMode, selectedCandidateIdsInOtherSteps, selecionadosNaTela]);
 
   const persistirEtapa = async (listaFinalDaTela, { markCompleted = false } = {}) => {

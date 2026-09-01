@@ -358,9 +358,9 @@ export const fetchCandidatesByIds = async (candidateIds) => {
       numero_candidato: row.number,
       imagem: row.image_url || row.legacy_data?.imagem || '',
       scores: row.scores || {},
-      nota_candidato: row.scores?.candidate ?? row.legacy_data?.nota ?? null,
-      nota_final: row.scores?.candidate ?? row.legacy_data?.nota ?? null,
-      temNotaCandidato: (row.scores?.candidate ?? row.legacy_data?.nota) != null,
+      nota_candidato: row.scores?.candidate ?? null,
+      nota_final: row.scores?.candidate ?? null,
+      temNotaCandidato: row.scores?.candidate != null,
     }]));
 
     return enrichCandidatesWithPartyScores(uniqueIds.map((id) => rowsById.get(id)).filter(Boolean));

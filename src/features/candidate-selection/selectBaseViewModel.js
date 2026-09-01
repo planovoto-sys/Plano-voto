@@ -27,7 +27,7 @@ export const getScreenCopy = ({ variant, titulo, subtitulo }) => {
   if (variant === 'office-presidente') {
     return {
       title: 'Presidente',
-      subtitle: 'Selecione todos os candidatos à Presidência em quem você aceitaria votar.'
+      subtitle: 'Selecione todos os candidatos em quem você aceitaria votar'
     };
   }
 

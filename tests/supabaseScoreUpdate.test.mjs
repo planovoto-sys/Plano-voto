@@ -64,3 +64,32 @@ test('ignora de forma observavel politicos ausentes da base de candidatos', () =
   assert.equal(result.candidateUpdates.length, 0);
   assert.equal(result.unmatchedCandidates.length, 1);
 });
+
+test('preserva a nota propria quando a pessoa disputa um cargo diferente', () => {
+  const result = buildScoreUpdateRows({
+    partidos: [{ sigla: 'REPUBLICANOS', nome: 'Republicanos', nota: 7.2 }],
+    politicos: [{
+      ...baseDataset.politicos[0],
+      nome: 'EVAIR DE MELO',
+      nome_civil: 'EVAIR VIEIRA DE MELO',
+      cargo: 'Senador',
+      partido_sigla: 'REPUBLICANOS',
+      numero_candidato: 100,
+      uf: 'ES',
+    }],
+  }, {
+    partidos: [],
+    politicos: [{
+      nome: 'Evair Vieira de Melo',
+      cargo: 'Deputado Federal',
+      partido_sigla: 'REPUBLICANOS',
+      uf: 'ES',
+      nota: 8.51,
+      status_avaliacao: 'avaliado',
+    }],
+  });
+
+  assert.equal(result.candidateUpdates.length, 1);
+  assert.equal(result.unmatchedCandidates.length, 0);
+  assert.equal(result.candidateUpdates[0].scores.candidate, 8.51);
+});
