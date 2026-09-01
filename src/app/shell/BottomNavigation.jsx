@@ -17,16 +17,21 @@ import './BottomNavigation.css';
 function StateIcon({ className = '', isActive }) {
   return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={isActive ? 2.2 : 1.2}><path d="M12 21s-6-5.2-6-11a6 6 0 1 1 12 0c0 5.8-6 11-6 11Z"/><circle cx="12" cy="10" r="2.4"/></svg>;
 }
+function PresidentIcon({ className = '', isActive }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={isActive ? 2.2 : 1.35} strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="9" r="5" />
+      <path d="m9.4 13.3-1 6.7 3.6-2.1 3.6 2.1-1-6.7" />
+      <path d="m12 6.3.8 1.6 1.8.3-1.3 1.2.3 1.8-1.6-.9-1.6.9.3-1.8-1.3-1.2 1.8-.3.8-1.6Z" />
+    </svg>
+  );
+}
 function DeputyIcon({ className = '', isActive }) {
   return <svg className={className} viewBox="0 0 30 18" fill="none" stroke="currentColor" strokeWidth={isActive ? 2.4 : 1.2}><path d="M4.1 4.4h21.8a10.9 10.9 0 0 1-21.8 0Z"/></svg>;
 }
 function SenatorIcon({ className = '', isActive }) {
   return <svg className={className} viewBox="0 0 30 18" fill="none" stroke="currentColor" strokeWidth={isActive ? 2.4 : 1.2}><path d="M4.1 13.6h21.8a10.9 10.9 0 0 0-21.8 0Z"/></svg>;
 }
-function SummaryIcon({ className = '', isActive }) {
-  return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={isActive ? 2.2 : 1.2}><circle cx="8.5" cy="12" r="6.5"/><circle cx="15.5" cy="12" r="6.5"/></svg>;
-}
-
 function ContinueIcon({ className = '' }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5">
@@ -48,12 +53,12 @@ function ShareIcon({ className = '' }) {
 
 const LEFT_STEPS = [
   { id: 'estado', label: 'Estado', path: BALLOT_ROUTES.estado, Icon: StateIcon },
-  { id: 'deputado', label: 'Deputados', path: BALLOT_ROUTES.deputadoFederal, Icon: DeputyIcon },
+  { id: 'presidente', label: 'Presidente', path: BALLOT_ROUTES.presidente, Icon: PresidentIcon },
 ];
 
 const RIGHT_STEPS = [
-  { id: 'senador', label: 'Senadores', path: BALLOT_ROUTES.senadores, Icon: SenatorIcon },
-  { id: 'resultado', label: 'Resumo', path: BALLOT_ROUTES.meuPlano, Icon: SummaryIcon }
+  { id: 'senador', label: 'Senador', path: BALLOT_ROUTES.senadores, Icon: SenatorIcon },
+  { id: 'deputado', label: 'Deputado', path: BALLOT_ROUTES.deputadoFederal, Icon: DeputyIcon }
 ];
 
 const ALL_STEPS = [...LEFT_STEPS, ...RIGHT_STEPS];
@@ -64,6 +69,7 @@ function getActiveStep(currentStep, pathname) {
   const path = (pathname || '').toLowerCase();
   
   if (path.includes('resultado') || path.includes('plano') || path.includes('resumo')) return 'resultado';
+  if (path.includes('presidente')) return 'presidente';
   if (path.includes('senador')) return 'senador';
   if (path.includes('deputado')) return 'deputado';
   
@@ -200,8 +206,9 @@ export default function ConvexBottomNavigation({
   
   const completedSteps = {
     estado: Boolean(estadoSelecionado || progress?.hasEstado),
-    deputado: Boolean(progress?.hasDeputadoFederal),
+    presidente: Boolean(progress?.hasPresidente),
     senador: Boolean(progress?.hasSenadores),
+    deputado: Boolean(progress?.hasDeputadoFederal),
     resultado: Boolean(progress?.isComplete)
   };
 
@@ -230,6 +237,8 @@ export default function ConvexBottomNavigation({
       onShareClick();
     } else if (onContinueClick) {
       onContinueClick();
+    } else if (activeStep === 'deputado' && isCurrentStepComplete) {
+      navigate(BALLOT_ROUTES.meuPlano, { state: { bypassVoteRedirect: true } });
     } else {
       handleNavigate(nextStep, isCurrentStepComplete);
     }

@@ -2,7 +2,7 @@
 
 Última atualização: 29 de maio de 2026.
 
-Esta política descreve como o nossovoto.org pode tratar dados pessoais, dados salvos no dispositivo, rascunhos eleitorais, QR Code de continuidade, cache offline e compartilhamentos iniciados pelo usuário.
+Esta política descreve como o bomdevoto.com.br pode tratar dados pessoais, dados salvos no dispositivo, rascunhos eleitorais, QR Code de continuidade, cache offline e compartilhamentos iniciados pelo usuário.
 
 ## Pontos principais
 
@@ -20,6 +20,6 @@ O usuário pode apagar rascunho local, cache offline, cache de candidatos, permi
 
 ## Canal de atendimento
 
-Pedidos de acesso, correção, exclusão, revogação, oposição ou dúvidas podem ser enviados para plano.voto@gmail.com.
+Pedidos de acesso, correção, exclusão, revogação, oposição ou dúvidas podem ser enviados para contato.bomdevoto@gmail.com.
 
 > Documento preparado para revisão jurídica antes de publicação definitiva.

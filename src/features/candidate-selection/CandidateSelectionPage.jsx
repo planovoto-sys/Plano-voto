@@ -140,18 +140,20 @@ export default function EscolherCandidatos({
   const userId = user?.uid;
   const isGuestMode = !userId;
   const estadoDoFluxo = userId ? getBallotEstado(userId, userData?.estado) : getVisitorBallotEstado();
+  const isNationalOffice = chaveBanco === 'presidente';
   const isSenadoresUnificados = chaveBanco === 'senadores' && Array.isArray(chaveGrupos) && chaveGrupos.length > 1;
-  const currentStep = chaveBanco === 'deputado_federal'
-    ? 'deputado'
-    : 'senador';
+  const currentStep = chaveBanco === 'presidente'
+    ? 'presidente'
+    : chaveBanco === 'deputado_federal'
+      ? 'deputado'
+      : 'senador';
   const currentFilters = CANDIDATE_FILTERS.filter((f) => f.id !== 'todos');
 
   const tourSteps = [
     { target: '.app-help-action', title: 'AJUDA', content: 'Abre este guia sempre que você quiser revisar a tela.' },
     { target: '.step-header__search-trigger', title: 'PESQUISA', content: 'Pesquisa candidatos por nome ou partido.' },
-    { target: '.filter-chip', title: 'FILTROS', content: '<b>Todos:</b> Exibe todos os candidatos.<br><b>Seleção:</b> Exibe apenas os escolhidos.<br><b>Avaliação:</b> Ordena pela nota.<br><b>Viabilidade:</b> Ordena pela chance.<br><b>Partido:</b> Ordena por partido.' },
-    { target: '.prototype-candidate-card.is-fire-featured .candidate-thermometer, .candidate-card-list .prototype-candidate-card', title: 'FOGUINHO', content: 'O foguinho destaca o candidato bem avaliado com a maior viabilidade entre as opções disponíveis.' },
-    { target: '.prototype-candidate-card.is-viability-complete .candidate-thermometer, .candidate-card-list .prototype-candidate-card', title: 'VIÁVEL 100', content: 'Quando a viabilidade está em 100, esse candidato já possui grandes chances e não precisa de mais voto.' }
+    { target: '.filter-chip', title: 'FILTROS', content: '<b>Todos:</b> Ordena todos os candidatos pela nota.<br><b>Selecionados:</b> Exibe apenas os escolhidos.' },
+    { target: '.candidate-card-list .prototype-candidate-card', title: 'AVALIAÇÃO', content: 'Os cards mostram a nota do candidato ou, quando ela não existe, a nota do partido.' }
   ];
 
   useEffect(() => {
@@ -183,9 +185,11 @@ export default function EscolherCandidatos({
 
           const classificacaoOriginal = d['Classificação'] ?? d.Classificacao ?? d.classificacao ?? '-';
           const classificacaoNum = classificacaoOriginal === '-' ? 999999 : Number(classificacaoOriginal);
-          const ufLimpa = getCandidateStateCode(d, { allowPartyFallback: chaveBanco === 'senadores' }) || (
-            chaveBanco === 'senadores' ? '' : 'TODOS'
-          );
+          const ufLimpa = isNationalOffice
+            ? 'TODOS'
+            : getCandidateStateCode(d, { allowPartyFallback: chaveBanco === 'senadores' }) || (
+              chaveBanco === 'senadores' ? '' : 'TODOS'
+            );
           const selectedByUsers = parseNumeric(tally.active_selections, d.active_selections);
           const averageElectedVotes = AVERAGE_ELECTED_VOTES_BY_OFFICE[chaveBanco] || 3;
           const chance = calculateCandidateChance(selectedByUsers, averageElectedVotes);
@@ -248,16 +252,17 @@ export default function EscolherCandidatos({
           .filter(Boolean);
       };
 
-      const cachedCandidates = readCachedCandidatesByOffice(cargo, estadoDoFluxo);
+      const candidateQueryState = isNationalOffice ? null : estadoDoFluxo;
+      const cachedCandidates = readCachedCandidatesByOffice(cargo, candidateQueryState);
       if (cachedCandidates?.value?.length) {
         const cachedTallies = readCachedTallies(getTallyTargets(cachedCandidates.value), { estado: estadoDoFluxo });
         buildCandidateList(cachedCandidates.value, cachedTallies, cachedCandidates.isFresh ? 'cache' : 'stale-cache');
       }
 
       try {
-        const candidateDocs = cachedCandidates?.isFresh
+        const candidateDocs = cachedCandidates?.isFresh && cachedCandidates.value?.length > 0
           ? cachedCandidates.value
-          : await fetchCandidatesByOffice(cargo, estadoDoFluxo);
+          : await fetchCandidatesByOffice(cargo, candidateQueryState);
         const tallyTargets = getTallyTargets(candidateDocs);
         let tallies = readCachedTallies(tallyTargets, { estado: estadoDoFluxo });
 
@@ -286,14 +291,15 @@ export default function EscolherCandidatos({
     return () => {
       cancelled = true;
     };
-  }, [cargo, chaveBanco, chaveGrupo, estadoDoFluxo]);
+  }, [cargo, chaveBanco, chaveGrupo, estadoDoFluxo, isNationalOffice]);
 
   const candidatosDoEstado = useMemo(() => {
+    if (isNationalOffice) return todosCandidatos;
     const meuEstado = normalizeStateCode(estadoDoFluxo);
     return todosCandidatos.filter((candidate) => (
       candidate.ufLimpa === meuEstado || (chaveBanco !== 'senadores' && candidate.ufLimpa === 'TODOS')
     ));
-  }, [chaveBanco, todosCandidatos, estadoDoFluxo]);
+  }, [chaveBanco, todosCandidatos, estadoDoFluxo, isNationalOffice]);
 
   useEffect(() => {
     let cancelled = false;
@@ -395,14 +401,6 @@ export default function EscolherCandidatos({
           const scoreA = getCandidateSystemScore(a);
           const scoreB = getCandidateSystemScore(b);
           if (scoreB !== scoreA) return scoreB - scoreA;
-          return desempatarPorNome(a, b);
-        });
-      }
-      if (filtroLista === 'viabilidade') {
-        return [...lista].sort((a, b) => {
-          const chanceA = getCandidateChance(a);
-          const chanceB = getCandidateChance(b);
-          if (chanceB !== chanceA) return chanceB - chanceA;
           return desempatarPorNome(a, b);
         });
       }
@@ -701,7 +699,9 @@ export default function EscolherCandidatos({
         aberto: true,
         mensagem: isSenadoresUnificados
           ? STEP_GUIDANCE_MESSAGES.senador
-          : STEP_GUIDANCE_MESSAGES.deputado
+          : chaveBanco === 'presidente'
+            ? STEP_GUIDANCE_MESSAGES.presidente
+            : STEP_GUIDANCE_MESSAGES.deputado
       });
       return;
     }
@@ -716,7 +716,7 @@ export default function EscolherCandidatos({
         <TourModal steps={tourSteps} isOpen={isTourOpen} onClose={() => setIsTourOpen(false)} />
 
         <DesktopCandidateSelection
-          variant={chaveBanco === 'deputado_federal' ? 'office-deputado' : 'office-senado'}
+          variant={chaveBanco === 'deputado_federal' ? 'office-deputado' : chaveBanco === 'presidente' ? 'office-presidente' : 'office-senado'}
           candidates={listaExibida}
           selectedCandidates={selecionadosNaTela}
           featuredCandidateId={featuredCandidateId}
@@ -770,7 +770,7 @@ export default function EscolherCandidatos({
         linhasVisiveis={5}
         currentStep={currentStep}
         autoAvancarAoSelecionar={false}
-        variant={chaveBanco === 'deputado_federal' ? 'office-deputado' : 'office-senado'}
+        variant={chaveBanco === 'deputado_federal' ? 'office-deputado' : chaveBanco === 'presidente' ? 'office-presidente' : 'office-senado'}
         subNavigationItems={currentFilters}
         activeSubNavigationId={filtroLista}
         onSubNavigationSelect={handleSubNavigation}

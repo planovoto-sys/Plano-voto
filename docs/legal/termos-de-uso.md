@@ -2,7 +2,7 @@
 
 Última atualização: 29 de maio de 2026.
 
-O nossovoto.org é uma ferramenta de organização pessoal de escolhas eleitorais. O app não realiza votação oficial, não substitui a urna eletrônica, não representa tribunal eleitoral, partido, candidato, coligação, campanha ou órgão público.
+O bomdevoto.com.br é uma ferramenta de organização pessoal de escolhas eleitorais. O app não realiza votação oficial, não substitui a urna eletrônica, não representa tribunal eleitoral, partido, candidato, coligação, campanha ou órgão público.
 
 ## Aceitação dos termos
 
@@ -16,9 +16,9 @@ O usuário pode conhecer o produto, escolher estado, revisar candidatos, montar 
 
 É proibido atacar a infraestrutura, tentar acessar conta de terceiros, manipular usuários, coletar dados sem autorização, violar direitos de candidatos ou afirmar que o app realiza votação oficial.
 
-## Indicadores, notas e viabilidade
+## Indicadores e notas
 
-Notas, rankings, destaques, percentuais de viabilidade e qualquer indicador exibido pelo app são recursos de apoio à organização e revisão do plano. Eles não representam garantia de resultado eleitoral, recomendação obrigatória, decisão automatizada com efeito jurídico ou orientação oficial de voto.
+Notas, rankings, destaques e outros indicadores exibidos pelo app são recursos de apoio à organização e revisão do plano. Eles não representam garantia de resultado eleitoral, recomendação obrigatória, decisão automatizada com efeito jurídico ou orientação oficial de voto.
 
 ## Rascunho, QR Code e compartilhamento
 
@@ -30,6 +30,6 @@ O tratamento de dados segue as páginas legais e de transparência do app. Cooki
 
 ## Contato
 
-Solicitações podem ser enviadas para plano.voto@gmail.com.
+Solicitações podem ser enviadas para contato.bomdevoto@gmail.com.
 
 > Documento preparado para revisão jurídica antes de publicação definitiva.

@@ -3,6 +3,7 @@
 ![Status](https://img.shields.io/badge/Status-MVP%20Finalizado-success)
 ![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB)
 ![Firebase](https://img.shields.io/badge/Firebase-ffca28?style=flat&logo=firebase&logoColor=black)
+![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=flat&logo=supabase&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-B73BFE?style=flat&logo=vite&logoColor=FFD62E)
 ![PWA](https://img.shields.io/badge/PWA-Ready-blue)
 
@@ -37,9 +38,10 @@ O desenvolvimento priorizou:
 
 - **Frontend:** React.js  
 - **Build Tool:** Vite  
-- **Backend:** Firebase  
-  - Authentication  
-  - Cloud Firestore  
+- **Backend atual:** Firebase
+  - Authentication
+  - Cloud Firestore
+- **Backend alvo:** Supabase (ambiente e schema versionado preparados para migracao)
 - **Roteamento:** React Router Dom  
 - **Estilização:** CSS global organizado por componente e página  
 
@@ -88,13 +90,20 @@ src/
 
 ## 🚀 Como Executar
 
-Os controles de segurança, segredos do backend e a rotina de auditoria estão documentados em [`docs/security.md`](docs/security.md).
+Os controles de segurança, segredos do backend e a rotina de auditoria estão documentados em [`docs/security.md`](docs/security.md). O ambiente local, o schema e a estrategia de migracao para Supabase estao em [`docs/supabase.md`](docs/supabase.md).
 
-Pré-requisito: Node.js v20.19+
+Pré-requisito: Node.js v22.12+
 
 ```sh
 npm ci
 npm run dev
+```
+
+Para iniciar tambem o Supabase local, tenha Docker Desktop em execucao e rode:
+
+```sh
+npm run supabase:start
+npm run supabase:status
 ```
 
 Antes de iniciar o Vite, defina `PLANO_VOTO_DEV_API_ORIGIN` no `.env.local`. O Vite
@@ -123,6 +132,6 @@ GitHub: https://github.com/AlexandreBolsoni
 
 LinkedIn: https://www.linkedin.com/in/alexandre-hackbardt-bolsoni/
 
-Email: plano.voto@gmail.com
+Email: contato.bomdevoto@gmail.com
 
 © 2026 Alexandre Hackbardt Bolsoni. Todos os direitos reservados.

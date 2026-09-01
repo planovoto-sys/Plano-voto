@@ -17,7 +17,9 @@ import {
   SAVE_BALLOT_STEP_FUNCTION_NAME
 } from '@/shared/constants/ballot';
 import { callBackend } from '@/shared/api/backend';
+import { usesSupabaseAuth } from '@/shared/auth/authService';
 import { db } from '@/shared/firebase/firebase';
+import { getSupabaseClient } from '@/shared/supabase/client';
 import { flowLog } from '@/shared/utils/debugFlow';
 import { normalizeStateCode } from '@/shared/utils/state';
 import { enrichCandidatesWithPartyScores } from '@/features/candidate-selection/candidateService';
@@ -66,6 +68,47 @@ class FirestoreBallotDraftRepository {
 
 const ballotDraftRepository = new FirestoreBallotDraftRepository();
 
+const deserializeSupabaseDraft = (row, estado = null) => normalizeDraft({
+  ...(row?.selections || {}),
+  estado: row?.state || estado,
+  updated_at: row?.updated_at || null,
+}, estado);
+
+const saveSupabaseDraft = async (userId, draft) => {
+  const normalizedDraft = normalizeDraft(draft);
+  const { data, error } = await getSupabaseClient()
+    .from('ballot_drafts')
+    .upsert({
+      election_id: ACTIVE_ELECTION_ID,
+      user_id: userId,
+      state: normalizedDraft.estado,
+      schema_version: BALLOT_SCHEMA_VERSION,
+      selections: {
+        selections: normalizedDraft.selections,
+        candidate_groups: normalizedDraft.candidate_groups,
+      },
+      completed_steps: Object.entries(normalizedDraft.completed_steps)
+        .filter(([, completed]) => completed)
+        .map(([stepId]) => stepId),
+    }, { onConflict: 'election_id,user_id' })
+    .select('*')
+    .single();
+
+  if (error) throw error;
+  return persistBallotDraft(userId, deserializeSupabaseDraft(data, normalizedDraft.estado));
+};
+
+const readSupabaseDraft = async (userId, estado = null) => {
+  const { data, error } = await getSupabaseClient()
+    .from('ballot_drafts')
+    .select('*')
+    .eq('election_id', ACTIVE_ELECTION_ID)
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? deserializeSupabaseDraft(data, estado) : createEmptyBallotDraft(estado);
+};
+
 const saveBallotStateServerSide = async (userId, estado) => {
   const activeEstado = normalizeStateCode(estado);
   if (!activeEstado) throw new VotingError('STATE_REQUIRED', 'Escolha um estado antes de continuar.');
@@ -101,6 +144,11 @@ const saveBallotStepSelectionServerSide = async (userId, stepKey, candidates, es
 export const fetchRemoteBallotDraft = async (userId, estado = null) => {
   if (!userId) return createEmptyBallotDraft(estado);
 
+  if (usesSupabaseAuth) {
+    const remoteDraft = await readSupabaseDraft(userId, estado);
+    return persistBallotDraft(userId, remoteDraft);
+  }
+
   const requestStartedAtMs = Date.now();
   const draft = await ballotDraftRepository.readDraft(userId, estado);
   const localDraft = readBallotDraft(userId, estado);
@@ -121,6 +169,17 @@ export const fetchRemoteBallotDraft = async (userId, estado = null) => {
 export const saveBallotState = async (userId, estado) => {
   if (!userId) throw new VotingError('AUTH_REQUIRED', 'Faça login para continuar.');
 
+  if (usesSupabaseAuth) {
+    const activeEstado = normalizeStateCode(estado);
+    if (!activeEstado) throw new VotingError('STATE_REQUIRED', 'Escolha um estado antes de continuar.');
+
+    const currentDraft = await readSupabaseDraft(userId, activeEstado);
+    const nextDraft = currentDraft.estado === activeEstado
+      ? normalizeDraft(currentDraft, activeEstado)
+      : createEmptyBallotDraft(activeEstado);
+    return saveSupabaseDraft(userId, nextDraft);
+  }
+
   flowLog('draft.save-state.server-side', { userId, estado });
   return saveBallotStateServerSide(userId, estado);
 };
@@ -135,6 +194,10 @@ export const saveBallotOfficeSelection = async (userId, officeKey, candidates, e
   const normalizedCandidates = asArray(candidates)
     .map(normalizeStoredCandidate)
     .filter(Boolean);
+
+  if (officeKey === 'presidente') {
+    return saveBallotStepSelection(userId, 'presidente', normalizedCandidates, estado, { markCompleted: true });
+  }
 
   if (officeKey === 'deputado_federal') {
     return saveBallotStepSelection(userId, 'deputado_federal', normalizedCandidates, estado, { markCompleted: true });
@@ -160,6 +223,18 @@ export const saveBallotStepSelection = async (userId, stepKey, candidates, estad
     throw new VotingError('STATE_REQUIRED', 'Escolha um estado antes de selecionar candidatos.');
   }
 
+  if (usesSupabaseAuth) {
+    const nextDraft = normalizeDraft({
+      ...currentDraft,
+      estado: activeEstado,
+      candidate_groups: {
+        ...currentDraft.candidate_groups,
+        [stepKey]: normalizedCandidates,
+      },
+    }, activeEstado);
+    return saveSupabaseDraft(userId, nextDraft);
+  }
+
   flowLog('draft.save-step.server-side', {
     userId,
     estado: activeEstado,
@@ -178,8 +253,13 @@ export const saveBallotDraftToAccount = async (userId, draft) => {
   if (!activeEstado) return createEmptyBallotDraft();
 
   let savedDraft = await saveBallotState(userId, activeEstado);
+  const presidente = normalizedDraft.candidate_groups.presidente;
   const deputadoFederal = normalizedDraft.candidate_groups.deputado_federal;
   const senadores = normalizedDraft.candidate_groups.senadores_1;
+
+  if (presidente.length > 0) {
+    savedDraft = await saveBallotStepSelection(userId, 'presidente', presidente, activeEstado, { markCompleted: true });
+  }
 
   if (deputadoFederal.length > 0) {
     savedDraft = await saveBallotStepSelection(userId, 'deputado_federal', deputadoFederal, activeEstado, { markCompleted: true });
@@ -206,6 +286,18 @@ export const mergeVisitorBallotDraftIntoAccount = async (userId) => {
 export const deleteUserElectionData = async (userId) => {
   if (!userId) throw new VotingError('AUTH_REQUIRED', 'Faça login para continuar.');
 
+  if (usesSupabaseAuth) {
+    const { error } = await getSupabaseClient()
+      .from('ballot_drafts')
+      .delete()
+      .eq('election_id', ACTIVE_ELECTION_ID)
+      .eq('user_id', userId);
+    if (error) throw error;
+    clearBallotDraft(userId);
+    clearVoteReceipt(userId);
+    return { ok: true };
+  }
+
   await callBackend(DELETE_USER_ELECTION_DATA_FUNCTION_NAME, {
     schema_version: BALLOT_SCHEMA_VERSION,
     election_id: ACTIVE_ELECTION_ID
@@ -219,6 +311,39 @@ export const deleteUserElectionData = async (userId) => {
 export const fetchCandidatesByIds = async (candidateIds) => {
   const uniqueIds = [...new Set(candidateIds)].filter(Boolean);
   if (uniqueIds.length === 0) return [];
+
+  if (usesSupabaseAuth) {
+    const rows = [];
+    for (let index = 0; index < uniqueIds.length; index += 100) {
+      const chunk = uniqueIds.slice(index, index + 100);
+      const { data, error } = await getSupabaseClient()
+        .from('candidates')
+        .select('id, name, office, state, party_id, number, image_url, scores, legacy_data')
+        .in('id', chunk);
+      if (error) throw error;
+      rows.push(...(data || []));
+    }
+
+    const rowsById = new Map(rows.map((row) => [row.id, {
+      ...(row.legacy_data || {}),
+      id: row.id,
+      nome: row.name,
+      cargo: row.office,
+      uf: row.state,
+      partido: row.legacy_data?.partido_nome || row.party_id || '',
+      partido_sigla: row.party_id || row.legacy_data?.partido_sigla || '',
+      sigla_partido: row.party_id || row.legacy_data?.partido_sigla || '',
+      numero: row.number,
+      numero_candidato: row.number,
+      imagem: row.image_url || row.legacy_data?.imagem || '',
+      scores: row.scores || {},
+      nota_candidato: row.scores?.candidate ?? row.legacy_data?.nota ?? null,
+      nota_final: row.scores?.candidate ?? row.legacy_data?.nota ?? null,
+      temNotaCandidato: (row.scores?.candidate ?? row.legacy_data?.nota) != null,
+    }]));
+
+    return enrichCandidatesWithPartyScores(uniqueIds.map((id) => rowsById.get(id)).filter(Boolean));
+  }
 
   const docsById = new Map();
   for (let index = 0; index < uniqueIds.length; index += 10) {

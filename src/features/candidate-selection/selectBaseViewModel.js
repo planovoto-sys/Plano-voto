@@ -24,6 +24,13 @@ export const getScreenCopy = ({ variant, titulo, subtitulo }) => {
     };
   }
 
+  if (variant === 'office-presidente') {
+    return {
+      title: 'Presidente',
+      subtitle: 'Selecione todos os candidatos à Presidência em quem você aceitaria votar.'
+    };
+  }
+
   if (variant === 'office-deputado') {
     return {
       title: 'Deputado Federal',
@@ -40,7 +47,6 @@ export const getScreenCopy = ({ variant, titulo, subtitulo }) => {
 export const getSubNavLabel = (item) => {
   if (item.mode === 'selecao' || item.id?.includes('selecao')) return 'Seleção';
   if (item.mode === 'avaliacao' || item.id?.includes('avaliacao')) return 'Avaliação';
-  if (item.mode === 'viabilidade' || item.id?.includes('viabilidade')) return 'Viabilidade';
   if (item.mode === 'partido' || item.id?.includes('partido')) return 'Partido';
   return 'Todos';
 };

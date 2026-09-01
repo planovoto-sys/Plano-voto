@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Star, ThumbsUp, ThumbsDown } from 'lucide-react';
 import {
   formatScore,
-  getCandidateChance,
   getCandidateDisplayScore,
   getCandidateName,
   getCandidateParty,
@@ -34,7 +33,6 @@ export default function CandidateCard({
 
   const candidateScore = getCandidateDisplayScore(candidate);
   const partyScore = getCandidatePartyScore(candidate);
-  const chance = lockPersonalizedFields ? 0 : getCandidateChance(candidate);
   const systemScore = getCandidateSystemScore(candidate);
   const isBlocked = candidate.isAlreadyChosen;
 
@@ -83,7 +81,7 @@ export default function CandidateCard({
   const renderLockedInsight = () => (
     <div className="candidate-card__locked-insight nv-touch" onClick={handleLockedFieldClick}>
       <strong>Indicadores disponíveis após login</strong>
-      <span>Entre para ver nota, viabilidade e análise.</span>
+      <span>Entre para ver nota e análise.</span>
     </div>
   );
 
@@ -126,18 +124,7 @@ export default function CandidateCard({
         )}
       </header>
 
-      {/* 2. MEIO (Barra de Viabilidade) */}
-      <div className="candidate-card__viability-row" onClick={lockPersonalizedFields ? handleLockedFieldClick : undefined}>
-        <div className="candidate-card__bar-container">
-          <div className="candidate-card__bar-fill" style={{ width: `${chance}%` }}></div>
-          {/* Ticks removidos para uma barra contínua e mais limpa */}
-        </div>
-        <span className={`candidate-card__viability-percent ${selected ? (isWellEvaluated ? 'is-green' : 'is-red') : ''}`}>
-          {lockPersonalizedFields ? '--' : Math.round(chance)}%
-        </span>
-      </div>
-
-      {/* 3. RODAPÉ (Tags) */}
+      {/* 2. RODAPÉ (Tags) */}
       {lockPersonalizedFields ? (
         renderLockedInsight()
       ) : (

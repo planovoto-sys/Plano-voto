@@ -6,6 +6,7 @@ import { useDesktopExperience } from '@/shared/hooks/useDesktopExperience';
 import { useUser } from '@/shared/hooks/useUser';
 import LoadingScreen from '@/shared/ui/feedback/LoadingScreen';
 import PrivacyConsent from '@/features/privacy/PrivacyConsent';
+import DesktopMobileOnlyPage from '@/features/desktop/DesktopMobileOnlyPage';
 import PageTransition from '@/features/motion/PageTransition';
 import { STEP_GUIDANCE_MESSAGES } from '@/features/notifications/notificationMessages';
 import {
@@ -45,8 +46,9 @@ const renderCandidateRoute = (config) => (
 
 const getResumeNotice = (progress) => {
   if (!progress?.hasEstado) return '';
-  if (!progress.hasDeputadoFederal) return STEP_GUIDANCE_MESSAGES.deputado;
+  if (!progress.hasPresidente) return STEP_GUIDANCE_MESSAGES.presidente;
   if (!progress.hasSenadores) return STEP_GUIDANCE_MESSAGES.senador;
+  if (!progress.hasDeputadoFederal) return STEP_GUIDANCE_MESSAGES.deputado;
   return '';
 };
 
@@ -95,9 +97,13 @@ function AuthenticatedEntryRedirect({ user, estado }) {
   );
 }
 
-function AppRoutes({ rootElement, publicExplorationRoute, privateRedirect }) {
+function AppRoutes({ rootElement, publicExplorationRoute, privateRedirect, isDesktopExperience }) {
   const location = useLocation();
   const navigationType = useNavigationType();
+
+  if (isDesktopExperience) {
+    return <DesktopMobileOnlyPage />;
+  }
 
   return (
     <Suspense fallback={null}>
@@ -110,6 +116,8 @@ function AppRoutes({ rootElement, publicExplorationRoute, privateRedirect }) {
           <Route path="/" element={rootElement} />
           <Route path="/login" element={<Login />} />
           <Route path="/home" element={publicExplorationRoute(<Home />)} />
+
+          <Route path={BALLOT_ROUTES.presidente} element={publicExplorationRoute(renderCandidateRoute(CANDIDATE_ROUTES.presidente))} />
 
           <Route path="/escolher-deputado-federal" element={publicExplorationRoute(renderCandidateRoute(CANDIDATE_ROUTES.deputadoFederal))} />
 
@@ -201,9 +209,10 @@ function App() {
           rootElement={rootElement}
           publicExplorationRoute={publicExplorationRoute}
           privateRedirect={privateRedirect}
+          isDesktopExperience={isDesktopExperience}
         />
       )}
-      <PrivacyConsent />
+      {!isDesktopExperience && <PrivacyConsent />}
     </BrowserRouter>
   );
 }

@@ -1,10 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { signInWithPopup } from 'firebase/auth';
 import { Play } from 'lucide-react';
 
 import FlowToast from '@/shared/ui/feedback/FlowToast';
 import { useUser } from '@/shared/hooks/useUser';
-import { auth, authPersistenceReady, firebaseReady, googleProvider } from '@/shared/firebase/firebase';
+import {
+  authReady,
+  authProvider,
+  googleIdentityClientId,
+  signInWithGoogle,
+  signInWithGoogleIdToken,
+  usesGoogleIdentity,
+} from '@/shared/auth/authService';
+import { createGoogleIdentityNonce, loadGoogleIdentity } from '@/shared/auth/googleIdentity';
 import { mergeVisitorBallotDraftIntoAccount } from '@/features/ballot';
 import { flowError, flowLog } from '@/shared/utils/debugFlow';
 
@@ -96,11 +103,105 @@ function FloatingDots() {
   );
 }
 
+function GoogleIdentityButton({ disabled, onCredential, onError }) {
+  const containerRef = useRef(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const initialize = async () => {
+      try {
+        const [{ nonce, hashedNonce }, googleIdentity] = await Promise.all([
+          createGoogleIdentityNonce(),
+          loadGoogleIdentity(),
+        ]);
+        if (cancelled || !containerRef.current) return;
+
+        googleIdentity.initialize({
+          client_id: googleIdentityClientId,
+          callback: (response) => {
+            if (cancelled) return;
+            if (!response?.credential) {
+              onError(new Error('O Google nao retornou uma credencial valida.'));
+              return;
+            }
+            onCredential({ token: response.credential, nonce });
+          },
+          nonce: hashedNonce,
+          context: 'signin',
+          auto_select: false,
+          itp_support: true,
+          use_fedcm_for_prompt: true,
+        });
+
+        const buttonWidth = Math.max(200, Math.round(containerRef.current.getBoundingClientRect().width));
+        containerRef.current.replaceChildren();
+        googleIdentity.renderButton(containerRef.current, {
+          type: 'standard',
+          theme: 'outline',
+          size: 'large',
+          text: 'signin_with',
+          shape: 'pill',
+          logo_alignment: 'left',
+          locale: 'pt_BR',
+          width: buttonWidth,
+        });
+        setReady(true);
+      } catch (error) {
+        if (!cancelled) onError(error);
+      }
+    };
+
+    void initialize();
+    return () => {
+      cancelled = true;
+    };
+  }, [onCredential, onError]);
+
+  return (
+    <div className={`login-google-identity-shell${disabled ? ' login-google-identity-shell--disabled' : ''}`}>
+      <div ref={containerRef} className="login-google-identity" aria-hidden={!ready} />
+      {!ready && (
+        <button type="button" className="login-google-btn" disabled>
+          <GoogleIcon />
+          <span>Carregando Google...</span>
+        </button>
+      )}
+    </div>
+  );
+}
+
 export default function LoginPage() {
   const { user, userData, loading } = useUser();
   const [signingIn, setSigningIn] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [videoOpen, setVideoOpen] = useState(false);
+  const signingInRef = useRef(false);
+
+  const handleGoogleIdentityError = useCallback((error) => {
+    flowError('LoginPage', 'Erro ao carregar login direto do Google', error);
+    setToastMessage('Não foi possível carregar o login do Google. Tente novamente.');
+  }, []);
+
+  const handleGoogleCredential = useCallback(async ({ token, nonce }) => {
+    if (signingInRef.current) return;
+    signingInRef.current = true;
+    setSigningIn(true);
+    setToastMessage('');
+
+    try {
+      flowLog('LoginPage', 'Iniciando login direto com Google');
+      await signInWithGoogleIdToken({ token, nonce });
+      flowLog('LoginPage', 'Login direto concluido', { provider: authProvider });
+    } catch (error) {
+      flowError('LoginPage', 'Erro no login direto', error);
+      setToastMessage('Não foi possível fazer login. Tente novamente.');
+    } finally {
+      signingInRef.current = false;
+      setSigningIn(false);
+    }
+  }, []);
 
   const handleGoogleSignIn = useCallback(async () => {
     if (signingIn) return;
@@ -108,11 +209,10 @@ export default function LoginPage() {
 
     try {
       flowLog('LoginPage', 'Iniciando login com Google');
-      await authPersistenceReady;
-      const result = await signInWithPopup(auth, googleProvider);
-      flowLog('LoginPage', 'Login bem-sucedido', result.user.uid);
+      const result = await signInWithGoogle();
+      flowLog('LoginPage', 'Login iniciado', { provider: authProvider });
 
-      if (userData?.estado) {
+      if (result.user?.uid && userData?.estado) {
         try {
           await mergeVisitorBallotDraftIntoAccount(result.user.uid, userData.estado);
         } catch (mergeErr) {
@@ -133,8 +233,8 @@ export default function LoginPage() {
     }
   }, [signingIn, userData]);
 
-  const PREVIEW_MODE_MESSAGE = 'App em modo de visualização — login disponível apenas com Firebase configurado.';
-  const previewModeHint = !user && !loading && !firebaseReady && !signingIn ? PREVIEW_MODE_MESSAGE : '';
+  const PREVIEW_MODE_MESSAGE = `App em modo de visualização — login disponível apenas com ${authProvider} configurado.`;
+  const previewModeHint = !user && !loading && !authReady && !signingIn ? PREVIEW_MODE_MESSAGE : '';
 
   return (
     <div className="login-wrapper">
@@ -165,15 +265,23 @@ export default function LoginPage() {
             <span>Veja como funciona</span>
           </button>
 
-          <button
-            type="button"
-            className="login-google-btn"
-            onClick={handleGoogleSignIn}
-            disabled={signingIn || !firebaseReady}
-          >
-            <GoogleIcon />
-            <span>{signingIn ? 'Entrando...' : 'Entrar com Google'}</span>
-          </button>
+          {usesGoogleIdentity ? (
+            <GoogleIdentityButton
+              disabled={signingIn || !authReady}
+              onCredential={handleGoogleCredential}
+              onError={handleGoogleIdentityError}
+            />
+          ) : (
+            <button
+              type="button"
+              className="login-google-btn"
+              onClick={handleGoogleSignIn}
+              disabled={signingIn || !authReady}
+            >
+              <GoogleIcon />
+              <span>{signingIn ? 'Entrando...' : 'Entrar com Google'}</span>
+            </button>
+          )}
         </div>
 
         <p className="login-tagline">

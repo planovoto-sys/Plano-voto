@@ -30,7 +30,7 @@ const HOW_IT_WORKS = [
   {
     eyebrow: '2',
     title: 'Monte seu rascunho',
-    body: 'Escolha deputado federal e senadores, revise os nomes e ajuste sua lista.'
+    body: 'Escolha presidente, senadores e deputado federal, revise os nomes e ajuste sua lista.'
   },
   {
     eyebrow: '3',
@@ -177,7 +177,7 @@ function AboutLanding({ user, isDesktopExperience, onPrimaryCta, onLoginCta }) {
                 ← Voltar
               </button>
             )}
-            {!user?.uid && (
+            {!isDesktopExperience && !user?.uid && (
               <button className="app-header__about-login nv-touch" type="button" onClick={onLoginCta}>
                 Fazer login
               </button>
@@ -196,25 +196,29 @@ function AboutLanding({ user, isDesktopExperience, onPrimaryCta, onLoginCta }) {
       <main className="about-main nv-scroll" ref={aboutMainRef}>
         <section className="about-hero">
           <div className="about-hero__copy" data-scroll-reveal>
-            <span className="about-eyebrow">Plano de voto simples, revisável e seguro</span>
-            <h1>Monte seu plano de voto com mais clareza</h1>
+            <span className="about-eyebrow">Escolhas simples, revisáveis e seguras</span>
+            <h1>Organize seus candidatos com mais clareza</h1>
             <p>
               O Bom de Voto ajuda você a organizar seus candidatos por cargo, revisar suas escolhas
               e salvar um rascunho antes da decisão final.
             </p>
             <p className="about-hero__support">
-              Use o computador para conhecer e revisar. A experiência completa acontece no celular.
+              {isDesktopExperience
+                ? 'Para uma melhor experiência, acesse pelo seu smartphone.'
+                : 'A experiência completa do Bom de Voto foi criada para o seu celular.'}
             </p>
-            <div className="about-hero__actions">
-              <button className="about-primary-action nv-touch" type="button" onClick={onPrimaryCta}>
-                Ver prévia dos candidatos
-              </button>
-              {!user?.uid && (
-                <button className="about-secondary-action nv-touch" type="button" onClick={onLoginCta}>
-                  Fazer login
+            {!isDesktopExperience && (
+              <div className="about-hero__actions">
+                <button className="about-primary-action nv-touch" type="button" onClick={onPrimaryCta}>
+                  Começar meu plano
                 </button>
-              )}
-            </div>
+                {!user?.uid && (
+                  <button className="about-secondary-action nv-touch" type="button" onClick={onLoginCta}>
+                    Fazer login
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           <aside className="about-product-preview" aria-label="Prévia do produto" data-scroll-reveal>
@@ -279,7 +283,7 @@ function AboutLanding({ user, isDesktopExperience, onPrimaryCta, onLoginCta }) {
             <h2>Indicadores ajudam, mas não decidem por você</h2>
           </div>
           <p>
-            Nota, viabilidade e destaques são recursos de apoio para organizar seu plano. Eles não
+            Notas e destaques são recursos de apoio para organizar seu plano. Eles não
             substituem sua pesquisa, sua opinião ou sua decisão final. Sempre revise dados, compare
             informações e escolha de forma consciente.
           </p>
@@ -309,9 +313,13 @@ function AboutLanding({ user, isDesktopExperience, onPrimaryCta, onLoginCta }) {
         <section className="about-final-cta" data-scroll-reveal>
           <span className="about-eyebrow">Pronto para experimentar?</span>
           <h2>Conheça no computador e continue pelo celular</h2>
-          <button className="about-primary-action nv-touch" type="button" onClick={onPrimaryCta}>
-            Ver prévia dos candidatos
-          </button>
+          {isDesktopExperience ? (
+            <p>Para uma melhor experiência, acesse pelo seu smartphone.</p>
+          ) : (
+            <button className="about-primary-action nv-touch" type="button" onClick={onPrimaryCta}>
+              Começar meu plano
+            </button>
+          )}
         </section>
 
         <AppFooter className="app-footer--scroll-content" />
@@ -362,7 +370,7 @@ export default function LegalPage({ type }) {
     document.title = content.meta?.title || `${content.title} | Bom de Voto`;
     descriptionMeta.setAttribute('content', content.meta?.description || content.subtitle || '');
     robotsMeta.setAttribute('content', content.meta?.noindex ? 'noindex,follow' : 'index,follow');
-    canonicalLink.setAttribute('href', `https://bomdevoto.org${content.meta?.path || window.location.pathname}`);
+    canonicalLink.setAttribute('href', `https://bomdevoto.com.br${content.meta?.path || window.location.pathname}`);
 
     return () => {
       document.title = previousTitle;

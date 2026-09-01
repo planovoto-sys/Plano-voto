@@ -51,11 +51,24 @@
   margin-top: 12px;
   box-shadow: 0 4px 12px rgba(17, 17, 17, 0.04);
   border: 1px solid var(--brand-border);
+  transition: background-color 240ms ease, border-color 240ms ease, box-shadow 240ms ease;
+}
+
+.my-plan-overview.is-score-red {
+  border-color: color-mix(in srgb, var(--brand-danger) 28%, var(--brand-border));
+  background: color-mix(in srgb, var(--brand-danger) 4%, var(--brand-surface));
+  box-shadow: 0 4px 14px rgba(210, 55, 55, 0.07);
+}
+
+.my-plan-overview.is-score-green {
+  border-color: color-mix(in srgb, var(--brand-green-dark) 26%, var(--brand-border));
+  background: color-mix(in srgb, var(--brand-primary) 5%, var(--brand-surface));
+  box-shadow: 0 4px 14px rgba(30, 125, 67, 0.07);
 }
 
 .my-plan-overview__metrics {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 8px;
   text-align: center;
 }
@@ -160,27 +173,6 @@
   fill: currentColor;
 }
 
-/* Termômetro de Viabilidade */
-.my-plan-gauge {
-  width: 100%;
-  max-width: 60px;
-  height: 8px;
-  background: var(--brand-border);
-  border-radius: 99px;
-  margin-top: 6px;
-  overflow: hidden;
-  position: relative;
-}
-
-.my-plan-gauge__fill {
-  height: 100%;
-  border-radius: 99px;
-  transition: width 0.5s ease, background-color 0.3s ease;
-}
-
-.my-plan-gauge__fill--green { background: var(--brand-primary); }
-.my-plan-gauge__fill--red { background: var(--brand-danger); }
-
 /* ========================================================
    SESSÕES DE ESCOLHA COMPACTADAS
    ======================================================== */
@@ -190,18 +182,96 @@
   gap: 8px;
 }
 
+.my-plan-choice-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.my-plan-choice-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  padding-left: 2px;
+}
+
 .my-plan-choice-section h2 {
   font-size: 14px;
   font-weight: 800;
   color: var(--brand-text);
-  margin-bottom: 8px;
-  padding-left: 2px;
+  margin: 0;
+}
+
+.my-plan-choice-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  align-self: flex-end;
+  margin-left: auto;
+  margin-top: 7px;
+  padding: 6px 2px 6px 10px;
+  border: 0;
+  background: transparent;
+  color: #4b5563;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 180ms ease, transform 180ms ease;
+}
+
+.my-plan-choice-toggle svg {
+  transition: transform 240ms cubic-bezier(.2, .8, .2, 1);
+}
+
+.my-plan-choice-toggle.is-expanded svg {
+  transform: rotate(180deg);
+}
+
+.my-plan-choice-toggle:hover,
+.my-plan-choice-toggle:focus-visible {
+  color: #1f2937;
+}
+
+.my-plan-choice-toggle:active {
+  transform: scale(.96);
 }
 
 .my-plan-choice-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.my-plan-choice-list.is-expanded > * {
+  animation: my-plan-card-reveal 280ms cubic-bezier(.2, .8, .2, 1) both;
+}
+
+.my-plan-choice-list.is-expanded > *:nth-child(2) { animation-delay: 30ms; }
+.my-plan-choice-list.is-expanded > *:nth-child(3) { animation-delay: 60ms; }
+.my-plan-choice-list.is-expanded > *:nth-child(4) { animation-delay: 90ms; }
+
+@keyframes my-plan-card-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .my-plan-choice-list.is-expanded > * {
+    animation: none;
+  }
+
+  .my-plan-choice-toggle,
+  .my-plan-choice-toggle svg {
+    transition: none;
+  }
 }
 
 /* ========================================================

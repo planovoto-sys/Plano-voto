@@ -11,17 +11,20 @@ export const BALLOT_SCHEMA_VERSION = 1;
 export const VISITOR_DRAFT_ID = 'visitor';
 
 export const OFFICE_MINIMUM_SELECTIONS = {
+  presidente: 1,
   deputado_federal: 1,
   senadores: 2
 };
 
 export const OFFICE_DISPLAY_LIMITS = {
+  presidente: 1,
   deputado_federal: 1,
   senadores: 2
 };
 
 export const BALLOT_ROUTES = {
   estado: '/home',
+  presidente: '/escolher-presidente',
   deputadoFederal: '/escolher-deputado-federal',
   senadores: '/escolher-senadores',
   senador1: '/escolher-senador-1',
@@ -33,10 +36,10 @@ export const BALLOT_ROUTES = {
 
 export const BALLOT_FLOW_STEPS = [
   {
-    id: 'deputado_federal',
-    officeKey: 'deputado_federal',
-    route: BALLOT_ROUTES.deputadoFederal,
-    title: 'Deputado Federal'
+    id: 'presidente',
+    officeKey: 'presidente',
+    route: BALLOT_ROUTES.presidente,
+    title: 'Presidente'
   },
   {
     id: 'senadores_1',
@@ -49,6 +52,12 @@ export const BALLOT_FLOW_STEPS = [
     officeKey: 'senadores',
     route: BALLOT_ROUTES.senadores,
     title: 'Senadores'
+  },
+  {
+    id: 'deputado_federal',
+    officeKey: 'deputado_federal',
+    route: BALLOT_ROUTES.deputadoFederal,
+    title: 'Deputado Federal'
   }
 ];
 

@@ -44,6 +44,7 @@ export default defineConfig(({ command, mode }) => {
           manualChunks(id) {
             if (!id.includes('node_modules')) return undefined
             if (id.includes('firebase')) return 'vendor-firebase'
+            if (id.includes('@supabase')) return 'vendor-supabase'
             if (id.includes('react')) return 'vendor-react'
             if (id.includes('qrcode')) return 'feature-share'
             if (id.includes('lucide-react')) return 'vendor-icons'

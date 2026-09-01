@@ -4,13 +4,13 @@
   "version": "1.11.4",
   "type": "module",
   "engines": {
-    "node": ">=20.19.0"
+    "node": ">=22.12.0"
   },
   "scripts": {
     "dev": "vite --configLoader runner",
     "build": "vite build --configLoader runner",
     "lint": "eslint .",
-    "test": "node --test tests/devApiProxy.test.mjs tests/rpcErrorMapping.test.mjs tests/serverConfiguration.test.mjs",
+    "test": "node --test tests/devApiProxy.test.mjs tests/googleIdentity.test.mjs tests/rpcErrorMapping.test.mjs tests/serverConfiguration.test.mjs tests/supabaseCandidateImport.test.mjs tests/supabaseConfiguration.test.mjs tests/supabaseScoreUpdate.test.mjs",
     "security:secrets": "node scripts/security-audit.mjs",
     "security:dependencies": "npm audit --audit-level=high && npm audit --prefix functions --audit-level=high",
     "security:audit": "npm run security:secrets && npm run security:dependencies",
@@ -19,12 +19,22 @@
     "candidates:import": "node scripts/import-candidates-2026.mjs",
     "candidates:update-numbers": "node scripts/update-candidate-numbers.mjs",
     "candidates:update-scores": "node scripts/update-candidate-scores.mjs",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:status": "supabase status",
+    "supabase:db:reset": "supabase db reset",
+    "supabase:db:lint": "supabase db lint --local --level warning",
+    "supabase:db:push": "supabase db push",
+    "supabase:types": "supabase gen types typescript --local > src/shared/supabase/database.types.ts",
+    "supabase:candidates:import": "node scripts/import-supabase-candidates-2026.mjs",
+    "supabase:scores:update": "node scripts/update-supabase-scores.mjs",
     "predeploy": "npm run build",
     "deploy": "npx gh-pages -d dist",
     "deploy:firebase-rules": "npx firebase-tools deploy --only firestore:rules,storage --project plano-mvp-9a0b4",
     "audit:functions": "npm audit --prefix functions"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.112.4",
     "firebase": "^12.12.1",
     "firebase-admin": "^14.3.0",
     "lucide-react": "^1.16.0",
@@ -45,6 +55,7 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "gh-pages": "^6.3.0",
     "globals": "^17.5.0",
+    "supabase": "^2.116.0",
     "tailwindcss": "^4.3.0",
     "vite": "^7.3.2"
   },

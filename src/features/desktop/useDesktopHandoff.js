@@ -22,7 +22,7 @@ const buildQrCode = (url) => QRCode.toDataURL(url, {
 const ENABLE_SECURE_HANDOFF = import.meta.env.VITE_ENABLE_SECURE_HANDOFF === 'true';
 
 const getOrigin = () => (
-  typeof window === 'undefined' ? 'https://bomdevoto.org' : window.location.origin
+  typeof window === 'undefined' ? 'https://bomdevoto.com.br' : window.location.origin
 );
 
 const isLocalOrigin = () => {

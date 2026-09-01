@@ -153,7 +153,7 @@ export const PROVIDER_ROWS = [
     categoria: 'Email e suporte',
     finalidade: 'Responder solicitações de privacidade, exclusão e atendimento.',
     dados: 'Email, conteúdo enviado pelo usuário e dados necessários para titularidade.',
-    exemplo: 'Conta de email de contato: plano.voto@gmail.com'
+    exemplo: 'Conta de email de contato: contato.bomdevoto@gmail.com'
   }
 ];
 
@@ -164,8 +164,8 @@ export const LEGAL_PAGE_CONTENT = {
     title: 'Cookies',
     subtitle: 'Entenda como usamos cookies, armazenamento local e recursos do navegador.',
     meta: {
-      title: 'Cookies | nossovoto.org',
-      description: 'Política de cookies, permissões opcionais e controles de privacidade do nossovoto.org.',
+      title: 'Cookies | bomdevoto.com.br',
+      description: 'Política de cookies, permissões opcionais e controles de privacidade do bomdevoto.com.br.',
       path: '/cookies'
     },
     sections: [
@@ -209,7 +209,7 @@ export const LEGAL_PAGE_CONTENT = {
       },
       {
         heading: 'Última atualização',
-        body: `Esta página foi revisada em ${LEGAL_LAST_UPDATED}, considerando a estrutura atual do nossovoto.org e orientações públicas da Autoridade Nacional de Proteção de Dados sobre cookies e proteção de dados pessoais. ${reviewNote}`
+        body: `Esta página foi revisada em ${LEGAL_LAST_UPDATED}, considerando a estrutura atual do bomdevoto.com.br e orientações públicas da Autoridade Nacional de Proteção de Dados sobre cookies e proteção de dados pessoais. ${reviewNote}`
       }
     ]
   },
@@ -217,7 +217,7 @@ export const LEGAL_PAGE_CONTENT = {
     title: 'Política de Privacidade',
     subtitle: 'Como protegemos informações e mantemos transparência no uso dos dados.',
     meta: {
-      title: 'Política de Privacidade | nossovoto.org',
+      title: 'Política de Privacidade | bomdevoto.com.br',
       description: 'Informações sobre dados tratados, finalidades, bases possíveis, dados sensíveis, QR Code, compartilhamento e direitos do usuário.',
       path: '/politica-de-privacidade'
     },
@@ -225,8 +225,8 @@ export const LEGAL_PAGE_CONTENT = {
       {
         heading: 'Quem somos e escopo',
         body: [
-          'O nossovoto.org é uma ferramenta de organização pessoal de escolhas eleitorais. O app não realiza votação oficial, não substitui a urna eletrônica, não representa tribunal eleitoral, partido, candidato, coligação, campanha ou órgão público.',
-          'Esta política se aplica ao uso do site, da PWA, das páginas legais, das telas de compartilhamento e dos recursos de autenticação, seleção, revisão, QR Code e armazenamento de preferências. Solicitações sobre privacidade podem ser enviadas para plano.voto@gmail.com.'
+          'O bomdevoto.com.br é uma ferramenta de organização pessoal de escolhas eleitorais. O app não realiza votação oficial, não substitui a urna eletrônica, não representa tribunal eleitoral, partido, candidato, coligação, campanha ou órgão público.',
+          'Esta política se aplica ao uso do site, da PWA, das páginas legais, das telas de compartilhamento e dos recursos de autenticação, seleção, revisão, QR Code e armazenamento de preferências. Solicitações sobre privacidade podem ser enviadas para contato.bomdevoto@gmail.com.'
         ]
       },
       {
@@ -246,7 +246,7 @@ export const LEGAL_PAGE_CONTENT = {
       {
         heading: 'Finalidades do tratamento',
         body: [
-          'Usamos dados para autenticar o usuário, manter a sessão, recuperar fluxo em andamento, exibir candidatos compatíveis com o estado, registrar escolhas feitas pelo usuário, impedir duplicidades, calcular ou exibir indicadores de viabilidade, gerar telas de revisão, QR Code de continuidade e compartilhamentos iniciados pelo próprio usuário.',
+          'Usamos dados para autenticar o usuário, manter a sessão, recuperar fluxo em andamento, exibir candidatos compatíveis com o estado, registrar escolhas feitas pelo usuário, impedir duplicidades, gerar telas de revisão, QR Code de continuidade e compartilhamentos iniciados pelo próprio usuário.',
           'Também usamos dados para manter estabilidade, corrigir erros, proteger contra fraude e acessos indevidos, atender solicitações de suporte, cumprir obrigações legais, responder a autoridades competentes e defender direitos do projeto, dos usuários ou de terceiros.'
         ]
       },
@@ -303,8 +303,8 @@ export const LEGAL_PAGE_CONTENT = {
         body: 'O usuário pode solicitar confirmação de tratamento, acesso, correção, anonimização, bloqueio, eliminação, portabilidade quando aplicável, informação sobre compartilhamento, informação sobre a possibilidade de negar consentimento, revogação de consentimento, revisão de decisões automatizadas quando existirem e oposição a tratamentos irregulares, observadas as exceções legais.'
       },
       {
-        heading: 'Decisões automatizadas e viabilidade',
-        body: 'Indicadores, notas, percentuais, ranking, destaque de candidato ou viabilidade são recursos de apoio à organização do voto e não representam decisão obrigatória, orientação oficial, garantia de resultado eleitoral ou decisão automatizada com efeito jurídico. O usuário mantém autonomia para pesquisar, comparar e decidir.'
+        heading: 'Indicadores e decisões automatizadas',
+        body: 'Notas, rankings e destaques de candidatos são recursos de apoio à organização do voto e não representam decisão obrigatória, orientação oficial, garantia de resultado eleitoral ou decisão automatizada com efeito jurídico. O usuário mantém autonomia para pesquisar, comparar e decidir.'
       },
       {
         heading: 'Transferência internacional',
@@ -320,7 +320,7 @@ export const LEGAL_PAGE_CONTENT = {
       },
       {
         heading: 'Canal de atendimento',
-        body: 'Solicitações relacionadas a privacidade, proteção de dados, exclusão de conta, revogação de consentimento ou exercício de direitos podem ser enviadas para plano.voto@gmail.com. Recomenda-se informar o email usado no login e descrever o pedido de forma objetiva para facilitar a validação da titularidade.'
+        body: 'Solicitações relacionadas a privacidade, proteção de dados, exclusão de conta, revogação de consentimento ou exercício de direitos podem ser enviadas para contato.bomdevoto@gmail.com. Recomenda-se informar o email usado no login e descrever o pedido de forma objetiva para facilitar a validação da titularidade.'
       },
       {
         heading: 'Atualizações',
@@ -332,7 +332,7 @@ export const LEGAL_PAGE_CONTENT = {
     title: 'LGPD',
     subtitle: 'Direitos do usuário e princípios de tratamento de dados pessoais.',
     meta: {
-      title: 'LGPD | nossovoto.org',
+      title: 'LGPD | bomdevoto.com.br',
       description: 'Direitos dos titulares, dados sensíveis, bases possíveis e governança de proteção de dados.',
       path: '/lgpd'
     },
@@ -350,7 +350,7 @@ export const LEGAL_PAGE_CONTENT = {
       },
       {
         heading: 'Princípios adotados',
-        body: 'O nossovoto.org deve seguir princípios como finalidade, adequação, necessidade, livre acesso, qualidade dos dados, transparência, segurança, prevenção, não discriminação e responsabilização. Na prática, isso significa tratar somente o necessário, explicar finalidades, proteger acessos, evitar usos incompatíveis e manter evidências de conformidade.'
+        body: 'O bomdevoto.com.br deve seguir princípios como finalidade, adequação, necessidade, livre acesso, qualidade dos dados, transparência, segurança, prevenção, não discriminação e responsabilização. Na prática, isso significa tratar somente o necessário, explicar finalidades, proteger acessos, evitar usos incompatíveis e manter evidências de conformidade.'
       },
       {
         heading: 'Papel do controlador e dos operadores',
@@ -380,9 +380,9 @@ export const LEGAL_PAGE_CONTENT = {
         body: 'O titular pode pedir confirmação da existência de tratamento, acesso, correção de dados incompletos ou desatualizados, anonimização, bloqueio ou eliminação de dados desnecessários ou tratados irregularmente, portabilidade quando aplicável, informação sobre compartilhamento, informação sobre consequências de negar consentimento, revogação de consentimento, oposição e revisão de decisões automatizadas quando existirem.'
       },
       {
-        heading: 'Como exercer seus direitos no nossovoto.org',
+        heading: 'Como exercer seus direitos no bomdevoto.com.br',
         body: [
-          '1. Envie um email para plano.voto@gmail.com.',
+          '1. Envie um email para contato.bomdevoto@gmail.com.',
           '2. Informe o email usado no login, se houver.',
           '3. Descreva o pedido: acesso, correção, exclusão, revogação, oposição ou outro direito.',
           '4. O app poderá solicitar informações adicionais para confirmar titularidade.'
@@ -410,7 +410,7 @@ export const LEGAL_PAGE_CONTENT = {
       },
       {
         heading: 'Canal de atendimento e ANPD',
-        body: 'Solicitações relacionadas à privacidade e proteção de dados podem ser enviadas para plano.voto@gmail.com. O titular também pode buscar orientação ou peticionar perante a Autoridade Nacional de Proteção de Dados quando entender que seus direitos não foram atendidos.'
+        body: 'Solicitações relacionadas à privacidade e proteção de dados podem ser enviadas para contato.bomdevoto@gmail.com. O titular também pode buscar orientação ou peticionar perante a Autoridade Nacional de Proteção de Dados quando entender que seus direitos não foram atendidos.'
       },
       {
         heading: 'Última atualização',
@@ -422,21 +422,21 @@ export const LEGAL_PAGE_CONTENT = {
     title: 'Termos de Uso',
     subtitle: 'Regras de uso do serviço, limites dos indicadores e responsabilidade do usuário.',
     meta: {
-      title: 'Termos de Uso | nossovoto.org',
-      description: 'Termos de uso do nossovoto.org e avisos sobre organização pessoal de escolhas eleitorais.',
+      title: 'Termos de Uso | bomdevoto.com.br',
+      description: 'Termos de uso do bomdevoto.com.br e avisos sobre organização pessoal de escolhas eleitorais.',
       path: '/termos-de-uso'
     },
     sections: [
       {
         heading: 'Aceitação dos termos',
-        body: 'Ao acessar ou usar o nossovoto.org, você declara que leu e concorda com estes termos, com a Política de Privacidade, com a Política de Cookies e com o Aviso Eleitoral. Se não concordar, não utilize o serviço.'
+        body: 'Ao acessar ou usar o bomdevoto.com.br, você declara que leu e concorda com estes termos, com a Política de Privacidade, com a Política de Cookies e com o Aviso Eleitoral. Se não concordar, não utilize o serviço.'
       },
       {
-        heading: 'O que é o nossovoto.org',
-        body: 'O nossovoto.org é uma ferramenta de organização pessoal de escolhas eleitorais. O app ajuda a selecionar estado, revisar candidatos, montar rascunho, continuar em outro dispositivo e compartilhar conteúdos quando o próprio usuário desejar.'
+        heading: 'O que é o bomdevoto.com.br',
+        body: 'O bomdevoto.com.br é uma ferramenta de organização pessoal de escolhas eleitorais. O app ajuda a selecionar estado, revisar candidatos, montar rascunho, continuar em outro dispositivo e compartilhar conteúdos quando o próprio usuário desejar.'
       },
       {
-        heading: 'O que o nossovoto.org não é',
+        heading: 'O que o bomdevoto.com.br não é',
         body: 'O app não realiza votação oficial, não substitui a urna eletrônica, não representa tribunal eleitoral, partido, candidato, coligação, campanha ou órgão público. O voto oficial deve ser realizado pelos meios determinados pela Justiça Eleitoral.'
       },
       {
@@ -456,8 +456,8 @@ export const LEGAL_PAGE_CONTENT = {
         body: 'O rascunho é uma ferramenta privada de organização. Ele pode ficar salvo no navegador, na conta ou em token temporário de continuidade, conforme o recurso usado. O usuário é responsável por revisar suas escolhas antes de salvar, compartilhar ou votar oficialmente fora do app.'
       },
       {
-        heading: 'Indicadores, notas e viabilidade',
-        body: 'Notas, rankings, destaques, percentuais de viabilidade e qualquer indicador exibido pelo app são recursos de apoio à organização e revisão do plano. Eles não representam garantia de resultado eleitoral, recomendação obrigatória, decisão automatizada com efeito jurídico ou orientação oficial de voto.'
+        heading: 'Indicadores e notas',
+        body: 'Notas, rankings, destaques e outros indicadores exibidos pelo app são recursos de apoio à organização e revisão do plano. Eles não representam garantia de resultado eleitoral, recomendação obrigatória, decisão automatizada com efeito jurídico ou orientação oficial de voto.'
       },
       {
         heading: 'Dados de candidatos e fontes públicas',
@@ -477,7 +477,7 @@ export const LEGAL_PAGE_CONTENT = {
       },
       {
         heading: 'Limitação de responsabilidade',
-        body: 'O usuário decide de forma autônoma. O nossovoto.org não garante eleição de candidato, resultado eleitoral, completude de dados públicos, funcionamento sem interrupções ou permanência de qualquer funcionalidade. Nada no app substitui pesquisa própria ou consulta a fontes oficiais.'
+        body: 'O usuário decide de forma autônoma. O bomdevoto.com.br não garante eleição de candidato, resultado eleitoral, completude de dados públicos, funcionamento sem interrupções ou permanência de qualquer funcionalidade. Nada no app substitui pesquisa própria ou consulta a fontes oficiais.'
       },
       {
         heading: 'Alterações no app',
@@ -489,7 +489,7 @@ export const LEGAL_PAGE_CONTENT = {
       },
       {
         heading: 'Contato',
-        body: 'Dúvidas, solicitações ou pedidos relacionados a privacidade, dados e uso do serviço podem ser enviados para plano.voto@gmail.com.'
+        body: 'Dúvidas, solicitações ou pedidos relacionados a privacidade, dados e uso do serviço podem ser enviados para contato.bomdevoto@gmail.com.'
       },
       {
         heading: 'Última atualização',
@@ -501,18 +501,18 @@ export const LEGAL_PAGE_CONTENT = {
     title: 'Aviso Eleitoral',
     subtitle: 'O app organiza um plano pessoal, mas não realiza votação oficial.',
     meta: {
-      title: 'Aviso Eleitoral | nossovoto.org',
-      description: 'Aviso de que o nossovoto.org não é órgão eleitoral, votação oficial ou substituto da urna eletrônica.',
+      title: 'Aviso Eleitoral | bomdevoto.com.br',
+      description: 'Aviso de que o bomdevoto.com.br não é órgão eleitoral, votação oficial ou substituto da urna eletrônica.',
       path: '/aviso-eleitoral'
     },
     sections: [
       {
         heading: 'Não somos órgão eleitoral',
-        body: 'O nossovoto.org não representa tribunal eleitoral, Justiça Eleitoral, partido, candidato, coligação, campanha, governo ou órgão público.'
+        body: 'O bomdevoto.com.br não representa tribunal eleitoral, Justiça Eleitoral, partido, candidato, coligação, campanha, governo ou órgão público.'
       },
       {
         heading: 'Não realizamos votação oficial',
-        body: 'O nossovoto.org não é um sistema oficial de votação. A ferramenta serve para organizar um plano pessoal de escolhas, revisar candidatos e facilitar a continuidade do rascunho.'
+        body: 'O bomdevoto.com.br não é um sistema oficial de votação. A ferramenta serve para organizar um plano pessoal de escolhas, revisar candidatos e facilitar a continuidade do rascunho.'
       },
       {
         heading: 'Não substituímos a urna eletrônica',
@@ -520,7 +520,7 @@ export const LEGAL_PAGE_CONTENT = {
       },
       {
         heading: 'Não garantimos eleição de candidato',
-        body: 'Indicadores, percentuais, notas, destaques ou viabilidade não garantem resultado eleitoral, não são pesquisa oficial e não substituem a decisão do eleitor.'
+        body: 'Indicadores, notas e destaques não garantem resultado eleitoral, não são pesquisa oficial e não substituem a decisão do eleitor.'
       },
       {
         heading: 'Não substituímos fontes oficiais',
@@ -544,7 +544,7 @@ export const LEGAL_PAGE_CONTENT = {
     title: 'Dados salvos neste dispositivo',
     subtitle: 'Entenda localStorage, cache PWA, dados offline e como apagar informações deste navegador.',
     meta: {
-      title: 'Dados no dispositivo | nossovoto.org',
+      title: 'Dados no dispositivo | bomdevoto.com.br',
       description: 'Explicação e controles para rascunho local, cache offline, cache de candidatos e permissões de cookies.',
       path: '/dados-no-dispositivo',
       noindex: true
@@ -596,7 +596,7 @@ export const LEGAL_PAGE_CONTENT = {
     title: 'Exclusão de conta e dados',
     subtitle: 'Caminhos para apagar dados locais, solicitar exclusão e remover dados eleitorais da conta.',
     meta: {
-      title: 'Excluir dados | nossovoto.org',
+      title: 'Excluir dados | bomdevoto.com.br',
       description: 'Página para exclusão de dados locais e dados eleitorais vinculados à conta.',
       path: '/excluir-dados',
       noindex: true
@@ -616,7 +616,7 @@ export const LEGAL_PAGE_CONTENT = {
       },
       {
         heading: 'Como solicitar exclusão',
-        body: 'Entre com o mesmo login usado no app e use o painel abaixo, ou envie solicitação para plano.voto@gmail.com informando o email usado no login e descrevendo o pedido.'
+        body: 'Entre com o mesmo login usado no app e use o painel abaixo, ou envie solicitação para contato.bomdevoto@gmail.com informando o email usado no login e descrevendo o pedido.'
       },
       {
         heading: 'Prazo estimado e titularidade',
@@ -632,8 +632,8 @@ export const LEGAL_PAGE_CONTENT = {
     title: 'Central de Privacidade',
     subtitle: 'Um lugar para revisar permissões, dados locais, exclusão e documentos legais.',
     meta: {
-      title: 'Central de Privacidade | nossovoto.org',
-      description: 'Central de controles de privacidade, cookies, dados do dispositivo e documentos legais do nossovoto.org.',
+      title: 'Central de Privacidade | bomdevoto.com.br',
+      description: 'Central de controles de privacidade, cookies, dados do dispositivo e documentos legais do bomdevoto.com.br.',
       path: '/central-de-privacidade',
       noindex: true
     },
@@ -648,7 +648,7 @@ export const LEGAL_PAGE_CONTENT = {
       },
       {
         heading: 'Contato',
-        body: 'Solicitações relacionadas a privacidade e proteção de dados podem ser enviadas para plano.voto@gmail.com.'
+        body: 'Solicitações relacionadas a privacidade e proteção de dados podem ser enviadas para contato.bomdevoto@gmail.com.'
       }
     ]
   },
@@ -656,8 +656,8 @@ export const LEGAL_PAGE_CONTENT = {
     title: 'Fornecedores e operadores',
     subtitle: 'Categorias de serviços técnicos que podem tratar dados para manter o app funcionando.',
     meta: {
-      title: 'Fornecedores | nossovoto.org',
-      description: 'Categorias de operadores, finalidades e dados possíveis no nossovoto.org.',
+      title: 'Fornecedores | bomdevoto.com.br',
+      description: 'Categorias de operadores, finalidades e dados possíveis no bomdevoto.com.br.',
       path: '/fornecedores'
     },
     sections: [
@@ -677,11 +677,11 @@ export const LEGAL_PAGE_CONTENT = {
   },
   sobre: {
     title: 'Sobre nós',
-    subtitle: 'Conheça o propósito do projeto nossovoto e experimente o plano antes de criar uma conta.',
+    subtitle: 'Conheça o propósito do Bom de Voto e experimente o plano antes de criar uma conta.',
     sections: [
       {
         heading: 'Objetivo do projeto',
-        body: 'O nossovoto nasceu para ajudar pessoas a organizar escolhas eleitorais de forma simples, consciente e acessível. A ferramenta não substitui sua pesquisa: ela cria um espaço claro para comparar nomes, montar um plano e revisar a combinação antes da decisão final.'
+        body: 'O Bom de Voto nasceu para ajudar pessoas a organizar escolhas eleitorais de forma simples, consciente e acessível. A ferramenta não substitui sua pesquisa: ela cria um espaço claro para comparar nomes, montar um plano e revisar a combinação antes da decisão final.'
       },
       {
         heading: 'Como funciona o plano',
@@ -701,11 +701,11 @@ export const LEGAL_PAGE_CONTENT = {
       },
       {
         heading: 'Quando o login é necessário',
-        body: 'Login é necessário para salvar o rascunho na sua conta, recuperar escolhas em outro dispositivo e acessar recursos personalizados, como campo de viabilidade, destaque especial e análise individual.'
+        body: 'Login é necessário para salvar o rascunho na sua conta, recuperar escolhas em outro dispositivo e acessar recursos personalizados, como notas e análise individual.'
       },
       {
         heading: 'Canal oficial',
-        body: 'O único canal de contato exibido pelo sistema é o email plano.voto@gmail.com.'
+        body: 'O único canal de contato exibido pelo sistema é o email contato.bomdevoto@gmail.com.'
       }
     ]
   }

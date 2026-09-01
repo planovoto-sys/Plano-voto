@@ -78,6 +78,48 @@
   display: flex;
 }
 
+.app-footer__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.app-footer__install {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #16a34a 0%, #57b83f 58%, #8dc63f 100%);
+  color: #ffffff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(22, 163, 74, 0.2);
+  transition: transform 180ms ease, filter 180ms ease, box-shadow 180ms ease;
+}
+
+.app-footer__install svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.4;
+}
+
+.app-footer__install:hover,
+.app-footer__install:focus-visible {
+  filter: brightness(0.94) saturate(1.08);
+  box-shadow: 0 11px 26px rgba(22, 163, 74, 0.28);
+}
+
+.app-footer__install:active {
+  transform: scale(0.97);
+}
+
 .app-footer__contact a {
   display: inline-flex;
   align-items: center;
@@ -126,6 +168,171 @@
   margin: 34px 0 0;
 }
 
+.app-install-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 18px 12px max(18px, env(safe-area-inset-bottom, 0px));
+  background: rgba(7, 18, 10, 0.52);
+  backdrop-filter: blur(6px);
+  animation: app-install-overlay-in 180ms ease both;
+}
+
+.app-install-dialog {
+  position: relative;
+  width: min(100%, 460px);
+  max-height: min(88dvh, 720px);
+  overflow-y: auto;
+  padding: 28px 22px 22px;
+  border: 1px solid rgba(22, 163, 74, 0.12);
+  border-radius: 24px;
+  background: #ffffff;
+  color: #172019;
+  box-shadow: 0 28px 70px rgba(7, 18, 10, 0.22);
+  animation: app-install-dialog-in 260ms cubic-bezier(.2, .8, .2, 1) both;
+}
+
+.app-install-dialog__close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #f1f5ef;
+  color: #3f4b42;
+  cursor: pointer;
+}
+
+.app-install-dialog__close svg {
+  width: 19px;
+  height: 19px;
+}
+
+.app-install-dialog__icon {
+  width: 50px;
+  height: 50px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 14px;
+  border-radius: 16px;
+  background: #e8f0e6;
+  color: #0b6b3a;
+}
+
+.app-install-dialog__icon svg {
+  width: 27px;
+  height: 27px;
+}
+
+.app-install-dialog h2 {
+  margin: 0 44px 7px 0;
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -0.035em;
+}
+
+.app-install-dialog > p {
+  margin: 0 0 18px;
+  color: #627067;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.app-install-dialog__notice {
+  margin-bottom: 14px;
+  padding: 11px 13px;
+  border-radius: 12px;
+  background: #fff7d9;
+  color: #5f4b00;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.app-install-steps {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.app-install-steps li {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 11px;
+  align-items: center;
+  padding: 11px;
+  border: 1px solid #e5ebe3;
+  border-radius: 14px;
+  background: #f9fbf8;
+}
+
+.app-install-steps li > span {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: #e8f0e6;
+  color: #0b6b3a;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.app-install-steps li > span svg {
+  width: 19px;
+  height: 19px;
+}
+
+.app-install-steps li div {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.app-install-steps strong {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.app-install-steps small {
+  color: #667169;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.app-install-dialog__done {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 18px;
+  border: 0;
+  border-radius: 14px;
+  background: #16a34a;
+  color: #ffffff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+@keyframes app-install-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes app-install-dialog-in {
+  from { opacity: 0; transform: translateY(22px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 @media (min-width: 768px) {
   .app-footer__inner {
     display: grid;
@@ -155,6 +362,11 @@
     justify-self: end;
   }
 
+  .app-footer__actions {
+    align-items: flex-end;
+    justify-self: end;
+  }
+
   .app-footer__copyright {
     grid-column: 1 / -1;
   }
@@ -162,6 +374,21 @@
   .app-footer--scroll-content {
     display: block;
     margin: clamp(42px, 6vw, 72px) calc(var(--screen-gutter) * -1) -36px;
+  }
+}
+
+@media (min-width: 640px) {
+  .app-install-overlay {
+    align-items: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-footer__install,
+  .app-install-overlay,
+  .app-install-dialog {
+    transition: none;
+    animation: none;
   }
 }
 

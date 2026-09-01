@@ -223,53 +223,7 @@
 }
 
 /* ==========================================================================
-   2. BARRA DE VIABILIDADE (TERMÔMETRO)
-   ========================================================================== */
-.candidate-card__viability-row {
-  display: flex;
-  align-items: center; 
-  gap: 14px; 
-}
-
-.candidate-card__bar-container {
-  flex: 1;
-  /* AJUSTE DO TERMÔMETRO: Reduzido de 16px para 12px (um visual muito mais equilibrado) */
-  height: 12px; 
-  background: var(--card-gray-track);
-  border-radius: 99px;
-  position: relative;
-  overflow: hidden;
-}
-
-.candidate-card__bar-fill {
-  height: 100%;
-  border-radius: 99px;
-  transition: width 0.8s cubic-bezier(0.2, 0.8, 0.18, 1), background-color 0.3s ease;
-}
-
-.tone-good .candidate-card__bar-fill { background: var(--card-green); }
-.tone-bad .candidate-card__bar-fill { background: var(--card-red); }
-
-.candidate-card__viability-percent {
-  font-family: var(--font-family);
-  font-size: 16px; 
-  font-weight: 800;
-  color: #111111;
-  min-width: 44px;
-  text-align: right;
-  line-height: 1;
-  display: flex;
-  align-items: center; 
-  justify-content: flex-end;
-  transform: none; 
-  transition: color 0.3s ease;
-}
-
-.candidate-card__viability-percent.is-green { color: var(--brand-green-dark); }
-.candidate-card__viability-percent.is-red { color: var(--card-red); }
-
-/* ==========================================================================
-   1 e 2 e 3. TAGS INFERIORES RESPONSIVAS E ACHATADAS
+   2. TAGS INFERIORES RESPONSIVAS E ACHATADAS
    ========================================================================== */
 .candidate-card__tags-row {
   display: flex;
@@ -442,8 +396,4 @@
   .tag-score-title { font-size: 11px; }
   .tag-eval-text { font-size: 11px; }
 
-  .candidate-card__viability-percent {
-    font-size: 14px;
-    min-width: 40px;
-  }
 }

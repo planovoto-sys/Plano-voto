@@ -9,10 +9,23 @@ import {
 import { ACTIVE_ELECTION_ID } from '@/shared/constants/ballot';
 import { STATE_NAMES } from '@/shared/constants/states';
 import { db } from '@/shared/firebase/firebase';
+import { getSupabaseClient } from '@/shared/supabase/client';
 import { normalizeSearch } from '@/shared/utils/search';
 import { normalizeStateCode } from '@/shared/utils/state';
 
-const PUBLIC_CACHE_VERSION = 'v7';
+const defaultCandidateProvider = (
+  String(import.meta.env.VITE_AUTH_PROVIDER || '').trim().toLowerCase() === 'supabase'
+  || Boolean(import.meta.env.VITE_SUPABASE_URL)
+)
+  ? 'supabase'
+  : 'firebase';
+const configuredCandidateProvider = String(import.meta.env.VITE_CANDIDATE_PROVIDER || defaultCandidateProvider)
+  .trim()
+  .toLowerCase();
+const usesSupabaseCandidates = configuredCandidateProvider === 'supabase';
+const SUPABASE_PAGE_SIZE = 1000;
+// Invalida listas salvas antes da carga de notas individuais no Supabase.
+const PUBLIC_CACHE_VERSION = 'v10';
 const CACHE_PREFIX = `meuvoto:public-cache:${PUBLIC_CACHE_VERSION}`;
 const CANDIDATE_CACHE_MAX_AGE_MS = 12 * 60 * 60 * 1000;
 const CANDIDATE_CACHE_MAX_STALE_MS = 7 * 24 * 60 * 60 * 1000;
@@ -163,6 +176,9 @@ const buildPartyLookup = (parties) => {
   parties.forEach((party) => {
     const normalizedParty = {
       ...party,
+      ...(party.legacy_data || {}),
+      sigla: party.acronym || party.sigla,
+      nome: party.name || party.nome,
       nota: getPartyScore(party)
     };
 
@@ -194,11 +210,22 @@ const fetchPartyLookup = async () => {
   }
 
   try {
-    const partySnapshot = await getDocs(collection(db, PARTY_COLLECTION));
-    const parties = partySnapshot.docs.map((partyDoc) => ({
-      id: partyDoc.id,
-      ...partyDoc.data()
-    }));
+    let parties;
+    if (usesSupabaseCandidates) {
+      const { data, error } = await getSupabaseClient()
+        .from('parties')
+        .select('id, acronym, name, score, legacy_data')
+        .eq('public_visible', true)
+        .order('acronym');
+      if (error) throw error;
+      parties = data || [];
+    } else {
+      const partySnapshot = await getDocs(collection(db, PARTY_COLLECTION));
+      parties = partySnapshot.docs.map((partyDoc) => ({
+        id: partyDoc.id,
+        ...partyDoc.data()
+      }));
+    }
 
     writeCacheEntry(partyCacheKey(), parties);
     return buildPartyLookup(parties);
@@ -266,12 +293,42 @@ const enrichCandidateWithPartyScore = (candidate, partyLookup) => {
     party_score_source: candidate.party_score_source ?? 'partidos_politicos'
   };
 
-  if (!incomingCandidate) return candidateWithPartyScore;
+  if (!incomingCandidate && candidateWithPartyScore.temNotaCandidato !== false) {
+    return candidateWithPartyScore;
+  }
 
   return {
     ...candidateWithPartyScore,
     nota_final: partyScore,
     notaFinal: partyScore
+  };
+};
+
+const mapSupabaseCandidateRow = (row) => {
+  const legacyData = row.legacy_data || {};
+  const candidateScore = readNumericValue(row.scores?.candidate, legacyData.nota);
+  const partyAcronym = row.party_id || legacyData.partido_sigla || '';
+
+  return {
+    ...legacyData,
+    id: row.id,
+    nome: row.name,
+    cargo: row.office,
+    uf: row.state,
+    estado: STATE_NAMES[row.state]?.toUpperCase() || row.state,
+    partido: legacyData.partido_nome || partyAcronym,
+    partido_sigla: partyAcronym,
+    sigla_partido: partyAcronym,
+    numero: row.number,
+    numero_candidato: row.number,
+    imagem: row.image_url || legacyData.imagem || '',
+    scores: row.scores || {},
+    nota_candidato: candidateScore,
+    notaCandidato: candidateScore,
+    temNotaCandidato: candidateScore !== null,
+    tem_nota_candidato: candidateScore !== null,
+    nota_final: candidateScore,
+    notaFinal: candidateScore,
   };
 };
 
@@ -321,6 +378,37 @@ export const fetchCandidatesByOffice = async (officeName, estado = null) => {
   const activeState = normalizeStateCode(estado);
   const storedState = STATE_NAMES[activeState]?.toUpperCase() || activeState;
   let candidateDocs = [];
+
+  if (usesSupabaseCandidates) {
+    const supabase = getSupabaseClient();
+    const rows = [];
+
+    for (let offset = 0; ; offset += SUPABASE_PAGE_SIZE) {
+      let request = supabase
+        .from('candidates')
+        .select('id, name, office, state, party_id, number, slug, image_url, scores, legacy_data')
+        .eq('election_id', ACTIVE_ELECTION_ID)
+        .eq('office', officeName)
+        .eq('public_visible', true)
+        .order('name')
+        .range(offset, offset + SUPABASE_PAGE_SIZE - 1);
+
+      if (activeState) request = request.eq('state', activeState);
+
+      const { data, error } = await request;
+      if (error) throw error;
+      rows.push(...(data || []));
+      if (!data || data.length < SUPABASE_PAGE_SIZE) break;
+    }
+
+    const partyLookup = await partyLookupPromise;
+    const candidates = rows
+      .map(mapSupabaseCandidateRow)
+      .map((candidate) => enrichCandidateWithPartyScore(candidate, partyLookup));
+
+    writeCacheEntry(candidateCacheKey(officeName, activeState), candidates);
+    return candidates;
+  }
 
   if (activeState) {
     const stateQueries = [
@@ -414,6 +502,29 @@ export const fetchStateChoiceCounts = async (states = [], { forceRefresh = false
     }
   });
 
+  if (usesSupabaseCandidates && statesToFetch.length > 0) {
+    const { data, error } = await getSupabaseClient()
+      .from('state_choice_metrics')
+      .select('state, user_count')
+      .eq('election_id', ACTIVE_ELECTION_ID)
+      .in('state', statesToFetch);
+    if (error) throw error;
+
+    const rowsByState = new Map((data || []).map((row) => [row.state, row]));
+    statesToFetch.forEach((stateCode) => {
+      const activeVoters = Math.max(0, Number(rowsByState.get(stateCode)?.user_count) || 0);
+      const metric = {
+        schema_version: 1,
+        election_id: ACTIVE_ELECTION_ID,
+        state: stateCode,
+        active_voters: activeVoters,
+      };
+      counts.set(stateCode, metric);
+      writeCacheEntry(stateChoiceCacheKey(stateCode), metric);
+    });
+    return counts;
+  }
+
   await Promise.all(statesToFetch.map(async (stateCode) => {
     const metricSnap = await getDoc(doc(
       db,
@@ -506,6 +617,58 @@ export const fetchCandidateTallies = async (candidateTargets, { forceRefresh = f
       targetsToFetch.push(target);
     }
   });
+
+  if (usesSupabaseCandidates && targetsToFetch.length > 0) {
+    const supabase = getSupabaseClient();
+    const tallyRows = [];
+    const targetStates = [...new Set(targetsToFetch.map((target) => target.estado).filter(Boolean))];
+
+    // Consultar pelo estado evita URLs gigantes quando uma UF possui mais de mil candidatos.
+    for (const stateCode of targetStates) {
+      for (let offset = 0; ; offset += SUPABASE_PAGE_SIZE) {
+        const { data, error } = await supabase
+          .from('selection_tallies')
+          .select('candidate_id, state, selection_count')
+          .eq('election_id', ACTIVE_ELECTION_ID)
+          .eq('state', stateCode)
+          .order('candidate_id')
+          .range(offset, offset + SUPABASE_PAGE_SIZE - 1);
+        if (error) throw error;
+        tallyRows.push(...(data || []));
+        if (!data || data.length < SUPABASE_PAGE_SIZE) break;
+      }
+    }
+
+    const targetsWithoutState = targetsToFetch.filter((target) => !target.estado);
+    const idsWithoutState = [...new Set(targetsWithoutState.map((target) => target.id))];
+    const idBatchSize = 25;
+    for (let offset = 0; offset < idsWithoutState.length; offset += idBatchSize) {
+      const idBatch = idsWithoutState.slice(offset, offset + idBatchSize);
+      const { data, error } = await supabase
+        .from('selection_tallies')
+        .select('candidate_id, state, selection_count')
+        .eq('election_id', ACTIVE_ELECTION_ID)
+        .in('candidate_id', idBatch);
+      if (error) throw error;
+      tallyRows.push(...(data || []));
+    }
+
+    targetsToFetch.forEach((target) => {
+      const activeSelections = tallyRows
+        .filter((row) => row.candidate_id === target.id && (!target.estado || row.state === target.estado))
+        .reduce((total, row) => total + Math.max(0, Number(row.selection_count) || 0), 0);
+      const tally = {
+        schema_version: 1,
+        election_id: ACTIVE_ELECTION_ID,
+        candidate_id: target.id,
+        state: target.estado || null,
+        active_selections: activeSelections,
+      };
+      tallies.set(target.id, tally);
+      writeCacheEntry(tallyCacheKey(target.id, target.estado), tally);
+    });
+    return tallies;
+  }
 
   for (const target of targetsToFetch) {
     let activeSelections = 0;

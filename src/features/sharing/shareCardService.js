@@ -1,6 +1,5 @@
 import {
   formatScore,
-  getCandidateChance,
   getCandidateName,
   getCandidateSystemScore
 } from '@/shared/utils/candidateMetrics';
@@ -56,12 +55,12 @@ export const SHARE_CARD_TEMPLATES = [
   },
   {
     id: 'termometro',
-    label: 'Termômetros',
-    shortLabel: 'Termômetros',
-    thumbnailTitle: '33% viabilidade',
-    thumbnailSubtitle: '7,61 média',
+    label: 'Avaliação',
+    shortLabel: 'Avaliação',
+    thumbnailTitle: '7,61 média',
+    thumbnailSubtitle: 'Notas do plano',
     tag: 'Visual',
-    description: 'Viabilidade e média'
+    description: 'Média das notas'
   },
   {
     id: 'checklist',
@@ -93,16 +92,7 @@ export const getShareScoreBand = (value) => {
   return 'Sem nota';
 };
 
-export const getShareChanceBand = (value) => {
-  const chance = typeof value === 'number' ? value : getCandidateChance(value);
-
-  if (chance >= 70) return 'Alta';
-  if (chance >= 35) return 'Média';
-  if (chance > 0) return 'Baixa';
-  return 'Baixa';
-};
-
-const getProfile = ({ averageScore, averageChance, renovationRatio, mandateRatio }) => {
+const getProfile = ({ averageScore, renovationRatio, mandateRatio }) => {
   if (renovationRatio >= 0.67) {
     return {
       title: 'Renovador',
@@ -111,7 +101,7 @@ const getProfile = ({ averageScore, averageChance, renovationRatio, mandateRatio
     };
   }
 
-  if (mandateRatio >= 0.67 && averageChance >= 50) {
+  if (mandateRatio >= 0.67) {
     return {
       title: 'Conservador de mandato',
       summary: 'Você valorizou nomes já avaliados e com histórico conhecido.',
@@ -119,43 +109,27 @@ const getProfile = ({ averageScore, averageChance, renovationRatio, mandateRatio
     };
   }
 
-  if (averageChance >= 70 && averageScore >= 7) {
-    return {
-      title: 'Estratégico',
-      summary: 'Você combinou viabilidade real de eleição com avaliação positiva.',
-      priorities: ['Mais viabilidade de eleição', 'Boa avaliação', 'Menor risco de desperdiçar voto']
-    };
-  }
-
   if (averageScore >= 8.2) {
     return {
       title: 'Técnico',
-      summary: 'Você priorizou avaliação forte antes de olhar só para viabilidade.',
+      summary: 'Você priorizou candidatos com avaliação forte.',
       priorities: ['Nota alta', 'Critério técnico', 'Comparação objetiva']
     };
   }
 
-  if (averageChance >= 80) {
+  if (averageScore >= 7.5) {
     return {
-      title: 'Voto útil',
-      summary: 'Você concentrou suas escolhas em nomes com viabilidade elevada.',
-      priorities: ['Viabilidade alta', 'Decisão pragmática', 'Segurança eleitoral']
+      title: 'Criterioso',
+      summary: 'Você concentrou suas escolhas em nomes bem avaliados.',
+      priorities: ['Boa avaliação', 'Comparação objetiva', 'Escolha consciente']
     };
   }
 
-  if (averageChance < 35 && averageScore >= 7) {
-    return {
-      title: 'Ousado',
-      summary: 'Você aceitou mais risco para defender candidatos bem avaliados.',
-      priorities: ['Boa avaliação', 'Convicção', 'Menos foco em favoritismo']
-    };
-  }
-
-  if (averageScore >= 7 && averageChance >= 35) {
+  if (averageScore >= 7) {
     return {
       title: 'Equilibrado',
-      summary: 'Você misturou avaliação e viabilidade sem depender de um único critério.',
-      priorities: ['Equilíbrio', 'Boa avaliação', 'Viabilidade moderada']
+      summary: 'Você comparou as avaliações sem depender de um único critério.',
+      priorities: ['Equilíbrio', 'Boa avaliação', 'Escolha consciente']
     };
   }
 
@@ -171,16 +145,14 @@ export const createShareAnalysis = (shareData) => {
   const senadores = shareData?.senadores || [];
   const selectedCandidates = [deputado, ...senadores].filter(Boolean);
   const scores = selectedCandidates.map((candidate) => getCandidateSystemScore(candidate)).filter((score) => score > 0);
-  const chances = selectedCandidates.map((candidate) => getCandidateChance(candidate));
   const averageScore = average(scores);
-  const averageChance = average(chances);
   const renovationRatio = selectedCandidates.length
     ? selectedCandidates.filter((candidate) => !hasCandidateScore(candidate)).length / selectedCandidates.length
     : 0;
   const mandateRatio = selectedCandidates.length
     ? selectedCandidates.filter((candidate) => hasCandidateScore(candidate) && getCandidateSystemScore(candidate) > 0).length / selectedCandidates.length
     : 0;
-  const profile = getProfile({ averageScore, averageChance, renovationRatio, mandateRatio });
+  const profile = getProfile({ averageScore, renovationRatio, mandateRatio });
   const deputadoName = getCandidateName(deputado);
   const senatorNames = senadores.map((candidate) => getCandidateName(candidate)).filter(Boolean);
 
@@ -197,14 +169,10 @@ export const createShareAnalysis = (shareData) => {
     selectedCandidates,
     completedCount: selectedCandidates.length,
     averageScore,
-    averageChance,
     averageScoreLabel: averageScore > 0 ? formatScore(averageScore) : '--',
-    averageChanceLabel: `${Math.round(clamp(averageChance))}%`,
     scoreBand: getShareScoreBand(averageScore),
-    chanceBand: getShareChanceBand(averageChance),
     profile,
     termometer: {
-      security: Math.round(clamp(averageChance)),
       technical: Math.round(clamp(averageScore * 10)),
       completion: Math.round(clamp((selectedCandidates.length / 3) * 100)),
       privacy: 100
@@ -223,7 +191,7 @@ const getTemplateLines = (templateId, analysis) => {
       'Tudo em um card',
       `${analysis.estadoNome} • ${analysis.year}`,
       `${analysis.averageScoreLabel} média de nota`,
-      `${analysis.averageChanceLabel} viabilidade`,
+      `${analysis.completedCount}/3 escolhas definidas`,
       'Monte o seu também',
       'Bom de Voto'
     ];
@@ -245,10 +213,10 @@ const getTemplateLines = (templateId, analysis) => {
 
   if (templateId === 'termometro') {
     return [
-      'Indicadores do plano',
-      `${analysis.averageChanceLabel} Viabilidade geral`,
+      'Avaliação do plano',
       `${analysis.averageScoreLabel} Média das notas`,
-      'Indicadores de apoio para revisar o plano.',
+      `${analysis.completedCount}/3 escolhas definidas`,
+      'Informações de apoio para revisar o plano.',
       'Monte o seu também',
       'Bom de Voto'
     ];
@@ -439,7 +407,7 @@ const drawCanvasVisualPanel = (context, templateId, analysis, x, y, width, heigh
   if (templateId === 'termometro') {
     const tileWidth = (width - 108) / 2;
     drawCanvasVisualItem(context, x + 42, y + 42, tileWidth, height - 84, 'Nota', analysis.scoreBand, analysis.averageScore * 10);
-    drawCanvasVisualItem(context, x + 66 + tileWidth, y + 42, tileWidth, height - 84, 'Viabilidade', analysis.chanceBand, analysis.averageChance);
+    drawCanvasVisualItem(context, x + 66 + tileWidth, y + 42, tileWidth, height - 84, 'Escolhas', `${analysis.completedCount}/3 definidas`);
     return;
   }
 
@@ -584,7 +552,7 @@ const drawShareCanvas = (templateId, analysis, canvas) => {
     drawCanvasTitle(context, 'Resumo geral', 'Tudo em um card', 624, contentX, contentWidth);
     const statWidth = (contentWidth - 28) / 2;
     drawCanvasStat(context, contentX, 916, statWidth, 'MÉDIA DE NOTA', analysis.averageScoreLabel, analysis.averageScore * 10);
-    drawCanvasStat(context, contentX + statWidth + 28, 916, statWidth, 'VIABILIDADE', analysis.averageChanceLabel, analysis.averageChance);
+    drawCanvasStat(context, contentX + statWidth + 28, 916, statWidth, 'ESCOLHAS', `${analysis.completedCount}/3`, (analysis.completedCount / 3) * 100);
   } else if (templateId === 'completo') {
     const senatorOne = analysis.senatorNames[0] || 'Senador 1 definido';
     const senatorTwo = analysis.senatorNames[1] || 'Senador 2 definido';
@@ -595,9 +563,9 @@ const drawShareCanvas = (templateId, analysis, canvas) => {
       { text: `Senador: ${senatorTwo}`, color: SHARE_COLORS.cardText }
     ], contentX, 770, contentWidth, rowOptions);
   } else if (templateId === 'termometro') {
-    drawCanvasTitle(context, 'Indicadores do plano', 'Nota e viabilidade', 594, contentX, contentWidth);
+    drawCanvasTitle(context, 'Avaliação do plano', 'Nota média e escolhas', 594, contentX, contentWidth);
     drawCanvasStat(context, contentX, 846, 405, 'MÉDIA DE NOTA', analysis.averageScoreLabel, analysis.averageScore * 10);
-    drawCanvasStat(context, contentX + 451, 846, 405, 'VIABILIDADE', analysis.averageChanceLabel, analysis.averageChance);
+    drawCanvasStat(context, contentX + 451, 846, 405, 'ESCOLHAS', `${analysis.completedCount}/3`, (analysis.completedCount / 3) * 100);
   } else {
     drawCanvasTitle(context, 'Checklist do plano', 'Sem nomes de candidatos', 566, contentX, contentWidth);
     drawInfoRows(context, [

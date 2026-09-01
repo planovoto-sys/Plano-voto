@@ -28,8 +28,9 @@ const buildPortableDraft = (draft) => {
   const normalizedDraft = normalizeDraft(draft);
 
   return {
-    v: 2,
+    v: 3,
     e: normalizedDraft.estado,
+    p: normalizedDraft.candidate_groups.presidente.map((candidate) => candidate.id).filter(Boolean),
     d: normalizedDraft.candidate_groups.deputado_federal.map((candidate) => candidate.id).filter(Boolean),
     s: normalizedDraft.candidate_groups.senadores_1.map((candidate) => candidate.id).filter(Boolean)
   };
@@ -50,20 +51,30 @@ const decodeCandidateIds = (value = '') => (
 const encodeCompactPayload = (draft) => {
   const portableDraft = buildPortableDraft(draft);
   return [
-    '2',
+    '3',
     encodePayloadPart(portableDraft.e),
+    encodeCandidateIds(portableDraft.p),
+    encodeCandidateIds(portableDraft.s),
     encodeCandidateIds(portableDraft.d),
-    encodeCandidateIds(portableDraft.s)
   ].join('|');
 };
 
 const decodeCompactPayload = (payload) => {
-  const [version, estado, deputadoIds = '', senadorIds = ''] = String(payload || '').split('|');
-  if (version !== '2') return null;
+  const parts = String(payload || '').split('|');
+  const [version, estado] = parts;
+  if (!['2', '3'].includes(version)) return null;
+  const [presidenteIds, senadorIds, deputadoIds] = version === '3'
+    ? [parts[2] || '', parts[3] || '', parts[4] || '']
+    : ['', parts[3] || '', parts[2] || ''];
 
   return normalizeDraft({
     estado: decodePayloadPart(estado),
     candidate_groups: {
+      presidente: decodeCandidateIds(presidenteIds).map((candidateId) => ({
+        id: candidateId,
+        cargo: 'Presidente',
+        estado: 'TODOS'
+      })),
       deputado_federal: decodeCandidateIds(deputadoIds).map((candidateId) => ({
         id: candidateId,
         cargo: 'Deputado Federal',
@@ -131,6 +142,31 @@ export const readLocalPlanHandoffDraft = (hash = '') => {
   if (compactDraft?.estado) return compactDraft;
 
   const parsedDraft = JSON.parse(decodeBase64Url(decodeURIComponent(payload)));
+  if (parsedDraft?.v === 3) {
+    return normalizeDraft({
+      estado: parsedDraft.e,
+      candidate_groups: {
+        presidente: (parsedDraft.p || []).map((candidateId) => ({
+          id: candidateId,
+          cargo: 'Presidente',
+          estado: 'TODOS'
+        })),
+        deputado_federal: (parsedDraft.d || []).map((candidateId) => ({
+          id: candidateId,
+          cargo: 'Deputado Federal',
+          estado: parsedDraft.e
+        })),
+        senadores_1: (parsedDraft.s || []).map((candidateId) => ({
+          id: candidateId,
+          cargo: 'Senador',
+          estado: parsedDraft.e
+        })),
+        senadores_2: []
+      },
+      updated_at: parsedDraft.u || null
+    }, parsedDraft.e);
+  }
+
   if (parsedDraft?.v === 2) {
     return normalizeDraft({
       estado: parsedDraft.e,

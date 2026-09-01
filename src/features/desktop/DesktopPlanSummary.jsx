@@ -54,7 +54,6 @@ export default function DesktopPlanSummary({
   estadoSigla,
   estadoNome,
   averageScore,
-  averageChance,
   deputadosFederais,
   senadores,
   hasCompletePlan,
@@ -63,7 +62,6 @@ export default function DesktopPlanSummary({
 }) {
   const handoff = useDesktopHandoff(draft);
   const scoreLabel = averageScore > 0 ? formatScore(averageScore) : '--';
-  const chanceLabel = `${Math.round(averageChance)}%`;
   const missingText = !estadoSigla
     ? 'Escolha seu estado para iniciar o plano.'
     : (!deputadosFederais.length
@@ -90,7 +88,6 @@ export default function DesktopPlanSummary({
           <div className="desktop-summary-tiles" aria-label="Resumo do plano">
             <SummaryTile label="Estado" value={estadoSigla || '--'} caption={estadoSigla ? estadoNome : 'Troque ou escolha'} />
             <SummaryTile label="Nota média" value={scoreLabel} caption="Média do plano" />
-            <SummaryTile label="Viabilidade" value={chanceLabel} caption="Estimativa salva" />
           </div>
 
           <div className={`desktop-plan-status ${hasCompletePlan ? 'is-complete' : 'is-incomplete'}`}>

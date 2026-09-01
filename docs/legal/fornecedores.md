@@ -9,6 +9,6 @@
 | Funções serverless | Operações seguras, QR Code e exclusão | UID, rascunho mínimo, tokens, logs técnicos | Vercel Functions |
 | Hospedagem | Servir site/PWA | Registros técnicos de acesso | Firebase Hosting, Vercel ou ambiente configurado |
 | Monitoramento e analytics opcionais | Diagnóstico e uso agregado | Eventos técnicos, erros e métricas | Conforme configuração e consentimento |
-| Email e suporte | Atendimento de solicitações | Email e conteúdo enviado | plano.voto@gmail.com |
+| Email e suporte | Atendimento de solicitações | Email e conteúdo enviado | contato.bomdevoto@gmail.com |
 
 Novos fornecedores, integrações de marketing, analytics ou parceiros devem passar por revisão de privacidade antes da ativação.

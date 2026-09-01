@@ -8,8 +8,10 @@ import NotificationProvider from '@/features/notifications/NotificationProvider'
 import { UserProvider } from '@/app/providers/UserProvider';
 import { installFlowDebugTools } from '@/shared/utils/debugFlow';
 import { registerPwaServiceWorker } from '@/pwa/registerServiceWorker';
+import { initializePwaInstallPrompt } from '@/pwa/installPrompt';
 
 installFlowDebugTools();
+initializePwaInstallPrompt();
 registerPwaServiceWorker();
 
 createRoot(document.getElementById('root')).render(

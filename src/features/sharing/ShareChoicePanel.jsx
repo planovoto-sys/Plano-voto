@@ -1,20 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Copy, Heart, Link2, Rocket, Send, ShieldCheck, Users, X } from 'lucide-react';
-import QRCode from 'qrcode';
+import { Heart, Link2, Rocket, Send, ShieldCheck, Users, X } from 'lucide-react';
 import { useNotify } from '@/features/notifications/useNotify';
 import { APP_SHARE_URL } from '@/features/sharing/shareCardService';
 
 import './ShareChoicePanel.css';
 
-const INVITE_MESSAGE = 'Você é bom de voto? Tem certeza?\nConheça o Bom de Voto!';
-
-const DONATION_DATA = {
-  pixKey: 'pix.ficticio@bomdevoto.com.br',
-  pixName: 'Bom de Voto'
-};
-
-const PIX_PAYLOAD = `00020126580014BR.GOV.BCB.PIX0136${DONATION_DATA.pixKey}5204000053039865802BR5911BOM DE VOTO6009SAO PAULO6304FFFF`;
+const INVITE_MESSAGE = '🫵 Você é bom de voto?\n\n🤨 Tem certeza?\n\n👉 https://bomdevoto.com.br';
+const DONATION_URL = 'https://www.kickante.com.br/vaquinha-online/voce-e-bom-de-voto/pagamento?action=securePix';
 
 function FacebookIcon({ size = 20 }) {
   return (
@@ -37,63 +30,6 @@ function XSocialIcon({ size = 20 }) {
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
       <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
     </svg>
-  );
-}
-
-function DonationPaymentSheet({ isOpen, onClose }) {
-  const notify = useNotify();
-  const canvasRef = useRef(null);
-
-  useEffect(() => {
-    if (!isOpen || typeof document === 'undefined') return undefined;
-
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    return () => {
-      document.body.style.overflow = prevOverflow;
-    };
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen || !canvasRef.current) return undefined;
-    QRCode.toCanvas(canvasRef.current, PIX_PAYLOAD, {
-      width: 220,
-      margin: 1,
-      color: {
-        dark: '#1d1d1d',
-        light: '#ffffff'
-      }
-    });
-    return undefined;
-  }, [isOpen]);
-
-  const handleCopyPixKey = async () => {
-    try {
-      await navigator.clipboard.writeText(DONATION_DATA.pixKey);
-      notify.success('Chave Pix copiada!');
-    } catch {
-      notify.error('Não foi possível copiar a chave Pix. Tente novamente.');
-    }
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="sp-payment-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="sp-payment-sheet sp-payment-sheet--simple">
-        <button className="share-modal-close sp-payment-close" onClick={onClose} aria-label="Fechar">
-          <X size={24} />
-        </button>
-        <h2 className="sp-payment-title">Apoiar o Bom de Voto</h2>
-        <div className="sp-payment-qr">
-          <canvas ref={canvasRef} aria-label="QR Code Pix" />
-        </div>
-        <button className="sp-payment-copy-key" type="button" onClick={handleCopyPixKey}>
-          <Copy size={18} /> Copiar a chave Pix
-        </button>
-      </div>
-    </div>
   );
 }
 
@@ -123,7 +59,7 @@ function InviteCard({ href }) {
   );
 }
 
-function SupportCard({ onOpenPayment }) {
+function SupportCard() {
   return (
     <div className="sp-action-card sp-action-card--support">
       <div className="sp-action-card__head">
@@ -136,9 +72,9 @@ function SupportCard({ onOpenPayment }) {
         </div>
       </div>
       <div className="sp-action-card__actions">
-        <button className="sp-action-card__btn sp-action-card__btn--support" type="button" onClick={onOpenPayment}>
+        <a className="sp-action-card__btn sp-action-card__btn--support" href={DONATION_URL} target="_blank" rel="noopener noreferrer">
           <Heart size={17} /> Apoiar o projeto
-        </button>
+        </a>
       </div>
     </div>
   );
@@ -153,7 +89,6 @@ export default function ShareChoicePanel({
 }) {
   const notify = useNotify();
   const [isInternalOpen, setIsInternalOpen] = useState(false);
-  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
 
   const isFab = appearance === 'fab';
   const isOpen = isOpenControlled !== undefined ? isOpenControlled : isInternalOpen;
@@ -179,7 +114,7 @@ export default function ShareChoicePanel({
   if (!shareData) return null;
 
   const shareLink = shareData?.url || APP_SHARE_URL;
-  const shareText = `${INVITE_MESSAGE}\n${shareLink}`;
+  const shareText = INVITE_MESSAGE;
   const whatsappHref = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
 
   const shareChannels = [
@@ -237,7 +172,7 @@ export default function ShareChoicePanel({
         <div className="share-modal-body nv-scroll">
           <div className="sp-action-list">
             <InviteCard href={whatsappHref} />
-            <SupportCard onOpenPayment={() => setIsPaymentOpen(true)} />
+            <SupportCard />
           </div>
 
           {!import.meta.env.DEV && (
@@ -307,14 +242,6 @@ export default function ShareChoicePanel({
     <>
       {renderTriggers}
       {modalRender && (typeof document !== 'undefined' ? createPortal(modalRender, document.body) : modalRender)}
-      {isOpen && (
-        typeof document !== 'undefined'
-          ? createPortal(
-            <DonationPaymentSheet isOpen={isPaymentOpen} onClose={() => setIsPaymentOpen(false)} />,
-            document.body
-          )
-          : <DonationPaymentSheet isOpen={isPaymentOpen} onClose={() => setIsPaymentOpen(false)} />
-      )}
     </>
   );
 }

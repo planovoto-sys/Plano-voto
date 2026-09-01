@@ -59,6 +59,7 @@ class LocalBallotDraftRepository {
     flowLog('draft.persisted', {
       userId,
       estado: draft.estado,
+      presidente: draft.selections.presidente.length,
       deputadoFederal: draft.selections.deputado_federal.length,
       senadores: draft.selections.senadores.length,
       grupos: Object.fromEntries(
@@ -114,7 +115,11 @@ export const saveVisitorBallotState = async (estado) => {
 };
 
 const getStepExpectedOffice = (stepKey) => (
-  stepKey === 'deputado_federal' ? 'Deputado Federal' : 'Senador'
+  stepKey === 'presidente'
+    ? 'Presidente'
+    : stepKey === 'deputado_federal'
+      ? 'Deputado Federal'
+      : 'Senador'
 );
 
 export const assertCandidateMatchesStep = (candidate, stepKey, estado) => {
@@ -126,12 +131,12 @@ export const assertCandidateMatchesStep = (candidate, stepKey, estado) => {
     throw new VotingError('INVALID_CANDIDATE_OFFICE', `Candidato ${candidateId} não pertence ao cargo ${expectedOffice}.`);
   }
 
-  const candidateState = getCandidateStateCode(candidate, { allowPartyFallback: stepKey !== 'deputado_federal' });
-  if (stepKey !== 'deputado_federal' && !candidateState) {
+  const candidateState = getCandidateStateCode(candidate, { allowPartyFallback: stepKey.startsWith('senadores') });
+  if (stepKey.startsWith('senadores') && !candidateState) {
     throw new VotingError('INVALID_CANDIDATE_STATE', `Candidato ${candidateId} não possui estado definido.`);
   }
 
-  if (candidateState && candidateState !== 'TODOS' && candidateState !== estado) {
+  if (stepKey !== 'presidente' && candidateState && candidateState !== 'TODOS' && candidateState !== estado) {
     throw new VotingError('INVALID_CANDIDATE_STATE', `Candidato ${candidateId} não pertence ao estado selecionado.`);
   }
 };

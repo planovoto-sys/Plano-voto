@@ -83,7 +83,7 @@ export const castAnonymousVote = async ({ user, estado, draft }) => {
 
   const validation = validateCompleteBallot(draft);
   if (!validation.ok) {
-    throw new VotingError(validation.code, 'Selecione pelo menos 1 deputado federal e 2 senadores antes de confirmar o voto.');
+    throw new VotingError(validation.code, 'Selecione pelo menos 1 presidente, 2 senadores e 1 deputado federal antes de confirmar o voto.');
   }
 
   const { normalizedDraft, candidateIds } = validation;
@@ -101,6 +101,7 @@ export const castAnonymousVote = async ({ user, estado, draft }) => {
     election_id: ACTIVE_ELECTION_ID,
     estado: estado ?? normalizedDraft.estado ?? null,
     offices: {
+      presidente: normalizedDraft.selections.presidente.map((candidate) => candidate.id),
       deputado_federal: normalizedDraft.selections.deputado_federal.map((candidate) => candidate.id),
       senadores: normalizedDraft.selections.senadores.map((candidate) => candidate.id)
     },

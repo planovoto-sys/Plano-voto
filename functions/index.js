@@ -79,8 +79,6 @@ const MAX_REQUEST_BYTES = 32 * 1024;
 const BALLOT_ENCRYPTION_KEY = defineSecret('BALLOT_ENCRYPTION_KEY');
 const firebaseProjectId = process.env.GCLOUD_PROJECT || process.env.GCP_PROJECT || '';
 const DEFAULT_ALLOWED_ORIGINS = [
-  'https://bomdevoto.org',
-  'https://www.bomdevoto.org',
   'https://bomdevoto.com.br',
   'https://www.bomdevoto.com.br',
   'https://planovoto-sys.github.io',
