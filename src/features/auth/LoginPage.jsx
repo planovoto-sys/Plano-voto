@@ -103,82 +103,16 @@ function FloatingDots() {
   );
 }
 
-function GoogleIdentityButton({ disabled, onCredential, onError }) {
-  const containerRef = useRef(null);
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const initialize = async () => {
-      try {
-        const [{ nonce, hashedNonce }, googleIdentity] = await Promise.all([
-          createGoogleIdentityNonce(),
-          loadGoogleIdentity(),
-        ]);
-        if (cancelled || !containerRef.current) return;
-
-        googleIdentity.initialize({
-          client_id: googleIdentityClientId,
-          callback: (response) => {
-            if (cancelled) return;
-            if (!response?.credential) {
-              onError(new Error('O Google nao retornou uma credencial valida.'));
-              return;
-            }
-            onCredential({ token: response.credential, nonce });
-          },
-          nonce: hashedNonce,
-          context: 'signin',
-          auto_select: false,
-          itp_support: true,
-          use_fedcm_for_button: true,
-        });
-
-        const buttonWidth = Math.max(200, Math.round(containerRef.current.getBoundingClientRect().width));
-        containerRef.current.replaceChildren();
-        googleIdentity.renderButton(containerRef.current, {
-          type: 'standard',
-          theme: 'outline',
-          size: 'large',
-          text: 'signin_with',
-          shape: 'pill',
-          logo_alignment: 'left',
-          locale: 'pt_BR',
-          width: buttonWidth,
-        });
-        setReady(true);
-      } catch (error) {
-        if (!cancelled) onError(error);
-      }
-    };
-
-    void initialize();
-    return () => {
-      cancelled = true;
-    };
-  }, [onCredential, onError]);
-
-  return (
-    <div className={`login-google-identity-shell${disabled ? ' login-google-identity-shell--disabled' : ''}`}>
-      <div ref={containerRef} className="login-google-identity" aria-hidden={!ready} />
-      {!ready && (
-        <button type="button" className="login-google-btn" disabled>
-          <GoogleIcon />
-          <span>Carregando Google...</span>
-        </button>
-      )}
-    </div>
-  );
-}
-
 export default function LoginPage() {
   const { user, userData, loading } = useUser();
   const [signingIn, setSigningIn] = useState(false);
-  const [showGoogleAccounts, setShowGoogleAccounts] = useState(false);
+  const [googleIdentityReady, setGoogleIdentityReady] = useState(!usesGoogleIdentity);
+  const [googlePromptOpen, setGooglePromptOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [videoOpen, setVideoOpen] = useState(false);
   const signingInRef = useRef(false);
+  const googleIdentityRef = useRef(null);
+  const googleIdentityNonceRef = useRef('');
 
   const handleGoogleIdentityError = useCallback((error) => {
     flowError('LoginPage', 'Erro ao carregar login direto do Google', error);
@@ -188,6 +122,7 @@ export default function LoginPage() {
   const handleGoogleCredential = useCallback(async ({ token, nonce }) => {
     if (signingInRef.current) return;
     signingInRef.current = true;
+    setGooglePromptOpen(false);
     setSigningIn(true);
     setToastMessage('');
 
@@ -203,6 +138,56 @@ export default function LoginPage() {
       setSigningIn(false);
     }
   }, []);
+
+  useEffect(() => {
+    if (!usesGoogleIdentity) return undefined;
+
+    let cancelled = false;
+
+    const initializeGoogleIdentity = async () => {
+      try {
+        const [{ nonce, hashedNonce }, googleIdentity] = await Promise.all([
+          createGoogleIdentityNonce(),
+          loadGoogleIdentity(),
+        ]);
+        if (cancelled) return;
+
+        googleIdentity.initialize({
+          client_id: googleIdentityClientId,
+          callback: (response) => {
+            if (cancelled) return;
+            if (!response?.credential) {
+              setGooglePromptOpen(false);
+              handleGoogleIdentityError(new Error('O Google nao retornou uma credencial valida.'));
+              return;
+            }
+            void handleGoogleCredential({ token: response.credential, nonce });
+          },
+          nonce: hashedNonce,
+          context: 'signin',
+          auto_select: false,
+          itp_support: true,
+        });
+
+        googleIdentityRef.current = googleIdentity;
+        googleIdentityNonceRef.current = nonce;
+        setGoogleIdentityReady(true);
+      } catch (error) {
+        if (!cancelled) {
+          handleGoogleIdentityError(error);
+          setGoogleIdentityReady(true);
+        }
+      }
+    };
+
+    void initializeGoogleIdentity();
+    return () => {
+      cancelled = true;
+      googleIdentityRef.current?.cancel?.();
+      googleIdentityRef.current = null;
+      googleIdentityNonceRef.current = '';
+    };
+  }, [handleGoogleCredential, handleGoogleIdentityError]);
 
   const handleGoogleSignIn = useCallback(async () => {
     if (signingIn) return;
@@ -233,6 +218,34 @@ export default function LoginPage() {
       setSigningIn(false);
     }
   }, [signingIn, userData]);
+
+  const handlePrimaryGoogleSignIn = useCallback(() => {
+    if (!usesGoogleIdentity) {
+      void handleGoogleSignIn();
+      return;
+    }
+
+    const googleIdentity = googleIdentityRef.current;
+    if (!googleIdentity || !googleIdentityNonceRef.current) {
+      void handleGoogleSignIn();
+      return;
+    }
+
+    setToastMessage('');
+    setGooglePromptOpen(true);
+    googleIdentity.prompt((notification) => {
+      const wasDismissed = notification?.isDismissedMoment?.();
+      const wasSkipped = notification?.isSkippedMoment?.();
+      const wasNotDisplayed = notification?.isNotDisplayed?.();
+
+      if (wasDismissed || wasSkipped || wasNotDisplayed) {
+        setGooglePromptOpen(false);
+      }
+      if (wasNotDisplayed) {
+        setToastMessage('O Google não conseguiu abrir o login. Tente novamente.');
+      }
+    });
+  }, [handleGoogleSignIn]);
 
   const PREVIEW_MODE_MESSAGE = `App em modo de visualização — login disponível apenas com ${authProvider} configurado.`;
   const previewModeHint = !user && !loading && !authReady && !signingIn ? PREVIEW_MODE_MESSAGE : '';
@@ -266,26 +279,23 @@ export default function LoginPage() {
             <span>Veja como funciona</span>
           </button>
 
-          {usesGoogleIdentity && showGoogleAccounts ? (
-            <div className="login-google-account-choice">
-              <span className="login-google-account-choice__label">Escolha sua conta Google</span>
-              <GoogleIdentityButton
-                disabled={signingIn || !authReady}
-                onCredential={handleGoogleCredential}
-                onError={handleGoogleIdentityError}
-              />
-            </div>
-          ) : (
-            <button
-              type="button"
-              className="login-google-btn"
-              onClick={usesGoogleIdentity ? () => setShowGoogleAccounts(true) : handleGoogleSignIn}
-              disabled={signingIn || !authReady}
-            >
-              <GoogleIcon />
-              <span>{signingIn ? 'Entrando...' : 'Entrar'}</span>
-            </button>
-          )}
+          <button
+            type="button"
+            className="login-google-btn"
+            onClick={handlePrimaryGoogleSignIn}
+            disabled={signingIn || googlePromptOpen || !authReady || !googleIdentityReady}
+          >
+            <GoogleIcon />
+            <span>
+              {!googleIdentityReady
+                ? 'Carregando Google...'
+                : signingIn
+                  ? 'Entrando...'
+                  : googlePromptOpen
+                    ? 'Abrindo Google...'
+                    : 'Entrar com Google'}
+            </span>
+          </button>
         </div>
 
         <p className="login-tagline">
