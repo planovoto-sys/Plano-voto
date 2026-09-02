@@ -107,12 +107,12 @@ export default function LoginPage() {
   const { user, userData, loading } = useUser();
   const [signingIn, setSigningIn] = useState(false);
   const [googleIdentityReady, setGoogleIdentityReady] = useState(!usesGoogleIdentity);
-  const [googlePromptOpen, setGooglePromptOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [videoOpen, setVideoOpen] = useState(false);
   const signingInRef = useRef(false);
   const googleIdentityRef = useRef(null);
   const googleIdentityNonceRef = useRef('');
+  const googlePromptAttemptedRef = useRef(false);
 
   const handleGoogleIdentityError = useCallback((error) => {
     flowError('LoginPage', 'Erro ao carregar login direto do Google', error);
@@ -122,7 +122,7 @@ export default function LoginPage() {
   const handleGoogleCredential = useCallback(async ({ token, nonce }) => {
     if (signingInRef.current) return;
     signingInRef.current = true;
-    setGooglePromptOpen(false);
+    googlePromptAttemptedRef.current = false;
     setSigningIn(true);
     setToastMessage('');
 
@@ -157,7 +157,6 @@ export default function LoginPage() {
           callback: (response) => {
             if (cancelled) return;
             if (!response?.credential) {
-              setGooglePromptOpen(false);
               handleGoogleIdentityError(new Error('O Google nao retornou uma credencial valida.'));
               return;
             }
@@ -186,6 +185,7 @@ export default function LoginPage() {
       googleIdentityRef.current?.cancel?.();
       googleIdentityRef.current = null;
       googleIdentityNonceRef.current = '';
+      googlePromptAttemptedRef.current = false;
     };
   }, [handleGoogleCredential, handleGoogleIdentityError]);
 
@@ -231,20 +231,16 @@ export default function LoginPage() {
       return;
     }
 
-    setToastMessage('');
-    setGooglePromptOpen(true);
-    googleIdentity.prompt((notification) => {
-      const wasDismissed = notification?.isDismissedMoment?.();
-      const wasSkipped = notification?.isSkippedMoment?.();
-      const wasNotDisplayed = notification?.isNotDisplayed?.();
+    if (googlePromptAttemptedRef.current) {
+      googleIdentity.cancel?.();
+      googlePromptAttemptedRef.current = false;
+      void handleGoogleSignIn();
+      return;
+    }
 
-      if (wasDismissed || wasSkipped || wasNotDisplayed) {
-        setGooglePromptOpen(false);
-      }
-      if (wasNotDisplayed) {
-        setToastMessage('O Google não conseguiu abrir o login. Tente novamente.');
-      }
-    });
+    setToastMessage('');
+    googlePromptAttemptedRef.current = true;
+    googleIdentity.prompt();
   }, [handleGoogleSignIn]);
 
   const PREVIEW_MODE_MESSAGE = `App em modo de visualização — login disponível apenas com ${authProvider} configurado.`;
@@ -283,7 +279,7 @@ export default function LoginPage() {
             type="button"
             className="login-google-btn"
             onClick={handlePrimaryGoogleSignIn}
-            disabled={signingIn || googlePromptOpen || !authReady || !googleIdentityReady}
+            disabled={signingIn || !authReady || !googleIdentityReady}
           >
             <GoogleIcon />
             <span>
@@ -291,9 +287,7 @@ export default function LoginPage() {
                 ? 'Carregando Google...'
                 : signingIn
                   ? 'Entrando...'
-                  : googlePromptOpen
-                    ? 'Abrindo Google...'
-                    : 'Entrar com Google'}
+                  : 'Entrar com Google'}
             </span>
           </button>
         </div>
