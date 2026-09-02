@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Heart, Link2, Rocket, Send, ShieldCheck, Users, X } from 'lucide-react';
 import { useNotify } from '@/features/notifications/useNotify';
 import { APP_SHARE_URL } from '@/features/sharing/shareCardService';
+import { WHATSAPP_INVITE_URL } from './whatsappInvite';
 
 import './ShareChoicePanel.css';
 
@@ -115,7 +116,6 @@ export default function ShareChoicePanel({
 
   const shareLink = shareData?.url || APP_SHARE_URL;
   const shareText = INVITE_MESSAGE;
-  const whatsappHref = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
 
   const shareChannels = [
     {
@@ -171,7 +171,7 @@ export default function ShareChoicePanel({
 
         <div className="share-modal-body nv-scroll">
           <div className="sp-action-list">
-            <InviteCard href={whatsappHref} />
+            <InviteCard href={WHATSAPP_INVITE_URL} />
             <SupportCard />
           </div>
 
