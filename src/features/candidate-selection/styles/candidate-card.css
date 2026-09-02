@@ -1,7 +1,10 @@
 /* ==========================================================================
    NOVO CANDIDATE CARD (UX REFINADO)
    ========================================================================== */
-.prototype-candidate-card {
+/* O componente define seu espaçamento também dentro dos contêineres legados. */
+.prototype-candidate-card,
+.candidate-list-section .prototype-candidate-card,
+.candidate-current-section .prototype-candidate-card {
   --card-green: var(--brand-green);
   --card-green-soft: rgba(141, 198, 63, 0.15);
   --card-gray-border: #E0E7DE; 
@@ -14,14 +17,15 @@
   width: 100%;
   background: #ffffff;
   
-  border: 2px solid transparent !important; 
+  border: 1px solid #E5E7EB !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); 
   
-  border-radius: 18px;
-  padding: 14px 16px;
+  border-radius: 16px;
+  padding: 12px 14px;
+  min-height: auto;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
   text-align: left;
   cursor: pointer;
@@ -40,33 +44,21 @@
 
 /* BORDA DE SELEÇÃO DINÂMICA */
 .prototype-candidate-card.is-selected.tone-good {
-  border: 2px solid var(--card-green) !important;
+  border: 1px solid var(--card-green) !important;
   background: linear-gradient(145deg, #ffffff 0%, rgba(141, 198, 63, 0.08) 100%);
   box-shadow: 0 4px 16px rgba(11, 107, 58, 0.20) !important;
 }
 
 .prototype-candidate-card.is-selected.tone-bad {
-  border: 2px solid var(--card-red) !important;
+  border: 1px solid var(--card-red) !important;
   background: linear-gradient(145deg, #ffffff 0%, rgba(239, 68, 68, 0.05) 100%);
   box-shadow: 0 4px 16px rgba(239, 68, 68, 0.12) !important;
 }
 
 /* ==========================================================================
    VARIANTE SUMMARY (TELA "SEU PLANO / RESULTADO")
-   Encapsulada via prop variant="summary", sem overrides externos.
+   Apenas o número muda; o espaçamento é compartilhado com a seleção.
    ========================================================================== */
-.prototype-candidate-card.variant-summary {
-  border: 1px solid #E5E7EB !important;
-  border-radius: 16px;
-  background: #FFFFFF;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  padding: 12px 14px;
-  gap: 10px;
-  min-height: auto;
-}
-
-.prototype-candidate-card.variant-summary .candidate-card__tags-row { margin: 0; }
-
 .prototype-candidate-card.variant-summary .candidate-card__number--badge {
   background: #F3F4F6;
   font-weight: 700;
@@ -229,7 +221,8 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
-  margin-top: 0;
+  margin: 0;
+  padding: 0;
 }
 
 .prototype-candidate-card .candidate-card__tag {
@@ -367,11 +360,6 @@
    RESPONSIVIDADE MOBILE
    ========================================================================== */
 @media (max-width: 420px) {
-  .prototype-candidate-card {
-    padding: 13px 14px;
-    gap: 11px;
-  }
-  
   .candidate-card__name { font-size: 15px; }
   .candidate-card__party { font-size: 12px; }
 
@@ -392,8 +380,21 @@
   }
 
   .tag-score-text-group { gap: 3px; }
-  .tag-score-value { font-size: 12px; }
-  .tag-score-title { font-size: 11px; }
-  .tag-eval-text { font-size: 11px; }
+  .prototype-candidate-card .tag-score-value { font-size: 12px; }
+  .prototype-candidate-card .tag-score-title { font-size: 11px; }
+  .prototype-candidate-card .tag-eval-text { font-size: 11px; }
 
+}
+
+@media (max-width: 359px) {
+  .prototype-candidate-card .candidate-card__tag {
+    height: 36px;
+    min-height: 36px;
+    max-height: 36px;
+  }
+
+  .tag-score-text-group {
+    flex-direction: column;
+    gap: 2px;
+  }
 }

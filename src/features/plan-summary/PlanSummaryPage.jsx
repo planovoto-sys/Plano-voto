@@ -40,6 +40,7 @@ import {
 
 import '@/features/candidate-selection/SelectBase.css';
 import './MeuPlano.css';
+import { getSummaryOfficeCandidates } from './summaryCandidates';
 
 const average = (values) => {
   const validValues = values.filter((value) => Number.isFinite(value));
@@ -228,18 +229,14 @@ export default function MeuPlano() {
   }, [selectedCandidateSignature, selectedDraftEstado, storedCandidatesSnapshot]);
 
   const candidatesById = candidateDetailsState.signature === selectedCandidateSignature ? candidateDetailsState.candidatesById : new Map();
-  const presidentes = rawPresidentes.map((c) => candidatesById.get(c.id) || c);
-  const deputadosFederais = rawDeputadosFederais.map((c) => candidatesById.get(c.id) || c);
-  const senadores = rawSenadores.map((c) => candidatesById.get(c.id) || c);
+  const presidentes = getSummaryOfficeCandidates(rawPresidentes, candidatesById, 1);
+  const deputadosFederais = getSummaryOfficeCandidates(rawDeputadosFederais, candidatesById, 1);
+  const senadores = getSummaryOfficeCandidates(rawSenadores, candidatesById, 2);
   
-  const featuredPresidentes = presidentes.slice(0, 1);
-  const featuredDeputadosFederais = deputadosFederais.slice(0, 1);
-  const displayedDeputadosFederais = featuredDeputadosFederais;
-  const featuredSenadores = senadores.slice(0, 2);
   const estadoSigla = currentDraft?.estado || userData?.estado || '';
   const estadoNome = estadoSigla ? STATE_NAMES[estadoSigla] || estadoSigla : 'Nenhum';
-  const deputadoFederal = featuredDeputadosFederais[0] || null;
-  const selectedCandidates = [...presidentes.slice(0, 1), ...senadores.slice(0, 2), ...featuredDeputadosFederais].filter(Boolean);
+  const deputadoFederal = deputadosFederais[0] || null;
+  const selectedCandidates = [...presidentes, ...senadores, ...deputadosFederais].filter(Boolean);
   
   const averageScore = getAverageScore(selectedCandidates);
   
@@ -255,7 +252,7 @@ export default function MeuPlano() {
     userName: userData?.name || user?.displayName || 'Visitante',
     presidente: presidentes[0] || null,
     deputado: deputadoFederal,
-    senadores: senadores.slice(0, 2),
+    senadores,
     url: planUrl
   } : null;
 
@@ -352,8 +349,8 @@ export default function MeuPlano() {
                 title="Presidente"
               />
               <div className="my-plan-choice-list">
-                {featuredPresidentes.length > 0 ? (
-                  featuredPresidentes.map((candidate, index) => {
+                {presidentes.length > 0 ? (
+                  presidentes.map((candidate, index) => {
                     const candWithNumber = { ...candidate, numero: candidate.numero || `${index + 1}` };
                     return (
                       <CandidateCard
@@ -379,8 +376,8 @@ export default function MeuPlano() {
                 title="Senadores"
               />
               <div className="my-plan-choice-list">
-                {featuredSenadores.length > 0 ? (
-                  featuredSenadores.map((candidate, index) => {
+                {senadores.length > 0 ? (
+                  senadores.map((candidate, index) => {
                     const candWithNumber = { ...candidate, numero: candidate.numero || `12${index + 1}` };
                     return (
                       <CandidateCard
@@ -406,8 +403,8 @@ export default function MeuPlano() {
                 title="Deputado Federal"
               />
               <div className="my-plan-choice-list">
-                {displayedDeputadosFederais.length > 0 ? (
-                  displayedDeputadosFederais.map((candidate, index) => {
+                {deputadosFederais.length > 0 ? (
+                  deputadosFederais.map((candidate, index) => {
                     const candWithNumber = { ...candidate, numero: candidate.numero || `123${index + 1}` };
                     return (
                       <CandidateCard
