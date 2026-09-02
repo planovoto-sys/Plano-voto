@@ -232,10 +232,10 @@ export default function MeuPlano() {
   const deputadosFederais = rawDeputadosFederais.map((c) => candidatesById.get(c.id) || c);
   const senadores = rawSenadores.map((c) => candidatesById.get(c.id) || c);
   
-  const featuredPresidentes = presidentes;
+  const featuredPresidentes = presidentes.slice(0, 1);
   const featuredDeputadosFederais = deputadosFederais.slice(0, 1);
-  const displayedDeputadosFederais = deputadosFederais;
-  const featuredSenadores = senadores;
+  const displayedDeputadosFederais = featuredDeputadosFederais;
+  const featuredSenadores = senadores.slice(0, 2);
   const estadoSigla = currentDraft?.estado || userData?.estado || '';
   const estadoNome = estadoSigla ? STATE_NAMES[estadoSigla] || estadoSigla : 'Nenhum';
   const deputadoFederal = featuredDeputadosFederais[0] || null;
