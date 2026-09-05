@@ -7,6 +7,7 @@ import { useUser } from '@/shared/hooks/useUser';
 import LoadingScreen from '@/shared/ui/feedback/LoadingScreen';
 import PrivacyConsent from '@/features/privacy/PrivacyConsent';
 import DesktopMobileOnlyPage from '@/features/desktop/DesktopMobileOnlyPage';
+import { isSharedSelectionPath, readSharedSelectionReturn } from '@/features/sharing/sharedSelectionModel';
 import PageTransition from '@/features/motion/PageTransition';
 import { STEP_GUIDANCE_MESSAGES } from '@/features/notifications/notificationMessages';
 import {
@@ -28,6 +29,7 @@ const EscolherCandidatos = lazy(loadEscolherCandidatos);
 const LegalPage = lazy(loadLegalPage);
 const MeuPlano = lazy(loadMeuPlano);
 const ContinuarPlano = lazy(loadContinuarPlano);
+const SharedSelectionPage = lazy(() => import('@/features/sharing/SharedSelectionPage'));
 const INTRO_MIN_DURATION_MS = 1600;
 
 const renderCandidateRoute = (config) => (
@@ -54,8 +56,10 @@ const getResumeNotice = (progress) => {
 
 function AuthenticatedEntryRedirect({ user, estado }) {
   const [redirect, setRedirect] = useState(null);
+  const [sharedReturn] = useState(() => readSharedSelectionReturn());
 
   useEffect(() => {
+    if (sharedReturn) return undefined;
     let cancelled = false;
 
     const resolveRedirect = async () => {
@@ -81,8 +85,9 @@ function AuthenticatedEntryRedirect({ user, estado }) {
     return () => {
       cancelled = true;
     };
-  }, [estado, user.uid]);
+  }, [estado, user.uid, sharedReturn]);
 
+  if (sharedReturn) return <Navigate to={sharedReturn} replace />;
   if (!redirect) return <LoadingScreen />;
 
   return (
@@ -102,7 +107,7 @@ function AppRoutes({ rootElement, publicExplorationRoute, privateRedirect, isDes
   const navigationType = useNavigationType();
 
   if (isDesktopExperience) {
-    return <DesktopMobileOnlyPage />;
+    return <DesktopMobileOnlyPage sharedPath={isSharedSelectionPath(location.pathname) ? location.pathname.replace(/\/resumo$/, '') : null} />;
   }
 
   return (
@@ -115,6 +120,8 @@ function AppRoutes({ rootElement, publicExplorationRoute, privateRedirect, isDes
         <Routes location={location}>
           <Route path="/" element={rootElement} />
           <Route path="/login" element={<Login />} />
+          <Route path="/selecao/:id" element={<SharedSelectionPage />} />
+          <Route path="/selecao/:id/resumo" element={<SharedSelectionPage summary />} />
           <Route path="/home" element={publicExplorationRoute(<Home />)} />
 
           <Route path={BALLOT_ROUTES.presidente} element={publicExplorationRoute(renderCandidateRoute(CANDIDATE_ROUTES.presidente))} />

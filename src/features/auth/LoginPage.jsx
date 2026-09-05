@@ -14,6 +14,7 @@ import {
 import { createGoogleIdentityNonce, loadGoogleIdentity } from '@/shared/auth/googleIdentity';
 import { mergeVisitorBallotDraftIntoAccount } from '@/features/ballot';
 import { flowError, flowLog } from '@/shared/utils/debugFlow';
+import { readSharedSelectionReturn } from '@/features/sharing/sharedSelectionModel';
 
 import './Login.css';
 
@@ -198,7 +199,7 @@ export default function LoginPage() {
       const result = await signInWithGoogle();
       flowLog('LoginPage', 'Login iniciado', { provider: authProvider });
 
-      if (result.user?.uid && userData?.estado) {
+      if (result.user?.uid && userData?.estado && !readSharedSelectionReturn()) {
         try {
           await mergeVisitorBallotDraftIntoAccount(result.user.uid, userData.estado);
         } catch (mergeErr) {

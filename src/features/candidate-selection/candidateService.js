@@ -26,7 +26,7 @@ const usesSupabaseCandidates = configuredCandidateProvider === 'supabase';
 const SUPABASE_PAGE_SIZE = 1000;
 // O provedor e a eleicao fazem parte do namespace para impedir que IDs legados
 // do Firebase sejam reaproveitados depois da migracao para o Supabase.
-const PUBLIC_CACHE_VERSION = 'v12';
+const PUBLIC_CACHE_VERSION = 'v13';
 const CACHE_PREFIX = `meuvoto:public-cache:${configuredCandidateProvider}:${ACTIVE_ELECTION_ID}:${PUBLIC_CACHE_VERSION}`;
 const CANDIDATE_CACHE_MAX_AGE_MS = 12 * 60 * 60 * 1000;
 const CANDIDATE_CACHE_MAX_STALE_MS = 7 * 24 * 60 * 60 * 1000;
@@ -621,49 +621,45 @@ export const fetchCandidateTallies = async (candidateTargets, { forceRefresh = f
 
   if (usesSupabaseCandidates && targetsToFetch.length > 0) {
     const supabase = getSupabaseClient();
-    const tallyRows = [];
     const targetStates = [...new Set(targetsToFetch.map((target) => target.estado).filter(Boolean))];
-
-    // Consultar pelo estado evita URLs gigantes quando uma UF possui mais de mil candidatos.
-    for (const stateCode of targetStates) {
+    const recommendationRows = [];
+    // Presidente é sempre BR, independentemente da UF de quem o selecionou.
+    for (const scope of [...new Set([...targetStates, 'BR'])]) {
       for (let offset = 0; ; offset += SUPABASE_PAGE_SIZE) {
         const { data, error } = await supabase
-          .from('selection_tallies')
-          .select('candidate_id, state, selection_count')
+          .from('candidate_recommendation_metrics')
+          .select('candidate_id, indication_count, indication_limit, active_selections')
           .eq('election_id', ACTIVE_ELECTION_ID)
-          .eq('state', stateCode)
+          .eq('scope', scope)
           .order('candidate_id')
           .range(offset, offset + SUPABASE_PAGE_SIZE - 1);
         if (error) throw error;
-        tallyRows.push(...(data || []));
+        recommendationRows.push(...(data || []));
         if (!data || data.length < SUPABASE_PAGE_SIZE) break;
       }
     }
-
-    const targetsWithoutState = targetsToFetch.filter((target) => !target.estado);
-    const idsWithoutState = [...new Set(targetsWithoutState.map((target) => target.id))];
-    const idBatchSize = 25;
-    for (let offset = 0; offset < idsWithoutState.length; offset += idBatchSize) {
-      const idBatch = idsWithoutState.slice(offset, offset + idBatchSize);
+    const unscopedIds = [...new Set(targetsToFetch.filter((target) => !target.estado).map((target) => target.id))];
+    for (let offset = 0; offset < unscopedIds.length; offset += 25) {
       const { data, error } = await supabase
-        .from('selection_tallies')
-        .select('candidate_id, state, selection_count')
+        .from('candidate_recommendation_metrics')
+        .select('candidate_id, indication_count, indication_limit, active_selections')
         .eq('election_id', ACTIVE_ELECTION_ID)
-        .in('candidate_id', idBatch);
+        .in('candidate_id', unscopedIds.slice(offset, offset + 25));
       if (error) throw error;
-      tallyRows.push(...(data || []));
+      recommendationRows.push(...(data || []));
     }
+    const recommendationsById = new Map(recommendationRows.map((row) => [row.candidate_id, row]));
 
     targetsToFetch.forEach((target) => {
-      const activeSelections = tallyRows
-        .filter((row) => row.candidate_id === target.id && (!target.estado || row.state === target.estado))
-        .reduce((total, row) => total + Math.max(0, Number(row.selection_count) || 0), 0);
+      const activeSelections = Math.max(0, Number(recommendationsById.get(target.id)?.active_selections) || 0);
       const tally = {
         schema_version: 1,
         election_id: ACTIVE_ELECTION_ID,
         candidate_id: target.id,
         state: target.estado || null,
         active_selections: activeSelections,
+        indication_count: Number(recommendationsById.get(target.id)?.indication_count || 0),
+        indication_limit: Number(recommendationsById.get(target.id)?.indication_limit) || null,
       };
       tallies.set(target.id, tally);
       writeCacheEntry(tallyCacheKey(target.id, target.estado), tally);

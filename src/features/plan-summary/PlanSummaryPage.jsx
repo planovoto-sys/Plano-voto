@@ -2,12 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { LogIn, LogOut, Star } from 'lucide-react';
 import { BALLOT_ROUTES } from '@/shared/constants/ballot';
-import { AVERAGE_ELECTED_VOTES_BY_OFFICE } from '@/shared/constants/candidates';
+import { getViabilityTarget } from '@/shared/constants/viabilityTargets';
 import { STATE_NAMES } from '@/shared/constants/states';
 import { useUser } from '@/shared/hooks/useUser';
 import { useDesktopLayout } from '@/features/desktop/useDesktopLayout';
 import { useHideOnScroll } from '@/shared/hooks/useHideOnScroll';
-import { signOutUser } from '@/shared/auth/authService';
+import { signOutUser, usesSupabaseAuth } from '@/shared/auth/authService';
 import {
   fetchRemoteBallotDraft,
   fetchCandidatesByIds,
@@ -41,6 +41,7 @@ import {
 import '@/features/candidate-selection/SelectBase.css';
 import './MeuPlano.css';
 import { getSummaryOfficeCandidates } from './summaryCandidates';
+import { fetchBallotRecommendations } from './recommendationService';
 
 const average = (values) => {
   const validValues = values.filter((value) => Number.isFinite(value));
@@ -86,15 +87,11 @@ const mergeCandidateDetails = (storedCandidate, fetchedCandidate, tally) => {
     tally?.active_selections ?? fetchedCandidate?.active_selections ?? fetchedCandidate?.selected_by_users ??
     storedCandidate?.selected_by_users ?? storedCandidate?.selectedByUsers ?? 0
   );
-  const averageElectedVotes = Number(
-    fetchedCandidate?.average_elected_votes ?? fetchedCandidate?.averageElectedVotes ??
-    storedCandidate?.average_elected_votes ?? storedCandidate?.averageElectedVotes ?? 0
-  );
   const safeSelectedByUsers = Number.isFinite(selectedByUsers) ? selectedByUsers : 0;
-  const fallbackAverageElectedVotes = AVERAGE_ELECTED_VOTES_BY_OFFICE[getCandidateOfficeKey(mergedCandidate)] || 3;
-  const safeAverageElectedVotes = Number.isFinite(averageElectedVotes) && averageElectedVotes > 0
-    ? averageElectedVotes
-    : fallbackAverageElectedVotes;
+  const safeAverageElectedVotes = tally?.indication_limit ?? getViabilityTarget(
+    getCandidateOfficeKey(mergedCandidate), mergedCandidate.uf || mergedCandidate.estado || mergedCandidate.state
+  );
+  const indicationCount = Math.max(0, Number(tally?.indication_count) || 0);
 
   return {
     ...mergedCandidate,
@@ -103,7 +100,9 @@ const mergeCandidateDetails = (storedCandidate, fetchedCandidate, tally) => {
     active_selections: safeSelectedByUsers,
     average_elected_votes: safeAverageElectedVotes,
     averageElectedVotes: safeAverageElectedVotes,
-    chance: calculateCandidateChance(safeSelectedByUsers, safeAverageElectedVotes)
+    indication_count: indicationCount,
+    indication_limit: safeAverageElectedVotes,
+    chance: calculateCandidateChance(indicationCount, safeAverageElectedVotes)
   };
 };
 
@@ -150,6 +149,8 @@ export default function MeuPlano() {
   const localDraft = user?.uid ? readBallotDraft(user.uid, userData?.estado) : readVisitorBallotDraft();
   const [remoteDraftState, setRemoteDraftState] = useState({ userId: null, draft: null, loading: false });
   const [candidateDetailsState, setCandidateDetailsState] = useState({ signature: '', candidatesById: new Map(), loading: false });
+  const [recommendationsState, setRecommendationsState] = useState({ key: '', rows: [], error: false });
+  const [recommendationRetry, setRecommendationRetry] = useState(0);
   const [modalCampoBloqueado, setModalCampoBloqueado] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   
@@ -183,6 +184,24 @@ export default function MeuPlano() {
   const selectedCandidateSignature = selectedCandidateIds.join('|');
   const storedCandidatesSnapshot = JSON.stringify([...rawPresidentes, ...rawSenadores, ...rawDeputadosFederais]);
   const selectedDraftEstado = currentDraft?.estado || userData?.estado || null;
+  const needsServerRecommendations = !isGuestMode && usesSupabaseAuth;
+  const recommendationKey = `${user?.uid || ''}:${selectedDraftEstado || ''}:${selectedCandidateSignature}`;
+  const remoteDraftLoading = needsServerRecommendations && (
+    remoteDraftState.userId !== user?.uid || remoteDraftState.loading
+  );
+
+  useEffect(() => {
+    if (!needsServerRecommendations || remoteDraftLoading) return undefined;
+    let cancelled = false;
+    fetchBallotRecommendations(user.uid)
+      .then((rows) => {
+        if (!cancelled) setRecommendationsState({ key: recommendationKey, rows, error: false });
+      })
+      .catch(() => {
+        if (!cancelled) setRecommendationsState({ key: recommendationKey, rows: [], error: true });
+      });
+    return () => { cancelled = true; };
+  }, [needsServerRecommendations, remoteDraftLoading, user?.uid, recommendationKey, recommendationRetry]);
 
   useEffect(() => {
     if (!selectedCandidateSignature) {
@@ -229,9 +248,21 @@ export default function MeuPlano() {
   }, [selectedCandidateSignature, selectedDraftEstado, storedCandidatesSnapshot]);
 
   const candidatesById = candidateDetailsState.signature === selectedCandidateSignature ? candidateDetailsState.candidatesById : new Map();
-  const presidentes = getSummaryOfficeCandidates(rawPresidentes, candidatesById, 1);
-  const deputadosFederais = getSummaryOfficeCandidates(rawDeputadosFederais, candidatesById, 1);
-  const senadores = getSummaryOfficeCandidates(rawSenadores, candidatesById, 2);
+  const recommendationsLoading = needsServerRecommendations && (remoteDraftLoading || recommendationsState.key !== recommendationKey);
+  const recommendationsError = needsServerRecommendations && !recommendationsLoading && recommendationsState.error;
+  const recommendedIds = (office) => needsServerRecommendations
+    ? (recommendationsLoading || recommendationsError ? [] : recommendationsState.rows
+      .filter((row) => row.office === office && (row.scope === 'BR' || row.scope === selectedDraftEstado))
+      .map((row) => row.candidate_id))
+    : null;
+  const presidentes = getSummaryOfficeCandidates(rawPresidentes, candidatesById, 1, recommendedIds('PRESIDENTE'));
+  const deputadosFederais = getSummaryOfficeCandidates(rawDeputadosFederais, candidatesById, 1, recommendedIds('DEPUTADO_FEDERAL'));
+  const senadores = getSummaryOfficeCandidates(rawSenadores, candidatesById, 2, recommendedIds('SENADOR'));
+  const hasUnavailableChoices = needsServerRecommendations && !recommendationsLoading && !recommendationsError && (
+    presidentes.length < Math.min(1, rawPresidentes.length)
+    || senadores.length < Math.min(2, rawSenadores.length)
+    || deputadosFederais.length < Math.min(1, rawDeputadosFederais.length)
+  );
   
   const estadoSigla = currentDraft?.estado || userData?.estado || '';
   const estadoNome = estadoSigla ? STATE_NAMES[estadoSigla] || estadoSigla : 'Nenhum';
@@ -244,7 +275,8 @@ export default function MeuPlano() {
   const profileInitial = ((userData?.name || user?.displayName || 'U').trim().charAt(0).toUpperCase());
   
   const hasCompletePlan = Boolean(presidentes.length > 0 && deputadosFederais.length > 0 && senadores.length >= 2 && estadoSigla);
-  const canSharePlan = !isGuestMode && hasCompletePlan;
+  const canSharePlan = !isGuestMode && hasCompletePlan && !recommendationsLoading && !recommendationsError;
+  const canShareSelection = !isGuestMode && selectedCandidateIds.length > 0;
   
   const shareData = canSharePlan ? {
     estadoSigla,
@@ -343,7 +375,22 @@ export default function MeuPlano() {
             </div>
           </section>
 
-          <section className="my-plan-choices">
+          {recommendationsLoading && <p role="status">Carregando suas indicações...</p>}
+          {recommendationsError && (
+            <div className="my-plan-action-box" role="alert">
+              <strong>Não foi possível confirmar suas indicações.</strong>
+              <span>Suas seleções continuam salvas. Tente novamente para consultar o resumo.</span>
+              <button className="my-plan-btn-primary" onClick={() => {
+                setRecommendationsState({ key: '', rows: [], error: false });
+                setRecommendationRetry((value) => value + 1);
+              }}>Tentar novamente</button>
+            </div>
+          )}
+          {isGuestMode && <p>Prévia por número de seleções. As indicações serão confirmadas ao salvar suas escolhas na conta.</p>}
+          {hasUnavailableChoices && (
+            <p role="status">Algumas opções selecionadas atingiram o limite de indicações. Suas seleções foram preservadas; você pode revisar as opções para completar o resumo.</p>
+          )}
+          {!recommendationsLoading && !recommendationsError && <section className="my-plan-choices">
             <div className="my-plan-choice-section">
               <ChoiceSectionHeading
                 title="Presidente"
@@ -365,7 +412,7 @@ export default function MeuPlano() {
                 ) : (
                   <div className="my-plan-empty">
                     <strong>Nenhum Candidato</strong>
-                    <span>Escolha um presidente para apoiar</span>
+                    <span>{rawPresidentes.length ? 'Nenhuma indicação disponível entre suas escolhas.' : 'Escolha um presidente para apoiar'}</span>
                   </div>
                 )}
               </div>
@@ -392,7 +439,7 @@ export default function MeuPlano() {
                 ) : (
                   <div className="my-plan-empty">
                     <strong>Nenhum Candidato</strong>
-                    <span>Escolha senadores para apoiar</span>
+                    <span>{rawSenadores.length ? 'Nenhuma indicação disponível entre suas escolhas.' : 'Escolha senadores para apoiar'}</span>
                   </div>
                 )}
               </div>
@@ -419,12 +466,12 @@ export default function MeuPlano() {
                 ) : (
                   <div className="my-plan-empty">
                     <strong>Nenhum Candidato</strong>
-                    <span>Escolha um deputado para apoiar</span>
+                    <span>{rawDeputadosFederais.length ? 'Nenhuma indicação disponível entre suas escolhas.' : 'Escolha um deputado para apoiar'}</span>
                   </div>
                 )}
               </div>
             </div>
-          </section>
+          </section>}
 
           <section className="my-plan-actions">
             {isGuestMode ? (
@@ -436,8 +483,8 @@ export default function MeuPlano() {
             ) : (
               !shareData && (
                 <div className="my-plan-action-box">
-                  <strong>Compartilhar plano</strong>
-                  <span>Complete suas escolhas de presidente, senadores e deputado para liberar o compartilhamento com amigos.</span>
+                  <strong>Compartilhar minha seleção</strong>
+                  <span>{canShareSelection ? 'Use o foguete para publicar os candidatos que você selecionou, mesmo que seu resumo ainda esteja incompleto.' : 'Selecione candidatos para compartilhar suas escolhas com amigos.'}</span>
                 </div>
               )
             )}
@@ -448,9 +495,9 @@ export default function MeuPlano() {
         <AppFooter className="app-footer--scroll-content" />
       </main>
 
-      {shareData && (
+      {(shareData || canShareSelection) && (
         <ShareChoicePanel 
-          shareData={shareData}
+          shareData={shareData || { url: planUrl }}
           isOpenControlled={isShareModalOpen}
           onCloseControlled={() => setIsShareModalOpen(false)}
         />
@@ -460,7 +507,9 @@ export default function MeuPlano() {
         currentStep="resultado" 
         isFinalStep={true} 
         onShareClick={() => {
-          if (!estadoSigla) {
+          if (canShareSelection) {
+            setIsShareModalOpen(true);
+          } else if (!estadoSigla) {
             notify.warning(STEP_GUIDANCE_MESSAGES.estado);
           } else if (presidentes.length < 1) {
             notify.warning(STEP_GUIDANCE_MESSAGES.presidente);

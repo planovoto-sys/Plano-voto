@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo, useDeferredValue } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { BALLOT_ROUTES } from '@/shared/constants/ballot';
-import { AVERAGE_ELECTED_VOTES_BY_OFFICE, CANDIDATE_FILTERS } from '@/shared/constants/candidates';
+import { CANDIDATE_FILTERS } from '@/shared/constants/candidates';
+import { getViabilityTarget } from '@/shared/constants/viabilityTargets';
 import { STATE_NAMES } from '@/shared/constants/states';
 import { useUser } from '@/shared/hooks/useUser';
 import {
@@ -163,8 +164,9 @@ export default function EscolherCandidatos({
               chaveBanco === 'senadores' ? '' : 'TODOS'
             );
           const selectedByUsers = parseNumeric(tally.active_selections, d.active_selections);
-          const averageElectedVotes = AVERAGE_ELECTED_VOTES_BY_OFFICE[chaveBanco] || 3;
-          const chance = calculateCandidateChance(selectedByUsers, averageElectedVotes);
+          const averageElectedVotes = tally.indication_limit ?? getViabilityTarget(chaveBanco, ufLimpa || estadoDoFluxo);
+          const indicationCount = Math.max(0, Number(tally.indication_count) || 0);
+          const chance = calculateCandidateChance(indicationCount, averageElectedVotes);
 
           return {
             id: candidateDoc.id,
@@ -175,6 +177,8 @@ export default function EscolherCandidatos({
             temNotaCandidato,
             notaFinal,
             selectedByUsers,
+            indication_count: indicationCount,
+            indication_limit: averageElectedVotes,
             averageElectedVotes,
             chance,
             cardColorClass: 'card-yellow',
@@ -416,19 +420,18 @@ export default function EscolherCandidatos({
       if (!tally) return candidate;
 
       const selectedByUsers = Math.max(0, parseNumeric(tally.active_selections, 0));
-      const averageElectedVotes = parseNumeric(
-        candidate.averageElectedVotes,
-        candidate.average_elected_votes,
-        AVERAGE_ELECTED_VOTES_BY_OFFICE[chaveBanco],
-        3
-      );
-      const chance = calculateCandidateChance(selectedByUsers, averageElectedVotes);
+      const averageElectedVotes = tally.indication_limit ?? getViabilityTarget(chaveBanco, estadoDoFluxo);
+      const indicationCount = Math.max(0, Number(tally.indication_count) || 0);
+      const chance = calculateCandidateChance(indicationCount, averageElectedVotes);
 
       return {
         ...candidate,
         selectedByUsers,
         selected_by_users: selectedByUsers,
         active_selections: selectedByUsers,
+        indication_count: indicationCount,
+        indication_limit: averageElectedVotes,
+        averageElectedVotes,
         chance
       };
     };
@@ -450,19 +453,13 @@ export default function EscolherCandidatos({
         candidate.selectedByUsers,
         0
       ) + delta);
-      const averageElectedVotes = parseNumeric(
-        candidate.averageElectedVotes,
-        candidate.average_elected_votes,
-        AVERAGE_ELECTED_VOTES_BY_OFFICE[chaveBanco],
-        3
-      );
-
       return {
         ...candidate,
         selectedByUsers,
         selected_by_users: selectedByUsers,
         active_selections: selectedByUsers,
-        chance: calculateCandidateChance(selectedByUsers, averageElectedVotes)
+        // Uma seleção local não reserva indicação; somente o banco decide.
+        chance: candidate.chance
       };
     };
 

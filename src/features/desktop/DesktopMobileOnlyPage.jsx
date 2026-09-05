@@ -5,13 +5,14 @@ import './DesktopMobileOnlyPage.css';
 
 const PUBLIC_APP_URL = import.meta.env.VITE_PUBLIC_APP_URL || 'https://bomdevoto.com.br';
 
-export default function DesktopMobileOnlyPage() {
+export default function DesktopMobileOnlyPage({ sharedPath = null }) {
   const [qrCode, setQrCode] = useState('');
+  const targetUrl = sharedPath ? new URL(sharedPath, PUBLIC_APP_URL).href : PUBLIC_APP_URL;
 
   useEffect(() => {
     let cancelled = false;
 
-    QRCode.toDataURL(PUBLIC_APP_URL, {
+    QRCode.toDataURL(targetUrl, {
       margin: 1,
       width: 320,
       errorCorrectionLevel: 'H',
@@ -30,7 +31,7 @@ export default function DesktopMobileOnlyPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [targetUrl]);
 
   return (
     <main className="desktop-mobile-only nv-screen">
@@ -43,14 +44,14 @@ export default function DesktopMobileOnlyPage() {
 
         <a
           className="desktop-mobile-only__qr-link"
-          href={PUBLIC_APP_URL}
+          href={targetUrl}
           aria-label="Abrir Bom de Voto no smartphone"
         >
           <span className="desktop-mobile-only__qr">
             {qrCode ? <img src={qrCode} alt="QR Code para acessar o Bom de Voto" /> : <span aria-hidden="true" />}
           </span>
           <strong>Escaneie o QR Code</strong>
-          <small>ou acesse bomdevoto.com.br</small>
+          <small>{sharedPath ? 'Abra esta seleção no seu smartphone' : 'ou acesse bomdevoto.com.br'}</small>
         </a>
       </section>
     </main>

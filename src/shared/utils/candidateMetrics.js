@@ -1,3 +1,5 @@
+import { getViabilityTarget } from '../constants/viabilityTargets.js';
+
 export const parseNumeric = (...values) => {
   for (const value of values) {
     const numericValue = Number(value);
@@ -8,7 +10,7 @@ export const parseNumeric = (...values) => {
 };
 
 export const calculateCandidateChance = (selectedByUsers, averageElectedVotes) => {
-  if (!Number.isFinite(averageElectedVotes) || averageElectedVotes <= 0) return 0;
+  if (!Number.isFinite(selectedByUsers) || !Number.isFinite(averageElectedVotes) || averageElectedVotes <= 0) return 0;
   return Math.max(0, Math.min(100, Math.round((selectedByUsers / averageElectedVotes) * 100)));
 };
 
@@ -54,6 +56,11 @@ export const getCandidateSystemScore = (candidate = {}) => {
   return candidateScore > 0 ? candidateScore : getCandidatePartyScore(candidate);
 };
 
+// Mesmo desempate no PostgreSQL: independente do idioma do dispositivo.
+const candidateNameOrderKey = (candidate) => getCandidateName(candidate)
+  .toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+const compareOrderKeys = (a, b) => a < b ? -1 : a > b ? 1 : 0;
+
 export const compareCandidatesByScorePriority = (a, b) => {
   const scoreDiff = getCandidateSystemScore(b) - getCandidateSystemScore(a);
   if (scoreDiff !== 0) return scoreDiff;
@@ -61,7 +68,8 @@ export const compareCandidatesByScorePriority = (a, b) => {
   const ownScoreDiff = Number(hasCandidateOwnScore(b)) - Number(hasCandidateOwnScore(a));
   if (ownScoreDiff !== 0) return ownScoreDiff;
 
-  return getCandidateName(a).localeCompare(getCandidateName(b));
+  return compareOrderKeys(candidateNameOrderKey(a), candidateNameOrderKey(b))
+    || compareOrderKeys(String(a.id || ''), String(b.id || ''));
 };
 
 export const getCandidateScore = (candidate = {}) => {
@@ -69,6 +77,13 @@ export const getCandidateScore = (candidate = {}) => {
 };
 
 export const getCandidateChance = (candidate = {}) => {
+  if (candidate.indication_count != null) {
+    const target = candidate.indication_limit ?? getViabilityTarget(
+      candidate.cargo || candidate.Cargo || candidate.office,
+      candidate.uf || candidate.estado || candidate.state
+    ) ?? candidate.average_elected_votes ?? candidate.averageElectedVotes;
+    return calculateCandidateChance(Number(candidate.indication_count), Number(target));
+  }
   const directValue = candidate.chance ?? candidate.Chance ?? candidate['Chance eleição'] ?? candidate['Chance de eleição'];
   const directNumeric = Number(directValue);
 
@@ -76,17 +91,9 @@ export const getCandidateChance = (candidate = {}) => {
     return Math.max(0, Math.min(100, Math.round(directNumeric)));
   }
 
-  const selectedByUsers = Number(
-    candidate.active_selections ??
-    candidate.total_active_selections ??
-    candidate.selected_by_users ??
-    candidate.selectedByUsers ??
-    0
-  );
-  const averageElectedVotes = Number(candidate.average_elected_votes ?? candidate.averageElectedVotes ?? 3);
-  if (!Number.isFinite(selectedByUsers) || !Number.isFinite(averageElectedVotes) || averageElectedVotes <= 0) return 0;
-
-  return calculateCandidateChance(selectedByUsers, averageElectedVotes);
+  // Aceitação não é indicação; ausência de contagem confirmada não autoriza
+  // calcular o percentual a partir de todos os candidatos selecionados.
+  return 0;
 };
 
 export const getCandidateTone = (candidate, fallback = 'neutral') => {

@@ -2,7 +2,15 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { getSummaryOfficeCandidates } from '../src/features/plan-summary/summaryCandidates.js';
 
-test('resumo ordena antes de limitar a 1 presidente/deputado ou 2 senadores', () => {
+test('resumo usa somente reservas do servidor, sem substituir por nota maior', () => {
+  const candidates = [{ id: 'lotado', nota_candidato: 10 }, { id: 'livre', nota_candidato: 7 }];
+  assert.deepEqual(getSummaryOfficeCandidates(candidates, new Map(), 1, ['livre']), [candidates[1]]);
+  assert.deepEqual(getSummaryOfficeCandidates(candidates, new Map(), 1, []), []);
+  assert.deepEqual(getSummaryOfficeCandidates(candidates, new Map(), 1, ['nao-selecionado']), []);
+  assert.deepEqual(getSummaryOfficeCandidates(candidates, new Map(), 2, ['livre', 'livre']), [candidates[1]]);
+});
+
+test('prévia desempata seleções iguais por nota antes de limitar a 1/1/2', () => {
   const candidates = [
     { id: 'low', nome: 'Primeiro selecionado', nota_candidato: 5, chance: 100 },
     { id: 'party', nome: 'Alfa', nota_partido: 8, temNotaCandidato: false, chance: 90 },
@@ -15,6 +23,15 @@ test('resumo ordena antes de limitar a 1 presidente/deputado ou 2 senadores', ()
   assert.deepEqual(getSummaryOfficeCandidates(candidates, new Map(), 2).map((c) => c.id), ['best', 'own']);
   assert.deepEqual(getSummaryOfficeCandidates(candidates, new Map(), 4).map((c) => c.id), ['best', 'own', 'party', 'low']);
   assert.deepEqual(candidates, original, 'a ordem salva no rascunho não deve ser alterada');
+});
+
+test('prévia prioriza mais seleções sobre maior nota ou viabilidade', () => {
+  const candidates = [
+    { id: 'melhor-nota', nota_candidato: 10, active_selections: 2, chance: 100 },
+    { id: 'mais-selecionado', nota_candidato: 6, active_selections: 20, chance: 0 },
+  ];
+  assert.deepEqual(getSummaryOfficeCandidates(candidates, new Map(), 1), [candidates[1]]);
+  assert.deepEqual(getSummaryOfficeCandidates(candidates, new Map(), 1, ['melhor-nota']), [candidates[0]]);
 });
 
 test('resumo utiliza a nota atualizada do banco antes de ordenar', () => {

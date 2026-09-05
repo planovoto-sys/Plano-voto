@@ -10,7 +10,7 @@
     "dev": "vite --configLoader runner",
     "build": "vite build --configLoader runner",
     "lint": "eslint .",
-    "test": "node --test tests/candidateMetrics.test.mjs tests/devApiProxy.test.mjs tests/googleIdentity.test.mjs tests/rpcErrorMapping.test.mjs tests/serverConfiguration.test.mjs tests/summaryCandidates.test.mjs tests/supabaseCandidateImport.test.mjs tests/supabaseConfiguration.test.mjs tests/supabaseScoreUpdate.test.mjs tests/whatsappInvite.test.mjs",
+    "test": "node --test tests/candidateMetrics.test.mjs tests/devApiProxy.test.mjs tests/googleIdentity.test.mjs tests/recommendationsDatabase.test.mjs tests/rpcErrorMapping.test.mjs tests/serverConfiguration.test.mjs tests/sharedSelectionModel.test.mjs tests/summaryCandidates.test.mjs tests/supabaseCandidateImport.test.mjs tests/supabaseConfiguration.test.mjs tests/supabaseScoreUpdate.test.mjs tests/viabilityTargets.test.mjs tests/whatsappInvite.test.mjs",
     "security:secrets": "node scripts/security-audit.mjs",
     "security:dependencies": "npm audit --audit-level=high && npm audit --prefix functions --audit-level=high",
     "security:audit": "npm run security:secrets && npm run security:dependencies",
@@ -45,6 +45,7 @@
     "react-router-dom": "^7.14.2"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "@eslint/js": "^9.39.4",
     "@tailwindcss/vite": "^4.3.0",
     "@types/react": "^19.2.14",

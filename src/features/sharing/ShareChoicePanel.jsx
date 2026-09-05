@@ -4,6 +4,8 @@ import { Heart, Link2, Rocket, Send, ShieldCheck, Users, X } from 'lucide-react'
 import { useNotify } from '@/features/notifications/useNotify';
 import { APP_SHARE_URL } from '@/features/sharing/shareCardService';
 import { WHATSAPP_INVITE_URL } from './whatsappInvite';
+import { usesSupabaseAuth } from '@/shared/auth/authService';
+import PublishSelectionCard from './PublishSelectionCard';
 
 import './ShareChoicePanel.css';
 
@@ -162,7 +164,7 @@ export default function ShareChoicePanel({
         <div className="share-modal-header">
           <div className="share-modal-header__text">
             <h2>Ajude o Bom de Voto</h2>
-            <span>Duas formas simples de fortalecer o projeto</span>
+            <span>Convide, compartilhe sua seleção ou apoie o projeto</span>
           </div>
           <button className="share-modal-close" onClick={handleClose} aria-label="Fechar">
             <X size={24} />
@@ -172,6 +174,7 @@ export default function ShareChoicePanel({
         <div className="share-modal-body nv-scroll">
           <div className="sp-action-list">
             <InviteCard href={WHATSAPP_INVITE_URL} />
+            {usesSupabaseAuth && <PublishSelectionCard />}
             <SupportCard />
           </div>
 
