@@ -1,4 +1,6 @@
 export const SHARED_SELECTION_PREFIX = '/selecao/';
+export const SHARED_AUTH_CALLBACK_PARAM = 'auth_flow';
+export const SHARED_AUTH_CALLBACK_VALUE = 'shared_selection';
 export const SHARE_RETURN_KEY = 'bomdevoto:shared-selection-return';
 export const SHARED_DRAFT_KEY = 'bomdevoto:shared-selection-draft';
 const DRAFT_TTL_MS = 24 * 60 * 60 * 1000;
@@ -6,6 +8,23 @@ export const isSharedSelectionId = (id) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}
 export const isSharedSelectionPath = (path) => typeof path === 'string'
   && path.startsWith(SHARED_SELECTION_PREFIX)
   && isSharedSelectionId(path.slice(SHARED_SELECTION_PREFIX.length).replace(/\/resumo$/, ''));
+
+const sharedSelectionIdFromSummaryPath = (path) => {
+  if (!isSharedSelectionPath(path) || !path.endsWith('/resumo')) return null;
+  return path.slice(SHARED_SELECTION_PREFIX.length, -'/resumo'.length);
+};
+
+export const isSharedSelectionAuthCallback = (search) => {
+  try {
+    return new URLSearchParams(search).get(SHARED_AUTH_CALLBACK_PARAM) === SHARED_AUTH_CALLBACK_VALUE;
+  } catch { return false; }
+};
+
+export const sharedSelectionAuthRedirectUrl = (origin) => {
+  const url = new URL('/', origin);
+  url.searchParams.set(SHARED_AUTH_CALLBACK_PARAM, SHARED_AUTH_CALLBACK_VALUE);
+  return url.href;
+};
 
 export const sharedSelectionUrl = (id, origin) => {
   if (!isSharedSelectionId(id)) throw new Error('Link de seleção inválido.');
@@ -27,14 +46,20 @@ export const eligibleSharedCandidates = (candidates, state) => candidates.filter
 export const sharedSelectionMessage = (url) => `Veja minha seleção no Bom de Voto. Você pode revisar os candidatos antes de usar:\n\n${url}`;
 
 export const rememberSharedSelectionReturn = (path) => {
-  if (!isSharedSelectionPath(path)) return false;
+  const id = sharedSelectionIdFromSummaryPath(path);
+  if (!id || !readSharedSelectionDraft(id)) return false;
   try { window.sessionStorage.setItem(SHARE_RETURN_KEY, JSON.stringify({ path, at: Date.now() })); return true; } catch { return false; }
 };
 export const readSharedSelectionReturn = () => {
   try {
     const item = JSON.parse(window.sessionStorage.getItem(SHARE_RETURN_KEY) || 'null');
-    return item && isSharedSelectionPath(item.path) && Number.isFinite(item.at)
-      && Date.now() - item.at >= 0 && Date.now() - item.at < 60 * 60 * 1000 ? item.path : null;
+    const id = sharedSelectionIdFromSummaryPath(item?.path);
+    const valid = id && Number.isFinite(item.at)
+      && Date.now() - item.at >= 0 && Date.now() - item.at < 60 * 60 * 1000
+      && readSharedSelectionDraft(id);
+    if (valid) return item.path;
+    window.sessionStorage.removeItem(SHARE_RETURN_KEY);
+    return null;
   } catch { return null; }
 };
 export const clearSharedSelectionReturn = () => {

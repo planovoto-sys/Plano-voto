@@ -14,7 +14,7 @@ import {
 import { createGoogleIdentityNonce, loadGoogleIdentity } from '@/shared/auth/googleIdentity';
 import { mergeVisitorBallotDraftIntoAccount } from '@/features/ballot';
 import { flowError, flowLog } from '@/shared/utils/debugFlow';
-import { readSharedSelectionReturn } from '@/features/sharing/sharedSelectionModel';
+import { clearSharedSelectionReturn } from '@/features/sharing/sharedSelectionModel';
 
 import './Login.css';
 
@@ -122,6 +122,9 @@ export default function LoginPage() {
 
   const handleGoogleCredential = useCallback(async ({ token, nonce }) => {
     if (signingInRef.current) return;
+    // Este componente representa sempre o login comum. Uma tentativa antiga
+    // iniciada no QR não pode redirecionar ou bloquear a mesclagem deste fluxo.
+    clearSharedSelectionReturn();
     signingInRef.current = true;
     googlePromptAttemptedRef.current = false;
     setSigningIn(true);
@@ -192,6 +195,7 @@ export default function LoginPage() {
 
   const handleGoogleSignIn = useCallback(async () => {
     if (signingIn) return;
+    clearSharedSelectionReturn();
     setSigningIn(true);
 
     try {
@@ -199,7 +203,7 @@ export default function LoginPage() {
       const result = await signInWithGoogle();
       flowLog('LoginPage', 'Login iniciado', { provider: authProvider });
 
-      if (result.user?.uid && userData?.estado && !readSharedSelectionReturn()) {
+      if (result.user?.uid && userData?.estado) {
         try {
           await mergeVisitorBallotDraftIntoAccount(result.user.uid, userData.estado);
         } catch (mergeErr) {
@@ -221,6 +225,7 @@ export default function LoginPage() {
   }, [signingIn, userData]);
 
   const handlePrimaryGoogleSignIn = useCallback(() => {
+    clearSharedSelectionReturn();
     if (!usesGoogleIdentity) {
       void handleGoogleSignIn();
       return;

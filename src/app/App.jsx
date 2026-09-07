@@ -7,7 +7,11 @@ import { useUser } from '@/shared/hooks/useUser';
 import LoadingScreen from '@/shared/ui/feedback/LoadingScreen';
 import PrivacyConsent from '@/features/privacy/PrivacyConsent';
 import DesktopMobileOnlyPage from '@/features/desktop/DesktopMobileOnlyPage';
-import { isSharedSelectionPath, readSharedSelectionReturn } from '@/features/sharing/sharedSelectionModel';
+import {
+  isSharedSelectionAuthCallback,
+  isSharedSelectionPath,
+  readSharedSelectionReturn,
+} from '@/features/sharing/sharedSelectionModel';
 import PageTransition from '@/features/motion/PageTransition';
 import { STEP_GUIDANCE_MESSAGES } from '@/features/notifications/notificationMessages';
 import {
@@ -56,7 +60,9 @@ const getResumeNotice = (progress) => {
 
 function AuthenticatedEntryRedirect({ user, estado }) {
   const [redirect, setRedirect] = useState(null);
-  const [sharedReturn] = useState(() => readSharedSelectionReturn());
+  const [sharedReturn] = useState(() => (
+    isSharedSelectionAuthCallback(window.location.search) ? readSharedSelectionReturn() : null
+  ));
 
   useEffect(() => {
     if (sharedReturn) return undefined;

@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
   clearSharedSelectionReturn, eligibleSharedCandidates, isSharedSelectionId, isSharedSelectionPath,
+  isSharedSelectionAuthCallback,
   readSharedSelectionReturn, rememberSharedSelectionReturn, sharedSelectionMessage, sharedSelectionUrl,
+  sharedSelectionAuthRedirectUrl,
   SHARE_RETURN_KEY,
   SHARED_DRAFT_KEY, clearSharedSelectionDraft, readSharedSelectionDraft, writeSharedSelectionDraft,
 } from '../src/features/sharing/sharedSelectionModel.js';
@@ -17,6 +19,15 @@ test('link curto validado não contém dados pessoais nem todos os IDs de candid
     assert.equal(isSharedSelectionPath(path), false);
   }
   assert.throws(() => sharedSelectionUrl('../../', 'https://bomdevoto.com.br'));
+});
+
+test('retorno OAuth compartilhado é diferente do login normal', () => {
+  const redirect = new URL(sharedSelectionAuthRedirectUrl('https://bomdevoto.com.br'));
+  assert.equal(redirect.origin, 'https://bomdevoto.com.br');
+  assert.equal(redirect.pathname, '/');
+  assert.ok(isSharedSelectionAuthCallback(redirect.search));
+  assert.equal(isSharedSelectionAuthCallback(''), false);
+  assert.equal(isSharedSelectionAuthCallback('?auth_flow=normal'), false);
 });
 
 test('rascunho anônimo mantém exatamente os itens escolhidos até o login', () => {
@@ -67,13 +78,18 @@ test('retorno após login é restrito à seleção, expira e não importa automa
   const values = new Map();
   globalThis.window = { sessionStorage: { setItem: (key, value) => values.set(key, value), getItem: (key) => values.get(key), removeItem: (key) => values.delete(key) } };
   try {
-    rememberSharedSelectionReturn(`/selecao/${id}`);
-    assert.equal(readSharedSelectionReturn(), `/selecao/${id}`);
-    assert.equal(values.size, 1);
-    clearSharedSelectionReturn(); assert.equal(readSharedSelectionReturn(), null);
-    rememberSharedSelectionReturn('https://evil.com'); assert.equal(readSharedSelectionReturn(), null);
-    values.set(SHARE_RETURN_KEY, JSON.stringify({ path: `/selecao/${id}`, at: Date.now() - 3600001 }));
+    assert.equal(rememberSharedSelectionReturn(`/selecao/${id}/resumo`), false, 'sem rascunho não inicia login compartilhado');
+    writeSharedSelectionDraft({ id, revision: 1, state: 'ES', candidateIds: ['item'] });
+    assert.equal(rememberSharedSelectionReturn(`/selecao/${id}`), false, 'a tela de edição não é destino de OAuth');
+    assert.equal(rememberSharedSelectionReturn(`/selecao/${id}/resumo`), true);
+    assert.equal(readSharedSelectionReturn(), `/selecao/${id}/resumo`);
+    clearSharedSelectionReturn();
     assert.equal(readSharedSelectionReturn(), null);
+    assert.ok(readSharedSelectionDraft(id), 'cancelar login mantém o rascunho do QR');
+    rememberSharedSelectionReturn('https://evil.com'); assert.equal(readSharedSelectionReturn(), null);
+    values.set(SHARE_RETURN_KEY, JSON.stringify({ path: `/selecao/${id}/resumo`, at: Date.now() - 3600001 }));
+    assert.equal(readSharedSelectionReturn(), null);
+    assert.equal(values.has(SHARE_RETURN_KEY), false, 'intenção expirada é descartada');
     values.set(SHARE_RETURN_KEY, 'invalid json'); assert.equal(readSharedSelectionReturn(), null);
   } finally { globalThis.window = previousWindow; }
 });

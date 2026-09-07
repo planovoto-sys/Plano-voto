@@ -9,7 +9,11 @@ import { ACTIVE_ELECTION_ID, SYNC_USER_PROFILE_FUNCTION_NAME } from '@/shared/co
 import { db } from '@/shared/firebase/firebase';
 import { getSupabaseClient } from '@/shared/supabase/client';
 import { flowError, flowLog, flowWarn } from '@/shared/utils/debugFlow';
-import { isSharedSelectionPath, readSharedSelectionReturn } from '@/features/sharing/sharedSelectionModel';
+import {
+  isSharedSelectionAuthCallback,
+  isSharedSelectionPath,
+  readSharedSelectionReturn,
+} from '@/features/sharing/sharedSelectionModel';
 
 const FILTER_STORAGE_KEY = 'plano-voto:filtro-ativo';
 
@@ -137,7 +141,10 @@ export const UserProvider = ({ children }) => {
 
       // O fluxo vindo de um link exige confirmação depois do login. Não mesclar
       // outro rascunho de visitante automaticamente enquanto ele está em revisão.
-      if (!readSharedSelectionReturn() && !isSharedSelectionPath(window.location.pathname)) {
+      const sharedLoginReturn = isSharedSelectionAuthCallback(window.location.search)
+        ? readSharedSelectionReturn()
+        : null;
+      if (!sharedLoginReturn && !isSharedSelectionPath(window.location.pathname)) {
         void mergeVisitorBallotDraftIntoAccount(user.uid).catch((error) => {
           flowError('visitor-draft.merge.error', error, { userId: user.uid });
         });

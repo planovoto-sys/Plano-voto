@@ -58,7 +58,7 @@ export const subscribeToAuth = (callback) => {
   };
 };
 
-export const signInWithGoogle = async () => {
+export const signInWithGoogle = async ({ redirectTo } = {}) => {
   if (!usesSupabaseAuth) {
     await authPersistenceReady;
     return signInWithPopup(firebaseAuth, googleProvider);
@@ -68,7 +68,7 @@ export const signInWithGoogle = async () => {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${window.location.origin}/`,
+      redirectTo: redirectTo || `${window.location.origin}/`,
       queryParams: {
         access_type: 'offline',
         prompt: 'select_account',

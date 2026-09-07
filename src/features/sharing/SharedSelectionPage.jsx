@@ -8,7 +8,7 @@ import LogoCompleta from '@/shared/ui/brand/LogoCompleta';
 import {
   clearSharedSelectionReturn, eligibleSharedCandidates, getSharedCandidateOffice,
   isSharedSelectionId, rememberSharedSelectionReturn, SHARED_SELECTION_PREFIX,
-  readSharedSelectionDraft, writeSharedSelectionDraft,
+  readSharedSelectionDraft, sharedSelectionAuthRedirectUrl, writeSharedSelectionDraft,
 } from './sharedSelectionModel';
 import { importSharedSelection, readImportContext, readSharedSelection, sharedSelectionError } from './sharedSelectionService';
 import './SharedSelection.css';
@@ -81,8 +81,9 @@ export default function SharedSelectionPage({ summary = false }) {
     }
     saving.current = true; setBusy(true); setMessage('');
     try {
-      await signInWithGoogle();
+      await signInWithGoogle({ redirectTo: sharedSelectionAuthRedirectUrl(window.location.origin) });
     } catch {
+      clearSharedSelectionReturn();
       setMessage('Não foi possível entrar. Suas escolhas continuam neste dispositivo; tente novamente.');
     } finally { saving.current = false; setBusy(false); }
   };

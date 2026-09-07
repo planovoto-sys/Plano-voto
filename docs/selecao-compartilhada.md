@@ -6,7 +6,7 @@
 2. O visitante abre `/selecao/:id` sem autenticação e revisa os itens.
 3. Ao avançar, a lista escolhida é guardada no armazenamento de sessão do navegador.
 4. `/selecao/:id/resumo` exibe todos os itens mantidos pelo visitante, sem escolher nomes por ele.
-5. O botão de login aparece no resumo. Após o retorno do Google, as escolhas locais são recuperadas.
+5. O botão de login aparece no resumo. Esse botão usa um retorno OAuth identificado exclusivamente como `shared_selection`; após o retorno do Google, as escolhas locais são recuperadas.
 6. O usuário confirma o salvamento. Se já existir uma seleção na conta, a interface avisa que ela será substituída.
 
 Abrir o link ou alterar caixas de seleção não grava um rascunho no servidor. O fluxo de login compartilhado também impede a mesclagem automática de outro rascunho de visitante.
@@ -15,6 +15,7 @@ Abrir o link ou alterar caixas de seleção não grava um rascunho no servidor. 
 
 - O rascunho temporário contém apenas identificadores, estado e versão da publicação; expira após 24 horas e depende da mesma sessão do navegador.
 - O retorno do login aceita apenas rotas internas de seleção e expira após uma hora.
+- O login normal remove qualquer intenção antiga do QR e só segue o fluxo comum. O app só retoma o QR quando a URL de retorno OAuth e um rascunho válido confirmam a mesma intenção.
 - Se o armazenamento estiver bloqueado, o avanço é interrompido com uma mensagem para evitar a perda silenciosa das escolhas.
 - A importação verifica a versão da publicação e o estado atual da seleção da conta, evitando substituir silenciosamente alterações concorrentes.
 - O link público não expõe nome, e-mail ou identificador do autor. A publicação depende de consentimento explícito e pode ser desativada.
