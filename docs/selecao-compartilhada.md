@@ -8,7 +8,7 @@
 4. Após autenticar, o app consulta a publicação e o rascunho da conta. Se já houver candidatos salvos, pede confirmação antes de substituí-los; cancelar preserva as escolhas atuais. Uma conta sem candidatos recebe a lista como ponto de partida automaticamente.
 5. A importação inicial usa os IDs publicados, a revisão da publicação e o `updated_at` do rascunho como controle de concorrência.
 6. O usuário segue pelas próprias rotas do app: Estado → Presidente → Senadores → Deputado → Resumo. Não existem mais telas paralelas de candidatos ou resumo compartilhado; header, busca, cards, navegação e salvamentos por etapa são os mesmos. Não há botão extra para salvar no resumo.
-7. A tag **Seleção compartilhada** acompanha essas telas. Os nomes recebidos aparecem antes dos demais nas listas, preservando a ordenação normal dentro de cada grupo. Isso não modifica a política de indicações do resumo.
+7. A tag **Seleção compartilhada** fica na borda superior dos cards dos candidatos recebidos, tanto nas listas quanto no resumo; não aparece no corpo das telas nem nos candidatos adicionados pelo destinatário. Os nomes recebidos aparecem antes dos demais nas listas, preservando a ordenação normal dentro de cada grupo. Isso não modifica a política de indicações do resumo.
 8. Reabrir o mesmo link/revisão na mesma sessão retoma as escolhas editadas, sem reimportar a lista. Uma revisão nova passa novamente pela confirmação caso a conta tenha escolhas.
 
 A rota antiga `/selecao/:id/resumo` também passa pela entrada autenticada; não mantém uma segunda tela de resumo.

@@ -124,7 +124,6 @@ function SharedSelectionEntry({ id, userId, onRetry }) {
       <AppHeader variant="default" onBack={keepMyChoices} />
       <main className="selection-import__scroll prototype-scroll nv-scroll">
         <div className="selection-import__shell">
-          <span className="selection-import__eyebrow">Seleção compartilhada</span>
           {error && <div className="selection-import__notice" role="alert">
             <p>{error}</p>
             <button type="button" className="selection-primary" onClick={onRetry}>Tentar novamente</button>

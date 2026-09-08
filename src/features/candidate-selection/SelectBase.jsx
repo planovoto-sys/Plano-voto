@@ -17,7 +17,6 @@ import {
   getCandidateSystemScore
 } from '@/shared/utils/candidateMetrics';
 import CandidateCard from './CandidateCard';
-import SharedSelectionTag from '@/features/sharing/SharedSelectionTag';
 import {
   INITIAL_CANDIDATE_RENDER_LIMIT,
   getSubNavLabel,
@@ -334,7 +333,6 @@ const candidateFilterItems = useMemo(() => (
   const renderStateList = () => {
     return (
       <div className="state-selection-flow nv-container">
-        <SharedSelectionTag />
         <section className="state-selection-panel" aria-label="Estados">
           <div className="prototype-section-heading">
             <h2>Estado</h2>
@@ -388,7 +386,6 @@ const candidateFilterItems = useMemo(() => (
 
     return (
       <div className={`candidate-flow nv-container ${isSenateOffice ? 'candidate-flow--senate' : 'candidate-flow--single'}`} id="tour-lista">
-        <SharedSelectionTag />
         <section className="candidate-list-section">
           <div className="prototype-section-heading">
             <h2>{headingTitle}</h2>

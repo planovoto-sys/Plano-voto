@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Star, ThumbsUp, ThumbsDown } from 'lucide-react';
+import SharedSelectionTag from '@/features/sharing/SharedSelectionTag';
 import {
   formatScore,
   getCandidateDisplayScore,
@@ -93,6 +94,7 @@ export default function CandidateCard({
       tabIndex={0}
       aria-pressed={selected}
     >
+      <SharedSelectionTag candidateId={candidate.id} />
 
       {/* 1. CABEÇALHO */}
       <header className="candidate-card__header">

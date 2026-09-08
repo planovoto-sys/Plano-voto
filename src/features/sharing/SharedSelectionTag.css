@@ -1,13 +1,21 @@
 .shared-selection-tag {
+  position: absolute;
+  top: 0;
+  left: 14px;
+  transform: translateY(-50%);
+  z-index: 1;
   display: inline-flex;
-  align-self: flex-start;
   width: fit-content;
-  padding: 5px 9px;
+  max-width: calc(100% - 28px);
+  padding: 2px 8px;
+  border: 1px solid #c9dfb4;
   border-radius: 999px;
-  background: rgba(141, 198, 63, .17);
+  background: #e8f2da;
   color: var(--brand-green-dark, #0b6b3a);
-  font-size: 11px;
+  font-size: 9px;
+  line-height: 12px;
   font-weight: 800;
   letter-spacing: .02em;
   text-transform: uppercase;
+  pointer-events: none;
 }
