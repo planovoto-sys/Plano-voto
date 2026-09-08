@@ -1,5 +1,8 @@
 // Referências fornecidas pelo responsável pelo Bom de Voto; não são garantia de eleição.
 // A migração correspondente é validada contra estes 81 valores nos testes.
+// Durante testes visuais, VITE_VIABILITY_TEST_TARGET substitui temporariamente
+// estes números no cliente. As referências abaixo permanecem documentadas e o
+// modo de teste nunca modifica os limites armazenados no Supabase.
 export const VIABILITY_TARGETS = {
   "PRESIDENTE": {
     "BR": 59276177
@@ -92,14 +95,23 @@ export const VIABILITY_TARGETS = {
   }
 };
 
+export const resolveViabilityTestTarget = (value) => {
+  const target = Number(value);
+  return Number.isInteger(target) && target > 0 ? target : null;
+};
+// Teste temporário solicitado para a main. Defina 0 para desligar sem alterar código.
+export const VIABILITY_TEST_TARGET = resolveViabilityTestTarget(
+  import.meta.env?.VITE_VIABILITY_TEST_TARGET ?? 3
+);
+
 export const normalizeViabilityOffice = (office = '') => {
   const key = String(office).trim().toUpperCase().replace(/\s+/g, '_');
   return key === 'SENADORES' ? 'SENADOR' : key;
 };
 
 export const getViabilityTarget = (office, state) => {
+  if (VIABILITY_TEST_TARGET !== null) return VIABILITY_TEST_TARGET;
   const key = normalizeViabilityOffice(office);
   const scope = key === 'PRESIDENTE' ? 'BR' : String(state || '').trim().toUpperCase();
   return VIABILITY_TARGETS[key]?.[scope] ?? null;
 };
-

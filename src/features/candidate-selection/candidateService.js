@@ -8,6 +8,7 @@ import {
 } from 'firebase/firestore';
 import { ACTIVE_ELECTION_ID } from '@/shared/constants/ballot';
 import { STATE_NAMES } from '@/shared/constants/states';
+import { VIABILITY_TEST_TARGET } from '@/shared/constants/viabilityTargets';
 import { db } from '@/shared/firebase/firebase';
 import { getSupabaseClient } from '@/shared/supabase/client';
 import { normalizeSearch } from '@/shared/utils/search';
@@ -659,7 +660,8 @@ export const fetchCandidateTallies = async (candidateTargets, { forceRefresh = f
         state: target.estado || null,
         active_selections: activeSelections,
         indication_count: Number(recommendationsById.get(target.id)?.indication_count || 0),
-        indication_limit: Number(recommendationsById.get(target.id)?.indication_limit) || null,
+        indication_limit: VIABILITY_TEST_TARGET
+          ?? (Number(recommendationsById.get(target.id)?.indication_limit) || null),
       };
       tallies.set(target.id, tally);
       writeCacheEntry(tallyCacheKey(target.id, target.estado), tally);
