@@ -12,7 +12,6 @@ import { flowError, flowLog, flowWarn } from '@/shared/utils/debugFlow';
 import {
   isSharedSelectionAuthCallback,
   isSharedSelectionPath,
-  readSharedSelectionReturn,
 } from '@/features/sharing/sharedSelectionModel';
 
 const FILTER_STORAGE_KEY = 'plano-voto:filtro-ativo';
@@ -141,10 +140,10 @@ export const UserProvider = ({ children }) => {
 
       // O fluxo vindo de um link exige confirmação depois do login. Não mesclar
       // outro rascunho de visitante automaticamente enquanto ele está em revisão.
-      const sharedLoginReturn = isSharedSelectionAuthCallback(window.location.search)
-        ? readSharedSelectionReturn()
-        : null;
-      if (!sharedLoginReturn && !isSharedSelectionPath(window.location.pathname)) {
+      // Mesmo se a sessão que guardava o link expirar, não mesclar um rascunho
+      // de visitante em um retorno OAuth que pertence ao compartilhamento.
+      const isSharedLogin = isSharedSelectionAuthCallback(window.location.search);
+      if (!isSharedLogin && !isSharedSelectionPath(window.location.pathname)) {
         void mergeVisitorBallotDraftIntoAccount(user.uid).catch((error) => {
           flowError('visitor-draft.merge.error', error, { userId: user.uid });
         });

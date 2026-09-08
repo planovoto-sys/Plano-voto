@@ -22,6 +22,7 @@ import {
 // IMPORTAÇÕES ATUALIZADAS
 import ConvexBottomNavigation from '@/app/shell/BottomNavigation';
 import ShareChoicePanel from '@/features/sharing/ShareChoicePanel';
+import SharedSelectionTag from '@/features/sharing/SharedSelectionTag';
 import { useNotify } from '@/features/notifications/useNotify';
 import { STEP_GUIDANCE_MESSAGES } from '@/features/notifications/notificationMessages';
 
@@ -352,6 +353,7 @@ export default function MeuPlano() {
 
       <main ref={scrollRef} className="prototype-scroll my-plan-scroll">
         <div className="my-plan-shell">
+          <SharedSelectionTag />
           
           <section className={`my-plan-overview ${overviewToneClass}`}>
             <div className="my-plan-overview__metrics">

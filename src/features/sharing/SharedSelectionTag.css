@@ -1,0 +1,13 @@
+.shared-selection-tag {
+  display: inline-flex;
+  align-self: flex-start;
+  width: fit-content;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: rgba(141, 198, 63, .17);
+  color: var(--brand-green-dark, #0b6b3a);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+}

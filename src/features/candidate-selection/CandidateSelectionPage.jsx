@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useDeferredValue } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { BALLOT_ROUTES } from '@/shared/constants/ballot';
+import { ACTIVE_ELECTION_ID, BALLOT_ROUTES } from '@/shared/constants/ballot';
+import { prioritizeSharedCandidates, readSharedSelectionSource } from '@/features/sharing/sharedSelectionModel';
 import { CANDIDATE_FILTERS } from '@/shared/constants/candidates';
 import { getViabilityTarget } from '@/shared/constants/viabilityTargets';
 import { STATE_NAMES } from '@/shared/constants/states';
@@ -111,6 +112,7 @@ export default function EscolherCandidatos({
   const isDesktopLayout = useDesktopLayout();
 
   const userId = user?.uid;
+  const sharedSource = useMemo(() => readSharedSelectionSource(userId, ACTIVE_ELECTION_ID), [userId]);
   const isGuestMode = !userId;
   const estadoDoFluxo = userId ? getBallotEstado(userId, userData?.estado) : getVisitorBallotEstado();
   const isNationalOffice = chaveBanco === 'presidente';
@@ -369,13 +371,14 @@ export default function EscolherCandidatos({
       isAlreadyChosen: selectedCandidateIdsInOtherSteps.has(candidate.id)
     }));
 
-    return listaComEstado
+    const orderedCandidates = listaComEstado
       .map((candidate) => ({
         ...candidate,
         isChanceFeatured: !isGuestMode && candidate.id === featuredCandidateId
       }))
       .sort(compareCandidatesByScorePriority);
-  }, [candidatosDoEstado, featuredCandidateId, filtroLista, buscaDiferida, isGuestMode, selectedCandidateIdsInOtherSteps, selecionadosNaTela]);
+    return prioritizeSharedCandidates(orderedCandidates, sharedSource);
+  }, [candidatosDoEstado, featuredCandidateId, filtroLista, buscaDiferida, isGuestMode, selectedCandidateIdsInOtherSteps, selecionadosNaTela, sharedSource]);
 
   const persistirEtapa = async (listaFinalDaTela, { markCompleted = false } = {}) => {
     if (!estadoDoFluxo) {

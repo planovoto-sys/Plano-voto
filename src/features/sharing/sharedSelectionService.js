@@ -30,6 +30,7 @@ export const importSharedSelection = async ({ userId, shared, state, candidateId
 
 export const sharedSelectionError = (error) => {
   const message = String(error?.message || '');
+  if (/SOURCE_STORAGE_FAILED/.test(message)) return 'A seleção foi salva na conta, mas o navegador não conseguiu guardar a referência do link. Permita o armazenamento de sessão e abra este link novamente.';
   if (/LOCAL_DRAFT_MISSING/.test(message)) return 'O rascunho não está mais disponível neste navegador. Volte ao link compartilhado para revisar a seleção novamente.';
   if (/SHARE_CHANGED/.test(message)) return 'O autor atualizou esta seleção. Recarregue e revise a nova versão antes de confirmar.';
   if (/DRAFT_CHANGED/.test(message)) return 'Suas escolhas mudaram em outra aba ou dispositivo. Recarregue para revisar antes de substituir.';

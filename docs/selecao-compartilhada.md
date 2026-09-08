@@ -1,28 +1,32 @@
-# Seleção compartilhada e login no resumo
+# Seleção compartilhada no fluxo normal do app
 
 ## Fluxo
 
 1. O autor publica explicitamente uma cópia da sua lista de escolhas.
-2. O visitante abre `/selecao/:id` sem autenticação e revisa os itens.
-3. Ao avançar, a lista escolhida é guardada no armazenamento de sessão do navegador.
-4. `/selecao/:id/resumo` exibe todos os itens mantidos pelo visitante, sem escolher nomes por ele.
-5. O botão de login aparece no resumo. Esse botão usa um retorno OAuth identificado exclusivamente como `shared_selection`; após o retorno do Google, as escolhas locais são recuperadas.
-6. O usuário confirma o salvamento. Se já existir uma seleção na conta, a interface avisa que ela será substituída.
+2. Quem abre `/selecao/:id` sem sessão vê a mesma `LoginPage` do app. Os candidatos só são carregados depois do login.
+3. O login Google preserva o link no retorno OAuth identificado como `shared_selection`. O login direto por ID token mantém a rota compartilhada.
+4. Após autenticar, o app consulta a publicação e o rascunho da conta. Se já houver candidatos salvos, pede confirmação antes de substituí-los; cancelar preserva as escolhas atuais. Uma conta sem candidatos recebe a lista como ponto de partida automaticamente.
+5. A importação inicial usa os IDs publicados, a revisão da publicação e o `updated_at` do rascunho como controle de concorrência.
+6. O usuário segue pelas próprias rotas do app: Estado → Presidente → Senadores → Deputado → Resumo. Não existem mais telas paralelas de candidatos ou resumo compartilhado; header, busca, cards, navegação e salvamentos por etapa são os mesmos. Não há botão extra para salvar no resumo.
+7. A tag **Seleção compartilhada** acompanha essas telas. Os nomes recebidos aparecem antes dos demais nas listas, preservando a ordenação normal dentro de cada grupo. Isso não modifica a política de indicações do resumo.
+8. Reabrir o mesmo link/revisão na mesma sessão retoma as escolhas editadas, sem reimportar a lista. Uma revisão nova passa novamente pela confirmação caso a conta tenha escolhas.
 
-Abrir o link ou alterar caixas de seleção não grava um rascunho no servidor. O fluxo de login compartilhado também impede a mesclagem automática de outro rascunho de visitante.
+A rota antiga `/selecao/:id/resumo` também passa pela entrada autenticada; não mantém uma segunda tela de resumo.
 
 ## Armazenamento e segurança
 
-- O rascunho temporário contém apenas identificadores, estado e versão da publicação; expira após 24 horas e depende da mesma sessão do navegador.
-- O retorno do login aceita apenas rotas internas de seleção e expira após uma hora.
-- O login normal remove qualquer intenção antiga do QR e só segue o fluxo comum. O app só retoma o QR quando a URL de retorno OAuth e um rascunho válido confirmam a mesma intenção.
-- Se o armazenamento estiver bloqueado, o avanço é interrompido com uma mensagem para evitar a perda silenciosa das escolhas.
-- A importação verifica a versão da publicação e o estado atual da seleção da conta, evitando substituir silenciosamente alterações concorrentes.
+- A referência original contém ID do link, revisão, estado, IDs dos candidatos, conta destinatária e eleição. Fica separada do rascunho editável no armazenamento de sessão, com validade de 24 horas. Desmarcar candidatos, adicionar outros ou trocar o estado não a modifica.
+- Essa referência local não é sincronizada entre dispositivos nem permanece após encerrar a sessão do navegador. As escolhas pessoais continuam salvas no banco pelo mecanismo normal do aplicativo.
+- O retorno do login aceita apenas o link interno validado e expira após uma hora. Não exige um rascunho anônimo.
+- O login comum limpa a intenção antiga de QR e o contexto de compartilhamento. O retorno OAuth compartilhado não mescla um rascunho de visitante, mesmo se o link local tiver expirado.
+- Se a intenção se perder durante o OAuth, o app pede para reabrir o link; não substitui escolhas silenciosamente.
+- Armazenamento bloqueado impede iniciar o OAuth compartilhado ou importar a lista com uma falsa promessa de preservar a origem.
+- Uma referência pendente não é tratada como importação concluída. Erros de concorrência exigem recarregar os dados antes de confirmar novamente.
+- A importação verifica a revisão publicada e a versão atual do rascunho da conta no servidor.
 - O link público não expõe nome, e-mail ou identificador do autor. A publicação depende de consentimento explícito e pode ser desativada.
-- O QR code aberto em outro dispositivo aponta para a revisão inicial, pois não transfere o rascunho local.
 
-## Entrega e verificação
+## Dependências e verificação
 
-A migração `20260904000000_shared_selections.sql` precisa ser aplicada após suas dependências antes da publicação do frontend. As alterações não foram aplicadas em produção nesta tarefa.
+A entrada reutiliza a RPC `import_shared_selection` da migração `20260904000000_shared_selections.sql`. Como a importação inicial só contém nomes publicados, este redesenho não depende de permitir candidatos adicionais nessa RPC: as adições posteriores usam o salvamento normal por etapa. Não há nova migração neste ajuste.
 
-Foram verificados testes automatizados, lint, build e um fluxo de navegador com dados fictícios e autenticação simulada: edição anônima, resumo, retorno após recarregamento e salvamento somente com confirmação. O OAuth real e a integração com o Supabase de produção ainda precisam de validação.
+Verificações: testes automatizados, lint, build e navegação local com dados fictícios e autenticação simulada. Foram conferidos login antes da leitura, cancelamento sem importação, confirmação, reabertura sem duplicar importação, edição preservando a referência, pesquisa e avanço até o resumo normal. O OAuth real e a integração de produção continuam exigindo validação com uma conta de teste autenticada.

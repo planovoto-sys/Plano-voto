@@ -5,6 +5,7 @@ import { BALLOT_ROUTES } from '@/shared/constants/ballot';
 import { useDesktopExperience } from '@/shared/hooks/useDesktopExperience';
 import { useUser } from '@/shared/hooks/useUser';
 import LoadingScreen from '@/shared/ui/feedback/LoadingScreen';
+import ConfirmModal from '@/shared/ui/feedback/ConfirmModal';
 import PrivacyConsent from '@/features/privacy/PrivacyConsent';
 import DesktopMobileOnlyPage from '@/features/desktop/DesktopMobileOnlyPage';
 import {
@@ -63,9 +64,12 @@ function AuthenticatedEntryRedirect({ user, estado }) {
   const [sharedReturn] = useState(() => (
     isSharedSelectionAuthCallback(window.location.search) ? readSharedSelectionReturn() : null
   ));
+  const [missingSharedReturn, setMissingSharedReturn] = useState(() => (
+    isSharedSelectionAuthCallback(window.location.search) && !readSharedSelectionReturn()
+  ));
 
   useEffect(() => {
-    if (sharedReturn) return undefined;
+    if (sharedReturn || missingSharedReturn) return undefined;
     let cancelled = false;
 
     const resolveRedirect = async () => {
@@ -91,9 +95,17 @@ function AuthenticatedEntryRedirect({ user, estado }) {
     return () => {
       cancelled = true;
     };
-  }, [estado, user.uid, sharedReturn]);
+  }, [estado, user.uid, sharedReturn, missingSharedReturn]);
 
   if (sharedReturn) return <Navigate to={sharedReturn} replace />;
+  if (missingSharedReturn) return <ConfirmModal
+    isOpen
+    titulo="ABRA O LINK NOVAMENTE"
+    mensagem="O login foi concluído, mas o link compartilhado não está mais disponível nesta sessão. Abra o QR Code ou link novamente para carregar a seleção. Suas escolhas salvas não foram substituídas."
+    textoConfirmar="CONTINUAR COM MINHAS ESCOLHAS"
+    mostrarCancelar={false}
+    onConfirm={() => setMissingSharedReturn(false)}
+  />;
   if (!redirect) return <LoadingScreen />;
 
   return (
@@ -127,7 +139,7 @@ function AppRoutes({ rootElement, publicExplorationRoute, privateRedirect, isDes
           <Route path="/" element={rootElement} />
           <Route path="/login" element={<Login />} />
           <Route path="/selecao/:id" element={<SharedSelectionPage />} />
-          <Route path="/selecao/:id/resumo" element={<SharedSelectionPage summary />} />
+          <Route path="/selecao/:id/resumo" element={<SharedSelectionPage />} />
           <Route path="/home" element={publicExplorationRoute(<Home />)} />
 
           <Route path={BALLOT_ROUTES.presidente} element={publicExplorationRoute(renderCandidateRoute(CANDIDATE_ROUTES.presidente))} />

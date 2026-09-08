@@ -14,7 +14,10 @@ import {
 import { createGoogleIdentityNonce, loadGoogleIdentity } from '@/shared/auth/googleIdentity';
 import { mergeVisitorBallotDraftIntoAccount } from '@/features/ballot';
 import { flowError, flowLog } from '@/shared/utils/debugFlow';
-import { clearSharedSelectionReturn } from '@/features/sharing/sharedSelectionModel';
+import {
+  clearSharedSelectionReturn, clearSharedSelectionSource, rememberSharedSelectionEntry,
+  sharedSelectionAuthRedirectUrl,
+} from '@/features/sharing/sharedSelectionModel';
 
 import './Login.css';
 
@@ -104,7 +107,7 @@ function FloatingDots() {
   );
 }
 
-export default function LoginPage() {
+export default function LoginPage({ sharedSelectionPath = null }) {
   const { user, userData, loading } = useUser();
   const [signingIn, setSigningIn] = useState(false);
   const [googleIdentityReady, setGoogleIdentityReady] = useState(!usesGoogleIdentity);
@@ -115,6 +118,18 @@ export default function LoginPage() {
   const googleIdentityNonceRef = useRef('');
   const googlePromptAttemptedRef = useRef(false);
 
+  const prepareLogin = useCallback(() => {
+    if (sharedSelectionPath) {
+      if (rememberSharedSelectionEntry(sharedSelectionPath)) return true;
+      setToastMessage('Permita o armazenamento de sessão para preservar o link durante o login e tente novamente.');
+      return false;
+    }
+    // Uma tentativa antiga de QR nunca interfere em um login comum.
+    clearSharedSelectionReturn();
+    clearSharedSelectionSource();
+    return true;
+  }, [sharedSelectionPath]);
+
   const handleGoogleIdentityError = useCallback((error) => {
     flowError('LoginPage', 'Erro ao carregar login direto do Google', error);
     setToastMessage('Não foi possível carregar o login do Google. Tente novamente.');
@@ -122,9 +137,7 @@ export default function LoginPage() {
 
   const handleGoogleCredential = useCallback(async ({ token, nonce }) => {
     if (signingInRef.current) return;
-    // Este componente representa sempre o login comum. Uma tentativa antiga
-    // iniciada no QR não pode redirecionar ou bloquear a mesclagem deste fluxo.
-    clearSharedSelectionReturn();
+    if (!prepareLogin()) return;
     signingInRef.current = true;
     googlePromptAttemptedRef.current = false;
     setSigningIn(true);
@@ -141,7 +154,7 @@ export default function LoginPage() {
       signingInRef.current = false;
       setSigningIn(false);
     }
-  }, []);
+  }, [prepareLogin]);
 
   useEffect(() => {
     if (!usesGoogleIdentity) return undefined;
@@ -195,15 +208,17 @@ export default function LoginPage() {
 
   const handleGoogleSignIn = useCallback(async () => {
     if (signingIn) return;
-    clearSharedSelectionReturn();
+    if (!prepareLogin()) return;
     setSigningIn(true);
 
     try {
       flowLog('LoginPage', 'Iniciando login com Google');
-      const result = await signInWithGoogle();
+      const result = await signInWithGoogle(sharedSelectionPath
+        ? { redirectTo: sharedSelectionAuthRedirectUrl(window.location.origin) }
+        : undefined);
       flowLog('LoginPage', 'Login iniciado', { provider: authProvider });
 
-      if (result.user?.uid && userData?.estado) {
+      if (!sharedSelectionPath && result.user?.uid && userData?.estado) {
         try {
           await mergeVisitorBallotDraftIntoAccount(result.user.uid, userData.estado);
         } catch (mergeErr) {
@@ -222,10 +237,10 @@ export default function LoginPage() {
     } finally {
       setSigningIn(false);
     }
-  }, [signingIn, userData]);
+  }, [prepareLogin, sharedSelectionPath, signingIn, userData]);
 
   const handlePrimaryGoogleSignIn = useCallback(() => {
-    clearSharedSelectionReturn();
+    if (!prepareLogin()) return;
     if (!usesGoogleIdentity) {
       void handleGoogleSignIn();
       return;
@@ -247,7 +262,7 @@ export default function LoginPage() {
     setToastMessage('');
     googlePromptAttemptedRef.current = true;
     googleIdentity.prompt();
-  }, [handleGoogleSignIn]);
+  }, [handleGoogleSignIn, prepareLogin]);
 
   const PREVIEW_MODE_MESSAGE = `App em modo de visualização — login disponível apenas com ${authProvider} configurado.`;
   const previewModeHint = !user && !loading && !authReady && !signingIn ? PREVIEW_MODE_MESSAGE : '';

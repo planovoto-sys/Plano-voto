@@ -3,6 +3,7 @@ export const SHARED_AUTH_CALLBACK_PARAM = 'auth_flow';
 export const SHARED_AUTH_CALLBACK_VALUE = 'shared_selection';
 export const SHARE_RETURN_KEY = 'bomdevoto:shared-selection-return';
 export const SHARED_DRAFT_KEY = 'bomdevoto:shared-selection-draft';
+export const SHARED_SOURCE_KEY = 'bomdevoto:shared-selection-source';
 const DRAFT_TTL_MS = 24 * 60 * 60 * 1000;
 export const isSharedSelectionId = (id) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(id || ''));
 export const isSharedSelectionPath = (path) => typeof path === 'string'
@@ -50,13 +51,24 @@ export const rememberSharedSelectionReturn = (path) => {
   if (!id || !readSharedSelectionDraft(id)) return false;
   try { window.sessionStorage.setItem(SHARE_RETURN_KEY, JSON.stringify({ path, at: Date.now() })); return true; } catch { return false; }
 };
+// O novo fluxo autentica antes de buscar candidatos: basta preservar o link,
+// sem depender de um rascunho anônimo ou aceitar destinos externos.
+export const rememberSharedSelectionEntry = (path) => {
+  if (!isSharedSelectionPath(path) || path.endsWith('/resumo')) return false;
+  try {
+    window.sessionStorage.setItem(SHARE_RETURN_KEY, JSON.stringify({ kind: 'entry', path, at: Date.now() }));
+    return true;
+  } catch { return false; }
+};
 export const readSharedSelectionReturn = () => {
   try {
     const item = JSON.parse(window.sessionStorage.getItem(SHARE_RETURN_KEY) || 'null');
     const id = sharedSelectionIdFromSummaryPath(item?.path);
-    const valid = id && Number.isFinite(item.at)
-      && Date.now() - item.at >= 0 && Date.now() - item.at < 60 * 60 * 1000
-      && readSharedSelectionDraft(id);
+    const destinationValid = item?.kind === 'entry'
+      ? isSharedSelectionPath(item.path) && !item.path.endsWith('/resumo')
+      : id && readSharedSelectionDraft(id);
+    const valid = destinationValid && Number.isFinite(item.at)
+      && Date.now() - item.at >= 0 && Date.now() - item.at < 60 * 60 * 1000;
     if (valid) return item.path;
     window.sessionStorage.removeItem(SHARE_RETURN_KEY);
     return null;
@@ -88,4 +100,33 @@ export const readSharedSelectionDraft = (id) => {
 
 export const clearSharedSelectionDraft = () => {
   try { window.sessionStorage.removeItem(SHARED_DRAFT_KEY); } catch { /* Sem armazenamento. */ }
+};
+
+// Referência imutável da lista recebida, separada do rascunho editável. Assim,
+// desmarcar/adicionar nomes ou trocar a UF não apaga a origem da seleção.
+// Como os rascunhos locais do app, esses dados ficam somente nesta sessão.
+export const writeSharedSelectionSource = ({ userId, electionId, id, revision, state, candidateIds, applied = true }) => {
+  const source = { userId, electionId, id, revision, state, candidateIds: [...new Set(candidateIds)], applied, at: Date.now() };
+  if (!userId || !electionId || !validLocalDraft(source)) return false;
+  try { window.sessionStorage.setItem(SHARED_SOURCE_KEY, JSON.stringify(source)); return true; } catch { return false; }
+};
+
+export const readSharedSelectionSource = (userId, electionId) => {
+  if (!userId || !electionId) return null;
+  try {
+    const source = JSON.parse(window.sessionStorage.getItem(SHARED_SOURCE_KEY) || 'null');
+    return validLocalDraft(source) && source.applied === true && source.userId === userId && source.electionId === electionId ? source : null;
+  } catch { return null; }
+};
+
+export const clearSharedSelectionSource = () => {
+  try { window.sessionStorage.removeItem(SHARED_SOURCE_KEY); } catch { /* Sem armazenamento. */ }
+};
+
+// Apenas agrupa a lista de escolha; não altera notas, contadores ou indicações.
+export const prioritizeSharedCandidates = (candidates, source) => {
+  if (!source) return candidates;
+  const received = new Set(source.candidateIds);
+  return [...candidates.filter((candidate) => received.has(candidate.id)),
+    ...candidates.filter((candidate) => !received.has(candidate.id))];
 };

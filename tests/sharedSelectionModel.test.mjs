@@ -7,6 +7,8 @@ import {
   sharedSelectionAuthRedirectUrl,
   SHARE_RETURN_KEY,
   SHARED_DRAFT_KEY, clearSharedSelectionDraft, readSharedSelectionDraft, writeSharedSelectionDraft,
+  rememberSharedSelectionEntry, readSharedSelectionSource, writeSharedSelectionSource,
+  clearSharedSelectionSource, prioritizeSharedCandidates, SHARED_SOURCE_KEY,
 } from '../src/features/sharing/sharedSelectionModel.js';
 const id = '11111111-1111-4111-8111-111111111111';
 
@@ -102,3 +104,69 @@ test('mensagem de compartilhamento mantém link clicável e revisão explícita'
   assert.ok(message.includes('revisar os candidatos'));
   assert.ok(message.endsWith(url));
 });
+
+const withSession = (callback) => {
+  const previousWindow = globalThis.window;
+  const values = new Map();
+  globalThis.window = { sessionStorage: {
+    setItem: (key, value) => values.set(key, value), getItem: (key) => values.get(key), removeItem: (key) => values.delete(key),
+  } };
+  try { callback(values); } finally { globalThis.window = previousWindow; }
+};
+
+test('login antes da seleção mantém somente o link, sem ler ou exigir rascunho anônimo', () => withSession((values) => {
+  assert.equal(rememberSharedSelectionEntry(`/selecao/${id}`), true);
+  assert.equal(readSharedSelectionReturn(), `/selecao/${id}`);
+  assert.equal(values.has(SHARED_DRAFT_KEY), false);
+  assert.equal(values.has(SHARED_SOURCE_KEY), false, 'login não importa a seleção');
+  for (const path of ['https://evil.com', `//evil.com/selecao/${id}`, `/selecao/${id}/resumo`, `/selecao/${id}?redirect=/home`]) {
+    assert.equal(rememberSharedSelectionEntry(path), false);
+  }
+  clearSharedSelectionReturn();
+  assert.equal(readSharedSelectionReturn(), null, 'login comum descarta intenção anterior');
+  values.set(SHARE_RETURN_KEY, JSON.stringify({ kind: 'entry', path: `/selecao/${id}`, at: Date.now() - 3600001 }));
+  assert.equal(readSharedSelectionReturn(), null);
+}));
+
+test('referência é isolada por conta/eleição e não é modificada ao editar a seleção', () => withSession(() => {
+  const source = { userId: 'conta-a', electionId: 'eleicao-a', id, revision: 2, state: 'ES', candidateIds: ['p', 's', 'p'] };
+  assert.equal(writeSharedSelectionSource(source), true);
+  const original = readSharedSelectionSource('conta-a', 'eleicao-a');
+  assert.deepEqual(original.candidateIds, ['p', 's']);
+  assert.equal(readSharedSelectionSource('conta-b', 'eleicao-a'), null);
+  assert.equal(readSharedSelectionSource('conta-a', 'eleicao-b'), null);
+  assert.equal(readSharedSelectionSource(null, 'eleicao-a'), null);
+  writeSharedSelectionDraft({ id, revision: 2, state: 'SP', candidateIds: ['novo'] });
+  clearSharedSelectionDraft();
+  clearSharedSelectionReturn();
+  assert.deepEqual(readSharedSelectionSource('conta-a', 'eleicao-a'), original);
+  const copy = readSharedSelectionSource('conta-a', 'eleicao-a');
+  copy.candidateIds.pop();
+  assert.deepEqual(readSharedSelectionSource('conta-a', 'eleicao-a'), original);
+  clearSharedSelectionSource();
+  assert.equal(readSharedSelectionSource('conta-a', 'eleicao-a'), null);
+}));
+
+test('uma importação em andamento não é confundida com link já aplicado', () => withSession(() => {
+  const source = { userId: 'conta', electionId: 'eleicao', id, revision: 1, state: 'SP', candidateIds: ['p'] };
+  assert.equal(writeSharedSelectionSource({ ...source, applied: false }), true);
+  assert.equal(readSharedSelectionSource('conta', 'eleicao'), null);
+  assert.equal(writeSharedSelectionSource(source), true);
+  assert.equal(readSharedSelectionSource('conta', 'eleicao').applied, true);
+}));
+
+test('nomes recebidos permanecem acima dos demais sem mudar a ordem interna por nota', () => {
+  const items = [{ id: 'novo-9' }, { id: 'recebido-8' }, { id: 'novo-7' }, { id: 'recebido-6' }];
+  const result = prioritizeSharedCandidates(items, { candidateIds: ['recebido-6', 'recebido-8', 'indisponivel'] });
+  assert.deepEqual(result.map((item) => item.id), ['recebido-8', 'recebido-6', 'novo-9', 'novo-7']);
+  assert.equal(items[0].id, 'novo-9', 'não modifica lista original');
+  assert.equal(prioritizeSharedCandidates(items, null), items, 'fluxo comum permanece idêntico');
+});
+
+test('login e referência falham de forma segura com armazenamento bloqueado ou corrompido', () => withSession((values) => {
+  values.set(SHARED_SOURCE_KEY, 'invalid json');
+  assert.equal(readSharedSelectionSource('conta', 'eleicao'), null);
+  window.sessionStorage.setItem = () => { throw new Error('blocked'); };
+  assert.equal(rememberSharedSelectionEntry(`/selecao/${id}`), false);
+  assert.equal(writeSharedSelectionSource({ userId: 'conta', electionId: 'eleicao', id, revision: 1, state: 'SP', candidateIds: ['p'] }), false);
+}));
