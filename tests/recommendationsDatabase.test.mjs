@@ -40,6 +40,7 @@ before(async () => {
   ] } })]);
   await db.exec(await file('supabase/migrations/20260903000000_limited_recommendations.sql'));
   await db.exec(await file('supabase/migrations/20260904000000_shared_selections.sql'));
+  await db.exec(await file('supabase/migrations/20260908000000_shared_selection_custom_candidates.sql'));
 });
 after(() => db.close());
 
@@ -130,14 +131,14 @@ isolated('publicação fica estável até atualizar; atualização preserva URL 
   assert.deepEqual(await idsFor(106), ['snapshot-B']);
 });
 
-isolated('importação só aceita candidatos publicados e da UF escolhida, sem sobrescrita silenciosa', async () => {
+isolated('importação aceita candidatos públicos acrescentados, mas respeita UF e versão do rascunho', async () => {
   await candidate('shared-P', 9, 'Presidente', null); await candidate('shared-SP', 9);
   await candidate('outsider', 10);
   await save(107, ['shared-P','shared-SP']); const shared = await publish(107);
   await save(108, ['outsider']); await actAs(108);
   const original = await idsFor(108);
   for (const [ids, state, expectedError] of [
-    [['outsider'], 'SP', /INVALID_CANDIDATE/],
+    [['candidato-inexistente'], 'SP', /CANDIDATES_CHANGED/],
     [['shared-SP'], 'RJ', /CANDIDATES_CHANGED/],
     [['shared-P'], 'XX', /INVALID_STATE/],
     [['shared-P'], 'SP', /DRAFT_CHANGED/],
@@ -148,8 +149,8 @@ isolated('importação só aceita candidatos publicados e da UF escolhida, sem s
     assert.deepEqual(await idsFor(108), original);
   }
   const context = (await db.query('select updated_at::text as updated_at from public.ballot_drafts where user_id=$1', [uuid(108)])).rows[0];
-  await importShare(shared, ['shared-P'], 'RJ', context.updated_at);
-  assert.deepEqual(await idsFor(108), ['shared-P']);
+  await importShare(shared, ['shared-P', 'outsider'], 'SP', context.updated_at);
+  assert.deepEqual(new Set(await idsFor(108)), new Set(['shared-P', 'outsider']));
 });
 
 isolated('outra conta não gerencia publicação do autor; anonimato não permite publicar/importar', async () => {
