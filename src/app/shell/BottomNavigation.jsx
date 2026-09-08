@@ -244,19 +244,48 @@ export default function ConvexBottomNavigation({
     }
   };
 
+  return (
+    <BottomNavigationView
+      activeStep={activeStep}
+      completedSteps={completedSteps}
+      firstPendingIndex={firstPendingIndex}
+      navState={navState}
+      isFinalStep={isFinalStep}
+      onNavigate={handleNavigate}
+      onContinueClick={handleCentralContinue}
+    />
+  );
+}
+
+// Apresentação única para o fluxo normal e para a cópia recebida por link.
+// Cada fluxo fornece sua própria navegação e seu próprio estado.
+export function BottomNavigationView({
+  activeStep,
+  completedSteps = {},
+  firstPendingIndex = 0,
+  navState = 'expanded',
+  isFinalStep = false,
+  allowAllSteps = false,
+  disabled = false,
+  continueDisabled = false,
+  continueLabel,
+  onNavigate,
+  onContinueClick,
+}) {
   const renderNavItems = (stepsArray) => {
     return stepsArray.map((step) => {
       const globalIndex = ALL_STEPS.findIndex(s => s.id === step.id);
       const state = getStepLogicState(step.id, activeStep, completedSteps);
       const isActive = state === 'active';
-      const isClickable = state === 'complete' || globalIndex === firstPendingIndex;
+      const isClickable = !disabled && (allowAllSteps || state === 'complete' || globalIndex === firstPendingIndex);
 
       return (
         <button
           key={step.id}
           className={`convex-nav__step is-${state} ${isClickable ? 'is-clickable' : ''} ${isActive ? 'is-active' : ''}`}
-          onClick={() => handleNavigate(step, isClickable)}
+          onClick={() => onNavigate(step, isClickable)}
           aria-disabled={!isClickable}
+          disabled={disabled}
           aria-current={isActive ? 'step' : undefined}
         >
           <span className="convex-nav__icon-wrap">
@@ -287,8 +316,9 @@ export default function ConvexBottomNavigation({
         <div className="convex-nav__center">
           <button 
             className="convex-nav__continue-btn"
-            onClick={handleCentralContinue}
-            aria-label={isFinalStep ? "Compartilhar Plano" : "Continuar para a próxima etapa"}
+            onClick={onContinueClick}
+            disabled={continueDisabled || disabled}
+            aria-label={continueLabel || (isFinalStep ? "Compartilhar Plano" : "Continuar para a próxima etapa")}
           >
             {isFinalStep ? <ShareIcon className="continue-icon" /> : <ContinueIcon className="continue-icon" />}
           </button>

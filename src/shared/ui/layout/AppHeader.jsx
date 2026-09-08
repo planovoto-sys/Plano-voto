@@ -18,6 +18,7 @@ const BRAND_MAP = {
 export default function AppHeader({
   variant = 'default',
   brand = 'horizontal',
+  centeredBrand = false,
   onBack,
   backLabel = 'Voltar',
   backTo,
@@ -70,6 +71,7 @@ export default function AppHeader({
   const classNames = [
     'app-header',
     `app-header--${variant}`,
+    centeredBrand ? 'app-header--centered-brand' : '',
     scrollHide ? 'app-header--scroll-hide' : '',
     hidden ? 'app-header--hidden' : '',
     searchActive ? 'app-header--search-active' : '',
@@ -125,12 +127,12 @@ export default function AppHeader({
                   <span>{backLabel}</span>
                 </Link>
               )}
-              {!hideBrand && variant !== 'minimal' && brandContent}
+              {!hideBrand && variant !== 'minimal' && !centeredBrand && brandContent}
             </div>
 
-            {variant === 'minimal' && (
+            {(variant === 'minimal' || (centeredBrand && !hideBrand)) && (
               <div className="app-header__center">
-                <BrandComponent />
+                {centeredBrand ? brandContent : <BrandComponent />}
               </div>
             )}
 

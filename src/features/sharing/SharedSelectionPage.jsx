@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Check, Home, LogIn, MapPin, Medal, Save } from 'lucide-react';
+import { ArrowRight, Check, LogIn, Save } from 'lucide-react';
+import { BottomNavigationView } from '@/app/shell/BottomNavigation';
+import { CANDIDATE_ROUTES } from '@/shared/constants/candidateRoutes';
+import { SearchIcon } from '@/shared/icons/AppIcons';
+import { normalizeSearch } from '@/shared/utils/search';
 import { ACTIVE_ELECTION_ID } from '@/shared/constants/ballot';
 import { BRAZILIAN_STATES } from '@/shared/constants/states';
 import { useUser } from '@/shared/hooks/useUser';
@@ -19,10 +23,10 @@ import '@/features/candidate-selection/styles/candidate-card.css';
 import './SharedSelection.css';
 
 const STEPS = [
-  { id: 'estado', label: 'Estado', title: 'Escolha seu estado', Icon: MapPin },
-  { id: 'presidente', label: 'Presidente', title: 'Presidente', office: 'Presidente', Icon: Medal },
-  { id: 'senadores', label: 'Senador', title: 'Senadores', office: 'Senador', Icon: Medal },
-  { id: 'deputado_federal', label: 'Deputado', title: 'Deputado Federal', office: 'Deputado Federal', Icon: Medal },
+  { id: 'estado', navId: 'estado', title: 'Escolha seu estado' },
+  { id: 'presidente', navId: 'presidente', title: CANDIDATE_ROUTES.presidente.titulo, office: 'Presidente', subtitle: CANDIDATE_ROUTES.presidente.subtitulo },
+  { id: 'senadores', navId: 'senador', title: 'Senadores', office: 'Senador', subtitle: CANDIDATE_ROUTES.senadores.subtitulo },
+  { id: 'deputado_federal', navId: 'deputado', title: 'Deputados Federais', office: 'Deputado Federal', subtitle: CANDIDATE_ROUTES.deputadoFederal.subtitulo },
 ];
 const VALID_STEPS = new Set(STEPS.map((step) => step.id));
 const offices = [['presidente', 'Presidente'], ['senadores', 'Senadores'], ['deputado_federal', 'Deputados federais']];
@@ -35,7 +39,7 @@ export default function SharedSelectionPage({ summary = false }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const requestedStep = searchParams.get('etapa') || 'estado';
-  const currentStepId = summary || !VALID_STEPS.has(requestedStep) ? 'resumo' : requestedStep;
+  const currentStepId = summary ? 'resumo' : VALID_STEPS.has(requestedStep) ? requestedStep : 'estado';
   const currentStep = STEPS.find((step) => step.id === currentStepId) || null;
   const [load, setLoad] = useState({ key: '', shared: null, context: null, error: '' });
   const [candidateLoad, setCandidateLoad] = useState({ key: '', items: [], error: '' });
@@ -48,6 +52,13 @@ export default function SharedSelectionPage({ summary = false }) {
   const [message, setMessage] = useState('');
   const [requiresReload, setRequiresReload] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [search, setSearch] = useState({ step: '', value: '', active: false });
+  const searchRef = useRef(null);
+  const summaryActionsRef = useRef(null);
+  const searchValue = search.step === currentStepId ? search.value : '';
+  const searchActive = search.step === currentStepId && search.active;
+  const query = normalizeSearch(searchValue);
+  const matchesSearch = (candidate) => !query || normalizeSearch(`${candidate.nome || ''} ${candidate.partido || ''} ${candidate.partido_sigla || ''} ${candidate.numero || ''}`).includes(query);
   const saving = useRef(false);
   const scrollContainer = useRef(null);
   const key = `${id}:${user?.uid || 'visitor'}:${retry}:${summary ? 'summary' : 'flow'}`;
@@ -211,7 +222,20 @@ export default function SharedSelectionPage({ summary = false }) {
 
   return (
     <div className="selection-import prototype-page nv-screen">
-      <AppHeader variant="default" className="selection-import__header" onBack={handleBack} backLabel="Voltar" />
+      <AppHeader
+        variant="default"
+        centeredBrand
+        className="selection-import__header"
+        onBack={handleBack}
+        backLabel="Voltar"
+        searchActive={searchActive}
+        searchValue={searchValue}
+        onSearchChange={(event) => setSearch({ step: currentStepId, active: true, value: event.target.value })}
+        onSearchClose={() => setSearch({ step: currentStepId, active: false, value: '' })}
+        searchRef={searchRef}
+        searchPlaceholder="Pesquisar..."
+        actions={<button type="button" className="app-header__icon-btn nv-touch" aria-label="Buscar" onClick={() => setSearch({ step: currentStepId, active: true, value: searchValue })}><SearchIcon /></button>}
+      />
       <main ref={scrollContainer} className="selection-import__scroll prototype-scroll nv-scroll">
         <div className="selection-import__shell">
           {isLoading ? <p role="status">Carregando seleção...</p> : load.error ? <div role="alert" className="selection-import__notice">
@@ -221,13 +245,13 @@ export default function SharedSelectionPage({ summary = false }) {
             <header className="selection-import__title">
               <span className="selection-import__eyebrow">Seleção compartilhada</span>
               <h1>{summary ? 'Resumo das suas escolhas' : currentStep.title}</h1>
-              <p>{summary ? 'Confira os candidatos que você manteve ou acrescentou antes de salvar.' : currentStepId === 'estado' ? 'Confirme onde você vota para ver os candidatos disponíveis.' : 'Mantenha os nomes recebidos e escolha outros candidatos se quiser.'}</p>
+              <p>{summary ? 'Confira os candidatos que você manteve ou acrescentou antes de salvar.' : currentStepId === 'estado' ? 'Confirme onde você vota para ver os candidatos disponíveis.' : currentStep.subtitle}</p>
             </header>
 
             {currentStepId === 'estado' && <>
               <div className="selection-import__notice"><p>Seleção de {shared.state} · versão {shared.revision} · publicada em {new Date(shared.published_at).toLocaleDateString('pt-BR')}</p><p>Esta é uma cópia independente. Você decide quais nomes manter e pode incluir outros candidatos.</p></div>
               <label className="selection-import__state-field">Seu estado<select value={state} disabled={busy} onChange={(event) => { setState(event.target.value); setConfirm(false); }}>
-                {BRAZILIAN_STATES.map((item) => <option key={item.sigla} value={item.sigla}>{item.nome} ({item.sigla})</option>)}
+                {BRAZILIAN_STATES.filter((item) => item.sigla === state || !query || normalizeSearch(`${item.nome} ${item.sigla}`).includes(query)).map((item) => <option key={item.sigla} value={item.sigla}>{item.nome} ({item.sigla})</option>)}
               </select></label>
               {state !== shared.state && <p role="status">A lista recebida é de {shared.state}. Para {state}, somente os candidatos a Presidente serão mantidos; senadores e deputados serão exibidos conforme o novo estado.</p>}
             </>}
@@ -235,18 +259,21 @@ export default function SharedSelectionPage({ summary = false }) {
             {currentStep?.office && <>
               {candidateLoad.key !== candidateKey && <p role="status">Carregando candidatos...</p>}
               {candidateLoad.key === candidateKey && candidateLoad.error && <div className="selection-import__notice" role="alert"><p>{candidateLoad.error}</p></div>}
-              {renderCandidateSection('Nomes recebidos', sharedForStep, true)}
-              {renderCandidateSection('Outros candidatos', otherCandidates)}
-              {candidateLoad.key === candidateKey && !sharedForStep.length && !otherCandidates.length && <p>Nenhum candidato disponível nesta etapa.</p>}
+              {renderCandidateSection('Nomes recebidos', sharedForStep.filter(matchesSearch), true)}
+              {renderCandidateSection('Outros candidatos', otherCandidates.filter(matchesSearch))}
+              {candidateLoad.key === candidateKey && !sharedForStep.some(matchesSearch) && !otherCandidates.some(matchesSearch) && <p role="status">Nenhum candidato encontrado.</p>}
             </>}
 
             {summary && <>
               {!user && <div className="selection-import__notice"><p>Suas escolhas estão apenas neste dispositivo. Entre para salvá-las na sua conta.</p></div>}
               {offices.map(([office, title]) => {
-                const candidates = chosen.filter((candidate) => getSharedCandidateOffice(candidate) === office);
+                const candidates = chosen.filter((candidate) => getSharedCandidateOffice(candidate) === office && matchesSearch(candidate));
                 return candidates.length ? <section key={office} className="selection-import__summary-section"><h2>{title} ({candidates.length})</h2>{candidates.map((candidate) => <CandidateCard key={candidate.id} candidate={candidate} selected variant="summary" lockPersonalizedFields={!user} />)}</section> : null;
               })}
               {user && !usesSupabaseAuth && <p>O compartilhamento de seleções requer uma conta conectada ao Supabase.</p>}
+              <div ref={summaryActionsRef} className="selection-import__summary-actions" tabIndex={-1}>
+                <button className="selection-primary" type="button" onClick={primaryAction.action} disabled={primaryAction.disabled}><PrimaryIcon aria-hidden="true" size={20} />{busy ? 'Aguarde...' : primaryAction.label}</button>
+              </div>
               {!busy && <Link className="selection-import__edit-link" to={stepPath('presidente')}>Editar minha seleção</Link>}
               {saved && <div className="selection-import__notice" role="status"><strong>Suas escolhas foram salvas na conta.</strong><Link to="/home">Continuar no aplicativo</Link></div>}
               {confirm && <section className="selection-import__confirmation" aria-label="Confirmar importação"><h2>Confirmar suas escolhas?</h2><p>Serão salvos {chosen.length} candidatos para {state}. {load.context ? 'Suas seleções anteriores serão substituídas, inclusive as de outros cargos.' : 'A seleção será salva na sua conta.'}</p>{load.context?.state && load.context.state !== state && <p>As escolhas salvas anteriormente são de {load.context.state}. Ao confirmar, o estado deste rascunho passará a ser {state}.</p>}<p>Alterações futuras do autor não modificarão sua cópia.</p><button className="selection-text-button" disabled={busy} onClick={() => setConfirm(false)}>Voltar à revisão</button></section>}
@@ -257,15 +284,21 @@ export default function SharedSelectionPage({ summary = false }) {
         </div>
       </main>
 
-      <nav className="selection-import__bottom-nav" aria-label="Etapas da seleção compartilhada">
-        <div className="selection-import__nav-steps selection-import__nav-steps--left">
-          {STEPS.slice(0, 2).map((step) => <button key={step.id} type="button" className={`selection-import__nav-step ${currentStepId === step.id ? 'is-active' : ''}`} onClick={() => goToStep(step.id)} disabled={!shared || busy}><step.Icon aria-hidden="true" /><span>{step.label}</span></button>)}
-        </div>
-        <div className="selection-import__nav-primary"><button type="button" className="selection-import__nav-primary-button" onClick={primaryAction.action} disabled={primaryAction.disabled} aria-label={primaryAction.label}><PrimaryIcon aria-hidden="true" /></button><span>{busy ? 'Aguarde...' : primaryAction.label}</span></div>
-        <div className="selection-import__nav-steps selection-import__nav-steps--right">
-          {summary ? <><button type="button" className="selection-import__nav-step" onClick={() => navigate(stepPath('deputado_federal'))}><ArrowLeft aria-hidden="true" /><span>Editar</span></button><Link className="selection-import__nav-step" to="/"><Home aria-hidden="true" /><span>Início</span></Link></> : STEPS.slice(2).map((step) => <button key={step.id} type="button" className={`selection-import__nav-step ${currentStepId === step.id ? 'is-active' : ''}`} onClick={() => goToStep(step.id)} disabled={!shared || busy}><step.Icon aria-hidden="true" /><span>{step.label}</span></button>)}
-        </div>
-      </nav>
+      <BottomNavigationView
+        activeStep={summary ? 'resultado' : currentStep.navId}
+        allowAllSteps
+        disabled={!shared || busy}
+        continueDisabled={primaryAction.disabled}
+        continueLabel={summary ? 'Revisar e salvar escolhas' : primaryAction.label}
+        isFinalStep={summary}
+        onNavigate={(step, isClickable) => {
+          if (isClickable) goToStep(STEPS.find((item) => item.navId === step.id).id);
+        }}
+        onContinueClick={summary ? () => {
+          summaryActionsRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+          summaryActionsRef.current?.focus({ preventScroll: true });
+        } : primaryAction.action}
+      />
     </div>
   );
 }
