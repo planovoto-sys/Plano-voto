@@ -1,0 +1,23 @@
+.published-selection p, .selection-import p { font-size: 14px; line-height: 1.6; color: #505c51; margin: 0; }
+.published-selection label { display: grid; gap: 7px; font-size: 14px; color: #263b2c; }
+.published-selection input[readonly] { width: 100%; min-width: 0; box-sizing: border-box; padding: 12px; border: 1px solid #cedacc; border-radius: 10px; background: white; font: inherit; }
+.selection-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.selection-actions a, .selection-actions button, .selection-primary { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 12px 14px; min-height: 44px; border: 1px solid #d0e0c8; border-radius: 12px; background: #edf5e8; color: #0b6b3a; font: inherit; font-size: 14px; font-weight: 650; text-decoration: none; cursor: pointer; }
+.selection-text-button { border: 0; background: none; padding: 10px; min-height: 44px; font: inherit; color: #505c51; cursor: pointer; text-decoration: underline; }
+.published-selection button:disabled, .selection-import button:disabled { opacity: .55; cursor: not-allowed; }
+.selection-import { position: relative; background: var(--app-bg, #f4f8f2); min-height: 0; overflow: hidden; }
+.selection-import__scroll { flex: 1 1 auto; min-height: 0; width: 100%; overflow-x: hidden; overflow-y: auto !important; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y; padding: 18px 16px calc(100px + env(safe-area-inset-bottom)); }
+.selection-import__shell { max-width: 520px; margin: 0 auto; display: grid; gap: 20px; }
+.selection-import__eyebrow { width: max-content; padding: 5px 9px; border-radius: 999px; background: rgba(141,198,63,.17); color: var(--brand-green-dark, #0b6b3a); font-size: 11px; font-weight: 800; letter-spacing: .02em; text-transform: uppercase; }
+.selection-import__notice { background: #fff; border: 1px solid #dce6d7; border-radius: 14px; padding: 16px; display: grid; gap: 10px; }
+.selection-primary { background: #8dc63f; color: #124c2c; width: 100%; border: 0; font-size: 16px; }
+.selection-import :focus-visible, .published-selection :focus-visible { outline: 3px solid #0b6b3a; outline-offset: 3px; }
+.selection-import .modal-title { letter-spacing: -.4px; line-height: 1.25; }
+.selection-import .modal-message { display: grid; gap: 12px; }
+.selection-import .modal-message p { font-size: 15px; line-height: 1.5; }
+.selection-import .btn-confirmar { background: #0b6b3a; border-color: #0b6b3a; color: #fff; }
+.selection-import .btn-modal { font-size: 15px; }
+
+@media (max-width: 360px) {
+  .selection-import__scroll { padding-inline: 12px; }
+}

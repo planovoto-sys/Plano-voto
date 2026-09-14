@@ -192,9 +192,47 @@ const readAuthContext = async (request) => {
     throw Object.assign(new Error('Token de autenticacao invalido.'), { code: 'unauthenticated' });
   }
 
+  const accessToken = authorization.slice(7);
+  const supabaseUrl = process.env.SUPABASE_URL?.trim() || process.env.VITE_SUPABASE_URL?.trim() || '';
+  const supabaseApiKey = (
+    process.env.SUPABASE_SECRET_KEY?.trim()
+    || process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()
+    || process.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim()
+    || process.env.VITE_SUPABASE_ANON_KEY?.trim()
+    || ''
+  );
+
+  if (supabaseUrl && supabaseApiKey) {
+    try {
+      const supabaseResponse = await fetch(`${supabaseUrl.replace(/\/$/, '')}/auth/v1/user`, {
+        headers: {
+          apikey: supabaseApiKey,
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const supabaseUser = await supabaseResponse.json().catch(() => ({}));
+
+      if (supabaseResponse.ok && supabaseUser?.id) {
+        const metadata = supabaseUser.user_metadata || {};
+        return {
+          uid: supabaseUser.id,
+          token: {
+            uid: supabaseUser.id,
+            email: supabaseUser.email || '',
+            email_verified: Boolean(supabaseUser.email_confirmed_at),
+            name: metadata.full_name || metadata.name || '',
+            picture: metadata.avatar_url || metadata.picture || '',
+          },
+        };
+      }
+    } catch {
+      // O token ainda pode pertencer ao Firebase durante a migracao gradual.
+    }
+  }
+
   const firebaseApiKey = process.env.VITE_API_KEY;
   if (!firebaseApiKey) {
-    throw Object.assign(new Error('Firebase Auth nao configurado no servidor.'), { code: 'failed-precondition' });
+    throw Object.assign(new Error('Token de autenticacao invalido ou expirado.'), { code: 'unauthenticated' });
   }
 
   let lookupResponse;
@@ -204,7 +242,7 @@ const readAuthContext = async (request) => {
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken: authorization.slice(7) }),
+        body: JSON.stringify({ idToken: accessToken }),
       }
     );
   } catch {

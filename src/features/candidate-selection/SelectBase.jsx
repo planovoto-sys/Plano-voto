@@ -6,10 +6,12 @@ import AppHeader from '@/shared/ui/layout/AppHeader';
 import BottomNavigation from '@/app/shell/BottomNavigation';
 import { SearchIcon } from '@/shared/icons/AppIcons';
 import { useNotify } from '@/features/notifications/useNotify';
+import { STEP_GUIDANCE_MESSAGES } from '@/features/notifications/notificationMessages';
 import LoadingScreen from '@/shared/ui/feedback/LoadingScreen';
 import { flowLog, flowWarn } from '@/shared/utils/debugFlow';
 import { useHideOnScroll } from '@/shared/hooks/useHideOnScroll';
 import {
+  compareCandidatesByScorePriority,
   getCandidateChance,
   getCandidateName,
   getCandidateSystemScore
@@ -27,7 +29,7 @@ export default function SelectBase({
   subtitulo,
   dados,
   limiteSelecao,
-  minimoSelecao = 1,
+  minimoSelecao,
   selecaoInicial = [],
   carregando,
   onConfirmar,
@@ -53,7 +55,8 @@ export default function SelectBase({
   const location = useLocation();
   const notify = useNotify();
   const isHomeState = variant === 'home-state';
-  const isCandidateOffice = variant === 'office-presidente' || variant === 'office-deputado' || variant === 'office-senado';
+  const isPresidentOffice = variant === 'office-presidente';
+  const isCandidateOffice = isPresidentOffice || variant === 'office-deputado' || variant === 'office-senado';
   const isSenateOffice = variant === 'office-senado';
   const candidateCardMode = isCandidateOffice ? 'detailed' : 'compact';
 
@@ -64,7 +67,6 @@ export default function SelectBase({
   const candidateSearchInputRef = useRef(null);
   
   const [modalMalAvaliado, setModalMalAvaliado] = useState({ aberto: false, item: null });
-  const [modalAltaChance, setModalAltaChance] = useState({ aberto: false, item: null });
   const [modalCandidatoRepetido, setModalCandidatoRepetido] = useState({ aberto: false, item: null });
   const [modalLimiteSelecao, setModalLimiteSelecao] = useState({ aberto: false });
   const [modalSubstituirSenador, setModalSubstituirSenador] = useState({ aberto: false, item: null });
@@ -128,13 +130,7 @@ export default function SelectBase({
       getCandidateChance(candidate) > 0 &&
       getCandidateChance(candidate) < 100
     ));
-    return markedFeaturedCandidate || [...eligibleCandidates].sort((a, b) => {
-      const chanceDiff = getCandidateChance(b) - getCandidateChance(a);
-      if (chanceDiff !== 0) return chanceDiff;
-      const scoreDiff = getCandidateSystemScore(b) - getCandidateSystemScore(a);
-      if (scoreDiff !== 0) return scoreDiff;
-      return getCandidateName(a).localeCompare(getCandidateName(b));
-    })[0];
+    return markedFeaturedCandidate || [...eligibleCandidates].sort(compareCandidatesByScorePriority)[0];
   }, [dados, featuredCandidateId, isCandidateOffice]);
 
   const featuredMetricsByCandidateId = useMemo(() => {
@@ -205,6 +201,43 @@ const candidateFilterItems = useMemo(() => (
     }
   };
 
+  const handleContinue = async () => {
+    if (salvandoSelecao || !onConfirmar) return;
+
+    const minimum = Number.isFinite(minimoSelecao) ? minimoSelecao : 0;
+    if (selecionados.length < minimum) {
+      const guidanceMessage = isSenateOffice
+        ? STEP_GUIDANCE_MESSAGES.senador
+        : isPresidentOffice
+          ? STEP_GUIDANCE_MESSAGES.presidente
+          : STEP_GUIDANCE_MESSAGES.deputado;
+
+      notify.warning(guidanceMessage, {
+        dedupeKey: `minimum-selection-${variant}`,
+        duration: 4200
+      });
+      return;
+    }
+
+    try {
+      setSalvandoSelecao(true);
+      // A seleção é salva a cada toque, mas a etapa só deve ser marcada como
+      // concluída quando o usuário avança explicitamente.
+      await onConfirmar(selecionados, { alreadySaved: false });
+    } catch (error) {
+      notify.error('Não foi possível avançar. Tente novamente.', {
+        dedupeKey: `selection-continue-error-${variant}`,
+        duration: 5200
+      });
+      setModalErroSalvar({
+        aberto: true,
+        mensagem: error?.message || 'Não foi possível avançar. Tente novamente.'
+      });
+    } finally {
+      setSalvandoSelecao(false);
+    }
+  };
+
   const efetivarSelecao = async (item) => {
     if (!item) return false;
     if (!isCandidateOffice && effectiveLimit === 1) {
@@ -246,10 +279,6 @@ const candidateFilterItems = useMemo(() => (
       setModalMalAvaliado({ aberto: true, item });
       return;
     }
-    if (isCandidateOffice && getCandidateChance(item) >= 100) {
-      setModalAltaChance({ aberto: true, item });
-      return;
-    }
     flowLog('select.item.add', { titulo, itemId: item.id, itemLabel: getCandidateName(item) || item.nome || item.sigla || item.id });
     await efetivarSelecao(item);
   };
@@ -272,31 +301,6 @@ const candidateFilterItems = useMemo(() => (
         aberto: true,
         mensagem: error?.message || 'Não foi possível salvar sua escolha antes de trocar o filtro.'
       });
-    }
-  };
-
-  const handleAdvance = async () => {
-    if (!onConfirmar || salvandoSelecao) return;
-    if (selecionados.length < minimoSelecao) {
-      const message = currentStep === 'presidente'
-        ? 'Selecione pelo menos 1 candidato a presidente para continuar.'
-        : currentStep === 'senador'
-          ? 'Selecione pelo menos 2 candidatos para continuar.'
-          : 'Selecione pelo menos 1 candidato para continuar.';
-      notify.warning(message);
-      return;
-    }
-
-    try {
-      setSalvandoSelecao(true);
-      await onConfirmar(selecionados, { alreadySaved: Boolean(onSelectionChange) });
-    } catch (error) {
-      setModalErroSalvar({
-        aberto: true,
-        mensagem: error?.message || 'Não foi possível avançar. Tente novamente.'
-      });
-    } finally {
-      setSalvandoSelecao(false);
     }
   };
 
@@ -371,8 +375,14 @@ const candidateFilterItems = useMemo(() => (
   };
 
   const renderCandidateList = () => {
-    const headingTitle = titulo || (isSenateOffice ? 'Senadores' : 'Deputados Federais');
-    const headingSubtitle = subtitulo || 'Selecione todos os candidatos em quem você aceitaria votar';
+    const headingTitle = isPresidentOffice
+      ? titulo || 'Presidente'
+      : isSenateOffice
+        ? 'Senadores'
+        : 'Deputados Federais';
+    const headingSubtitle = isPresidentOffice
+      ? subtitulo || 'Selecione todos os candidatos em quem você aceitaria votar'
+      : 'Selecione todos os candidatos em quem você aceitaria votar';
 
     return (
       <div className={`candidate-flow nv-container ${isSenateOffice ? 'candidate-flow--senate' : 'candidate-flow--single'}`} id="tour-lista">
@@ -476,7 +486,8 @@ const candidateFilterItems = useMemo(() => (
 
       <BottomNavigation
         currentStep={currentStep}
-        onContinueClick={isCandidateOffice ? handleAdvance : undefined}
+        placement="footer"
+        onContinueClick={Number.isFinite(minimoSelecao) && minimoSelecao > 0 ? handleContinue : undefined}
       />
 
       <ConfirmModal
@@ -498,27 +509,6 @@ const candidateFilterItems = useMemo(() => (
           const itemToSelect = modalMalAvaliado.item;
           setModalMalAvaliado({ aberto: false, item: null });
           efetivarSelecao(itemToSelect);
-        }}
-      />
-      <ConfirmModal
-        isOpen={modalAltaChance.aberto}
-        titulo="ATENÇÃO!"
-        mensagem={
-          <>
-            <span>Este candidato já chegou a 100% de viabilidade.</span>
-            <strong className="low-score-highlight">Ele pode estar com votos suficientes.</strong>
-          </>
-        }
-        textoConfirmar="MANTER ESCOLHA"
-        textoCancelar="TROCAR"
-        tipo="high-chance"
-        onConfirm={() => {
-          const itemToSelect = modalAltaChance.item;
-          setModalAltaChance({ aberto: false, item: null });
-          efetivarSelecao(itemToSelect);
-        }}
-        onCancel={() => {
-          setModalAltaChance({ aberto: false, item: null });
         }}
       />
       <ConfirmModal

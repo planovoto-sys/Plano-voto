@@ -6,7 +6,7 @@ export const CANDIDATE_ROUTES = {
     chaveBanco: 'presidente',
     chaveGrupo: 'presidente',
     titulo: 'Presidente',
-    subtitulo: 'Selecione o candidato em quem você aceitaria votar',
+    subtitulo: 'Selecione todos os candidatos em quem você aceitaria votar',
     rotaAnterior: BALLOT_ROUTES.estado,
     proximaRota: BALLOT_ROUTES.senadores
   },

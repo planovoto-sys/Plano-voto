@@ -17,9 +17,9 @@ export const OFFICE_MINIMUM_SELECTIONS = {
 };
 
 export const OFFICE_DISPLAY_LIMITS = {
-  presidente: null,
-  deputado_federal: null,
-  senadores: null
+  presidente: 1,
+  deputado_federal: 1,
+  senadores: 2
 };
 
 export const BALLOT_ROUTES = {
@@ -42,12 +42,6 @@ export const BALLOT_FLOW_STEPS = [
     title: 'Presidente'
   },
   {
-    id: 'deputado_federal',
-    officeKey: 'deputado_federal',
-    route: BALLOT_ROUTES.deputadoFederal,
-    title: 'Deputado Federal'
-  },
-  {
     id: 'senadores_1',
     officeKey: 'senadores',
     route: BALLOT_ROUTES.senadores,
@@ -58,13 +52,18 @@ export const BALLOT_FLOW_STEPS = [
     officeKey: 'senadores',
     route: BALLOT_ROUTES.senadores,
     title: 'Senadores'
+  },
+  {
+    id: 'deputado_federal',
+    officeKey: 'deputado_federal',
+    route: BALLOT_ROUTES.deputadoFederal,
+    title: 'Deputado Federal'
   }
 ];
 
 export const BALLOT_FLOW_STEP_IDS = BALLOT_FLOW_STEPS.map((step) => step.id);
 
 export const LEGACY_FLOW_STEP_ALIASES = {
-  presidente: [],
   deputado_federal: ['deputado_federal_reeleger', 'deputado_federal_renovar'],
   senadores_1: ['senadores_reeleger'],
   senadores_2: ['senadores_renovar']

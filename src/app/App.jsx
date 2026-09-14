@@ -5,7 +5,14 @@ import { BALLOT_ROUTES } from '@/shared/constants/ballot';
 import { useDesktopExperience } from '@/shared/hooks/useDesktopExperience';
 import { useUser } from '@/shared/hooks/useUser';
 import LoadingScreen from '@/shared/ui/feedback/LoadingScreen';
+import ConfirmModal from '@/shared/ui/feedback/ConfirmModal';
 import PrivacyConsent from '@/features/privacy/PrivacyConsent';
+import DesktopMobileOnlyPage from '@/features/desktop/DesktopMobileOnlyPage';
+import {
+  isSharedSelectionAuthCallback,
+  canonicalSharedSelectionPath,
+  resolveSharedSelectionReturn,
+} from '@/features/sharing/sharedSelectionModel';
 import PageTransition from '@/features/motion/PageTransition';
 import DesktopOnlyNotice from '@/features/desktop/DesktopOnlyNotice';
 import { STEP_GUIDANCE_MESSAGES } from '@/features/notifications/notificationMessages';
@@ -28,6 +35,7 @@ const EscolherCandidatos = lazy(loadEscolherCandidatos);
 const LegalPage = lazy(loadLegalPage);
 const MeuPlano = lazy(loadMeuPlano);
 const ContinuarPlano = lazy(loadContinuarPlano);
+const SharedSelectionPage = lazy(() => import('@/features/sharing/SharedSelectionPage'));
 const INTRO_MIN_DURATION_MS = 1600;
 
 const renderCandidateRoute = (config) => (
@@ -54,8 +62,15 @@ const getResumeNotice = (progress) => {
 
 function AuthenticatedEntryRedirect({ user, estado }) {
   const [redirect, setRedirect] = useState(null);
+  const [sharedReturn] = useState(() => (
+    resolveSharedSelectionReturn(window.location.search)
+  ));
+  const [missingSharedReturn, setMissingSharedReturn] = useState(() => (
+    isSharedSelectionAuthCallback(window.location.search) && !resolveSharedSelectionReturn(window.location.search)
+  ));
 
   useEffect(() => {
+    if (sharedReturn || missingSharedReturn) return undefined;
     let cancelled = false;
 
     const resolveRedirect = async () => {
@@ -81,8 +96,17 @@ function AuthenticatedEntryRedirect({ user, estado }) {
     return () => {
       cancelled = true;
     };
-  }, [estado, user.uid]);
+  }, [estado, user.uid, sharedReturn, missingSharedReturn]);
 
+  if (sharedReturn) return <Navigate to={sharedReturn} replace />;
+  if (missingSharedReturn) return <ConfirmModal
+    isOpen
+    titulo="ABRA O LINK NOVAMENTE"
+    mensagem="O login foi concluído, mas o link compartilhado não está mais disponível nesta sessão. Abra o QR Code ou link novamente para carregar a seleção. Suas escolhas salvas não foram substituídas."
+    textoConfirmar="CONTINUAR COM MINHAS ESCOLHAS"
+    mostrarCancelar={false}
+    onConfirm={() => setMissingSharedReturn(false)}
+  />;
   if (!redirect) return <LoadingScreen />;
 
   return (
@@ -97,9 +121,13 @@ function AuthenticatedEntryRedirect({ user, estado }) {
   );
 }
 
-function AppRoutes({ rootElement, publicExplorationRoute, privateRedirect }) {
+function AppRoutes({ rootElement, publicExplorationRoute, privateRedirect, isDesktopExperience }) {
   const location = useLocation();
   const navigationType = useNavigationType();
+
+  if (isDesktopExperience) {
+    return <DesktopMobileOnlyPage sharedPath={canonicalSharedSelectionPath(location.pathname)} />;
+  }
 
   return (
     <Suspense fallback={null}>
@@ -111,6 +139,8 @@ function AppRoutes({ rootElement, publicExplorationRoute, privateRedirect }) {
         <Routes location={location}>
           <Route path="/" element={rootElement} />
           <Route path="/login" element={<Login />} />
+          <Route path="/selecao/:id" element={<SharedSelectionPage />} />
+          <Route path="/selecao/:id/resumo" element={<SharedSelectionPage />} />
           <Route path="/home" element={publicExplorationRoute(<Home />)} />
 
           <Route path={BALLOT_ROUTES.presidente} element={publicExplorationRoute(renderCandidateRoute(CANDIDATE_ROUTES.presidente))} />
@@ -207,9 +237,10 @@ function App() {
           rootElement={rootElement}
           publicExplorationRoute={publicExplorationRoute}
           privateRedirect={privateRedirect}
+          isDesktopExperience={isDesktopExperience}
         />
       )}
-      <PrivacyConsent />
+      {!isDesktopExperience && <PrivacyConsent />}
     </BrowserRouter>
   );
 }

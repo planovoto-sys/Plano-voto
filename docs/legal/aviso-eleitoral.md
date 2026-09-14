@@ -2,7 +2,7 @@
 
 Última atualização: 29 de maio de 2026.
 
-O nossovoto.org não é um sistema oficial de votação. A ferramenta serve para organizar um plano pessoal de escolhas, revisar candidatos e facilitar a continuidade do rascunho.
+O bomdevoto.com.br não é um sistema oficial de votação. A ferramenta serve para organizar um plano pessoal de escolhas, revisar candidatos e facilitar a continuidade do rascunho.
 
 ## Declarações principais
 

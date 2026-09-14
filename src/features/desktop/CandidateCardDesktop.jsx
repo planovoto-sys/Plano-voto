@@ -1,8 +1,6 @@
 import { Lock, Smartphone } from 'lucide-react';
-import { ChanceFlame } from '@/shared/icons/ChanceFlame';
 import {
   formatScore,
-  getCandidateChance,
   getCandidateDisplayScore,
   getCandidateName,
   getCandidateParty,
@@ -12,19 +10,15 @@ import {
 
 const getCandidateNumber = (candidate = {}) => String(candidate.Numero ?? candidate.numero ?? candidate.number ?? '').trim();
 
-const getTone = ({ featured, score, chance, locked }) => {
+const getTone = ({ score, locked }) => {
   if (locked) return 'locked';
-  if (featured) return 'featured';
-  if (chance >= 100) return 'complete';
   if (score > 0 && score < 7) return 'danger';
   if (score >= 7) return 'success';
   return 'neutral';
 };
 
-const getBadge = ({ featured, score, chance, locked }) => {
+const getBadge = ({ score, locked }) => {
   if (locked) return 'Disponível no celular';
-  if (featured && score > 7) return 'Mais viável';
-  if (chance >= 100) return 'Meta atingida';
   if (score > 0 && score < 7) return 'Nota baixa';
   if (score >= 7) return 'Interessante';
   return 'Prévia';
@@ -42,7 +36,6 @@ function ScoreChip({ label, value }) {
 export default function CandidateCardDesktop({
   candidate,
   selected = false,
-  featured = false,
   locked = false,
   disabled = false,
   actionLabel = 'Escolher',
@@ -53,11 +46,9 @@ export default function CandidateCardDesktop({
   const number = getCandidateNumber(candidate);
   const candidateScore = getCandidateDisplayScore(candidate);
   const partyScore = getCandidatePartyScore(candidate);
-  const chance = locked ? 0 : getCandidateChance(candidate);
   const score = getCandidateSystemScore(candidate);
-  const tone = getTone({ featured, score, chance, locked });
-  const badge = getBadge({ featured, score, chance, locked });
-  const progress = Math.max(0, Math.min(100, Math.round(chance)));
+  const tone = getTone({ score, locked });
+  const badge = getBadge({ score, locked });
 
   return (
     <article className={`desktop-candidate-card desktop-candidate-card--${tone} ${selected ? 'is-selected' : ''}`}>
@@ -81,17 +72,13 @@ export default function CandidateCardDesktop({
           </span>
 
           <span className="desktop-candidate-card__status">
-            {featured ? <ChanceFlame size={24} /> : (locked ? <Lock aria-hidden="true" /> : <Smartphone aria-hidden="true" />)}
+            {locked ? <Lock aria-hidden="true" /> : <Smartphone aria-hidden="true" />}
           </span>
-        </span>
-
-        <span className="desktop-candidate-card__meter" aria-hidden="true">
-          <i style={{ '--desktop-candidate-progress': `${progress}%` }} />
         </span>
 
         <span className="desktop-candidate-card__footer">
           <span>Prévia no computador</span>
-          <strong>{locked ? badge : `Viabilidade: ${progress}%`}</strong>
+          <strong>{badge}</strong>
           <em>{selected ? 'Selecionado' : actionLabel}</em>
         </span>
       </button>

@@ -2,7 +2,7 @@
 
 Última atualização: 29 de maio de 2026.
 
-Esta política descreve como o nossovoto.org pode tratar dados pessoais, dados salvos no dispositivo, rascunhos eleitorais, QR Code de continuidade, cache offline e compartilhamentos iniciados pelo usuário.
+Esta política descreve como o bomdevoto.com.br pode tratar dados pessoais, dados salvos no dispositivo, rascunhos eleitorais, QR Code de continuidade, cache offline e compartilhamentos iniciados pelo usuário.
 
 ## Pontos principais
 

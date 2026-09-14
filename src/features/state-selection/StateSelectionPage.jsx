@@ -27,6 +27,8 @@ import {
 } from '@/features/candidate-selection/candidateService';
 import DesktopStateSelection from '@/features/desktop/DesktopStateSelection';
 import { useDesktopLayout } from '@/features/desktop/useDesktopLayout';
+import { usesSupabaseAuth } from '@/shared/auth/authService';
+import { updateSupabaseProfileState } from '@/shared/supabase/profileService';
 
 export default function Home() {
   const { user, userData, loading: userLoading } = useUser();
@@ -126,6 +128,9 @@ export default function Home() {
 
       if (user?.uid) {
         await saveBallotState(user.uid, novoEstado);
+        if (usesSupabaseAuth) {
+          await updateSupabaseProfileState(user.uid, novoEstado);
+        }
       } else {
         await saveVisitorBallotState(novoEstado);
       }

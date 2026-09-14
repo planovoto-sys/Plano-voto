@@ -241,14 +241,14 @@
   justify-content: center;
   gap: var(--button-gap);
   background: var(--login-white);
-  border: none;
+  border: 1px solid rgba(15, 76, 42, 0.16);
   border-radius: var(--button-radius);
   font-family: var(--font-family);
   font-size: var(--button-font-size);
   font-weight: 600;
   color: var(--login-green-dark);
   cursor: pointer;
-  box-shadow: var(--button-shadow);
+  box-shadow: 0 6px 20px rgba(15, 76, 42, 0.22);
   transition: transform 0.2s ease, box-shadow 0.25s ease;
 }
 
@@ -260,7 +260,7 @@
 
 .login-google-btn:hover {
   transform: translateY(-2px);
-  box-shadow: var(--button-shadow-hover);
+  box-shadow: 0 9px 26px rgba(15, 76, 42, 0.3);
 }
 
 .login-google-btn:active {
@@ -272,6 +272,7 @@
   color: var(--login-green-dark);
   cursor: not-allowed;
   transform: none;
+  opacity: 0.75;
 }
 
 /* ==========================================================================

@@ -64,8 +64,7 @@ export const normalizeStoredCandidate = (candidate) => {
     nota_final: Number(candidate.nota_final ?? candidate.notaFinal ?? candidate.nota_candidato ?? candidate['Nota candidato'] ?? candidate.nota_partido ?? candidate['Nota partido'] ?? 0) || 0,
     chance: Number(candidate.chance ?? candidate.Chance ?? 0) || 0,
     selected_by_users: Number(candidate.selected_by_users ?? candidate.selectedByUsers ?? 0) || 0,
-    viability_target: Number(candidate.viability_target ?? candidate.viabilityTarget ?? candidate.average_elected_votes ?? candidate.averageElectedVotes ?? 0) || 0,
-    average_elected_votes: Number(candidate.viability_target ?? candidate.viabilityTarget ?? candidate.average_elected_votes ?? candidate.averageElectedVotes ?? 0) || 0,
+    average_elected_votes: Number(candidate.average_elected_votes ?? candidate.averageElectedVotes ?? 0) || 0,
     ranking_total: Number(candidate.ranking_total ?? candidate.rankingTotal ?? 0) || 0,
     temNotaCandidato: candidate.temNotaCandidato ?? candidate.tem_nota_candidato ?? null,
     tem_nota_candidato: candidate.temNotaCandidato ?? candidate.tem_nota_candidato ?? null
@@ -144,7 +143,9 @@ export const normalizeDraft = (rawDraft, estado = null) => {
     estado: normalizeStateCode(rawDraft.estado ?? estado) || null,
     selections,
     candidate_groups: candidateGroups,
-    completed_steps: completedSteps
+    completed_steps: completedSteps,
+    updated_at: normalizeRemoteTimestamp(rawDraft.updated_at),
+    cached_at: rawDraft.cached_at || null,
   };
 };
 
@@ -160,6 +161,22 @@ export const getDraftCandidateList = (draft) => {
 export const getDraftActiveCandidateIds = (draft) => (
   [...new Set(getDraftCandidateList(draft).map((candidate) => candidate.id).filter(Boolean))]
 );
+
+export const filterDraftCandidatesByIds = (draft, allowedCandidateIds = []) => {
+  const normalizedDraft = normalizeDraft(draft, draft?.estado);
+  const allowedIds = new Set(allowedCandidateIds);
+  const candidateGroups = Object.fromEntries(
+    BALLOT_FLOW_STEP_IDS.map((stepId) => [
+      stepId,
+      normalizedDraft.candidate_groups[stepId].filter((candidate) => allowedIds.has(candidate.id))
+    ])
+  );
+
+  return normalizeDraft({
+    ...normalizedDraft,
+    candidate_groups: candidateGroups
+  }, normalizedDraft.estado);
+};
 
 export class BallotDraftModel {
   static empty(estado = null) {
@@ -198,14 +215,14 @@ export class BallotDraftModel {
     const candidateSnapshots = candidateIds
       .map((candidateId) => normalizeStoredCandidate(fetchedById.get(candidateId) || { id: candidateId }))
       .filter(Boolean);
-    const presidentes = [];
+    const presidente = [];
     const deputadoFederal = [];
     const senadores = [];
 
     candidateSnapshots.forEach((candidate) => {
       const office = normalizeOfficeName(candidate.cargo || candidate.Cargo || candidate.id);
       if (office.includes('presidente')) {
-        presidentes.push(candidate);
+        presidente.push(candidate);
       } else if (office.includes('senador')) {
         senadores.push(candidate);
       } else {
@@ -217,7 +234,7 @@ export class BallotDraftModel {
       estado,
       candidate_groups: {
         ...emptyCandidateGroups(),
-        presidente: presidentes,
+        presidente,
         deputado_federal: deputadoFederal,
         senadores_1: senadores,
         senadores_2: []
@@ -279,9 +296,9 @@ export const getBallotProgress = (draft) => {
       : !hasPresidente
         ? BALLOT_ROUTES.presidente
         : !hasSenador1
-            ? BALLOT_ROUTES.senadores
+          ? BALLOT_ROUTES.senadores
           : !hasSenador2
-              ? BALLOT_ROUTES.senadores
+            ? BALLOT_ROUTES.senadores
             : !hasDeputadoFederal
               ? BALLOT_ROUTES.deputadoFederal
               : BALLOT_ROUTES.meuPlano

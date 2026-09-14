@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { signOut } from 'firebase/auth';
-import { ChevronDown, LogIn, LogOut, Star } from 'lucide-react';
+import { LogIn, LogOut, Star } from 'lucide-react';
 import { BALLOT_ROUTES } from '@/shared/constants/ballot';
-import { getViabilityTarget } from '@/shared/constants/candidates';
+import { getViabilityTarget } from '@/shared/constants/viabilityTargets';
 import { STATE_NAMES } from '@/shared/constants/states';
 import { useUser } from '@/shared/hooks/useUser';
+import { useDesktopLayout } from '@/features/desktop/useDesktopLayout';
 import { useHideOnScroll } from '@/shared/hooks/useHideOnScroll';
-import { auth } from '@/shared/firebase/firebase';
+import { signOutUser, usesSupabaseAuth } from '@/shared/auth/authService';
 import {
   fetchRemoteBallotDraft,
   fetchCandidatesByIds,
@@ -30,16 +30,18 @@ import '@/shared/ui/layout/AppHeader.css';
 import ConfirmModal from '@/shared/ui/feedback/ConfirmModal';
 import LoadingScreen from '@/shared/ui/feedback/LoadingScreen';
 import CandidateCard from '@/features/candidate-selection/CandidateCard';
+import DesktopPlanSummary from '@/features/desktop/DesktopPlanSummary';
 import LogoCompleta from '@/shared/ui/brand/LogoCompleta';
 import {
   calculateCandidateChance,
   formatScore,
-  getCandidateChance,
   getCandidateSystemScore
 } from '@/shared/utils/candidateMetrics';
 
 import '@/features/candidate-selection/SelectBase.css';
 import './MeuPlano.css';
+import { getSummaryOfficeCandidates } from './summaryCandidates';
+import { fetchBallotRecommendations } from './recommendationService';
 
 const average = (values) => {
   const validValues = values.filter((value) => Number.isFinite(value));
@@ -47,7 +49,6 @@ const average = (values) => {
   return validValues.reduce((sum, value) => sum + value, 0) / validValues.length;
 };
 
-const getAverageChance = (candidates) => average(candidates.map((candidate) => getCandidateChance(candidate)));
 const getAverageScore = (candidates) => (
   average(candidates.map((candidate) => getCandidateSystemScore(candidate)).filter((score) => score > 0))
 );
@@ -80,25 +81,28 @@ const getDraftOfficeCandidates = (draft, officeKey) => {
     : draft.selections?.senadores || [];
 };
 
-const mergeCandidateDetails = (storedCandidate, fetchedCandidate, tally, estado) => {
+const mergeCandidateDetails = (storedCandidate, fetchedCandidate, tally) => {
   const mergedCandidate = { ...storedCandidate, ...fetchedCandidate };
   const selectedByUsers = Number(
     tally?.active_selections ?? fetchedCandidate?.active_selections ?? fetchedCandidate?.selected_by_users ??
     storedCandidate?.selected_by_users ?? storedCandidate?.selectedByUsers ?? 0
   );
   const safeSelectedByUsers = Number.isFinite(selectedByUsers) ? selectedByUsers : 0;
-  const viabilityTarget = getViabilityTarget(getCandidateOfficeKey(mergedCandidate), estado);
+  const safeAverageElectedVotes = tally?.indication_limit ?? getViabilityTarget(
+    getCandidateOfficeKey(mergedCandidate), mergedCandidate.uf || mergedCandidate.estado || mergedCandidate.state
+  );
+  const indicationCount = Math.max(0, Number(tally?.indication_count) || 0);
 
   return {
     ...mergedCandidate,
     selected_by_users: safeSelectedByUsers,
     selectedByUsers: safeSelectedByUsers,
     active_selections: safeSelectedByUsers,
-    viability_target: viabilityTarget,
-    viabilityTarget,
-    average_elected_votes: viabilityTarget,
-    averageElectedVotes: viabilityTarget,
-    chance: calculateCandidateChance(safeSelectedByUsers, viabilityTarget)
+    average_elected_votes: safeAverageElectedVotes,
+    averageElectedVotes: safeAverageElectedVotes,
+    indication_count: indicationCount,
+    indication_limit: safeAverageElectedVotes,
+    chance: calculateCandidateChance(indicationCount, safeAverageElectedVotes)
   };
 };
 
@@ -126,23 +130,29 @@ function ScoreStars({ score, isBad }) {
   );
 }
 
+function ChoiceSectionHeading({ title }) {
+  return (
+    <div className="my-plan-choice-heading">
+      <h2>{title}</h2>
+    </div>
+  );
+}
+
 export default function MeuPlano() {
   const { user, userData, loading: userLoading } = useUser();
   const notify = useNotify();
   const navigate = useNavigate();
   const location = useLocation();
   const isGuestMode = !user?.uid;
+  const isDesktopLayout = useDesktopLayout();
   
   const localDraft = user?.uid ? readBallotDraft(user.uid, userData?.estado) : readVisitorBallotDraft();
   const [remoteDraftState, setRemoteDraftState] = useState({ userId: null, draft: null, loading: false });
   const [candidateDetailsState, setCandidateDetailsState] = useState({ signature: '', candidatesById: new Map(), loading: false });
+  const [recommendationsState, setRecommendationsState] = useState({ key: '', rows: [], error: false });
+  const [recommendationRetry, setRecommendationRetry] = useState(0);
   const [modalCampoBloqueado, setModalCampoBloqueado] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [expandedChoices, setExpandedChoices] = useState({
-    presidente: false,
-    senadores: false,
-    deputado_federal: false
-  });
   
   const [planUrl] = useState(() => getPlanUrl());
 
@@ -174,7 +184,25 @@ export default function MeuPlano() {
   const selectedCandidateSignature = selectedCandidateIds.join('|');
   const storedCandidatesSnapshot = JSON.stringify([...rawPresidentes, ...rawSenadores, ...rawDeputadosFederais]);
   const selectedDraftEstado = currentDraft?.estado || userData?.estado || null;
-  
+  const needsServerRecommendations = !isGuestMode && usesSupabaseAuth;
+  const recommendationKey = `${user?.uid || ''}:${selectedDraftEstado || ''}:${selectedCandidateSignature}`;
+  const remoteDraftLoading = needsServerRecommendations && (
+    remoteDraftState.userId !== user?.uid || remoteDraftState.loading
+  );
+
+  useEffect(() => {
+    if (!needsServerRecommendations || remoteDraftLoading) return undefined;
+    let cancelled = false;
+    fetchBallotRecommendations(user.uid)
+      .then((rows) => {
+        if (!cancelled) setRecommendationsState({ key: recommendationKey, rows, error: false });
+      })
+      .catch(() => {
+        if (!cancelled) setRecommendationsState({ key: recommendationKey, rows: [], error: true });
+      });
+    return () => { cancelled = true; };
+  }, [needsServerRecommendations, remoteDraftLoading, user?.uid, recommendationKey, recommendationRetry]);
+
   useEffect(() => {
     if (!selectedCandidateSignature) {
       let cancelled = false;
@@ -198,22 +226,17 @@ export default function MeuPlano() {
       }
     });
 
-    const storedById = new Map(storedCandidates.map((candidate) => [candidate.id, candidate]));
-    const tallyTargets = candidateIds.map((id) => (
-      getCandidateOfficeKey(storedById.get(id)) === 'presidente'
-        ? { id, national: true }
-        : { id, state: selectedDraftEstado }
-    ));
-    const cachedTallies = readCachedTallies(tallyTargets, { estado: selectedDraftEstado });
+    const cachedTallies = readCachedTallies(candidateIds, { estado: selectedDraftEstado });
 
     Promise.all([
       fetchCandidatesByIds(candidateIds),
-      fetchCandidateTallies(tallyTargets, { forceRefresh: true, estado: selectedDraftEstado }).catch(() => cachedTallies)
+      fetchCandidateTallies(candidateIds, { forceRefresh: true, estado: selectedDraftEstado }).catch(() => cachedTallies)
     ]).then(([fetchedCandidates, tallies]) => {
       if (cancelled) return;
       const fetchedById = new Map(fetchedCandidates.map((c) => [c.id, c]));
+      const storedById = new Map(storedCandidates.map((c) => [c.id, c]));
       const candidatesById = new Map(candidateIds.map((id) => [
-        id, mergeCandidateDetails(storedById.get(id), fetchedById.get(id), tallies.get(id), selectedDraftEstado)
+        id, mergeCandidateDetails(storedById.get(id), fetchedById.get(id), tallies.get(id))
       ]));
 
       setCandidateDetailsState({ signature: selectedCandidateSignature, candidatesById, loading: false });
@@ -225,66 +248,82 @@ export default function MeuPlano() {
   }, [selectedCandidateSignature, selectedDraftEstado, storedCandidatesSnapshot]);
 
   const candidatesById = candidateDetailsState.signature === selectedCandidateSignature ? candidateDetailsState.candidatesById : new Map();
-  const presidentes = rawPresidentes.map((c) => candidatesById.get(c.id) || c);
-  const deputadosFederais = rawDeputadosFederais.map((c) => candidatesById.get(c.id) || c);
-  const senadores = rawSenadores.map((c) => candidatesById.get(c.id) || c);
+  const recommendationsLoading = needsServerRecommendations && (remoteDraftLoading || recommendationsState.key !== recommendationKey);
+  const recommendationsError = needsServerRecommendations && !recommendationsLoading && recommendationsState.error;
+  const recommendedIds = (office) => needsServerRecommendations
+    ? (recommendationsLoading || recommendationsError ? [] : recommendationsState.rows
+      .filter((row) => row.office === office && (row.scope === 'BR' || row.scope === selectedDraftEstado))
+      .map((row) => row.candidate_id))
+    : null;
+  const presidentes = getSummaryOfficeCandidates(rawPresidentes, candidatesById, 1, recommendedIds('PRESIDENTE'));
+  const deputadosFederais = getSummaryOfficeCandidates(rawDeputadosFederais, candidatesById, 1, recommendedIds('DEPUTADO_FEDERAL'));
+  const senadores = getSummaryOfficeCandidates(rawSenadores, candidatesById, 2, recommendedIds('SENADOR'));
+  const hasUnavailableChoices = needsServerRecommendations && !recommendationsLoading && !recommendationsError && (
+    presidentes.length < Math.min(1, rawPresidentes.length)
+    || senadores.length < Math.min(2, rawSenadores.length)
+    || deputadosFederais.length < Math.min(1, rawDeputadosFederais.length)
+  );
   
-  const featuredPresidentes = presidentes.slice(0, 1);
-  const featuredDeputadosFederais = deputadosFederais.slice(0, 1);
-  const featuredSenadores = senadores.slice(0, 2);
   const estadoSigla = currentDraft?.estado || userData?.estado || '';
   const estadoNome = estadoSigla ? STATE_NAMES[estadoSigla] || estadoSigla : 'Nenhum';
-  const presidente = featuredPresidentes[0] || null;
-  const deputadoFederal = featuredDeputadosFederais[0] || null;
+  const deputadoFederal = deputadosFederais[0] || null;
   const selectedCandidates = [...presidentes, ...senadores, ...deputadosFederais].filter(Boolean);
-  const visiblePresidentes = expandedChoices.presidente ? presidentes : presidentes.slice(0, 1);
-  const visibleSenadores = expandedChoices.senadores ? senadores : senadores.slice(0, 2);
-  const visibleDeputadosFederais = expandedChoices.deputado_federal
-    ? deputadosFederais
-    : deputadosFederais.slice(0, 1);
   
-  const averageChance = getAverageChance(selectedCandidates);
   const averageScore = getAverageScore(selectedCandidates);
   
   const profileImage = userData?.profile_image || user?.photoURL || '';
   const profileInitial = ((userData?.name || user?.displayName || 'U').trim().charAt(0).toUpperCase());
   
   const hasCompletePlan = Boolean(presidentes.length > 0 && deputadosFederais.length > 0 && senadores.length >= 2 && estadoSigla);
-  const canSharePlan = !isGuestMode && hasCompletePlan;
+  const canSharePlan = !isGuestMode && hasCompletePlan && !recommendationsLoading && !recommendationsError;
+  const canShareSelection = !isGuestMode && selectedCandidateIds.length > 0;
   
   const shareData = canSharePlan ? {
     estadoSigla,
     estadoNome,
     userName: userData?.name || user?.displayName || 'Visitante',
-    presidente,
+    presidente: presidentes[0] || null,
     deputado: deputadoFederal,
-    senadores: featuredSenadores,
+    senadores,
     url: planUrl
   } : null;
 
   const handleEdit = (route) => navigate(route, { state: { bypassVoteRedirect: true } });
   const handleLogin = () => navigate('/login', { state: { from: `${location.pathname}${location.search}` } });
-  const handleLogout = async () => { await signOut(auth); navigate('/', { replace: true }); };
+  const handleLogout = async () => { await signOutUser(); navigate('/', { replace: true }); };
 
   if (!isGuestMode && userLoading && !currentDraft) return <LoadingScreen className="nv-screen" />;
+
+  if (isDesktopLayout) {
+    return (
+      <DesktopPlanSummary
+        draft={currentDraft}
+        estadoSigla={estadoSigla}
+        estadoNome={estadoNome}
+        averageScore={averageScore}
+        deputadosFederais={deputadosFederais}
+        senadores={senadores}
+        hasCompletePlan={hasCompletePlan}
+        onNavigate={(route) => navigate(route, { state: { bypassVoteRedirect: true } })}
+        onBack={() => navigate(BALLOT_ROUTES.estado, { state: { bypassVoteRedirect: true } })}
+      />
+    );
+  }
 
   // ==========================================
   // LÓGICA DE CORES GLOBAIS DO PAINEL DE RESUMO
   // ==========================================
-  const hasMetrics = averageScore > 0 || averageChance > 0;
-  
-  // O Plano inteiro é considerado "Ruim" se a nota for menor que 6 OU a viabilidade menor que 30%
-  const isPlanBad = hasMetrics && (averageScore < 6 || averageChance < 30);
-  
-  // Se o plano for ruim, TUDO fica vermelho. Se for bom, TUDO fica verde. Se estiver vazio, fica neutro.
-  const globalMetricClass = hasMetrics 
-    ? (isPlanBad ? 'my-plan-overview__metric--red' : 'my-plan-overview__metric--green')
-    : ''; 
-    
-  const gaugeColorClass = hasMetrics 
-    ? (isPlanBad ? 'my-plan-gauge__fill--red' : 'my-plan-gauge__fill--green')
-    : '';
+  const hasScore = averageScore > 0;
 
+  // A cor do conjunto segue exclusivamente a nota média: abaixo de 7 é
+  // vermelho; a partir de 7 é verde. Sem nota, permanece neutro.
+  const isPlanBad = hasScore && averageScore < 7;
+  const globalMetricClass = hasScore
+    ? (isPlanBad ? 'my-plan-overview__metric--red' : 'my-plan-overview__metric--green')
+    : '';
+  const overviewToneClass = hasScore
+    ? (isPlanBad ? 'is-score-red' : 'is-score-green')
+    : '';
   return (
     <div className={`my-plan-page prototype-page nv-screen${!headerVisible ? ' is-header-hidden' : ''}`}>
       <header className={`app-header app-header--default step-header-sticky ${!headerVisible ? 'is-header-hidden' : ''}`}>
@@ -314,7 +353,7 @@ export default function MeuPlano() {
       <main ref={scrollRef} className="prototype-scroll my-plan-scroll">
         <div className="my-plan-shell">
           
-          <section className="my-plan-overview">
+          <section className={`my-plan-overview ${overviewToneClass}`}>
             <div className="my-plan-overview__metrics">
               
               {/* ESTADO - Agora muda de cor junto com o resto! */}
@@ -333,60 +372,59 @@ export default function MeuPlano() {
                 <ScoreStars score={averageScore} isBad={isPlanBad} />
               </div>
 
-              {/* VIABILIDADE - Muda de cor junto */}
-              <div className={`my-plan-overview__metric ${globalMetricClass}`}>
-                <span className="my-plan-overview__label">Viabilidade</span>
-                <span className="my-plan-overview__value">
-                  {averageChance > 0 ? `${Math.round(averageChance)}%` : '--'}
-                </span>
-                <div className="my-plan-gauge">
-                  <div className={`my-plan-gauge__fill ${gaugeColorClass}`} style={{ width: `${Math.round(averageChance)}%` }}></div>
-                </div>
-              </div>
-
             </div>
           </section>
 
-          <section className="my-plan-choices">
-
+          {recommendationsLoading && <p role="status">Carregando suas indicações...</p>}
+          {recommendationsError && (
+            <div className="my-plan-action-box" role="alert">
+              <strong>Não foi possível confirmar suas indicações.</strong>
+              <span>Suas seleções continuam salvas. Tente novamente para consultar o resumo.</span>
+              <button className="my-plan-btn-primary" onClick={() => {
+                setRecommendationsState({ key: '', rows: [], error: false });
+                setRecommendationRetry((value) => value + 1);
+              }}>Tentar novamente</button>
+            </div>
+          )}
+          {isGuestMode && <p>Prévia por número de seleções. As indicações serão confirmadas ao salvar suas escolhas na conta.</p>}
+          {hasUnavailableChoices && (
+            <p role="status">Algumas opções selecionadas atingiram o limite de indicações. Suas seleções foram preservadas; você pode revisar as opções para completar o resumo.</p>
+          )}
+          {!recommendationsLoading && !recommendationsError && <section className="my-plan-choices">
             <div className="my-plan-choice-section">
-              <h2>Presidente</h2>
+              <ChoiceSectionHeading
+                title="Presidente"
+              />
               <div className="my-plan-choice-list">
                 {presidentes.length > 0 ? (
-                  visiblePresidentes.map((candidate) => (
-                    <CandidateCard
-                      key={candidate.id}
-                      candidate={candidate}
-                      variant="summary"
-                      onSelect={() => handleEdit(BALLOT_ROUTES.presidente)}
-                      onLockedMetricClick={() => setModalCampoBloqueado(true)}
-                    />
-                  ))
+                  presidentes.map((candidate, index) => {
+                    const candWithNumber = { ...candidate, numero: candidate.numero || `${index + 1}` };
+                    return (
+                      <CandidateCard
+                        key={candWithNumber.id}
+                        candidate={candWithNumber}
+                        variant="summary"
+                        onSelect={() => handleEdit(BALLOT_ROUTES.presidente)}
+                        onLockedMetricClick={() => setModalCampoBloqueado(true)}
+                      />
+                    );
+                  })
                 ) : (
                   <div className="my-plan-empty">
                     <strong>Nenhum Candidato</strong>
-                    <span>Escolha pelo menos um presidente para apoiar</span>
+                    <span>{rawPresidentes.length ? 'Nenhuma indicação disponível entre suas escolhas.' : 'Escolha um presidente para apoiar'}</span>
                   </div>
                 )}
               </div>
-              {presidentes.length > 1 && (
-                <button
-                  type="button"
-                  className={`my-plan-show-more${expandedChoices.presidente ? ' is-expanded' : ''}`}
-                  aria-expanded={expandedChoices.presidente}
-                  onClick={() => setExpandedChoices((current) => ({ ...current, presidente: !current.presidente }))}
-                >
-                  <span>{expandedChoices.presidente ? 'Mostrar menos' : 'Mostrar mais'}</span>
-                  <ChevronDown aria-hidden="true" />
-                </button>
-              )}
             </div>
 
             <div className="my-plan-choice-section">
-              <h2>Senadores</h2>
+              <ChoiceSectionHeading
+                title="Senadores"
+              />
               <div className="my-plan-choice-list">
                 {senadores.length > 0 ? (
-                  visibleSenadores.map((candidate, index) => {
+                  senadores.map((candidate, index) => {
                     const candWithNumber = { ...candidate, numero: candidate.numero || `12${index + 1}` };
                     return (
                       <CandidateCard
@@ -401,28 +439,19 @@ export default function MeuPlano() {
                 ) : (
                   <div className="my-plan-empty">
                     <strong>Nenhum Candidato</strong>
-                    <span>Escolha senadores para apoiar</span>
+                    <span>{rawSenadores.length ? 'Nenhuma indicação disponível entre suas escolhas.' : 'Escolha senadores para apoiar'}</span>
                   </div>
                 )}
               </div>
-              {senadores.length > 2 && (
-                <button
-                  type="button"
-                  className={`my-plan-show-more${expandedChoices.senadores ? ' is-expanded' : ''}`}
-                  aria-expanded={expandedChoices.senadores}
-                  onClick={() => setExpandedChoices((current) => ({ ...current, senadores: !current.senadores }))}
-                >
-                  <span>{expandedChoices.senadores ? 'Mostrar menos' : 'Mostrar mais'}</span>
-                  <ChevronDown aria-hidden="true" />
-                </button>
-              )}
             </div>
 
             <div className="my-plan-choice-section">
-              <h2>Deputado Federal</h2>
+              <ChoiceSectionHeading
+                title="Deputado Federal"
+              />
               <div className="my-plan-choice-list">
                 {deputadosFederais.length > 0 ? (
-                  visibleDeputadosFederais.map((candidate, index) => {
+                  deputadosFederais.map((candidate, index) => {
                     const candWithNumber = { ...candidate, numero: candidate.numero || `123${index + 1}` };
                     return (
                       <CandidateCard
@@ -437,56 +466,50 @@ export default function MeuPlano() {
                 ) : (
                   <div className="my-plan-empty">
                     <strong>Nenhum Candidato</strong>
-                    <span>Escolha um deputado para apoiar</span>
+                    <span>{rawDeputadosFederais.length ? 'Nenhuma indicação disponível entre suas escolhas.' : 'Escolha um deputado para apoiar'}</span>
                   </div>
                 )}
               </div>
-              {deputadosFederais.length > 1 && (
-                <button
-                  type="button"
-                  className={`my-plan-show-more${expandedChoices.deputado_federal ? ' is-expanded' : ''}`}
-                  aria-expanded={expandedChoices.deputado_federal}
-                  onClick={() => setExpandedChoices((current) => ({
-                    ...current,
-                    deputado_federal: !current.deputado_federal
-                  }))}
-                >
-                  <span>{expandedChoices.deputado_federal ? 'Mostrar menos' : 'Mostrar mais'}</span>
-                  <ChevronDown aria-hidden="true" />
-                </button>
-              )}
             </div>
+          </section>}
 
-          </section>
-
-          {isGuestMode && (
-            <section className="my-plan-actions">
+          <section className="my-plan-actions">
+            {isGuestMode ? (
               <div className="my-plan-action-box">
                 <strong>Salve seu plano</strong>
                 <span>Entre para salvar suas escolhas com segurança e liberar o compartilhamento.</span>
                 <button className="my-plan-btn-primary" onClick={handleLogin}>Fazer Login</button>
               </div>
-            </section>
-          )}
+            ) : (
+              !shareData && (
+                <div className="my-plan-action-box">
+                  <strong>Compartilhar minha seleção</strong>
+                  <span>{canShareSelection ? 'Use o foguete para publicar os candidatos que você selecionou, mesmo que seu resumo ainda esteja incompleto.' : 'Selecione candidatos para compartilhar suas escolhas com amigos.'}</span>
+                </div>
+              )
+            )}
+          </section>
 
         </div>
         
         <AppFooter className="app-footer--scroll-content" />
       </main>
 
-      {shareData && (
+      {(shareData || canShareSelection) && (
         <ShareChoicePanel 
-          shareData={shareData}
+          shareData={shareData || { url: planUrl }}
           isOpenControlled={isShareModalOpen}
           onCloseControlled={() => setIsShareModalOpen(false)}
         />
       )}
 
-      <ConvexBottomNavigation
-        currentStep="resultado"
-        isFinalStep
+      <ConvexBottomNavigation 
+        currentStep="resultado" 
+        isFinalStep={true} 
         onShareClick={() => {
-          if (!estadoSigla) {
+          if (canShareSelection) {
+            setIsShareModalOpen(true);
+          } else if (!estadoSigla) {
             notify.warning(STEP_GUIDANCE_MESSAGES.estado);
           } else if (presidentes.length < 1) {
             notify.warning(STEP_GUIDANCE_MESSAGES.presidente);
@@ -499,7 +522,7 @@ export default function MeuPlano() {
           } else if (isGuestMode) {
             setModalCampoBloqueado(true);
           }
-        }}
+        }} 
       />
 
       <ConfirmModal

@@ -1,4 +1,4 @@
-import { getViabilityTarget } from '@/shared/constants/candidates';
+import { getViabilityTarget } from '../constants/viabilityTargets.js';
 
 export const parseNumeric = (...values) => {
   for (const value of values) {
@@ -9,9 +9,9 @@ export const parseNumeric = (...values) => {
   return 0;
 };
 
-export const calculateCandidateChance = (selectedByUsers, viabilityTarget) => {
-  if (!Number.isFinite(viabilityTarget) || viabilityTarget <= 0) return 0;
-  return Math.max(0, Math.min(100, Math.round((selectedByUsers / viabilityTarget) * 100)));
+export const calculateCandidateChance = (selectedByUsers, averageElectedVotes) => {
+  if (!Number.isFinite(selectedByUsers) || !Number.isFinite(averageElectedVotes) || averageElectedVotes <= 0) return 0;
+  return Math.max(0, Math.min(100, Math.round((selectedByUsers / averageElectedVotes) * 100)));
 };
 
 export const formatScore = (value) => {
@@ -31,72 +31,69 @@ export const getCandidateParty = (candidate = {}) => (
   ''
 );
 
-export const getCandidateSystemScore = (candidate = {}) => {
-  const value = candidate.notaFinal ?? candidate.nota_final ?? candidate.notaCandidato ?? candidate.nota_candidato ?? candidate['Nota candidato'] ?? candidate.notaPartido ?? candidate.nota_partido ?? candidate['Nota partido'] ?? 0;
-  const numericValue = Number(value);
-  return Number.isFinite(numericValue) ? numericValue : 0;
-};
-
 export const getCandidateDisplayScore = (candidate = {}) => {
-  if (candidate.temNotaCandidato === false) return 0;
+  if (candidate.temNotaCandidato === false || candidate.tem_nota_candidato === false) return 0;
 
-  const value = candidate['Nota candidato'] ?? candidate.notaCandidato ?? candidate.nota_candidato ?? candidate.notaFinal ?? candidate.nota_final ?? 0;
+  const value = candidate['Nota candidato'] ?? candidate.notaCandidato ?? candidate.nota_candidato ?? 0;
   const numericValue = Number(value);
   return Number.isFinite(numericValue) ? numericValue : 0;
 };
 
 export const getCandidatePartyScore = (candidate = {}) => {
   const value = candidate.notaPartido ?? candidate.nota_partido ?? candidate['Nota partido'] ?? candidate.partyScore ?? candidate.party_score ?? candidate.scorePartido ?? candidate.score_partido ?? (
-    candidate.temNotaCandidato === false ? candidate.notaFinal ?? candidate.nota_final : 0
+    candidate.temNotaCandidato === false || candidate.tem_nota_candidato === false
+      ? candidate.notaFinal ?? candidate.nota_final
+      : 0
   );
   const numericValue = Number(value);
   return Number.isFinite(numericValue) ? numericValue : 0;
 };
 
+export const hasCandidateOwnScore = (candidate = {}) => getCandidateDisplayScore(candidate) > 0;
+
+export const getCandidateSystemScore = (candidate = {}) => {
+  const candidateScore = getCandidateDisplayScore(candidate);
+  return candidateScore > 0 ? candidateScore : getCandidatePartyScore(candidate);
+};
+
+// Mesmo desempate no PostgreSQL: independente do idioma do dispositivo.
+const candidateNameOrderKey = (candidate) => getCandidateName(candidate)
+  .toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+const compareOrderKeys = (a, b) => a < b ? -1 : a > b ? 1 : 0;
+
+export const compareCandidatesByScorePriority = (a, b) => {
+  const scoreDiff = getCandidateSystemScore(b) - getCandidateSystemScore(a);
+  if (scoreDiff !== 0) return scoreDiff;
+
+  const ownScoreDiff = Number(hasCandidateOwnScore(b)) - Number(hasCandidateOwnScore(a));
+  if (ownScoreDiff !== 0) return ownScoreDiff;
+
+  return compareOrderKeys(candidateNameOrderKey(a), candidateNameOrderKey(b))
+    || compareOrderKeys(String(a.id || ''), String(b.id || ''));
+};
+
 export const getCandidateScore = (candidate = {}) => {
-  if (!candidate) return 0;
-
-  if (candidate.temNotaCandidato !== false) {
-    const candidateScore = candidate.nota_final ?? candidate.notaFinal ?? candidate.notaCandidato ?? candidate.nota_candidato ?? candidate['Nota candidato'];
-    const numericCandidateScore = Number(candidateScore);
-
-    if (Number.isFinite(numericCandidateScore) && numericCandidateScore !== 0) {
-      return numericCandidateScore;
-    }
-  }
-
-  return getCandidatePartyScore(candidate);
+  return candidate ? getCandidateSystemScore(candidate) : 0;
 };
 
 export const getCandidateChance = (candidate = {}) => {
-  const rawSelectedByUsers = (
-    candidate.active_selections ??
-    candidate.total_active_selections ??
-    candidate.selected_by_users ??
-    candidate.selectedByUsers
-  );
-  const selectedByUsers = Number(rawSelectedByUsers);
-  const configuredTarget = getViabilityTarget(
-    candidate.cargo ?? candidate.Cargo ?? candidate.office,
-    candidate.estado ?? candidate.Estado ?? candidate.UF ?? candidate.uf ?? candidate.state
-  );
-
-  if (rawSelectedByUsers !== undefined && rawSelectedByUsers !== null && Number.isFinite(selectedByUsers) && configuredTarget) {
-    return calculateCandidateChance(selectedByUsers, configuredTarget);
+  if (candidate.indication_count != null) {
+    const target = candidate.indication_limit ?? getViabilityTarget(
+      candidate.cargo || candidate.Cargo || candidate.office,
+      candidate.uf || candidate.estado || candidate.state
+    ) ?? candidate.average_elected_votes ?? candidate.averageElectedVotes;
+    return calculateCandidateChance(Number(candidate.indication_count), Number(target));
   }
-
   const directValue = candidate.chance ?? candidate.Chance ?? candidate['Chance eleição'] ?? candidate['Chance de eleição'];
   const directNumeric = Number(directValue);
+
   if (Number.isFinite(directNumeric)) {
     return Math.max(0, Math.min(100, Math.round(directNumeric)));
   }
 
-  const storedTarget = Number(
-    candidate.viability_target ?? candidate.viabilityTarget ??
-    candidate.average_elected_votes ?? candidate.averageElectedVotes
-  );
-  if (!Number.isFinite(selectedByUsers) || !Number.isFinite(storedTarget) || storedTarget <= 0) return 0;
-  return calculateCandidateChance(selectedByUsers, storedTarget);
+  // Aceitação não é indicação; ausência de contagem confirmada não autoriza
+  // calcular o percentual a partir de todos os candidatos selecionados.
+  return 0;
 };
 
 export const getCandidateTone = (candidate, fallback = 'neutral') => {

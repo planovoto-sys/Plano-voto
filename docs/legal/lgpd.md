@@ -8,7 +8,7 @@ A Lei Geral de Proteção de Dados Pessoais disciplina o tratamento de dados pes
 
 O titular pode solicitar confirmação de tratamento, acesso, correção, anonimização, bloqueio, eliminação, portabilidade quando aplicável, informação sobre compartilhamento, revogação de consentimento, oposição e revisão de decisões automatizadas quando existirem.
 
-## Como exercer direitos no nossovoto.org
+## Como exercer direitos no bomdevoto.com.br
 
 1. Enviar email para contato.bomdevoto@gmail.com.
 2. Informar o email usado no login, se houver.

@@ -1,4 +1,4 @@
-import { auth } from '@/shared/firebase/firebase';
+import { getAuthAccessToken } from '@/shared/auth/authService';
 
 const MAX_RESPONSE_BYTES = 128 * 1024;
 
@@ -11,8 +11,7 @@ export class BackendError extends Error {
 }
 
 export const callBackend = async (action, data = {}) => {
-  const user = auth.currentUser;
-  const idToken = user ? await user.getIdToken() : null;
+  const idToken = await getAuthAccessToken();
   const response = await fetch('/api/rpc', {
     method: 'POST',
     credentials: 'omit',

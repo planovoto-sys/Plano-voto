@@ -44,6 +44,14 @@
   flex: 1;
 }
 
+.app-header--centered-brand:not(.app-header--search-active) .app-header__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+}
+
+.app-header--centered-brand .app-header__right { justify-self: end; }
+.app-header--centered-brand .app-header__back { padding-inline: 0; }
+
 .app-header__brand-link {
   display: flex;
   align-items: center;

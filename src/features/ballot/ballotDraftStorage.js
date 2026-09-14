@@ -32,7 +32,7 @@ class LocalBallotDraftRepository {
       }
       window.localStorage.removeItem(storageKey);
       const parsedDraft = raw ? JSON.parse(raw) : null;
-      const updatedAt = Date.parse(parsedDraft?.updated_at || '');
+      const updatedAt = Date.parse(parsedDraft?.cached_at || parsedDraft?.updated_at || '');
 
       if (Number.isFinite(updatedAt) && Date.now() - updatedAt > DRAFT_MAX_AGE_MS) {
         window.sessionStorage.removeItem(storageKey);
@@ -50,7 +50,7 @@ class LocalBallotDraftRepository {
     if (!userId || !canUseStorage()) return draft;
     try {
       const storageKey = draftKey(userId);
-      window.sessionStorage.setItem(storageKey, JSON.stringify(draft));
+      window.sessionStorage.setItem(storageKey, JSON.stringify({ ...draft, cached_at: new Date().toISOString() }));
       window.localStorage.removeItem(storageKey);
     } catch {
       return draft;
@@ -114,11 +114,13 @@ export const saveVisitorBallotState = async (estado) => {
   });
 };
 
-const getStepExpectedOffice = (stepKey) => {
-  if (stepKey === 'presidente') return 'Presidente';
-  if (stepKey === 'deputado_federal') return 'Deputado Federal';
-  return 'Senador';
-};
+const getStepExpectedOffice = (stepKey) => (
+  stepKey === 'presidente'
+    ? 'Presidente'
+    : stepKey === 'deputado_federal'
+      ? 'Deputado Federal'
+      : 'Senador'
+);
 
 export const assertCandidateMatchesStep = (candidate, stepKey, estado) => {
   const candidateId = candidate?.id || 'selecionado';
@@ -129,12 +131,12 @@ export const assertCandidateMatchesStep = (candidate, stepKey, estado) => {
     throw new VotingError('INVALID_CANDIDATE_OFFICE', `Candidato ${candidateId} não pertence ao cargo ${expectedOffice}.`);
   }
 
-  const candidateState = getCandidateStateCode(candidate, { allowPartyFallback: stepKey === 'senadores_1' || stepKey === 'senadores_2' });
-  if (stepKey !== 'deputado_federal' && stepKey !== 'presidente' && !candidateState) {
+  const candidateState = getCandidateStateCode(candidate, { allowPartyFallback: stepKey.startsWith('senadores') });
+  if (stepKey.startsWith('senadores') && !candidateState) {
     throw new VotingError('INVALID_CANDIDATE_STATE', `Candidato ${candidateId} não possui estado definido.`);
   }
 
-  if (candidateState && candidateState !== 'TODOS' && candidateState !== estado) {
+  if (stepKey !== 'presidente' && candidateState && candidateState !== 'TODOS' && candidateState !== estado) {
     throw new VotingError('INVALID_CANDIDATE_STATE', `Candidato ${candidateId} não pertence ao estado selecionado.`);
   }
 };

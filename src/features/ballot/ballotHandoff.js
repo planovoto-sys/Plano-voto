@@ -54,19 +54,18 @@ const encodeCompactPayload = (draft) => {
     '3',
     encodePayloadPart(portableDraft.e),
     encodeCandidateIds(portableDraft.p),
+    encodeCandidateIds(portableDraft.s),
     encodeCandidateIds(portableDraft.d),
-    encodeCandidateIds(portableDraft.s)
   ].join('|');
 };
 
 const decodeCompactPayload = (payload) => {
   const parts = String(payload || '').split('|');
-  const version = parts[0];
-  if (version !== '2' && version !== '3') return null;
-  const estado = parts[1];
-  const presidenteIds = version === '3' ? parts[2] || '' : '';
-  const deputadoIds = version === '3' ? parts[3] || '' : parts[2] || '';
-  const senadorIds = version === '3' ? parts[4] || '' : parts[3] || '';
+  const [version, estado] = parts;
+  if (!['2', '3'].includes(version)) return null;
+  const [presidenteIds, senadorIds, deputadoIds] = version === '3'
+    ? [parts[2] || '', parts[3] || '', parts[4] || '']
+    : ['', parts[3] || '', parts[2] || ''];
 
   return normalizeDraft({
     estado: decodePayloadPart(estado),

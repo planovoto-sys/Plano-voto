@@ -2,7 +2,7 @@
 
 Última atualização: 29 de maio de 2026.
 
-Este documento registra riscos e mitigação para operações do nossovoto.org que podem envolver escolhas eleitorais e inferência de opinião política. Ele não substitui revisão jurídica.
+Este documento registra riscos e mitigação para operações do bomdevoto.com.br que podem envolver escolhas eleitorais e inferência de opinião política. Ele não substitui revisão jurídica.
 
 ## 1. Descrição do projeto
 

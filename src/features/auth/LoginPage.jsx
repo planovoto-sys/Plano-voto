@@ -1,12 +1,23 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { signInWithPopup } from 'firebase/auth';
 import { Play } from 'lucide-react';
 
 import FlowToast from '@/shared/ui/feedback/FlowToast';
 import { useUser } from '@/shared/hooks/useUser';
-import { auth, authPersistenceReady, firebaseReady, googleProvider } from '@/shared/firebase/firebase';
+import {
+  authReady,
+  authProvider,
+  googleIdentityClientId,
+  signInWithGoogle,
+  signInWithGoogleIdToken,
+  usesGoogleIdentity,
+} from '@/shared/auth/authService';
+import { createGoogleIdentityNonce, loadGoogleIdentity } from '@/shared/auth/googleIdentity';
 import { mergeVisitorBallotDraftIntoAccount } from '@/features/ballot';
 import { flowError, flowLog } from '@/shared/utils/debugFlow';
+import {
+  clearSharedSelectionReturn, clearSharedSelectionSource, rememberSharedSelectionEntry,
+  sharedSelectionAuthRedirectUrl,
+} from '@/features/sharing/sharedSelectionModel';
 
 import './Login.css';
 
@@ -96,23 +107,118 @@ function FloatingDots() {
   );
 }
 
-export default function LoginPage() {
+export default function LoginPage({ sharedSelectionPath = null }) {
   const { user, userData, loading } = useUser();
   const [signingIn, setSigningIn] = useState(false);
+  const [googleIdentityReady, setGoogleIdentityReady] = useState(!usesGoogleIdentity);
   const [toastMessage, setToastMessage] = useState('');
   const [videoOpen, setVideoOpen] = useState(false);
+  const signingInRef = useRef(false);
+  const googleIdentityRef = useRef(null);
+  const googleIdentityNonceRef = useRef('');
+  const googlePromptAttemptedRef = useRef(false);
+
+  const prepareLogin = useCallback(() => {
+    if (sharedSelectionPath) {
+      if (rememberSharedSelectionEntry(sharedSelectionPath)) return true;
+      setToastMessage('Permita o armazenamento de sessão para preservar o link durante o login e tente novamente.');
+      return false;
+    }
+    // Uma tentativa antiga de QR nunca interfere em um login comum.
+    clearSharedSelectionReturn();
+    clearSharedSelectionSource();
+    return true;
+  }, [sharedSelectionPath]);
+
+  const handleGoogleIdentityError = useCallback((error) => {
+    flowError('LoginPage', 'Erro ao carregar login direto do Google', error);
+    setToastMessage('Não foi possível carregar o login do Google. Tente novamente.');
+  }, []);
+
+  const handleGoogleCredential = useCallback(async ({ token, nonce }) => {
+    if (signingInRef.current) return;
+    if (!prepareLogin()) return;
+    signingInRef.current = true;
+    googlePromptAttemptedRef.current = false;
+    setSigningIn(true);
+    setToastMessage('');
+
+    try {
+      flowLog('LoginPage', 'Iniciando login direto com Google');
+      await signInWithGoogleIdToken({ token, nonce });
+      flowLog('LoginPage', 'Login direto concluido', { provider: authProvider });
+    } catch (error) {
+      flowError('LoginPage', 'Erro no login direto', error);
+      setToastMessage('Não foi possível fazer login. Tente novamente.');
+    } finally {
+      signingInRef.current = false;
+      setSigningIn(false);
+    }
+  }, [prepareLogin]);
+
+  useEffect(() => {
+    if (!usesGoogleIdentity) return undefined;
+
+    let cancelled = false;
+
+    const initializeGoogleIdentity = async () => {
+      try {
+        const [{ nonce, hashedNonce }, googleIdentity] = await Promise.all([
+          createGoogleIdentityNonce(),
+          loadGoogleIdentity(),
+        ]);
+        if (cancelled) return;
+
+        googleIdentity.initialize({
+          client_id: googleIdentityClientId,
+          callback: (response) => {
+            if (cancelled) return;
+            if (!response?.credential) {
+              handleGoogleIdentityError(new Error('O Google nao retornou uma credencial valida.'));
+              return;
+            }
+            void handleGoogleCredential({ token: response.credential, nonce });
+          },
+          nonce: hashedNonce,
+          context: 'signin',
+          auto_select: false,
+          itp_support: true,
+        });
+
+        googleIdentityRef.current = googleIdentity;
+        googleIdentityNonceRef.current = nonce;
+        setGoogleIdentityReady(true);
+      } catch (error) {
+        if (!cancelled) {
+          handleGoogleIdentityError(error);
+          setGoogleIdentityReady(true);
+        }
+      }
+    };
+
+    void initializeGoogleIdentity();
+    return () => {
+      cancelled = true;
+      googleIdentityRef.current?.cancel?.();
+      googleIdentityRef.current = null;
+      googleIdentityNonceRef.current = '';
+      googlePromptAttemptedRef.current = false;
+    };
+  }, [handleGoogleCredential, handleGoogleIdentityError]);
 
   const handleGoogleSignIn = useCallback(async () => {
     if (signingIn) return;
+    if (!prepareLogin()) return;
     setSigningIn(true);
 
     try {
       flowLog('LoginPage', 'Iniciando login com Google');
-      await authPersistenceReady;
-      const result = await signInWithPopup(auth, googleProvider);
-      flowLog('LoginPage', 'Login bem-sucedido', result.user.uid);
+      const result = await signInWithGoogle(sharedSelectionPath
+        ? { redirectTo: sharedSelectionAuthRedirectUrl(window.location.origin, sharedSelectionPath) }
+        : undefined);
+      flowLog('LoginPage', 'Login iniciado', { provider: authProvider });
 
-      if (userData?.estado) {
+      if (!sharedSelectionPath && result.user?.uid && userData?.estado) {
         try {
           await mergeVisitorBallotDraftIntoAccount(result.user.uid, userData.estado);
         } catch (mergeErr) {
@@ -131,10 +237,35 @@ export default function LoginPage() {
     } finally {
       setSigningIn(false);
     }
-  }, [signingIn, userData]);
+  }, [prepareLogin, sharedSelectionPath, signingIn, userData]);
 
-  const PREVIEW_MODE_MESSAGE = 'App em modo de visualização — login disponível apenas com Firebase configurado.';
-  const previewModeHint = !user && !loading && !firebaseReady && !signingIn ? PREVIEW_MODE_MESSAGE : '';
+  const handlePrimaryGoogleSignIn = useCallback(() => {
+    if (!prepareLogin()) return;
+    if (!usesGoogleIdentity) {
+      void handleGoogleSignIn();
+      return;
+    }
+
+    const googleIdentity = googleIdentityRef.current;
+    if (!googleIdentity || !googleIdentityNonceRef.current) {
+      void handleGoogleSignIn();
+      return;
+    }
+
+    if (googlePromptAttemptedRef.current) {
+      googleIdentity.cancel?.();
+      googlePromptAttemptedRef.current = false;
+      void handleGoogleSignIn();
+      return;
+    }
+
+    setToastMessage('');
+    googlePromptAttemptedRef.current = true;
+    googleIdentity.prompt();
+  }, [handleGoogleSignIn, prepareLogin]);
+
+  const PREVIEW_MODE_MESSAGE = `App em modo de visualização — login disponível apenas com ${authProvider} configurado.`;
+  const previewModeHint = !user && !loading && !authReady && !signingIn ? PREVIEW_MODE_MESSAGE : '';
 
   return (
     <div className="login-wrapper">
@@ -168,11 +299,17 @@ export default function LoginPage() {
           <button
             type="button"
             className="login-google-btn"
-            onClick={handleGoogleSignIn}
-            disabled={signingIn || !firebaseReady}
+            onClick={handlePrimaryGoogleSignIn}
+            disabled={signingIn || !authReady || !googleIdentityReady}
           >
             <GoogleIcon />
-            <span>{signingIn ? 'Entrando...' : 'Entrar com Google'}</span>
+            <span>
+              {!googleIdentityReady
+                ? 'Carregando Google...'
+                : signingIn
+                  ? 'Entrando...'
+                  : 'Entrar com Google'}
+            </span>
           </button>
         </div>
 
