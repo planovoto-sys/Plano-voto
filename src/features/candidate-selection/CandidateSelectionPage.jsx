@@ -34,6 +34,7 @@ import {
 import { normalizeSearch } from '@/shared/utils/search';
 import { getCandidateStateCode, normalizeStateCode } from '@/shared/utils/state';
 import ConfirmModal from '@/shared/ui/feedback/ConfirmModal';
+import LoadingScreen from '@/shared/ui/feedback/LoadingScreen';
 import FlowToast from '@/shared/ui/feedback/FlowToast';
 import { STEP_GUIDANCE_MESSAGES } from '@/features/notifications/notificationMessages';
 import TourModal from '@/shared/ui/feedback/TourModal';
@@ -107,6 +108,9 @@ export default function EscolherCandidatos({
   const [filtroLista, setFiltroLista] = useState('avaliacao');
   const [selecionadosNaTela, setSelecionadosNaTela] = useState([]);
   const [ballotDraft, setBallotDraft] = useState(null);
+  const [restoredDraftKey, setRestoredDraftKey] = useState('');
+  const [draftLoadError, setDraftLoadError] = useState(false);
+  const [draftRetry, setDraftRetry] = useState(0);
   const [modalAviso, setModalAviso] = useState({ aberto: false, mensagem: '' });
   const [isTourOpen, setIsTourOpen] = useState(false);
   const isDesktopLayout = useDesktopLayout();
@@ -115,6 +119,8 @@ export default function EscolherCandidatos({
   const sharedSource = useMemo(() => readSharedSelectionSource(userId, ACTIVE_ELECTION_ID), [userId]);
   const isGuestMode = !userId;
   const estadoDoFluxo = userId ? getBallotEstado(userId, userData?.estado) : getVisitorBallotEstado();
+  const draftKey = `${userId || 'visitor'}:${estadoDoFluxo}:${chaveGrupo}`;
+  const restoringDraft = restoredDraftKey !== draftKey;
   const isNationalOffice = chaveBanco === 'presidente';
   const isSenadoresUnificados = chaveBanco === 'senadores' && Array.isArray(chaveGrupos) && chaveGrupos.length > 1;
   const currentStep = chaveBanco === 'presidente'
@@ -283,12 +289,6 @@ export default function EscolherCandidatos({
     let cancelled = false;
 
     const restoreSelection = async () => {
-      if (todosCandidatos.length === 0) {
-        setSelecionadosNaTela([]);
-        setBallotDraft(null);
-        return;
-      }
-
       let draft = userId
         ? readBallotDraft(userId, estadoDoFluxo)
         : readVisitorBallotDraft(estadoDoFluxo);
@@ -298,6 +298,8 @@ export default function EscolherCandidatos({
           draft = await fetchRemoteBallotDraft(userId, estadoDoFluxo);
         } catch (error) {
           flowWarn('candidates.remote-draft.fetch-error', { cargo, chaveGrupo, message: error?.message });
+          if (!cancelled) setDraftLoadError(true);
+          return;
         }
       }
 
@@ -305,16 +307,16 @@ export default function EscolherCandidatos({
       setBallotDraft(draft);
 
       const gruposDaTela = isSenadoresUnificados ? chaveGrupos : [chaveGrupo];
-      const idsSalvos = gruposDaTela
-        .flatMap((groupKey) => draft.candidate_groups?.[groupKey] || [])
-        .map((candidate) => candidate.id);
+      const savedCandidates = gruposDaTela.flatMap((groupKey) => draft.candidate_groups?.[groupKey] || []);
       flowLog('candidates.restore-selection', {
         cargo,
         chaveGrupo: isSenadoresUnificados ? chaveGrupos.join(',') : chaveGrupo,
         estado: estadoDoFluxo,
-        idsSalvos
+        idsSalvos: savedCandidates.map((candidate) => candidate.id)
       });
-      setSelecionadosNaTela(candidatosDoEstado.filter((candidate) => idsSalvos.includes(candidate.id)));
+      setSelecionadosNaTela(savedCandidates);
+      setDraftLoadError(false);
+      setRestoredDraftKey(draftKey);
     };
 
     restoreSelection();
@@ -322,7 +324,7 @@ export default function EscolherCandidatos({
     return () => {
       cancelled = true;
     };
-  }, [cargo, userId, estadoDoFluxo, todosCandidatos, candidatosDoEstado, chaveGrupo, chaveGrupos, isSenadoresUnificados]);
+  }, [cargo, userId, estadoDoFluxo, chaveGrupo, chaveGrupos, isSenadoresUnificados, draftKey, draftRetry]);
 
   const selectedCandidateIdsInOtherSteps = useMemo(() => {
     const draft = ballotDraft || (userId
@@ -381,6 +383,7 @@ export default function EscolherCandidatos({
   }, [candidatosDoEstado, featuredCandidateId, filtroLista, buscaDiferida, isGuestMode, selectedCandidateIdsInOtherSteps, selecionadosNaTela, sharedSource]);
 
   const persistirEtapa = async (listaFinalDaTela, { markCompleted = false } = {}) => {
+    if (restoringDraft || draftLoadError) throw new Error('Aguarde o carregamento das suas escolhas antes de salvar.');
     if (!estadoDoFluxo) {
       flowWarn('candidates.persist.no-state', { cargo, chaveGrupo });
       navigate('/home', { replace: true });
@@ -624,6 +627,17 @@ export default function EscolherCandidatos({
 
     await handleAvancar(selecionadosNaTela, { alreadySaved: true });
   };
+
+  if (draftLoadError) return <ConfirmModal
+    isOpen
+    titulo="NÃO FOI POSSÍVEL CARREGAR SUAS ESCOLHAS"
+    mensagem="Verifique sua conexão e tente novamente para continuar com a seleção salva."
+    textoConfirmar="TENTAR NOVAMENTE"
+    textoCancelar="VOLTAR"
+    onConfirm={() => { setDraftLoadError(false); setDraftRetry((value) => value + 1); }}
+    onCancel={() => navigate(BALLOT_ROUTES.estado)}
+  />;
+  if (restoringDraft) return <LoadingScreen className="nv-screen" />;
 
   if (isDesktopLayout) {
     return (

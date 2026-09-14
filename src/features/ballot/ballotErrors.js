@@ -15,6 +15,7 @@ export const getVotingErrorMessage = (error) => {
     INVALID_CANDIDATE_OFFICE: 'Um dos candidatos não pertence ao cargo desta etapa.',
     INVALID_CANDIDATE_STATE: 'Um dos candidatos não pertence ao estado selecionado.',
     STATE_MISMATCH: 'O estado do rascunho mudou. Volte ao início e confirme seu estado.',
+    DRAFT_CHANGED: 'Suas escolhas mudaram em outra aba ou dispositivo. Recarregue a página para revisar a seleção atual antes de continuar.',
     VOTE_ALREADY_CAST: 'Seu voto já foi registrado. Por segurança, ele não pode ser alterado.',
     VOTER_NOT_ELIGIBLE: 'Seu cadastro não está habilitado para votar nesta eleição.',
     VOTER_NOT_ENROLLED: 'Não encontramos sua habilitação para esta eleição.',

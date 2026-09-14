@@ -97,24 +97,31 @@ const removeLegacyCandidateIds = async (draft) => {
 
 const saveSupabaseDraft = async (userId, draft) => {
   const normalizedDraft = await removeLegacyCandidateIds(draft);
-  const { data, error } = await getSupabaseClient()
-    .from('ballot_drafts')
-    .upsert({
-      election_id: ACTIVE_ELECTION_ID,
-      user_id: userId,
-      state: normalizedDraft.estado,
-      schema_version: BALLOT_SCHEMA_VERSION,
-      selections: {
-        selections: normalizedDraft.selections,
-        candidate_groups: normalizedDraft.candidate_groups,
-      },
-      completed_steps: Object.entries(normalizedDraft.completed_steps)
-        .filter(([, completed]) => completed)
-        .map(([stepId]) => stepId),
-    }, { onConflict: 'election_id,user_id' })
-    .select('*')
-    .single();
+  const payload = {
+    election_id: ACTIVE_ELECTION_ID,
+    user_id: userId,
+    state: normalizedDraft.estado,
+    schema_version: BALLOT_SCHEMA_VERSION,
+    selections: {
+      selections: normalizedDraft.selections,
+      candidate_groups: normalizedDraft.candidate_groups,
+    },
+    completed_steps: Object.entries(normalizedDraft.completed_steps)
+      .filter(([, completed]) => completed)
+      .map(([stepId]) => stepId),
+  };
+  const table = getSupabaseClient().from('ballot_drafts');
+  // Uma aba aberta antes da importação não pode regravar o rascunho inteiro
+  // com sua cópia antiga. A comparação da versão acontece na escrita no banco.
+  const write = normalizedDraft.updated_at
+    ? table.update(payload).eq('election_id', ACTIVE_ELECTION_ID).eq('user_id', userId)
+      .eq('updated_at', normalizedDraft.updated_at)
+    : table.insert(payload);
+  const { data, error } = await write.select('*').single();
 
+  if (error?.code === '23505' || error?.code === 'PGRST116' || (!error && !data)) {
+    throw new VotingError('DRAFT_CHANGED', 'Suas escolhas mudaram em outra aba ou dispositivo. Recarregue a página antes de continuar.');
+  }
   if (error) throw error;
   return persistBallotDraft(userId, deserializeSupabaseDraft(data, normalizedDraft.estado));
 };
@@ -165,16 +172,15 @@ const saveBallotStepSelectionServerSide = async (userId, stepKey, candidates, es
 export const fetchRemoteBallotDraft = async (userId, estado = null) => {
   if (!userId) return createEmptyBallotDraft(estado);
 
-  if (usesSupabaseAuth) {
-    const remoteDraft = await readSupabaseDraft(userId, estado);
-    return persistBallotDraft(userId, remoteDraft);
-  }
-
   const requestStartedAtMs = Date.now();
-  const draft = await ballotDraftRepository.readDraft(userId, estado);
+  const beforeRequest = readBallotDraft(userId, estado);
+  const draft = usesSupabaseAuth
+    ? await readSupabaseDraft(userId, estado)
+    : await ballotDraftRepository.readDraft(userId, estado);
   const localDraft = readBallotDraft(userId, estado);
 
-  if (shouldKeepLocalDraftOverRemote(localDraft, draft, requestStartedAtMs)) {
+  if (JSON.stringify(localDraft) !== JSON.stringify(beforeRequest)
+    || (!usesSupabaseAuth && shouldKeepLocalDraftOverRemote(localDraft, draft, requestStartedAtMs))) {
     flowLog('draft.remote.ignored-stale', {
       userId,
       estado: estado || draft.estado || localDraft.estado || null,

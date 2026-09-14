@@ -5,6 +5,8 @@ import {
   isSharedSelectionAuthCallback,
   readSharedSelectionReturn, rememberSharedSelectionReturn, sharedSelectionMessage, sharedSelectionUrl,
   sharedSelectionAuthRedirectUrl,
+  resolveSharedSelectionReturn,
+  canonicalSharedSelectionPath,
   SHARE_RETURN_KEY,
   SHARED_DRAFT_KEY, clearSharedSelectionDraft, readSharedSelectionDraft, writeSharedSelectionDraft,
   rememberSharedSelectionEntry, readSharedSelectionSource, writeSharedSelectionSource,
@@ -126,6 +128,37 @@ test('login antes da seleção mantém somente o link, sem ler ou exigir rascunh
   assert.equal(readSharedSelectionReturn(), null, 'login comum descarta intenção anterior');
   values.set(SHARE_RETURN_KEY, JSON.stringify({ kind: 'entry', path: `/selecao/${id}`, at: Date.now() - 3600001 }));
   assert.equal(readSharedSelectionReturn(), null);
+}));
+
+test('retorno OAuth recupera link em nova aba sem depender da sessão original', () => withSession(() => {
+  const callback = new URL(sharedSelectionAuthRedirectUrl('https://bomdevoto.com.br', `/selecao/${id}`));
+  assert.equal(readSharedSelectionReturn(), null);
+  assert.equal(resolveSharedSelectionReturn(callback.search), `/selecao/${id}`);
+  for (const path of ['https://evil.com', '//evil.com', '/home', `/selecao/${id}?redirect=/home`]) {
+    callback.searchParams.set('selection_path', path);
+    assert.equal(resolveSharedSelectionReturn(callback.search), null);
+  }
+  callback.searchParams.set('selection_path', `/selecao/${id}`);
+  callback.searchParams.set('selection_at', String(Date.now() - 3600001));
+  assert.equal(resolveSharedSelectionReturn(callback.search), null);
+  callback.searchParams.set('selection_at', String(Date.now() + 100000));
+  assert.equal(resolveSharedSelectionReturn(callback.search), null);
+}));
+
+test('retorno sem parâmetros usa intenção válida e login comum pode descartá-la', () => withSession(() => {
+  rememberSharedSelectionEntry(`/selecao/${id}`);
+  assert.equal(resolveSharedSelectionReturn(''), `/selecao/${id}`);
+  clearSharedSelectionReturn();
+  assert.equal(resolveSharedSelectionReturn(''), null);
+  assert.equal(resolveSharedSelectionReturn(`?selection_path=/selecao/${id}&selection_at=${Date.now()}`), null);
+}));
+
+test('barra final e letras maiúsculas mantêm a mesma entrada compartilhada', () => withSession(() => {
+  const mixedId = 'ABCDEFAB-1234-4567-8901-ABCDEFABCDEF';
+  assert.equal(canonicalSharedSelectionPath(`/selecao/${mixedId}/resumo/`), `/selecao/${mixedId.toLowerCase()}`);
+  assert.equal(rememberSharedSelectionEntry(`/selecao/${mixedId}/`), true);
+  assert.equal(readSharedSelectionReturn(), `/selecao/${mixedId.toLowerCase()}`);
+  assert.equal(isSharedSelectionPath(`/selecao/${mixedId}//`), false);
 }));
 
 test('referência é isolada por conta/eleição e não é modificada ao editar a seleção', () => withSession(() => {

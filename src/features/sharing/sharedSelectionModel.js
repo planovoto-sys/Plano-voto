@@ -8,7 +8,10 @@ const DRAFT_TTL_MS = 24 * 60 * 60 * 1000;
 export const isSharedSelectionId = (id) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(id || ''));
 export const isSharedSelectionPath = (path) => typeof path === 'string'
   && path.startsWith(SHARED_SELECTION_PREFIX)
-  && isSharedSelectionId(path.slice(SHARED_SELECTION_PREFIX.length).replace(/\/resumo$/, ''));
+  && isSharedSelectionId(path.slice(SHARED_SELECTION_PREFIX.length).replace(/\/$/, '').replace(/\/resumo$/, ''));
+
+export const canonicalSharedSelectionPath = (path) => isSharedSelectionPath(path)
+  ? `${SHARED_SELECTION_PREFIX}${path.slice(SHARED_SELECTION_PREFIX.length).split('/')[0].toLowerCase()}` : null;
 
 const sharedSelectionIdFromSummaryPath = (path) => {
   if (!isSharedSelectionPath(path) || !path.endsWith('/resumo')) return null;
@@ -21,10 +24,29 @@ export const isSharedSelectionAuthCallback = (search) => {
   } catch { return false; }
 };
 
-export const sharedSelectionAuthRedirectUrl = (origin) => {
+export const sharedSelectionAuthRedirectUrl = (origin, path) => {
   const url = new URL('/', origin);
   url.searchParams.set(SHARED_AUTH_CALLBACK_PARAM, SHARED_AUTH_CALLBACK_VALUE);
+  if (isSharedSelectionPath(path)) {
+    url.searchParams.set('selection_path', canonicalSharedSelectionPath(path));
+    url.searchParams.set('selection_at', String(Date.now()));
+  }
   return url.href;
+};
+
+// O próprio retorno carrega apenas o link público, nunca escolhas ou identidade.
+// Isso permite continuar quando o Google retorna em outra aba do navegador.
+export const resolveSharedSelectionReturn = (search) => {
+  if (isSharedSelectionAuthCallback(search)) {
+    const params = new URLSearchParams(search);
+    const path = params.get('selection_path');
+    const at = Number(params.get('selection_at'));
+    if (isSharedSelectionPath(path) && at > 0 && Date.now() - at >= 0
+      && Date.now() - at < 60 * 60 * 1000) return canonicalSharedSelectionPath(path);
+  }
+  // Alguns provedores retornam à URL principal sem os parâmetros solicitados.
+  // Um login comum limpa esta intenção antes de autenticar.
+  return readSharedSelectionReturn();
 };
 
 export const sharedSelectionUrl = (id, origin) => {
@@ -33,7 +55,7 @@ export const sharedSelectionUrl = (id, origin) => {
 };
 
 export const getSharedCandidateOffice = (candidate) => {
-  const office = String(candidate.cargo || '').toLowerCase();
+  const office = String(candidate.cargo || '').trim().toLowerCase().replaceAll('_', ' ');
   if (office === 'presidente') return 'presidente';
   if (office === 'senador' || office === 'senadores') return 'senadores';
   if (office === 'deputado federal') return 'deputado_federal';
@@ -54,9 +76,9 @@ export const rememberSharedSelectionReturn = (path) => {
 // O novo fluxo autentica antes de buscar candidatos: basta preservar o link,
 // sem depender de um rascunho anônimo ou aceitar destinos externos.
 export const rememberSharedSelectionEntry = (path) => {
-  if (!isSharedSelectionPath(path) || path.endsWith('/resumo')) return false;
+  if (!isSharedSelectionPath(path) || path.replace(/\/$/, '').endsWith('/resumo')) return false;
   try {
-    window.sessionStorage.setItem(SHARE_RETURN_KEY, JSON.stringify({ kind: 'entry', path, at: Date.now() }));
+    window.sessionStorage.setItem(SHARE_RETURN_KEY, JSON.stringify({ kind: 'entry', path: canonicalSharedSelectionPath(path), at: Date.now() }));
     return true;
   } catch { return false; }
 };

@@ -10,8 +10,8 @@ import PrivacyConsent from '@/features/privacy/PrivacyConsent';
 import DesktopMobileOnlyPage from '@/features/desktop/DesktopMobileOnlyPage';
 import {
   isSharedSelectionAuthCallback,
-  isSharedSelectionPath,
-  readSharedSelectionReturn,
+  canonicalSharedSelectionPath,
+  resolveSharedSelectionReturn,
 } from '@/features/sharing/sharedSelectionModel';
 import PageTransition from '@/features/motion/PageTransition';
 import { STEP_GUIDANCE_MESSAGES } from '@/features/notifications/notificationMessages';
@@ -62,10 +62,10 @@ const getResumeNotice = (progress) => {
 function AuthenticatedEntryRedirect({ user, estado }) {
   const [redirect, setRedirect] = useState(null);
   const [sharedReturn] = useState(() => (
-    isSharedSelectionAuthCallback(window.location.search) ? readSharedSelectionReturn() : null
+    resolveSharedSelectionReturn(window.location.search)
   ));
   const [missingSharedReturn, setMissingSharedReturn] = useState(() => (
-    isSharedSelectionAuthCallback(window.location.search) && !readSharedSelectionReturn()
+    isSharedSelectionAuthCallback(window.location.search) && !resolveSharedSelectionReturn(window.location.search)
   ));
 
   useEffect(() => {
@@ -125,7 +125,7 @@ function AppRoutes({ rootElement, publicExplorationRoute, privateRedirect, isDes
   const navigationType = useNavigationType();
 
   if (isDesktopExperience) {
-    return <DesktopMobileOnlyPage sharedPath={isSharedSelectionPath(location.pathname) ? location.pathname.replace(/\/resumo$/, '') : null} />;
+    return <DesktopMobileOnlyPage sharedPath={canonicalSharedSelectionPath(location.pathname)} />;
   }
 
   return (

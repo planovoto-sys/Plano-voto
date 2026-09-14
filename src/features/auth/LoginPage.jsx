@@ -214,7 +214,7 @@ export default function LoginPage({ sharedSelectionPath = null }) {
     try {
       flowLog('LoginPage', 'Iniciando login com Google');
       const result = await signInWithGoogle(sharedSelectionPath
-        ? { redirectTo: sharedSelectionAuthRedirectUrl(window.location.origin) }
+        ? { redirectTo: sharedSelectionAuthRedirectUrl(window.location.origin, sharedSelectionPath) }
         : undefined);
       flowLog('LoginPage', 'Login iniciado', { provider: authProvider });
 

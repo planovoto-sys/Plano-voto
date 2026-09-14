@@ -41,7 +41,7 @@ function SharedSelectionEntry({ id, userId, onRetry }) {
         if (cancelled) return;
         if (!shared || shared.election_id !== ACTIVE_ELECTION_ID) throw new Error('SHARE_UNAVAILABLE');
         if (!shared.candidates?.length) throw new Error('CANDIDATES_CHANGED');
-        const draft = normalizeDraft({ ...context?.selections, estado: context?.state }, context?.state);
+        const draft = normalizeDraft({ ...context?.selections, estado: context?.state, updated_at: context?.updated_at }, context?.state);
         const source = readSharedSelectionSource(userId, ACTIVE_ELECTION_ID);
         // Reabrir o mesmo QR não reaplica a lista sobre as edições já realizadas.
         if (context && source?.id === id && source.revision === shared.revision) {
@@ -50,7 +50,9 @@ function SharedSelectionEntry({ id, userId, onRetry }) {
           navigate(BALLOT_ROUTES.estado, { replace: true, state: { bypassVoteRedirect: true } });
           return;
         }
-        setLoad({ shared, context, draft, needsConfirmation: draftHasBallotSelections(draft) });
+        const unavailableCount = Math.max(0, shared.published_count - shared.candidates.length);
+        setLoad({ shared, context, draft, unavailableCount,
+          needsConfirmation: draftHasBallotSelections(draft) || unavailableCount > 0 });
       } catch (cause) {
         if (!cancelled) setError(sharedSelectionError(cause));
       }
@@ -133,10 +135,13 @@ function SharedSelectionEntry({ id, userId, onRetry }) {
       </main>
       <ConfirmModal
         isOpen={Boolean(load?.needsConfirmation && !error)}
-        titulo="USAR SELEÇÃO COMPARTILHADA?"
-        mensagem={`Sua conta já tem escolhas salvas${load?.context?.state ? ` em ${load.context.state}` : ''}. Deseja substituí-las pela seleção recebida de ${load?.shared.state}? Depois, você poderá desmarcar ou acrescentar candidatos nas telas do app. A lista original continuará guardada como referência nesta sessão.`}
-        textoConfirmar="USAR SELEÇÃO"
-        textoCancelar="MANTER AS MINHAS"
+        titulo="Acessar seleção compartilhada?"
+        mensagem={<>
+          {load && draftHasBallotSelections(load.draft) && <p>Obs.: ao escolher continuar, sua seleção anterior será apagada.</p>}
+          {load?.unavailableCount > 0 && <p>{load.unavailableCount} candidato(s) não está(ão) mais disponível(is). Ao continuar, você receberá apenas os {load.shared.candidates.length} candidatos disponíveis.</p>}
+        </>}
+        textoConfirmar="Continuar"
+        textoCancelar="Cancelar"
         onConfirm={apply}
         onCancel={keepMyChoices}
       />
@@ -145,7 +150,8 @@ function SharedSelectionEntry({ id, userId, onRetry }) {
 }
 
 export default function SharedSelectionPage() {
-  const { id } = useParams();
+  const { id: rawId } = useParams();
+  const id = rawId?.toLowerCase();
   const { user, loading } = useUser();
   const [retry, setRetry] = useState(0);
   if (loading) return <LoadingScreen />;

@@ -1,6 +1,6 @@
 import { ACTIVE_ELECTION_ID } from '@/shared/constants/ballot';
 import { getSupabaseClient } from '@/shared/supabase/client';
-import { normalizeDraft, persistBallotDraft } from '@/features/ballot';
+import { getDraftActiveCandidateIds, normalizeDraft, persistBallotDraft, readBallotDraft } from '@/features/ballot';
 
 const rpc = async (name, params) => {
   const { data, error } = await getSupabaseClient().rpc(name, params);
@@ -24,12 +24,21 @@ export const importSharedSelection = async ({ userId, shared, state, candidateId
     p_id: shared.id, p_revision: shared.revision, p_state: state,
     p_candidate_ids: candidateIds, p_expected_updated_at: expectedUpdatedAt,
   });
-  const draft = normalizeDraft({ ...row.selections, estado: row.state }, row.state);
-  return persistBallotDraft(userId, draft);
+  const draft = normalizeDraft({ ...row.selections, estado: row.state, updated_at: row.updated_at }, row.state);
+  persistBallotDraft(userId, draft);
+  const cached = readBallotDraft(userId);
+  if (cached.estado !== draft.estado || cached.updated_at !== draft.updated_at
+    || JSON.stringify(getDraftActiveCandidateIds(cached).sort()) !== JSON.stringify(getDraftActiveCandidateIds(draft).sort())) {
+    throw new Error('LOCAL_DRAFT_STORAGE_FAILED');
+  }
+  return draft;
 };
 
 export const sharedSelectionError = (error) => {
   const message = String(error?.message || '');
+  if (/LOCAL_DRAFT_STORAGE_FAILED/.test(message)) return 'A seleção foi salva na conta, mas não pôde ser carregada neste navegador. Libere espaço ou permita o armazenamento e tente novamente.';
+  if (/INVALID_STATE/.test(message)) return 'O estado desta seleção não está disponível para a eleição atual.';
+  if (/AUTH_REQUIRED|JWT expired/.test(message)) return 'Sua sessão expirou. Entre novamente e reabra o link da seleção.';
   if (/SOURCE_STORAGE_FAILED/.test(message)) return 'A seleção foi salva na conta, mas o navegador não conseguiu guardar a referência do link. Permita o armazenamento de sessão e abra este link novamente.';
   if (/LOCAL_DRAFT_MISSING/.test(message)) return 'O rascunho não está mais disponível neste navegador. Volte ao link compartilhado para revisar a seleção novamente.';
   if (/SHARE_CHANGED/.test(message)) return 'O autor atualizou esta seleção. Recarregue e revise a nova versão antes de confirmar.';

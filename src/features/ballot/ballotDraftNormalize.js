@@ -143,7 +143,9 @@ export const normalizeDraft = (rawDraft, estado = null) => {
     estado: normalizeStateCode(rawDraft.estado ?? estado) || null,
     selections,
     candidate_groups: candidateGroups,
-    completed_steps: completedSteps
+    completed_steps: completedSteps,
+    updated_at: normalizeRemoteTimestamp(rawDraft.updated_at),
+    cached_at: rawDraft.cached_at || null,
   };
 };
 

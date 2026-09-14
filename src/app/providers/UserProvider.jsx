@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
 
 import { UserContext } from '@/app/providers/UserContext';
@@ -12,6 +12,7 @@ import { flowError, flowLog, flowWarn } from '@/shared/utils/debugFlow';
 import {
   isSharedSelectionAuthCallback,
   isSharedSelectionPath,
+  resolveSharedSelectionReturn,
 } from '@/features/sharing/sharedSelectionModel';
 
 const FILTER_STORAGE_KEY = 'plano-voto:filtro-ativo';
@@ -43,6 +44,7 @@ export const UserProvider = ({ children }) => {
   const [userEligibility, setUserEligibility] = useState(null);
   const [dataLoading, setDataLoading] = useState(true);
   const [filtroAtivo, setFiltroAtivo] = useState(readPersistedFilter);
+  const visitorMergeAccount = useRef(null);
 
   useEffect(() => subscribeToAuth((nextUser, error) => {
     if (error) flowError('auth.subscription.error', error);
@@ -57,6 +59,7 @@ export const UserProvider = ({ children }) => {
     if (authLoading) return cleanupDataSubscriptions;
 
     if (!user) {
+      visitorMergeAccount.current = null;
       queueMicrotask(() => {
         if (cancelled) return;
         flowLog('auth.signed-out');
@@ -142,8 +145,11 @@ export const UserProvider = ({ children }) => {
       // outro rascunho de visitante automaticamente enquanto ele está em revisão.
       // Mesmo se a sessão que guardava o link expirar, não mesclar um rascunho
       // de visitante em um retorno OAuth que pertence ao compartilhamento.
+      const firstSignIn = visitorMergeAccount.current !== user.uid;
+      visitorMergeAccount.current = user.uid;
       const isSharedLogin = isSharedSelectionAuthCallback(window.location.search);
-      if (!isSharedLogin && !isSharedSelectionPath(window.location.pathname)) {
+      if (firstSignIn && !isSharedLogin && !isSharedSelectionPath(window.location.pathname)
+        && !resolveSharedSelectionReturn(window.location.search)) {
         void mergeVisitorBallotDraftIntoAccount(user.uid).catch((error) => {
           flowError('visitor-draft.merge.error', error, { userId: user.uid });
         });

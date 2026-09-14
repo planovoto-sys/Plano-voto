@@ -41,6 +41,7 @@ before(async () => {
   await db.exec(await file('supabase/migrations/20260903000000_limited_recommendations.sql'));
   await db.exec(await file('supabase/migrations/20260904000000_shared_selections.sql'));
   await db.exec(await file('supabase/migrations/20260908000000_shared_selection_custom_candidates.sql'));
+  await db.exec(await file('supabase/migrations/20260909000000_shared_selection_reliability.sql'));
 });
 after(() => db.close());
 
@@ -74,6 +75,50 @@ const publish = async (user) => {
 const readShare = async (id) => (await db.query('select public.read_shared_selection($1) as selection', [id])).rows[0].selection;
 const importShare = (share, ids, state = 'SP', expected = null) => db.query(
   'select public.import_shared_selection($1,$2,$3,$4,$5) as draft', [share.id, share.revision, state, ids, expected]);
+
+isolated('revisão nula não ignora atualização da publicação', async () => {
+  await candidate('null-revision', 8); await save(201, ['null-revision']);
+  const shared = await publish(201);
+  await db.query('insert into auth.users(id) values ($1)', [uuid(202)]);
+  await actAs(202);
+  await db.exec('savepoint missing_revision');
+  await assert.rejects(importShare({ ...shared, revision: null }, ['null-revision']), /SHARE_CHANGED/);
+  await db.exec('rollback to savepoint missing_revision');
+  assert.equal((await db.query('select count(*) from public.ballot_drafts where user_id=$1', [uuid(202)])).rows[0].count, 0);
+});
+
+isolated('confirmar com versão antiga nunca apaga edições posteriores do destinatário', async () => {
+  await candidate('concurrent-A', 9); await candidate('concurrent-B', 8);
+  await save(203, ['concurrent-A']); const shared = await publish(203);
+  await save(204, ['concurrent-A']); await actAs(204);
+  const version = async () => (await db.query('select updated_at::text as version from public.ballot_drafts where user_id=$1', [uuid(204)])).rows[0].version;
+  const original = await version();
+  await save(204, ['concurrent-B']);
+  assert.notEqual(await version(), original);
+  await db.exec('savepoint stale_draft');
+  await assert.rejects(importShare(shared, ['concurrent-A'], 'SP', original), /DRAFT_CHANGED/);
+  await db.exec('rollback to savepoint stale_draft');
+  assert.deepEqual(await idsFor(204), ['concurrent-B']);
+});
+
+isolated('importar lista completa mantém todos os cargos mesmo quando não há vagas de indicação', async () => {
+  await candidate('all-P', 9, 'Presidente', null);
+  await candidate('all-S1', 9, 'Senador'); await candidate('all-S2', 8, 'Senador');
+  await candidate('all-S3', 7, 'Senador'); await candidate('all-D', 9);
+  const selected = ['all-P', 'all-S1', 'all-S2', 'all-S3', 'all-D'];
+  await db.exec('update public.recommendation_limits set indication_limit=1');
+  await save(205, selected); const shared = await publish(205);
+  await db.query('insert into auth.users(id) values ($1)', [uuid(206)]);
+  await actAs(206); await db.exec('set local role authenticated');
+  const result = (await importShare(shared, selected)).rows[0].draft;
+  const groups = result.selections.candidate_groups;
+  assert.equal(groups.presidente.length, 1);
+  assert.equal(groups.senadores_1.length, 3);
+  assert.equal(groups.deputado_federal.length, 1);
+  assert.deepEqual(new Set(Object.values(groups).flat().map((c) => c.id)), new Set(selected));
+  assert.equal(result.user_id, uuid(206));
+  assert.ok(result.updated_at);
+});
 
 isolated('publicação copia todos os selecionados, não só as indicações; ler não contabiliza', async () => {
   await candidate('public-A', 9); await candidate('public-B', 8); await candidate('public-C', 7);

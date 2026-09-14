@@ -32,7 +32,7 @@ class LocalBallotDraftRepository {
       }
       window.localStorage.removeItem(storageKey);
       const parsedDraft = raw ? JSON.parse(raw) : null;
-      const updatedAt = Date.parse(parsedDraft?.updated_at || '');
+      const updatedAt = Date.parse(parsedDraft?.cached_at || parsedDraft?.updated_at || '');
 
       if (Number.isFinite(updatedAt) && Date.now() - updatedAt > DRAFT_MAX_AGE_MS) {
         window.sessionStorage.removeItem(storageKey);
@@ -50,7 +50,7 @@ class LocalBallotDraftRepository {
     if (!userId || !canUseStorage()) return draft;
     try {
       const storageKey = draftKey(userId);
-      window.sessionStorage.setItem(storageKey, JSON.stringify(draft));
+      window.sessionStorage.setItem(storageKey, JSON.stringify({ ...draft, cached_at: new Date().toISOString() }));
       window.localStorage.removeItem(storageKey);
     } catch {
       return draft;
