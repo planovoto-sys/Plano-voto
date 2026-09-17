@@ -103,7 +103,7 @@ test('mensagem de compartilhamento mantém link clicável e revisão explícita'
   const message = sharedSelectionMessage(url);
   const wa = new URL(`https://wa.me/?text=${encodeURIComponent(message)}`);
   assert.equal(wa.searchParams.get('text'), message);
-  assert.ok(message.includes('revisar os candidatos'));
+  assert.ok(message.includes('Ajuste as seleções, se desejar.'));
   assert.ok(message.endsWith(url));
 });
 

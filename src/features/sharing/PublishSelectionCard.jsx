@@ -17,7 +17,9 @@ export default function PublishSelectionCard({ shareData = null }) {
   const [qr, setQr] = useState({ link: '', url: '' });
   const operation = useRef(false);
   const link = publication?.active ? sharedSelectionUrl(publication.id, APP_SHARE_URL) : '';
-  const qrPayload = link ? `${link}${link.includes('?') ? '&' : '?'}rev=${publication?.revision ?? Date.now()}` : '';
+  const qrPayload = link && publication?.revision
+    ? `${link}${link.includes('?') ? '&' : '?'}rev=${publication.revision}`
+    : link;
   const qrKey = publication?.id && publication?.revision ? `${publication.id}:${publication.revision}` : link;
   const qrUrl = qr.link === qrKey ? qr.url : '';
   const mergePublication = (current, next) => {
@@ -39,10 +41,9 @@ export default function PublishSelectionCard({ shareData = null }) {
   }, [retry, shareData]);
 
   useEffect(() => {
-    if (!link) { setQr({ link: '', url: '' }); return undefined; }
+    if (!link) return undefined;
     let cancelled = false;
     const nextKey = `${publication.id}:${publication.revision}`;
-    setQr((current) => current.link === nextKey ? current : { link: nextKey, url: '' });
     QRCode.toDataURL(qrPayload, { width: 512, margin: 4, errorCorrectionLevel: 'H', color: { dark: '#123d2b', light: '#ffffff' } })
       .then((url) => { if (!cancelled) setQr({ link: nextKey, url }); })
       .catch(() => { if (!cancelled) setMessage('O QR Code não carregou. Você ainda pode compartilhar o link.'); });
@@ -93,11 +94,6 @@ export default function PublishSelectionCard({ shareData = null }) {
     } catch (error) {
       if (error.name !== 'AbortError') { setMessage('Escolha abaixo como enviar sua seleção.'); }
     } finally { operation.current = false; setBusy(false); }
-  };
-
-  const copy = async () => {
-    try { await navigator.clipboard.writeText(link); setMessage('Link da seleção copiado.'); }
-    catch { setMessage('Selecione e copie o link no campo abaixo.'); }
   };
 
   return (
