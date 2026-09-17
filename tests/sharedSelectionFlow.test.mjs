@@ -125,7 +125,7 @@ test('cancelar mantém escolhas existentes e não chama importação', async () 
   await renderEntry();
   assert.equal(imports().length, 0);
   assert.equal(document.querySelector('.modal-title').textContent, 'Acessar seleção compartilhada?');
-  assert.equal(document.querySelector('.modal-message').textContent, 'Obs.: ao escolher continuar, sua seleção anterior será apagada.');
+  assert.equal(document.querySelector('.modal-message').textContent, 'Ao continuar, sua seleção anterior será apagada.');
   await click('Cancelar');
   assert.equal(imports().length, 0);
   assert.deepEqual(app.getDraftActiveCandidateIds(app.readBallotDraft('recipient')), [d.id]);
@@ -270,18 +270,20 @@ const renderSharePanel = async () => {
   await tick();
 };
 
-test('painel exibe três ações e WhatsApp direto com o link da seleção', async () => {
+test('painel mostra somente botão de compartilhar e QR atualizado pela revisão da publicação', async () => {
   await renderSharePanel();
   assert.equal(document.querySelectorAll('.sp-action-card').length, 3);
-  assert.equal(document.querySelector('.published-selection__options').hidden, true);
-  assert.match(document.querySelector('.sp-action-list').firstElementChild.textContent, /Compartilhar minha seleção/);
-  assert.doesNotMatch(document.body.textContent, /Opções do link/);
-  assert.equal(document.querySelector('input[readonly]').value, `https://example.test${sharedPath}`);
-  const wa = document.querySelector('.published-selection a[href^="https://wa.me/"]');
-  assert.equal(wa.closest('[hidden]'), null, 'WhatsApp fica visível sem abrir opções');
-  assert.ok(new URL(wa.href).searchParams.get('text').includes(sharedPath));
+  assert.equal(document.querySelector('.published-selection__options'), null, 'não há submenu oculto');
+  assert.equal(document.querySelector('input[readonly]'), null, 'não há campo visível com link');
+  assert.equal(document.querySelector('.published-selection a[href^="https://wa.me/"]'), null, 'WhatsApp não aparece');
   assert.doesNotMatch(document.body.textContent, /Copiar convite do app/);
   assert.equal(sharingTest.calls.filter(c => c.name === 'publish_shared_selection').length, 0);
+  const firstQr = document.querySelector('.published-selection__preview img').src;
+  sharingTest.myPublication = { ...sharingTest.myPublication, revision: 2, count: 5 };
+  await act(async () => root.render(React.createElement(MemoryRouter, null,
+    React.createElement(app.ShareChoicePanel, { shareData: { url: 'https://example.test' }, isOpenControlled: true }))));
+  await tick();
+  assert.notEqual(document.querySelector('.published-selection__preview img').src, firstQr, 'um QR novo é gerado ao mudar a revisão');
 });
 
 test('criação do link pede consentimento somente ao compartilhar pela primeira vez', async () => {
@@ -295,26 +297,24 @@ test('criação do link pede consentimento somente ao compartilhar pela primeira
   assert.equal(sharingTest.calls.filter(c => c.name === 'publish_shared_selection').length, 0);
   await click('Compartilhar'); await click('Criar link da seleção');
   assert.equal(sharingTest.calls.filter(c => c.name === 'publish_shared_selection').length, 1);
-  assert.equal(document.querySelector('input[readonly]').value, `https://example.test${sharedPath}`);
+  assert.ok(document.querySelector('.published-selection__preview img'), 'o QR aparece após criar o link');
 });
 
-test('compartilhamento nativo envia o link da seleção e cancelamento preserva publicação', async () => {
+test('compartilhamento nativo envia o link da seleção sem abrir menu escondido', async () => {
   let received;
   Object.defineProperty(navigator, 'share', { configurable: true, value: async payload => {
     received = payload; throw new DOMException('cancelled', 'AbortError');
   } });
   await renderSharePanel(); await click('Compartilhar');
   assert.equal(received.url, `https://example.test${sharedPath}`);
-  assert.equal(document.querySelector('.published-selection__options').hidden, false, 'gerenciamento também fica acessível com compartilhamento nativo');
+  assert.equal(document.querySelector('.published-selection__options'), null, 'não há menu de opções para o QR');
   assert.equal(sharingTest.calls.filter(c => c.name !== 'my_shared_selection').length, 0);
 });
 
-test('sem compartilhamento nativo oferece alternativas e desativação exige confirmação', async () => {
+test('sem compartilhamento nativo não mostra ações extras fora do QR e do botão', async () => {
   await renderSharePanel(); await click('Compartilhar');
-  assert.equal(document.querySelector('.published-selection__options').hidden, false);
-  await click('Desativar link');
-  assert.equal(sharingTest.calls.filter(c => c.name === 'disable_shared_selection').length, 0);
-  await click('Desativar link');
-  assert.equal(sharingTest.calls.filter(c => c.name === 'disable_shared_selection').length, 1);
-  assert.equal(document.querySelector('.published-selection__preview'), null);
+  assert.equal(document.querySelector('.published-selection__options'), null);
+  assert.equal(document.querySelector('.published-selection__subtle'), null, 'não há ação extra visível');
+  assert.equal(document.querySelector('.published-selection__manage'), null, 'não há atualizar seleção visível');
+  assert.ok(document.querySelector('.published-selection__preview img'), 'o QR continua visível');
 });

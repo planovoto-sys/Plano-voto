@@ -381,8 +381,8 @@ const candidateFilterItems = useMemo(() => (
         ? 'Senadores'
         : 'Deputados Federais';
     const headingSubtitle = isPresidentOffice
-      ? subtitulo || 'Selecione todos os candidatos em quem você aceitaria votar'
-      : 'Selecione todos os candidatos em quem você aceitaria votar';
+      ? subtitulo || 'Selecione todos candidatos que você aceitaria votar.'
+      : 'Selecione todos candidatos que você aceitaria votar.';
 
     return (
       <div className={`candidate-flow nv-container ${isSenateOffice ? 'candidate-flow--senate' : 'candidate-flow--single'}`} id="tour-lista">

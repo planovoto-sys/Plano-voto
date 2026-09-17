@@ -137,7 +137,7 @@ function SharedSelectionEntry({ id, userId, onRetry }) {
         isOpen={Boolean(load?.needsConfirmation && !error)}
         titulo="Acessar seleção compartilhada?"
         mensagem={<>
-          {load && draftHasBallotSelections(load.draft) && <p>Obs.: ao escolher continuar, sua seleção anterior será apagada.</p>}
+          {load && draftHasBallotSelections(load.draft) && <p>Ao continuar, sua seleção anterior será apagada.</p>}
           {load?.unavailableCount > 0 && <p>{load.unavailableCount} candidato(s) não está(ão) mais disponível(is). Ao continuar, você receberá apenas os {load.shared.candidates.length} candidatos disponíveis.</p>}
         </>}
         textoConfirmar="Continuar"

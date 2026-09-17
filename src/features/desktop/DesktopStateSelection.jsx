@@ -4,6 +4,7 @@ import DesktopMobileHandoffPanel from './DesktopMobileHandoffPanel';
 import DesktopPageIntro from './DesktopPageIntro';
 import DesktopShell from './DesktopShell';
 import { useDesktopHandoff } from './useDesktopHandoff';
+import SharedSelectionTag from '@/features/sharing/SharedSelectionTag';
 
 export default function DesktopStateSelection({
   states,
@@ -72,6 +73,7 @@ export default function DesktopStateSelection({
                   disabled={loading}
                   aria-pressed={isSelected}
                 >
+                  <SharedSelectionTag stateCode={state.sigla} />
                   <strong>{state.nome} - {state.sigla}</strong>
                 </button>
               );

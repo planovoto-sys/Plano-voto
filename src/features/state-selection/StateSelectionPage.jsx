@@ -29,6 +29,7 @@ import DesktopStateSelection from '@/features/desktop/DesktopStateSelection';
 import { useDesktopLayout } from '@/features/desktop/useDesktopLayout';
 import { usesSupabaseAuth } from '@/shared/auth/authService';
 import { updateSupabaseProfileState } from '@/shared/supabase/profileService';
+import SharedSelectionTag from '@/features/sharing/SharedSelectionTag';
 
 export default function Home() {
   const { user, userData, loading: userLoading } = useUser();
@@ -207,6 +208,7 @@ export default function Home() {
         onHelpClick={() => setIsTourOpen(true)}
         renderItem={(estado) => (
           <div className="state-card__content">
+            <SharedSelectionTag stateCode={estado.sigla} />
             <span className="state-card__identity">
               <span className="state-card__name-row">
                 <span className="state-centered-name">

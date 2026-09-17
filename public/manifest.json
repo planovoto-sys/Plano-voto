@@ -1,7 +1,7 @@
 {
   "short_name": "Bom de Voto",
   "name": "Bom de Voto",
-  "description": "PWA para organizar escolhas de voto com funcionamento fluido em redes instáveis.",
+  "description": "Você é Bom de Voto? Tem certeza? Clique e veja.",
   "id": "/",
   "lang": "pt-BR",
   "icons": [

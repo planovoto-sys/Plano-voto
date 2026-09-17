@@ -77,7 +77,7 @@ export default function ShareChoicePanel({ shareData, className = '', appearance
             </div>
             <div className="share-modal-body nv-scroll">
               <div className="sp-action-list">
-                {usesSupabaseAuth && <PublishSelectionCard />}
+                {usesSupabaseAuth && <PublishSelectionCard shareData={shareData} />}
                 <ActionCard icon={<Users size={24} strokeWidth={1.8} />} title="Convidar novos eleitores" description="Convide seus amigos" href={WHATSAPP_INVITE_URL}><Send size={19} /> Convidar</ActionCard>
                 <ActionCard support icon={<Heart size={24} strokeWidth={1.8} />} title="Apoiar o Bom de Voto" description="Ajude o projeto a continuar" href={DONATION_URL}><Heart size={19} /> Apoiar</ActionCard>
               </div>

@@ -66,7 +66,7 @@ export const eligibleSharedCandidates = (candidates, state) => candidates.filter
   getSharedCandidateOffice(candidate) && (getSharedCandidateOffice(candidate) === 'presidente' || candidate.estado === state)
 ));
 
-export const sharedSelectionMessage = (url) => `Veja minha seleção no Bom de Voto. Você pode revisar os candidatos antes de usar:\n\n${url}`;
+export const sharedSelectionMessage = (url) => `Veja minha seleção de candidatos no bom de voto.\n\nAjuste as seleções, se desejar.\n${url}`;
 
 export const rememberSharedSelectionReturn = (path) => {
   const id = sharedSelectionIdFromSummaryPath(path);

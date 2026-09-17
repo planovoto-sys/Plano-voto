@@ -557,6 +557,7 @@
 }
 
 .desktop-state-card {
+  position: relative;
   min-height: 96px;
   border: 1px solid rgba(17, 17, 17, 0.06);
   border-radius: 18px;

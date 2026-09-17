@@ -1,42 +1,53 @@
 import { useEffect, useRef, useState } from 'react';
-import { Copy, Download, MessageCircle, QrCode, RefreshCw, Share2 } from 'lucide-react';
+import { QrCode, Share2 } from 'lucide-react';
 import QRCode from 'qrcode';
 import { APP_SHARE_URL } from './shareCardService';
 import { sharedSelectionMessage, sharedSelectionUrl } from './sharedSelectionModel';
 import { disableSharedSelection, getMySharedSelection, publishSharedSelection, sharedSelectionError } from './sharedSelectionService';
 import './SharedSelection.css';
 
-export default function PublishSelectionCard() {
+export default function PublishSelectionCard({ shareData = null }) {
   const [publication, setPublication] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [retry, setRetry] = useState(0);
   const [busy, setBusy] = useState(false);
   const [confirmation, setConfirmation] = useState(null);
-  const [optionsOpen, setOptionsOpen] = useState(false);
   const [message, setMessage] = useState('');
   const [qr, setQr] = useState({ link: '', url: '' });
   const operation = useRef(false);
   const link = publication?.active ? sharedSelectionUrl(publication.id, APP_SHARE_URL) : '';
-  const qrUrl = qr.link === link ? qr.url : '';
+  const qrPayload = link ? `${link}${link.includes('?') ? '&' : '?'}rev=${publication?.revision ?? Date.now()}` : '';
+  const qrKey = publication?.id && publication?.revision ? `${publication.id}:${publication.revision}` : link;
+  const qrUrl = qr.link === qrKey ? qr.url : '';
+  const mergePublication = (current, next) => {
+    if (!next || typeof next !== 'object') return current;
+    const merged = { ...(current || {}), ...next };
+    if (!merged.id && current?.id) merged.id = current.id;
+    if (!merged.state && current?.state) merged.state = current.state;
+    if (merged.active === undefined && current?.active !== undefined) merged.active = current.active;
+    return merged;
+  };
 
   useEffect(() => {
     let cancelled = false;
     getMySharedSelection().then((data) => {
-      if (!cancelled) { setPublication(data); setLoadError(false); }
+      if (!cancelled) { setPublication((current) => mergePublication(current, data)); setLoadError(false); }
     }).catch(() => { if (!cancelled) setLoadError(true); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [retry]);
+  }, [retry, shareData]);
 
   useEffect(() => {
-    if (!link) return undefined;
+    if (!link) { setQr({ link: '', url: '' }); return undefined; }
     let cancelled = false;
-    QRCode.toDataURL(link, { width: 512, margin: 4, errorCorrectionLevel: 'H', color: { dark: '#123d2b', light: '#ffffff' } })
-      .then((url) => { if (!cancelled) setQr({ link, url }); })
+    const nextKey = `${publication.id}:${publication.revision}`;
+    setQr((current) => current.link === nextKey ? current : { link: nextKey, url: '' });
+    QRCode.toDataURL(qrPayload, { width: 512, margin: 4, errorCorrectionLevel: 'H', color: { dark: '#123d2b', light: '#ffffff' } })
+      .then((url) => { if (!cancelled) setQr({ link: nextKey, url }); })
       .catch(() => { if (!cancelled) setMessage('O QR Code não carregou. Você ainda pode compartilhar o link.'); });
     return () => { cancelled = true; };
-  }, [link]);
+  }, [link, qrPayload, publication?.id, publication?.revision]);
 
   const run = async (action) => {
     if (operation.current) return;
@@ -48,7 +59,7 @@ export default function PublishSelectionCard() {
       } else {
         await disableSharedSelection();
         setPublication((current) => current ? { ...current, active: false } : null);
-        setQr({ link: '', url: '' }); setOptionsOpen(false);
+        setQr({ link: '', url: '' });
         setMessage('Link desativado. As cópias já recebidas continuam com seus amigos.');
       }
       setConfirmation(null);
@@ -59,13 +70,28 @@ export default function PublishSelectionCard() {
   const share = async () => {
     if (operation.current) return;
     if (!link) { setConfirmation('publish'); setMessage(''); return; }
-    setOptionsOpen(true);
-    if (!navigator.share) return;
+    if (!navigator.share) {
+      setMessage('Use os links abaixo para enviar sua seleção.');
+      return;
+    }
     operation.current = true; setBusy(true); setMessage('');
     try {
-      await navigator.share({ title: 'Minha seleção — Bom de Voto', text: 'Veja minha seleção no Bom de Voto. Você pode revisar os candidatos antes de usar.', url: link });
+      const payload = {
+        title: 'Minha seleção — Bom de Voto',
+        text: sharedSelectionMessage(link),
+        url: link,
+      };
+      if (qrUrl && typeof fetch === 'function') {
+        try {
+          const blob = await fetch(qrUrl).then((response) => response.blob());
+          payload.files = [new File([blob], 'bomdevoto-minha-selecao.png', { type: 'image/png' })];
+        } catch {
+          // A imagem do QR é opcional; o link e a mensagem continuam válidos.
+        }
+      }
+      await navigator.share(payload);
     } catch (error) {
-      if (error.name !== 'AbortError') { setOptionsOpen(true); setMessage('Escolha abaixo como enviar sua seleção.'); }
+      if (error.name !== 'AbortError') { setMessage('Escolha abaixo como enviar sua seleção.'); }
     } finally { operation.current = false; setBusy(false); }
   };
 
@@ -103,20 +129,6 @@ export default function PublishSelectionCard() {
           <span>{publication.count} candidatos · {publication.state}</span>
         </div>}
         <button type="button" className="sp-action-card__btn sp-action-card__btn--invite" disabled={busy} onClick={share}><Share2 size={19} /> {busy ? 'Aguarde…' : 'Compartilhar'}</button>
-        {link && <>
-          <a className="published-selection__whatsapp" href={`https://wa.me/?text=${encodeURIComponent(sharedSelectionMessage(link))}`} target="_blank" rel="noopener noreferrer"><MessageCircle size={19} aria-hidden="true" /> WhatsApp</a>
-          <div className="published-selection__options" hidden={!optionsOpen}>
-            <div className="selection-actions">
-              <button type="button" onClick={copy}><Copy size={17} /> Copiar link</button>
-              {qrUrl && <a href={qrUrl} download="bomdevoto-minha-selecao.png"><Download size={17} /> Baixar QR Code</a>}
-            </div>
-            <label>Link da seleção<input readOnly value={link} onFocus={event => event.target.select()} /></label>
-            <p>Mudou seus candidatos? Atualize a seleção antes de enviar.</p>
-            <button type="button" className="published-selection__manage" disabled={busy} onClick={() => setConfirmation('publish')}><RefreshCw size={16} /> Atualizar seleção</button>
-            <button type="button" className="published-selection__subtle" disabled={busy} onClick={() => setConfirmation('disable')}>Desativar link</button>
-            <button type="button" className="published-selection__subtle" onClick={() => setOptionsOpen(false)}>Fechar</button>
-          </div>
-        </>}
       </>}
       {message && <p className="published-selection__status" role="status">{message}</p>}
     </section>

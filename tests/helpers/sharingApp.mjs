@@ -65,7 +65,7 @@ export async function loadSharingApp() {
       builder.onLoad({ filter: /.*/, namespace: 'empty' }, () => ({ contents: '' }));
       builder.onLoad({ filter: /.*/, namespace: 'mock' }, ({ path: name }) => ({ contents:
         name === 'firestore' ? 'export const collection = null, documentId = null, doc = null, getDoc = null, getDocs = null, query = null, where = null, onSnapshot = null;'
-          : name === 'qrcode' ? `export default { toDataURL: async () => 'data:image/png;base64,YQ==' };`
+          : name === 'qrcode' ? `export default { toDataURL: async (value) => 'data:image/png;base64,' + Buffer.from(String(value)).toString('base64') };`
             : mocks[name], loader: 'js',
       }));
     } }],

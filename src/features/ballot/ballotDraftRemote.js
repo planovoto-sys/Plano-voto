@@ -203,7 +203,10 @@ export const saveBallotState = async (userId, estado) => {
     const currentDraft = await readSupabaseDraft(userId, activeEstado);
     const nextDraft = currentDraft.estado === activeEstado
       ? normalizeDraft(currentDraft, activeEstado)
-      : createEmptyBallotDraft(activeEstado);
+      : normalizeDraft({
+        ...createEmptyBallotDraft(activeEstado),
+        updated_at: currentDraft.updated_at
+      }, activeEstado);
     return saveSupabaseDraft(userId, nextDraft);
   }
 
