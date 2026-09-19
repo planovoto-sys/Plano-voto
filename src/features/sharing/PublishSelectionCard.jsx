@@ -71,23 +71,41 @@ export default function PublishSelectionCard({ shareData = null }) {
   const share = async () => {
     if (operation.current) return;
     if (!link) { setConfirmation('publish'); setMessage(''); return; }
-    if (!navigator.share) {
-      setMessage('Use os links abaixo para enviar sua seleção.');
-      return;
-    }
     operation.current = true; setBusy(true); setMessage('');
     try {
+      const latestPublication = await publishSharedSelection();
+      setPublication(latestPublication);
+      const latestLink = latestPublication?.active
+        ? sharedSelectionUrl(latestPublication.id, APP_SHARE_URL)
+        : '';
+      if (!latestLink) throw new Error('SHARE_UNAVAILABLE');
+      if (!navigator.share) {
+        setMessage('Use os links abaixo para enviar sua seleção.');
+        return;
+      }
       const payload = {
         title: 'Minha seleção — Bom de Voto',
-        text: sharedSelectionMessage(link),
-        url: link,
+        text: sharedSelectionMessage(latestLink),
+        url: latestLink,
       };
-      if (qrUrl && typeof fetch === 'function') {
+      const latestQrPayload = latestPublication?.revision
+        ? `${latestLink}${latestLink.includes('?') ? '&' : '?'}rev=${latestPublication.revision}`
+        : latestLink;
+      if (typeof fetch === 'function' && typeof File !== 'undefined') {
         try {
-          const blob = await fetch(qrUrl).then((response) => response.blob());
-          payload.files = [new File([blob], 'bomdevoto-minha-selecao.png', { type: 'image/png' })];
+          const latestQrUrl = await QRCode.toDataURL(latestQrPayload, {
+            width: 512,
+            margin: 4,
+            errorCorrectionLevel: 'H',
+            color: { dark: '#123d2b', light: '#ffffff' }
+          });
+          const blob = await fetch(latestQrUrl).then((response) => response.blob());
+          const qrFile = new File([blob], 'bomdevoto-minha-selecao.png', { type: 'image/png' });
+          if (!navigator.canShare || navigator.canShare({ files: [qrFile] })) {
+            payload.files = [qrFile];
+          }
         } catch {
-          // A imagem do QR é opcional; o link e a mensagem continuam válidos.
+          // O texto e o link continuam disponíveis se o QR não puder ser anexado.
         }
       }
       await navigator.share(payload);

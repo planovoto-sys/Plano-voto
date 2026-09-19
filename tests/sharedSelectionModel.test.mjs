@@ -103,7 +103,7 @@ test('mensagem de compartilhamento mantém link clicável e revisão explícita'
   const message = sharedSelectionMessage(url);
   const wa = new URL(`https://wa.me/?text=${encodeURIComponent(message)}`);
   assert.equal(wa.searchParams.get('text'), message);
-  assert.ok(message.includes('Ajuste as seleções, se desejar.'));
+  assert.ok(message.startsWith('Veja minha seleção de candidatos.\n\nFaça os ajustes que desejar.\n'));
   assert.ok(message.endsWith(url));
 });
 
@@ -188,11 +188,11 @@ test('uma importação em andamento não é confundida com link já aplicado', (
   assert.equal(readSharedSelectionSource('conta', 'eleicao').applied, true);
 }));
 
-test('nomes recebidos permanecem acima dos demais sem mudar a ordem interna por nota', () => {
-  const items = [{ id: 'novo-9' }, { id: 'recebido-8' }, { id: 'novo-7' }, { id: 'recebido-6' }];
+test('seleção compartilhada não altera a ordem já calculada por nota', () => {
+  const items = [{ id: 'renan-9' }, { id: 'recebido-8' }, { id: 'novo-7' }, { id: 'recebido-6' }];
   const result = prioritizeSharedCandidates(items, { candidateIds: ['recebido-6', 'recebido-8', 'indisponivel'] });
-  assert.deepEqual(result.map((item) => item.id), ['recebido-8', 'recebido-6', 'novo-9', 'novo-7']);
-  assert.equal(items[0].id, 'novo-9', 'não modifica lista original');
+  assert.deepEqual(result.map((item) => item.id), ['renan-9', 'recebido-8', 'novo-7', 'recebido-6']);
+  assert.equal(items[0].id, 'renan-9', 'não modifica lista original');
   assert.equal(prioritizeSharedCandidates(items, null), items, 'fluxo comum permanece idêntico');
 });
 

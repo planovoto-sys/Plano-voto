@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo, useDeferredValue } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ACTIVE_ELECTION_ID, BALLOT_ROUTES } from '@/shared/constants/ballot';
-import { prioritizeSharedCandidates, readSharedSelectionSource } from '@/features/sharing/sharedSelectionModel';
 import { CANDIDATE_FILTERS } from '@/shared/constants/candidates';
 import { getViabilityTarget } from '@/shared/constants/viabilityTargets';
 import { STATE_NAMES } from '@/shared/constants/states';
@@ -116,7 +115,6 @@ export default function EscolherCandidatos({
   const isDesktopLayout = useDesktopLayout();
 
   const userId = user?.uid;
-  const sharedSource = useMemo(() => readSharedSelectionSource(userId, ACTIVE_ELECTION_ID), [userId]);
   const isGuestMode = !userId;
   const estadoDoFluxo = userId ? getBallotEstado(userId, userData?.estado) : getVisitorBallotEstado();
   const draftKey = `${userId || 'visitor'}:${estadoDoFluxo}:${chaveGrupo}`;
@@ -379,8 +377,8 @@ export default function EscolherCandidatos({
         isChanceFeatured: !isGuestMode && candidate.id === featuredCandidateId
       }))
       .sort(compareCandidatesByScorePriority);
-    return prioritizeSharedCandidates(orderedCandidates, sharedSource);
-  }, [candidatosDoEstado, featuredCandidateId, filtroLista, buscaDiferida, isGuestMode, selectedCandidateIdsInOtherSteps, selecionadosNaTela, sharedSource]);
+    return orderedCandidates;
+  }, [candidatosDoEstado, featuredCandidateId, filtroLista, buscaDiferida, isGuestMode, selectedCandidateIdsInOtherSteps, selecionadosNaTela]);
 
   const persistirEtapa = async (listaFinalDaTela, { markCompleted = false } = {}) => {
     if (restoringDraft || draftLoadError) throw new Error('Aguarde o carregamento das suas escolhas antes de salvar.');

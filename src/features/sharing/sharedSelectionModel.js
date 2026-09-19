@@ -66,7 +66,7 @@ export const eligibleSharedCandidates = (candidates, state) => candidates.filter
   getSharedCandidateOffice(candidate) && (getSharedCandidateOffice(candidate) === 'presidente' || candidate.estado === state)
 ));
 
-export const sharedSelectionMessage = (url) => `Veja minha seleção de candidatos no bom de voto.\n\nAjuste as seleções, se desejar.\n${url}`;
+export const sharedSelectionMessage = (url) => `Veja minha seleção de candidatos.\n\nFaça os ajustes que desejar.\n${url}`;
 
 export const rememberSharedSelectionReturn = (path) => {
   const id = sharedSelectionIdFromSummaryPath(path);
@@ -145,10 +145,7 @@ export const clearSharedSelectionSource = () => {
   try { window.sessionStorage.removeItem(SHARED_SOURCE_KEY); } catch { /* Sem armazenamento. */ }
 };
 
-// Apenas agrupa a lista de escolha; não altera notas, contadores ou indicações.
-export const prioritizeSharedCandidates = (candidates, source) => {
-  if (!source) return candidates;
-  const received = new Set(source.candidateIds);
-  return [...candidates.filter((candidate) => received.has(candidate.id)),
-    ...candidates.filter((candidate) => !received.has(candidate.id))];
+// A seleção compartilhada marca os candidatos, mas não altera a ordem da lista.
+export const prioritizeSharedCandidates = (candidates) => {
+  return candidates;
 };

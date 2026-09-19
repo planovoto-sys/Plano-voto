@@ -307,8 +307,11 @@ test('compartilhamento nativo envia o link da seleção sem abrir menu escondido
   } });
   await renderSharePanel(); await click('Compartilhar');
   assert.equal(received.url, `https://example.test${sharedPath}`);
+  assert.equal(received.text, `Veja minha seleção de candidatos.\n\nFaça os ajustes que desejar.\nhttps://example.test${sharedPath}`);
+  assert.equal(received.files?.length, 1, 'o compartilhamento nativo inclui a imagem do QR');
+  assert.equal(received.files[0].name, 'bomdevoto-minha-selecao.png');
   assert.equal(document.querySelector('.published-selection__options'), null, 'não há menu de opções para o QR');
-  assert.equal(sharingTest.calls.filter(c => c.name !== 'my_shared_selection').length, 0);
+  assert.equal(sharingTest.calls.filter(c => c.name === 'publish_shared_selection').length, 1);
 });
 
 test('sem compartilhamento nativo não mostra ações extras fora do QR e do botão', async () => {
@@ -317,4 +320,5 @@ test('sem compartilhamento nativo não mostra ações extras fora do QR e do bot
   assert.equal(document.querySelector('.published-selection__subtle'), null, 'não há ação extra visível');
   assert.equal(document.querySelector('.published-selection__manage'), null, 'não há atualizar seleção visível');
   assert.ok(document.querySelector('.published-selection__preview img'), 'o QR continua visível');
+  assert.equal(sharingTest.calls.filter(c => c.name === 'publish_shared_selection').length, 1);
 });
