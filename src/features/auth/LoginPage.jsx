@@ -82,7 +82,7 @@ const HOW_IT_WORKS_SLIDES = [
     accent: '2 que não elegem',
     description: 'O resultado? Um Congresso em que só',
     secondaryTitle: '12%',
-    secondaryDescription: 'dos brasileiros confia.',
+    secondaryDescription: 'dos brasileiros confiam.',
     artwork: 'chamber',
   },
   {
@@ -94,7 +94,7 @@ const HOW_IT_WORKS_SLIDES = [
   {
     title: 'Se você vota no José e eu no João',
     accent: 'Nossos votos se dividem',
-    description: 'A chance deles se elegerem diminui → isso é o que acontece nas eleições.',
+    description: 'A chance de eles se elegerem diminui → isso é o que acontece nas eleições.',
     artwork: 'divided',
   },
   {
@@ -113,8 +113,8 @@ const HOW_IT_WORKS_SLIDES = [
     title: 'Funciona assim...',
     steps: [
       'Você seleciona seu estado (onde vota)',
-      'Confere nas atas dos candidatos/partidos (no Ranking dos Políticos)',
-      'Declara suas preferências individuais: todos os candidatos que aceita votar',
+      'Confere as atas dos candidatos e partidos (no Ranking dos Políticos)',
+      'Declara suas preferências individuais: todos os candidatos em quem aceita votar',
       'Descobre suas preferências coletivas antes do voto',
     ],
     description: 'Você ainda pode compartilhar suas preferências individuais com aquele eleitor que te perguntou em quem votar.',
