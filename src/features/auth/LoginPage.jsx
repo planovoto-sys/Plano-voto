@@ -113,7 +113,7 @@ const HOW_IT_WORKS_SLIDES = [
     title: 'Funciona assim...',
     steps: [
       'Você seleciona seu estado (onde vota)',
-      'Confere as atas dos candidatos e partidos (no Ranking dos Políticos)',
+      'Confere as notas dos candidatos e partidos (no Ranking dos Políticos)',
       'Declara suas preferências individuais: todos os candidatos em quem aceita votar',
       'Descobre suas preferências coletivas antes do voto',
     ],
