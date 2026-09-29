@@ -70,7 +70,7 @@ const HOW_IT_WORKS_SLIDES = [
   {
     eyebrow: 'Nas últimas eleições',
     title: '50 milhões',
-    description: 'elegeram nosso Congresso Nacional.',
+    description: 'elegeram o nosso Congresso Nacional.',
     secondaryTitle: '100 milhões',
     secondaryDescription: 'não elegeram nenhum parlamentar*',
     footnote: '* Desperdiçaram seus votos com candidatos que não se elegeram, votos brancos ou nulos e abstenções.',
@@ -124,8 +124,8 @@ const HOW_IT_WORKS_SLIDES = [
     title: 'O Bom de Voto',
     descriptionLines: [
       'É uma ferramenta de utilidade pública',
-      'Que oferece zero garantias de sucesso',
-      'Mas um risco real de fortalecer o voto e sua representação na política',
+      'Que oferece zero garantia de sucesso',
+      'Mas um risco real de fortalecer o voto e a sua representação na política',
     ],
     artwork: 'target',
   },
